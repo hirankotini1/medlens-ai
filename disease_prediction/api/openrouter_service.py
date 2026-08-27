@@ -135,6 +135,84 @@ def enforce_clinical_guardrails(
             })
     analysis["possible_conditions"] = safe_conditions
 
+    # FEATURE 1: Differential Diagnosis Map Guardrail (Top 2 conditions with supporting & contradicting evidence)
+    diff_diag = analysis.get("differential_diagnosis", [])
+    safe_diff = []
+    if isinstance(diff_diag, list):
+        for item in diff_diag[:2]:
+            if isinstance(item, dict):
+                cond = item.get("condition") or "Diagnostic Consideration"
+                sup = item.get("supporting_evidence") or ["Elevated or depressed biomarker pattern observed in report."]
+                con = item.get("contradicting_evidence") or ["Normal parameters outside primary panel findings."]
+                safe_diff.append({
+                    "condition": cond,
+                    "supporting_evidence": [str(s) for s in sup] if isinstance(sup, list) else [str(sup)],
+                    "contradicting_evidence": [str(c) for c in con] if isinstance(con, list) else [str(con)]
+                })
+    if not safe_diff:
+        first_cond = safe_conditions[0]["name"] if safe_conditions else "Primary Clinical Presentation"
+        second_cond = safe_conditions[1]["name"] if len(safe_conditions) > 1 else "Alternative Metabolic / Reactive Etiology"
+        safe_diff = [
+            {
+                "condition": first_cond,
+                "supporting_evidence": ["Correlated abnormal biomarker values detected during screening."],
+                "contradicting_evidence": ["Absence of acute multi-organ decompensation flags in baseline parameters."]
+            },
+            {
+                "condition": second_cond,
+                "supporting_evidence": ["Overlapping biochemical reference range deviations across secondary markers."],
+                "contradicting_evidence": ["Primary differential candidate exhibits stronger biomarker concordance."]
+            }
+        ]
+    analysis["differential_diagnosis"] = safe_diff[:2]
+
+    # FEATURE 2: Missing Test Intelligence Guardrail
+    missing = analysis.get("missing_tests", [])
+    if not isinstance(missing, list) or len(missing) == 0:
+        missing = [
+            "Complete Blood Count (CBC) with Peripheral Smear",
+            "Comprehensive Metabolic / Liver Panel (LFT)",
+            "Serum Ferritin & Iron Studies",
+            "Urinary Protein-to-Creatinine Ratio"
+        ]
+    analysis["missing_tests"] = [str(m) for m in missing]
+
+    # FEATURE 3: Hidden Abnormality Detector Guardrail (Synergistic borderline values)
+    hidden = analysis.get("hidden_abnormalities", [])
+    safe_hidden = []
+    if isinstance(hidden, list):
+        for h in hidden:
+            if isinstance(h, dict) and "biomarkers" in h and "implication" in h:
+                safe_hidden.append({
+                    "biomarkers": [str(b) for b in h["biomarkers"]] if isinstance(h["biomarkers"], list) else [str(h["biomarkers"])],
+                    "implication": str(h["implication"])
+                })
+    if not safe_hidden and parameters:
+        borderline_found = []
+        for p in parameters:
+            val = p.get("value")
+            try:
+                val_f = float(val)
+                ck = str(p.get("canonical_key", "")).upper()
+                if ck == "HGB" and 11.5 <= val_f <= 12.5:
+                    borderline_found.append(f"Hemoglobin ({val_f} g/dL, Lower-Normal)")
+                elif ck == "MCV" and 80.0 <= val_f <= 83.0:
+                    borderline_found.append(f"MCV ({val_f} fL, Lower-Normal)")
+                elif ck in ["PLT", "PLATELET_COUNT"] and 150000 <= val_f <= 180000:
+                    borderline_found.append(f"Platelet Count ({int(val_f):,} /µL, Lower-Normal)")
+                elif ck == "TOTAL_BILIRUBIN" and 1.0 <= val_f <= 1.2:
+                    borderline_found.append(f"Total Bilirubin ({val_f} mg/dL, Upper-Normal)")
+                elif ck == "TSH" and 3.5 <= val_f <= 4.2:
+                    borderline_found.append(f"TSH ({val_f} µIU/mL, Upper-Normal)")
+            except (ValueError, TypeError):
+                pass
+        if len(borderline_found) >= 2:
+            safe_hidden.append({
+                "biomarkers": borderline_found[:2],
+                "implication": "Concurrently clustered lower/upper limits within reference range indicate early latent subclinical strain before overt flag triggers."
+            })
+    analysis["hidden_abnormalities"] = safe_hidden
+
     # Rare disease screening structure & multi-condition candidate list
     rare_screening = analysis.get("rare_unusual_screening")
     if not isinstance(rare_screening, dict):
@@ -219,9 +297,45 @@ RULES:
 - Never prescribe medications or doses.
 - For rare disease screening, use multi-marker combinations, not single tests.
 - Use screening strengths: HIGH / MODERATE / LOW. No invented probabilities.
+- Provide top 2 Differential Diagnosis candidates with explicit supporting and contradicting laboratory evidence.
+- Identify Missing Tests required to confirm the differential diagnosis.
+- Detect Hidden Abnormalities (borderline values within normal intervals that synergistically suggest subclinical or early-stage pathology).
 
 Return exactly this JSON schema:
-{"summary":"2-3 sentence clinical overview.","overall_attention":"NORMAL|MODERATE ATTENTION|HIGH ATTENTION / ELEVATED RISK","abnormal_findings":[{"parameter":"Name","value":"Value+Unit","status":"LOW|HIGH|CRITICAL","significance":"Brief pathophysiological note"}],"patterns":[{"name":"Pattern Name","strength":"HIGH|MODERATE|LOW","why_flagged":"Rationale","supporting_findings":["Finding"],"suggested_follow_up":["Step"]}],"rare_unusual_screening":{"flagged":true,"condition_name":"Name","screening_strength":"HIGH|MODERATE|LOW|NONE","why_flagged":"Multi-marker rationale","supporting_findings":["Biomarker"],"confirmatory_evaluation":"Tests needed","disclaimer":"Screening signal only."},"general_precautions":["Recommendation"]}"""
+{
+  "summary": "2-3 sentence clinical overview.",
+  "overall_attention": "NORMAL|MODERATE ATTENTION|HIGH ATTENTION / ELEVATED RISK",
+  "abnormal_findings": [
+    {"parameter": "Name", "value": "Value+Unit", "status": "LOW|HIGH|CRITICAL", "significance": "Brief pathophysiological note"}
+  ],
+  "differential_diagnosis": [
+    {
+      "condition": "Condition Name",
+      "supporting_evidence": ["Evidence pointing towards this diagnosis"],
+      "contradicting_evidence": ["Evidence or normal findings pointing away from this diagnosis"]
+    }
+  ],
+  "missing_tests": ["Confirmatory Test 1", "Confirmatory Test 2"],
+  "hidden_abnormalities": [
+    {
+      "biomarkers": ["Biomarker A", "Biomarker B"],
+      "implication": "Clinical implication of synergistic borderline values"
+    }
+  ],
+  "patterns": [
+    {"name": "Pattern Name", "strength": "HIGH|MODERATE|LOW", "why_flagged": "Rationale", "supporting_findings": ["Finding"], "suggested_follow_up": ["Step"]}
+  ],
+  "rare_unusual_screening": {
+    "flagged": true,
+    "condition_name": "Name",
+    "screening_strength": "HIGH|MODERATE|LOW|NONE",
+    "why_flagged": "Multi-marker rationale",
+    "supporting_findings": ["Biomarker"],
+    "confirmatory_evaluation": "Tests needed",
+    "disclaimer": "Screening signal only."
+  },
+  "general_precautions": ["Recommendation"]
+}"""
 
     user_content = f"""Please analyze the following de-identified laboratory test findings:
 Demographic Context: {json.dumps(clean_payload['demographics'])}
@@ -229,6 +343,10 @@ Laboratory Findings:
 {json.dumps(clean_payload['laboratory_findings'], indent=2)}
 
 Generate a structured clinical decision-support analysis adhering strictly to the JSON schema."""
+
+    lang = (patient_meta or {}).get("language") or "English"
+    if str(lang).lower() != "english":
+        system_prompt += f"\n\nLANGUAGE INSTRUCTION: Provide all explanatory values, summaries, pathophysiological notes, and recommendations strictly in {lang}. Keep parameter names in standard clinical format."
 
     messages = [
         {"role": "system", "content": system_prompt},
@@ -476,5 +594,5 @@ def get_fallback_analysis(
             "Complete recommended confirmatory diagnostic testing as guided by your physician."
         ],
         "ai_model_used": "Nexus Clinical Decision Heuristic (Multi-Disease Engine)"
-    })
+    }, parameters=parameters, patient_meta=patient_meta)
 

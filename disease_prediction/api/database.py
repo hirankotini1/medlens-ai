@@ -4,6 +4,7 @@ import json
 import hashlib
 import secrets
 import shutil
+import time
 from datetime import datetime
 from typing import Dict, Any, List, Optional, Tuple
 
@@ -133,6 +134,68 @@ def init_db():
     );
     """)
 
+    # 6. Shared Sessions table (Feature 3 — Secure Report Sharing)
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS shared_sessions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        patient_id TEXT NOT NULL,
+        data_payload TEXT NOT NULL,
+        access_pin TEXT UNIQUE NOT NULL,
+        expires_at TEXT NOT NULL,
+        created_at TEXT NOT NULL
+    );
+    """)
+
+    # Schema migration: add shared_sessions if it doesn't exist yet
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='shared_sessions'")
+    if not cursor.fetchone():
+        cursor.execute("""
+        CREATE TABLE shared_sessions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            patient_id TEXT NOT NULL,
+            data_payload TEXT NOT NULL,
+            access_pin TEXT UNIQUE NOT NULL,
+            expires_at TEXT NOT NULL,
+            created_at TEXT NOT NULL
+        );
+        """)
+
+    # 7. Patient Reported Issues (Symptom Logging & Doctor Review)
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS patient_reported_issues (
+        id TEXT PRIMARY KEY,
+        patient_id TEXT NOT NULL,
+        symptoms TEXT NOT NULL,
+        severity TEXT,
+        duration TEXT,
+        triage_level TEXT DEFAULT 'green',
+        ai_summary TEXT,
+        doctor_notes TEXT,
+        doctor_name TEXT,
+        status TEXT DEFAULT 'open',
+        created_at TEXT NOT NULL,
+        reviewed_at TEXT
+    );
+    """)
+
+    # 8. Patient Care Reminders (Checkups, Diagnosis, Daily Care Directives)
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS patient_care_reminders (
+        id TEXT PRIMARY KEY,
+        patient_id TEXT NOT NULL,
+        issue_id TEXT,
+        reminder_type TEXT NOT NULL,
+        title TEXT NOT NULL,
+        message TEXT NOT NULL,
+        due_date TEXT,
+        frequency TEXT,
+        status TEXT DEFAULT 'active',
+        sent_by TEXT DEFAULT 'Dr. Medicover Clinical Desk',
+        created_at TEXT NOT NULL,
+        acknowledged_at TEXT
+    );
+    """)
+
     # Schema migration check for access_pin_hash in patients
 
     cursor.execute("PRAGMA table_info(patients)")
@@ -257,9 +320,50 @@ def seed_demo_data(conn):
         "INSERT INTO users (username, role, password_hash, created_at) VALUES (?, ?, ?, ?)",
         ("admin", "admin", hash_secret("admin123"), now)
     )
-    
+
+    # Initial Sample Patient Reported Issue (PAT-1001)
+    cursor.execute("""
+    INSERT INTO patient_reported_issues (
+        id, patient_id, symptoms, severity, duration, triage_level, ai_summary, doctor_notes, doctor_name, status, created_at, reviewed_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        "ISSUE-1001-DEMO", "PAT-1001",
+        "Persistent fatigue, mild shortness of breath upon stair climbing, occasional cold extremities for 2 weeks",
+        "Moderate", "1-2 Weeks", "amber",
+        "Symptoms correlate with microcytic hypochromic anemia. Iron studies and peripheral blood smear recommended.",
+        "Patient shows microcytic anemia indices on recent CBC. Initiated oral iron therapy and dietary adjustments.",
+        "Dr. Rajesh Varma (Medicover Vizag Hematology)", "in_review", now, now
+    ))
+
+    # Initial Sample Care Reminders (PAT-1001)
+    reminders = [
+        (
+            "REM-1001-01", "PAT-1001", "ISSUE-1001-DEMO", "daily_care",
+            "Hydration & Iron Supplementation",
+            "Take Ferrous Ascorbate 100mg once daily after lunch with Vitamin C (lemon juice or orange juice). Avoid taking with tea/dairy. Maintain minimum 2.5L daily water intake.",
+            now[:10], "daily", "active", "Dr. Rajesh Varma (Hematology, Medicover Vizag)", now, None
+        ),
+        (
+            "REM-1001-02", "PAT-1001", "ISSUE-1001-DEMO", "diagnosis",
+            "Repeat Complete Blood Count (CBC) Follow-Up",
+            "Repeat CBC test at Medicover Vizag Laboratory to evaluate Hemoglobin and Reticulocyte recovery.",
+            "2026-09-12", "once", "active", "Dr. Rajesh Varma (Hematology, Medicover Vizag)", now, None
+        ),
+        (
+            "REM-1001-03", "PAT-1001", None, "checkup",
+            "Annual Comprehensive Health Checkup",
+            "Schedule annual comprehensive metabolic panel and ECG at Medicover Hospital MVP Colony.",
+            "2026-10-15", "once", "active", "Medicover Preventive Health Desk", now, None
+        )
+    ]
+    cursor.executemany("""
+    INSERT INTO patient_care_reminders (
+        id, patient_id, issue_id, reminder_type, title, message, due_date, frequency, status, sent_by, created_at, acknowledged_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, reminders)
+
     conn.commit()
-    print("Database seeded with cryptographic security hashes.")
+    print("Database seeded with cryptographic security hashes and clinical care reminders.")
 
 
 # ---------------------------------------------------------
@@ -545,6 +649,11 @@ def reset_to_clean_seed():
     cursor.execute("DELETE FROM report_analyses")
     cursor.execute("DELETE FROM patients")
     cursor.execute("DELETE FROM users")
+    # Also clear shared sessions on reset
+    try:
+        cursor.execute("DELETE FROM shared_sessions")
+    except Exception:
+        pass
     conn.commit()
     seed_demo_data(conn)
     conn.close()
@@ -673,6 +782,350 @@ def get_all_report_analyses() -> List[Dict[str, Any]]:
         })
     return results
 
+
+
+# ---------------------------------------------------------
+# Shared Sessions — Feature 3: Secure Report Sharing
+# ---------------------------------------------------------
+import random
+from datetime import datetime, timedelta
+
+def _ensure_shared_sessions_table(cursor):
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS shared_sessions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        patient_id TEXT NOT NULL,
+        data_payload TEXT NOT NULL,
+        access_pin TEXT UNIQUE NOT NULL,
+        expires_at TEXT NOT NULL,
+        created_at TEXT NOT NULL
+    );
+    """)
+
+def create_shared_session(patient_id: str, data_payload: Dict[str, Any]) -> str:
+    """
+    Generates a unique 6-digit PIN and stores the session payload.
+    The session expires after 24 hours.
+    Returns the 6-digit PIN string.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    _ensure_shared_sessions_table(cursor)
+    now = datetime.now()
+    expires_at = (now + timedelta(hours=24)).isoformat()
+    created_at = now.isoformat()
+    payload_json = json.dumps(data_payload)
+
+    # Try up to 10 times to get a unique 6-digit PIN
+    for _ in range(10):
+        pin = f"{random.randint(100000, 999999)}"
+        cursor.execute("SELECT id FROM shared_sessions WHERE access_pin = ?", (pin,))
+        if not cursor.fetchone():
+            break
+    else:
+        conn.close()
+        raise RuntimeError("Could not generate a unique PIN. Please try again.")
+
+    cursor.execute("""
+    INSERT INTO shared_sessions (patient_id, data_payload, access_pin, expires_at, created_at)
+    VALUES (?, ?, ?, ?, ?)
+    """, (patient_id, payload_json, pin, expires_at, created_at))
+    conn.commit()
+    conn.close()
+    return pin
+
+
+def get_shared_session_by_pin(pin: str) -> Optional[Dict[str, Any]]:
+    """
+    Retrieves a shared session by PIN. Returns None if not found or expired.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    _ensure_shared_sessions_table(cursor)
+    cursor.execute("SELECT * FROM shared_sessions WHERE access_pin = ?", (pin.strip(),))
+    row = cursor.fetchone()
+    conn.close()
+
+    if not row:
+        return None
+
+    # Check expiry
+    expires_at = datetime.fromisoformat(row["expires_at"])
+    if datetime.now() > expires_at:
+        return None  # Expired
+
+    return {
+        "id": row["id"],
+        "patient_id": row["patient_id"],
+        "data_payload": json.loads(row["data_payload"]),
+        "access_pin": row["access_pin"],
+        "expires_at": row["expires_at"],
+        "created_at": row["created_at"]
+    }
+
+
+# ---------------------------------------------------------
+# Patient Health Timeline — Feature 5
+# ---------------------------------------------------------
+def get_patient_timeline(patient_id: str) -> List[Dict[str, Any]]:
+    """
+    Fetches a unified chronological health timeline for a patient.
+    Merges lab_reports and report_analyses, sorted by timestamp descending.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    timeline_items = []
+
+    # 1. Lab Reports
+    cursor.execute("""
+    SELECT report_id, test_category, status, doctor_remarks, created_at
+    FROM lab_reports
+    WHERE patient_id = ?
+    ORDER BY created_at DESC
+    """, (patient_id,))
+    for r in cursor.fetchall():
+        remarks = r["doctor_remarks"] or ""
+        summary_text = remarks[:120] + "..." if len(remarks) > 120 else remarks
+        timeline_items.append({
+            "type": "lab_report",
+            "icon": "📋",
+            "title": f"{r['test_category'].title()} — Lab Report",
+            "summary": summary_text or "Official laboratory report finalized.",
+            "status": r["status"],
+            "id": r["report_id"],
+            "date": r["created_at"]
+        })
+
+    # 2. AI Report Analyses
+    cursor.execute("""
+    SELECT analysis_id, source_filename, overall_attention, created_at
+    FROM report_analyses
+    WHERE patient_id = ?
+    ORDER BY created_at DESC
+    """, (patient_id,))
+    for r in cursor.fetchall():
+        attention = r["overall_attention"] or "NORMAL"
+        timeline_items.append({
+            "type": "ai_analysis",
+            "icon": "🤖",
+            "title": f"AI Report Analysis — {r['source_filename']}",
+            "summary": f"AI clinical analysis completed. Attention level: {attention}.",
+            "status": attention,
+            "id": r["analysis_id"],
+            "date": r["created_at"]
+        })
+
+    conn.close()
+
+    # Sort unified list by date descending
+    timeline_items.sort(key=lambda x: x["date"], reverse=True)
+    return timeline_items
+
+
+# =========================================================
+# Patient Reported Issues & Care Reminders Engine
+# =========================================================
+def _ensure_issues_and_reminders_tables(cursor):
+    """Self-healing migration guaranteeing tables exist even if DB was initialized prior."""
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS patient_reported_issues (
+        id TEXT PRIMARY KEY,
+        patient_id TEXT NOT NULL,
+        symptoms TEXT NOT NULL,
+        severity TEXT,
+        duration TEXT,
+        triage_level TEXT DEFAULT 'green',
+        ai_summary TEXT,
+        doctor_notes TEXT,
+        doctor_name TEXT,
+        status TEXT DEFAULT 'open',
+        created_at TEXT NOT NULL,
+        reviewed_at TEXT
+    );
+    """)
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS patient_care_reminders (
+        id TEXT PRIMARY KEY,
+        patient_id TEXT NOT NULL,
+        issue_id TEXT,
+        reminder_type TEXT NOT NULL,
+        title TEXT NOT NULL,
+        message TEXT NOT NULL,
+        due_date TEXT,
+        frequency TEXT,
+        status TEXT DEFAULT 'active',
+        sent_by TEXT DEFAULT 'Dr. Medicover Clinical Desk',
+        created_at TEXT NOT NULL,
+        acknowledged_at TEXT
+    );
+    """)
+
+
+def create_reported_issue(
+    patient_id: str,
+    symptoms: str,
+    severity: Optional[str] = None,
+    duration: Optional[str] = None,
+    triage_level: str = "green",
+    ai_summary: Optional[str] = None
+) -> Dict[str, Any]:
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    _ensure_issues_and_reminders_tables(cursor)
+
+    issue_id = f"ISSUE-{int(time.time())}-{secrets.token_hex(2).upper()}"
+    now_iso = datetime.now().isoformat()
+
+    cursor.execute("""
+    INSERT INTO patient_reported_issues (
+        id, patient_id, symptoms, severity, duration, triage_level, ai_summary, doctor_notes, doctor_name, status, created_at, reviewed_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, '', '', 'open', ?, NULL)
+    """, (issue_id, patient_id, symptoms, severity, duration, triage_level, ai_summary, now_iso))
+
+    conn.commit()
+    conn.close()
+
+    return {
+        "id": issue_id,
+        "patient_id": patient_id,
+        "symptoms": symptoms,
+        "severity": severity,
+        "duration": duration,
+        "triage_level": triage_level,
+        "ai_summary": ai_summary,
+        "status": "open",
+        "created_at": now_iso
+    }
+
+
+def get_reported_issues(patient_id: Optional[str] = None, status: Optional[str] = None) -> List[Dict[str, Any]]:
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    _ensure_issues_and_reminders_tables(cursor)
+
+    query = """
+    SELECT i.*, p.name as patient_name, p.age as patient_age, p.gender as patient_gender
+    FROM patient_reported_issues i
+    LEFT JOIN patients p ON i.patient_id = p.patient_id
+    WHERE 1=1
+    """
+    params = []
+    if patient_id:
+        query += " AND i.patient_id = ?"
+        params.append(patient_id)
+    if status:
+        query += " AND i.status = ?"
+        params.append(status)
+
+    query += " ORDER BY i.created_at DESC"
+
+    cursor.execute(query, tuple(params))
+    rows = [dict(r) for r in cursor.fetchall()]
+    conn.close()
+    return rows
+
+
+def update_reported_issue(
+    issue_id: str,
+    doctor_notes: str,
+    status: str = "in_review",
+    doctor_name: str = "Dr. Medicover Specialist"
+) -> Optional[Dict[str, Any]]:
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    _ensure_issues_and_reminders_tables(cursor)
+
+    now_iso = datetime.now().isoformat()
+    cursor.execute("""
+    UPDATE patient_reported_issues
+    SET doctor_notes = ?, status = ?, doctor_name = ?, reviewed_at = ?
+    WHERE id = ?
+    """, (doctor_notes, status, doctor_name, now_iso, issue_id))
+
+    conn.commit()
+
+    cursor.execute("SELECT * FROM patient_reported_issues WHERE id = ?", (issue_id,))
+    row = cursor.fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+
+def create_care_reminder(
+    patient_id: str,
+    reminder_type: str,
+    title: str,
+    message: str,
+    due_date: Optional[str] = None,
+    frequency: Optional[str] = "once",
+    sent_by: str = "Dr. Medicover Clinical Desk",
+    issue_id: Optional[str] = None
+) -> Dict[str, Any]:
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    _ensure_issues_and_reminders_tables(cursor)
+
+    reminder_id = f"REM-{int(time.time())}-{secrets.token_hex(2).upper()}"
+    now_iso = datetime.now().isoformat()
+
+    cursor.execute("""
+    INSERT INTO patient_care_reminders (
+        id, patient_id, issue_id, reminder_type, title, message, due_date, frequency, status, sent_by, created_at, acknowledged_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?, NULL)
+    """, (reminder_id, patient_id, issue_id, reminder_type, title, message, due_date, frequency, sent_by, now_iso))
+
+    conn.commit()
+    conn.close()
+
+    return {
+        "id": reminder_id,
+        "patient_id": patient_id,
+        "issue_id": issue_id,
+        "reminder_type": reminder_type,
+        "title": title,
+        "message": message,
+        "due_date": due_date,
+        "frequency": frequency,
+        "status": "active",
+        "sent_by": sent_by,
+        "created_at": now_iso
+    }
+
+
+def get_patient_reminders(patient_id: str, status: Optional[str] = None) -> List[Dict[str, Any]]:
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    _ensure_issues_and_reminders_tables(cursor)
+
+    query = "SELECT * FROM patient_care_reminders WHERE patient_id = ?"
+    params = [patient_id]
+    if status:
+        query += " AND status = ?"
+        params.append(status)
+
+    query += " ORDER BY created_at DESC"
+    cursor.execute(query, tuple(params))
+    rows = [dict(r) for r in cursor.fetchall()]
+    conn.close()
+    return rows
+
+
+def acknowledge_care_reminder(reminder_id: str) -> Optional[Dict[str, Any]]:
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    _ensure_issues_and_reminders_tables(cursor)
+
+    now_iso = datetime.now().isoformat()
+    cursor.execute("""
+    UPDATE patient_care_reminders
+    SET status = 'completed', acknowledged_at = ?
+    WHERE id = ?
+    """, (now_iso, reminder_id))
+
+    conn.commit()
+    cursor.execute("SELECT * FROM patient_care_reminders WHERE id = ?", (reminder_id,))
+    row = cursor.fetchone()
+    conn.close()
+    return dict(row) if row else None
 
 
 # ---------------------------------------------------------

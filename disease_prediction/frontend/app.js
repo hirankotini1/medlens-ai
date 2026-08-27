@@ -34,6 +34,20 @@ let patientReports = [];
 let currentSandboxDisease = 'anemia';
 let selectedSandboxFile = null;
 
+// Feature 4: Multi-Language State
+window._selectedLanguage = 'English';
+function onLanguageChange(val) {
+    window._selectedLanguage = val || 'English';
+    // If active report is open in patient view, re-render it to update language explanation
+    if (patientReports && patientReports.length > 0) {
+        const activeDoc = document.querySelector('.official-report-doc');
+        if (activeDoc && activeDoc.id) {
+            const repId = activeDoc.id.replace('doc-', '');
+            viewPatientReportDetails(repId);
+        }
+    }
+}
+
 // Reference Range definitions for clinical parameters
 const clinicalRefRanges = {
     HGB: { unit: 'g/dL', ref: '12.0 - 15.5', name: 'Hemoglobin (HGB)' },
@@ -190,6 +204,9 @@ function switchView(viewName) {
                 `;
             }
             fetchAndRenderPatientReports();
+            loadPatientTimeline(currentAuth.patientId, currentAuth.token);
+            loadPatientReminders(currentAuth.patientId);
+            loadPatientReportedIssues(currentAuth.patientId);
         } else {
             document.getElementById('patient-login-container').style.display = 'block';
             document.getElementById('patient-dashboard-container').style.display = 'none';
@@ -516,6 +533,10 @@ async function handlePatientLogin() {
         `;
 
         fetchAndRenderPatientReports();
+        // Feature 5: Load health timeline after login
+        loadPatientTimeline(data.patient.patient_id, data.token);
+        loadPatientReminders(data.patient.patient_id);
+        loadPatientReportedIssues(data.patient.patient_id);
     } catch (err) {
         if (err.name === 'TypeError' || (err.message && err.message.includes('fetch'))) {
             const banner = document.getElementById('server-status-banner');
@@ -587,9 +608,12 @@ async function fetchAndRenderPatientReports() {
                             <td><strong style="color: var(--primary); text-transform: uppercase;">${r.test_category}</strong></td>
                             <td><span class="flag-badge ${r.status === 'Finalized' ? 'flag-normal' : 'flag-high'}">${r.status}</span></td>
                             <td style="color: var(--text-muted); font-size: 0.85rem;">${new Date(r.created_at).toLocaleDateString()}</td>
-                            <td>
+                            <td style="display: flex; gap: 6px; flex-wrap: wrap;">
                                 <button type="button" class="btn-primary" style="padding: 5px 12px; font-size: 0.8rem;" onclick="viewPatientReportDetails('${r.report_id}')">
                                     <span>👁️</span> View Full Report
+                                </button>
+                                <button type="button" class="btn-secondary" style="padding: 5px 10px; font-size: 0.8rem; border-color: var(--mc-blue); color: var(--mc-blue);" onclick="shareCurrentReport('${r.report_id}')" title="Generate secure 6-digit PIN for your Medicover doctor">
+                                    <span>🔐</span> Share PIN
                                 </button>
                             </td>
                         </tr>
@@ -714,19 +738,37 @@ function generateLaymanReportExplanation(report) {
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <span style="font-size: 1.5rem;">🗣️</span>
-                    <strong style="font-size: 1.05rem; color: var(--primary);">Simple Everyday Language Explanation</strong>
+                    <strong style="font-size: 1.05rem; color: var(--primary);">${(window._selectedLanguage === 'Hindi' ? 'सरल भाषा में आपकी रिपोर्ट की व्याख्या' : window._selectedLanguage === 'Telugu' ? 'సులభమైన భాషలో మీ రిపోర్ట్ వివరణ' : 'Simple Everyday Language Explanation')}</strong>
+                    <span style="font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; background: var(--mc-blue-surface); color: var(--mc-blue); font-weight: 700; border: 1px solid var(--mc-blue-border);">🌐 ${window._selectedLanguage || 'English'}</span>
                 </div>
                 <button type="button" class="btn-secondary" style="font-size: 0.8rem; padding: 5px 12px; display: inline-flex; align-items: center; gap: 6px;" onclick="speakLaymanExplanation('${report.report_id}')">
-                    <span id="voice-icon-${report.report_id}">🔊</span> <span id="voice-text-${report.report_id}">Listen to Explanation</span>
+                    <span id="voice-icon-${report.report_id}">🔊</span> <span id="voice-text-${report.report_id}">${(window._selectedLanguage === 'Hindi' ? 'व्याख्या सुनें' : window._selectedLanguage === 'Telugu' ? 'వివరణ వినండి' : 'Listen to Explanation')}</span>
                 </button>
             </div>
             
             <p style="font-size: 0.92rem; color: var(--text-main); line-height: 1.6; margin-bottom: 14px;" id="layman-summary-text-${report.report_id}">
-                ${summaryText}
+                ${(function() {
+                    const l = (window._selectedLanguage || 'English').toLowerCase();
+                    if (l === 'hindi') {
+                        if (cat.includes('anemia') || cat.includes('cbc')) return abnormalCount > 0 ? "आपकी पूर्ण रक्त गणना (CBC) रिपोर्ट लाल रक्त कोशिकाओं (एनीमिया) में कमी का संकेत देती है। इसका मतलब है कि आपके शरीर को हीमोग्लोबिन सुधारने के लिए आयरन और संतुलित पोषण की आवश्यकता हो सकती है।" : "आपकी रक्त गणना सामान्य है और शरीर में ऑक्सीजन का प्रवाह स्वस्थ बना हुआ है।";
+                        if (cat.includes('dengue')) return abnormalCount > 0 ? "आपकी रिपोर्ट वायरल संक्रमण और प्लेटलेट में कमी दर्शाती है। पूर्ण आराम, ओआरएस/तरल पदार्थों का सेवन और डॉक्टर की देखरेख में प्लेटलेट की दैनिक निगरानी आवश्यक है।" : "आपकी प्लेटलेट और श्वेत रक्त कोशिकाएं स्थिर हैं।";
+                        if (cat.includes('liver') || cat.includes('lft')) return abnormalCount > 0 ? "आपके लिवर एंजाइम या बिलीरुबिन में वृद्धि लिवर पर तनाव का संकेत देती है। तैलीय भोजन से बचें और विशेषज्ञ डॉक्टर से परामर्श लें।" : "आपका लिवर सामान्य और स्वस्थ कार्य कर रहा है।";
+                        if (cat.includes('thyroid')) return abnormalCount > 0 ? "आपकी थायरॉयड हार्मोन रिपोर्ट में असंतुलन है। चिकित्सक से मिलकर उचित मार्गदर्शन प्राप्त करें।" : "आपकी थायरॉयड ग्रंथि सामान्य संतुलन बनाए हुए है।";
+                        return "आपकी प्रयोगशाला जांच सामान्य संदर्भ मानकों के अनुसार जांची गई है।";
+                    }
+                    if (l === 'telugu') {
+                        if (cat.includes('anemia') || cat.includes('cbc')) return abnormalCount > 0 ? "మీ పూర్తి రక్త పరీక్ష (CBC) ఎర్ర రక్త కణాల తగ్గింపును (రక్తహీనత/ఎనీమియా) సూచిస్తుంది. శరీరానికి తగినంత ఐరన్ మరియు విటమిన్ B12 అవసరం కావచ్చు." : "మీ రక్త కణాల సంఖ్య సాధారణంగా ఉంది మరియు శరీరంలో ఆక్సిజన్ సరఫరా ఆరోగ్యకరంగా ఉంది.";
+                        if (cat.includes('dengue')) return abnormalCount > 0 ? "మీ నివేదిక వైరల్ ఇన్ఫెక్షన్ మరియు తగ్గిన ప్లేట్‌లెట్ సంఖ్యను చూపిస్తుంది. తగినంత విశ్రాంతి, ఓఆర్‌ఎస్/ద్రవపదార్థాలు మరియు పర్యవేక్షణ అవసరం." : "మీ ప్లేట్‌లెట్ మరియు తెల్ల రక్త కణాలు ప్రస్తుతం స్థిరంగా ఉన్నాయి.";
+                        if (cat.includes('liver') || cat.includes('lft')) return abnormalCount > 0 ? "మీ కాలేయ ఎంజైములు లేదా బైలిరుబిన్ పెరుగుదల కాలేయంపై ఒత్తిడిని సూచిస్తుంది. నూనె పదార్థాలకు దూరంగా ఉండి వైద్యుడిని సంప్రదించండి." : "మీ కాలేయం ఆరోగ్యకరంగా పనిచేస్తోంది.";
+                        if (cat.includes('thyroid')) return abnormalCount > 0 ? "మీ థైరాయిడ్ హార్మోన్లలో అసమతుల్యత కనిపిస్తోంది. వైద్యుల సలహా మేరకు తదుపరి పరీక్షలు చేయించుకోండి." : "మీ థైరాయిడ్ గ్రంథి సాధారణ స్థితిలో పనిచేస్తోంది.";
+                        return "మీ ప్రయోగశాల పరీక్ష ఫలితాలు ప్రమాణాలకు అనుగుణంగా విశ్లేషించబడ్డాయి.";
+                    }
+                    return summaryText;
+                })()}
             </p>
             
             <div style="font-size: 0.82rem; font-weight: 800; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px;">
-                Key Blood Findings Explained:
+                ${(window._selectedLanguage === 'Hindi' ? 'मुख्य रक्त परीक्षण के निष्कर्ष:' : window._selectedLanguage === 'Telugu' ? 'ముఖ్యమైన రక్త పరీక్ష ఫలితాలు:' : 'Key Blood Findings Explained:')}
             </div>
             <div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.88rem; color: var(--text-main);">
                 ${bulletPoints.map(b => `<div style="background: rgba(255,255,255,0.7); border: 1px solid #ccfbf1; padding: 10px 14px; border-radius: 8px;">${b}</div>`).join('')}
@@ -1431,6 +1473,7 @@ function renderOfficialReportHTML(report) {
             </div>
 
             <div class="admin-controls" style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; margin-bottom: 10px; flex-wrap: wrap;">
+                <button type="button" class="btn-secondary" style="background: var(--mc-blue); color: #ffffff; border-color: var(--mc-blue);" onclick="shareCurrentReport('${report.report_id}')"><span>🔐</span> Share with Medicover Doctor</button>
                 <button type="button" class="btn-secondary" onclick="window.print()"><span>🖨️</span> Print Official Report</button>
                 <button type="button" class="btn-primary" onclick="triggerReportMLAnalysis('${report.report_id}')"><span>⚡</span> Run Experimental ML Decision Support</button>
             </div>
@@ -1584,16 +1627,23 @@ function handleAdminLogout() {
 }
 
 function switchAdminSubtab(subtab) {
-    if (subtab === 'reports') {
-        document.getElementById('btn-adm-tab-reports').classList.add('active');
-        document.getElementById('btn-adm-tab-patients').classList.remove('active');
-        document.getElementById('adm-reports-container').style.display = 'block';
-        document.getElementById('adm-patients-container').style.display = 'none';
-    } else {
-        document.getElementById('btn-adm-tab-reports').classList.remove('active');
-        document.getElementById('btn-adm-tab-patients').classList.add('active');
-        document.getElementById('adm-reports-container').style.display = 'none';
-        document.getElementById('adm-patients-container').style.display = 'block';
+    const tabs = ['reports', 'patients', 'issues', 'reminders'];
+    tabs.forEach(t => {
+        const btn = document.getElementById(`btn-adm-tab-${t}`);
+        const cont = document.getElementById(`adm-${t}-container`);
+        if (btn) {
+            if (t === subtab) btn.classList.add('active');
+            else btn.classList.remove('active');
+        }
+        if (cont) {
+            cont.style.display = (t === subtab) ? 'block' : 'none';
+        }
+    });
+
+    if (subtab === 'issues') {
+        loadAdminReportedIssues();
+    } else if (subtab === 'reminders') {
+        loadAdminReminders();
     }
 }
 
@@ -2512,11 +2562,13 @@ async function triggerFinalAIAnalysis() {
         metadata: reviewedMeta,
         filename: selectedAnalyzerFile ? selectedAnalyzerFile.name : "Laboratory_Report",
         file_type: selectedAnalyzerFile ? selectedAnalyzerFile.name.split('.').pop().toUpperCase() : "CUSTOM",
+        language: window._selectedLanguage || 'English',
         patient_meta: {
             patient_id: reviewedMeta.patient_id || currentAuth.patientId || "DEMO-001",
             name: reviewedMeta.patient_name || currentAuth.patientName || "",
             age: reviewedMeta.age || (currentAuth.patientAge || 32),
-            gender: reviewedMeta.gender || (currentAuth.patientGender || "Female")
+            gender: reviewedMeta.gender || (currentAuth.patientGender || "Female"),
+            language: window._selectedLanguage || 'English'
         }
     };
 
@@ -3021,6 +3073,249 @@ function renderVisualHealthSummary(data) {
             </div>
         </div>
     `;
+
+    // FEATURE 1: Render AI Differential Diagnosis Map
+    renderDiagnosisMap(ai.differential_diagnosis);
+
+    // FEATURE 2: Render Missing Test Intelligence
+    renderMissingTests(ai.missing_tests);
+
+    // FEATURE 3: Render Hidden Abnormality Detector Warning Banner
+    renderHiddenAbnormalities(ai.hidden_abnormalities);
+}
+
+
+// ================================================================
+// FEATURE 1: AI Differential Diagnosis Map Logic
+// ================================================================
+function renderDiagnosisMap(diffList) {
+    const container = document.getElementById('diagnosis-map');
+    const content = document.getElementById('diagnosis-map-content');
+    if (!container || !content) return;
+
+    if (!Array.isArray(diffList) || diffList.length === 0) {
+        container.style.display = 'none';
+        return;
+    }
+
+    const top2 = diffList.slice(0, 2);
+    content.innerHTML = top2.map((item, idx) => {
+        const condName = item.condition || `Candidate Differential #${idx + 1}`;
+        const suppList = Array.isArray(item.supporting_evidence) ? item.supporting_evidence : [];
+        const contList = Array.isArray(item.contradicting_evidence) ? item.contradicting_evidence : [];
+
+        return `
+            <div class="diff-condition-card">
+                <div class="diff-condition-header">
+                    <span class="diff-condition-title">${condName}</span>
+                    <span class="diff-rank-badge">Rank #${idx + 1}</span>
+                </div>
+                <div class="diff-evidence-grid">
+                    <div class="diff-evidence-col supporting">
+                        <div class="diff-evidence-label">
+                            <span>✓</span> Supporting Evidence
+                        </div>
+                        <ul class="diff-evidence-list">
+                            ${suppList.length > 0 ? suppList.map(s => `<li>${s}</li>`).join('') : '<li>No overt concordant laboratory markers.</li>'}
+                        </ul>
+                    </div>
+                    <div class="diff-evidence-col contradicting">
+                        <div class="diff-evidence-label">
+                            <span>✗</span> Contradicting Evidence
+                        </div>
+                        <ul class="diff-evidence-list">
+                            ${contList.length > 0 ? contList.map(c => `<li>${c}</li>`).join('') : '<li>No counter-indicative findings detected.</li>'}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    container.style.display = 'block';
+}
+
+// ================================================================
+// FEATURE 2: Missing Test Intelligence Logic
+// ================================================================
+let currentMissingTests = [];
+
+function renderMissingTests(missingTests) {
+    const container = document.getElementById('missing-tests-card');
+    const listEl = document.getElementById('missing-tests-list-container');
+    if (!container || !listEl) return;
+
+    if (!Array.isArray(missingTests) || missingTests.length === 0) {
+        container.style.display = 'none';
+        return;
+    }
+
+    currentMissingTests = missingTests;
+    listEl.innerHTML = missingTests.map(t => `
+        <span class="missing-test-chip">
+            <span>🔬</span> ${t}
+        </span>
+    `).join('');
+
+    container.style.display = 'block';
+}
+
+function bookMissingTestsAtMedicover() {
+    const testsStr = currentMissingTests.length > 0 ? currentMissingTests.join(', ') : 'Recommended Confirmatory Tests';
+    const message = `Booking request initiated for Medicover Hospital Vizag:\n\nRecommended Confirmatory Tests:\n• ${currentMissingTests.join('\n• ')}\n\nMedicover Vizag Diagnostic Helpline: 0891-6677777 / Emergency 1066.`;
+    alert(message);
+}
+
+// ================================================================
+// FEATURE 3: Hidden Abnormality Detector Logic
+// ================================================================
+function renderHiddenAbnormalities(hiddenList) {
+    const existing = document.getElementById('hidden-abnormality-banner');
+    if (existing) existing.remove();
+
+    if (!Array.isArray(hiddenList) || hiddenList.length === 0) return;
+
+    const printableDoc = document.getElementById('ai-summary-printable-doc');
+    if (!printableDoc) return;
+
+    const banner = document.createElement('div');
+    banner.id = 'hidden-abnormality-banner';
+    banner.className = 'hidden-abnormality-banner';
+    banner.innerHTML = `
+        <div class="hidden-abnormality-title">
+            <span>⚠️</span> HIDDEN ABNORMALITY DETECTOR &bull; Synergistic Borderline Values
+        </div>
+        <div style="font-size: 0.82rem; color: #78350f; margin-bottom: 8px;">
+            The following biomarkers are technically within reference limits, but sit at synergistic extremes that collectively indicate subclinical pathology:
+        </div>
+        ${hiddenList.map(h => `
+            <div class="hidden-abnormality-item">
+                <div class="hidden-biomarkers-tags">
+                    ${(h.biomarkers || []).map(b => `<span class="hidden-biomarker-tag">${b}</span>`).join('')}
+                </div>
+                <div class="hidden-implication-text">
+                    <strong>Clinical Implication:</strong> ${h.implication}
+                </div>
+            </div>
+        `).join('')}
+    `;
+
+    const progressTracker = printableDoc.querySelector('.progress-step-tracker');
+    if (progressTracker && progressTracker.nextElementSibling) {
+        progressTracker.nextElementSibling.insertAdjacentElement('afterend', banner);
+    } else {
+        printableDoc.prepend(banner);
+    }
+}
+
+// ================================================================
+// FEATURE 5: "What Changed?" Report Comparison Logic
+// ================================================================
+let compareFiles = {
+    baseline: null,
+    current: null
+};
+
+function handleCompareFileSelect(event, type) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+
+    compareFiles[type] = file;
+
+    const dropzone = document.getElementById(`cmp-${type}-dropzone`);
+    const label = document.getElementById(`cmp-${type}-label`);
+    if (dropzone) dropzone.classList.add('has-file');
+    if (label) {
+        label.innerHTML = `<strong style="color: #059669;">✓ ${file.name}</strong> (${Math.round(file.size / 1024)} KB)`;
+    }
+}
+
+async function runReportComparison() {
+    if (!compareFiles.baseline || !compareFiles.current) {
+        alert("Please select both a Baseline Report and a Current Report to compare.");
+        return;
+    }
+
+    const btn = document.getElementById('btn-run-comparison');
+    const resultsContainer = document.getElementById('compare-results-container');
+    const summaryBar = document.getElementById('compare-summary-bar');
+    const tbody = document.getElementById('compare-results-tbody');
+
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<span>⏳</span> Extracting &amp; Comparing Deltas...`;
+    }
+
+    const formData = new FormData();
+    formData.append('baseline_file', compareFiles.baseline);
+    formData.append('current_file', compareFiles.current);
+
+    try {
+        const res = await fetch(apiUrl('/api/compare-reports'), {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!res.ok) {
+            const err = await safeJson(res);
+            throw new Error(err.detail || "Comparison failed.");
+        }
+
+        const data = await safeJson(res);
+        const comparisons = data.comparisons || [];
+        const summary = data.summary || { improving: 0, worsening: 0, stable: 0 };
+
+        summaryBar.innerHTML = `
+            <div style="background: #ecfdf5; border: 1px solid #a7f3d0; padding: 8px 16px; border-radius: 8px; font-size: 0.84rem; font-weight: 700; color: #047857;">
+                🟢 Improving: ${summary.improving}
+            </div>
+            <div style="background: #fef2f2; border: 1px solid #fecaca; padding: 8px 16px; border-radius: 8px; font-size: 0.84rem; font-weight: 700; color: #b91c1c;">
+                🔴 Worsening: ${summary.worsening}
+            </div>
+            <div style="background: #f1f5f9; border: 1px solid #e2e8f0; padding: 8px 16px; border-radius: 8px; font-size: 0.84rem; font-weight: 700; color: #475569;">
+                ⚪ Stable: ${summary.stable}
+            </div>
+            <div style="margin-left: auto; font-size: 0.8rem; color: var(--text-dim); align-self: center;">
+                Matched <strong>${data.total_matched}</strong> biomarkers
+            </div>
+        `;
+
+        if (comparisons.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 20px;">No matching biomarkers found between the two uploaded reports.</td></tr>`;
+        } else {
+            tbody.innerHTML = comparisons.map(c => {
+                const deltaSign = c.delta > 0 ? `+${c.delta}` : `${c.delta}`;
+                const pctSign = c.pct_change > 0 ? `+${c.pct_change}%` : `${c.pct_change}%`;
+                const pillClass = c.status === 'improving' ? 'improving' : (c.status === 'worsening' ? 'worsening' : 'stable');
+                const pillIcon = c.status === 'improving' ? '🟢' : (c.status === 'worsening' ? '🔴' : '⚪');
+
+                return `
+                    <tr>
+                        <td><strong>${c.parameter}</strong></td>
+                        <td>${c.baseline} <span style="font-size: 0.75rem; color: var(--text-dim);">${c.unit}</span></td>
+                        <td><strong style="color: var(--primary);">${c.current}</strong> <span style="font-size: 0.75rem; color: var(--text-dim);">${c.unit}</span></td>
+                        <td style="font-weight: 700; font-family: monospace;">${deltaSign}</td>
+                        <td style="font-weight: 600; font-family: monospace;">${pctSign}</td>
+                        <td style="text-align: center;">
+                            <span class="delta-pill ${pillClass}">
+                                <span>${pillIcon}</span> ${c.status}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        resultsContainer.style.display = 'block';
+        resultsContainer.scrollIntoView({ behavior: 'smooth' });
+    } catch (err) {
+        alert("Comparison Error: " + err.message);
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = `<span>🔍</span> Compare Reports &amp; Compute Deltas`;
+        }
+    }
 }
 
 // =========================================================
@@ -3606,6 +3901,7 @@ async function streamSymptomSuggestions(e) {
     const severity = severitySelect && severitySelect.value ? severitySelect.value : null;
 
     stopSymptomSpeech();
+    dismissTriageBanner();
 
     // Show results container
     if (resultsContainer) resultsContainer.style.display = 'block';
@@ -3649,7 +3945,8 @@ async function streamSymptomSuggestions(e) {
                 age: age,
                 gender: gender,
                 duration: duration,
-                severity: severity
+                severity: severity,
+                language: window._selectedLanguage || 'English'  // Feature 4
             })
         });
 
@@ -3681,6 +3978,10 @@ async function streamSymptomSuggestions(e) {
                         const parsed = JSON.parse(dataStr);
                         if (parsed.error) {
                             throw new Error(parsed.error);
+                        }
+                        // Feature 2: Triage banner intercept (first event from stream)
+                        if (parsed.triage) {
+                            triggerTriageBanner(parsed.triage);
                         }
                         if (parsed.model && modelBadge) {
                             modelBadge.textContent = `Model: ${parsed.model}`;
@@ -3717,6 +4018,9 @@ async function streamSymptomSuggestions(e) {
             statusEl.style.color = '#0284c7';
         }
         if (livePulse) livePulse.style.display = 'none';
+
+        // Feature 1: Extract and render doctor questions card
+        extractDoctorQuestions(rawSymptomMarkdown);
 
     } catch (err) {
         if (contentEl) {
@@ -4035,3 +4339,913 @@ window.addEventListener('DOMContentLoaded', async () => {
 });
 
 
+// ================================================================
+// FEATURE 1: Doctor Questions Card — Extract & Render
+// ================================================================
+function extractDoctorQuestions(markdown) {
+    const card = document.getElementById('medicover-questions-card');
+    const list = document.getElementById('mq-question-list');
+    if (!card || !list) return;
+
+    // Resilient regex: matches H2 or H3, with/without emoji, and variants of title
+    const primaryRegex = /(?:##+\s*(?:🩺\s*)?Questions.*?(?:Medicover|Specialist|Doctor|Physician)|\*\*Questions.*?(?:Medicover|Specialist|Doctor|Physician)\*\*)[\s\S]*?\n([\s\S]*?)(?=##|\n\n\*\*|$)/i;
+    let match = markdown.match(primaryRegex);
+
+    if (!match) {
+        // Fallback: any section mentioning Questions or Ask
+        const fallbackRegex = /##+\s*[^#\n]*?(?:Questions|Specialist|Doctor)[^#\n]*?\n([\s\S]*?)(?=##|$)/i;
+        match = markdown.match(fallbackRegex);
+    }
+
+    if (!match) {
+        card.style.display = 'none';
+        return;
+    }
+
+    const sectionBody = match[1] || '';
+    // Extract bullet lines: - text or * text or 1. text or numbered
+    const lines = sectionBody.split('\n')
+        .map(l => l.replace(/^[-*•\d.]+\s*/, '').replace(/\*\*/g, '').trim())
+        .filter(l => l.length > 8);
+
+    if (lines.length === 0) {
+        card.style.display = 'none';
+        return;
+    }
+
+    list.innerHTML = lines.slice(0, 5).map((q, i) => `
+        <li>
+            <span class="mq-question-num">${i + 1}</span>
+            <span>${q}</span>
+        </li>
+    `).join('');
+
+    card.style.display = 'block';
+    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function copyDoctorQuestions() {
+    const list = document.getElementById('mq-question-list');
+    const icon = document.getElementById('mq-copy-icon');
+    if (!list) return;
+
+    const qs = Array.from(list.querySelectorAll('li span:last-child'))
+        .map((el, i) => `${i + 1}. ${el.textContent}`)
+        .join('\n');
+
+    const text = `Questions for My Medicover Specialist:\n\n${qs}`;
+    navigator.clipboard.writeText(text).then(() => {
+        if (icon) icon.textContent = '✅';
+        setTimeout(() => { if (icon) icon.textContent = '📋'; }, 2000);
+    }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        if (icon) icon.textContent = '✅';
+        setTimeout(() => { if (icon) icon.textContent = '📋'; }, 2000);
+    });
+}
+
+
+// ================================================================
+// FEATURE 2: Critical Alert Banner
+// ================================================================
+function triggerTriageBanner(level) {
+    const banner = document.getElementById('critical-alert-banner');
+    if (!banner) return;
+
+    if (level === 'green' || !level) {
+        dismissTriageBanner();
+        return;
+    }
+
+    const headline = document.getElementById('cab-headline');
+    const detail = document.getElementById('cab-detail');
+    const callLink = document.getElementById('cab-call-link');
+
+    // Remove any previous level classes
+    banner.classList.remove('alert-red', 'alert-amber');
+
+    if (level === 'red') {
+        banner.classList.add('alert-red');
+        if (headline) headline.textContent = '🚨 Critical Status Detected: Please visit Medicover Vizag Emergency immediately';
+        if (detail) detail.innerHTML = 'Call <strong>1066</strong> (National Ambulance) or go to the nearest emergency department without delay.';
+        if (callLink) { callLink.textContent = '📞 Call 1066 Now'; callLink.className = 'cab-call red-call'; }
+    } else if (level === 'amber') {
+        banner.classList.add('alert-amber');
+        if (headline) headline.textContent = '⚠️ Urgent Attention Needed: Please consult a Medicover doctor today';
+        if (detail) detail.innerHTML = 'Your symptoms may need prompt medical evaluation. Call <strong>1066</strong> or visit Medicover Vizag.';
+        if (callLink) { callLink.textContent = '📞 Call 1066'; callLink.className = 'cab-call amber-call'; }
+    }
+
+    banner.style.display = 'flex';
+}
+
+function dismissTriageBanner() {
+    const banner = document.getElementById('critical-alert-banner');
+    if (banner) {
+        banner.style.opacity = '0';
+        banner.style.transform = 'translateY(-110%)';
+        banner.style.transition = 'all 0.3s ease';
+        setTimeout(() => {
+            banner.style.display = 'none';
+            banner.style.opacity = '';
+            banner.style.transform = '';
+            banner.style.transition = '';
+            banner.classList.remove('alert-red', 'alert-amber');
+        }, 300);
+    }
+}
+
+
+// ================================================================
+// FEATURE 3: Secure Report Sharing
+// ================================================================
+let _currentSharePin = '';
+
+function shareCurrentReport(reportId) {
+    const report = patientReports.find(r => r.report_id === reportId) || allReports.find(r => r.report_id === reportId);
+    if (!report) {
+        alert('Report not found.');
+        return;
+    }
+    shareReportSecurely(report, report.patient_id);
+}
+
+async function shareReportSecurely(reportData, patientId) {
+    const pid = patientId || currentAuth.patientId;
+    if (!pid || !currentAuth.token) {
+        alert('Please log in as a patient first to share a report.');
+        return;
+    }
+    try {
+        const res = await fetch(apiUrl('/api/share'), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${currentAuth.token}`
+            },
+            body: JSON.stringify({ patient_id: pid, data_payload: reportData })
+        });
+
+        if (!res.ok) {
+            const err = await safeJson(res);
+            throw new Error(err.detail || `Failed to generate PIN (HTTP ${res.status})`);
+        }
+
+        const data = await safeJson(res);
+        _currentSharePin = data.pin;
+        openSharePinModal(_currentSharePin);
+    } catch (err) {
+        alert('Share Error: ' + err.message);
+    }
+}
+
+function openSharePinModal(pin) {
+    const overlay = document.getElementById('share-pin-modal-overlay');
+    const display = document.getElementById('spm-pin-display');
+    if (!overlay || !display) return;
+
+    // Render each digit as a separate styled box
+    display.innerHTML = String(pin).split('').map(d =>
+        `<div class="pin-digit">${d}</div>`
+    ).join('');
+
+    overlay.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeSharePinModal(event) {
+    // Only close if clicking the backdrop (not the box)
+    if (event && event.target !== document.getElementById('share-pin-modal-overlay')) return;
+    closeSharePinModalBtn();
+}
+
+function closeSharePinModalBtn() {
+    const overlay = document.getElementById('share-pin-modal-overlay');
+    if (overlay) overlay.style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+function copySharePin() {
+    const icon = document.getElementById('spm-copy-icon');
+    if (!_currentSharePin) return;
+    navigator.clipboard.writeText(_currentSharePin).then(() => {
+        if (icon) icon.textContent = '✅';
+        setTimeout(() => { if (icon) icon.textContent = '📋'; }, 2000);
+    }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = _currentSharePin;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        if (icon) icon.textContent = '✅';
+        setTimeout(() => { if (icon) icon.textContent = '📋'; }, 2000);
+    });
+}
+
+async function fetchSharedSession() {
+    const input = document.getElementById('admin-pin-input');
+    const resultDiv = document.getElementById('admin-shared-session-result');
+    if (!input || !resultDiv) return;
+
+    const pin = input.value.trim();
+    if (!pin || pin.length !== 6 || !/^\d+$/.test(pin)) {
+        alert('Please enter a valid 6-digit numeric PIN.');
+        input.focus();
+        return;
+    }
+
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = `
+        <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:#eef3fc;border-radius:10px;border:1px solid #bfd0f0;">
+            <div class="spinner" style="width:18px;height:18px;"></div>
+            <span style="font-size:0.85rem;color:#1A50A0;font-weight:600;">Fetching shared session for PIN ${pin}...</span>
+        </div>
+    `;
+
+    try {
+        const res = await fetch(apiUrl(`/api/retrieve/${pin}`));
+        if (!res.ok) {
+            const err = await safeJson(res);
+            const msg = err.detail || (res.status === 410 ? 'PIN has expired or does not exist.' : `HTTP ${res.status}`);
+            resultDiv.innerHTML = `
+                <div style="background:#fee2e2;border:1px solid #fecaca;border-left:4px solid #dc2626;border-radius:10px;padding:14px 18px;">
+                    <strong style="color:#991b1b;">❌ Access Failed:</strong> <span style="color:#991b1b;font-size:0.88rem;">${msg}</span>
+                </div>
+            `;
+            return;
+        }
+
+        const session = await safeJson(res);
+        const payload = session.data_payload || {};
+        const patientId = session.patient_id;
+        const expiresAt = session.expires_at ? new Date(session.expires_at).toLocaleString() : 'Unknown';
+
+        // Render the shared session data in admin view
+        let contentHtml = '';
+        if (payload.report_id && payload.report_data) {
+            const paramsHtml = Object.entries(payload.report_data).map(([k, v]) => {
+                const val = typeof v === 'object' ? (v.value !== undefined ? v.value : JSON.stringify(v)) : v;
+                const unit = typeof v === 'object' ? (v.unit || '') : '';
+                const flag = typeof v === 'object' ? (v.flag || 'Normal') : 'Normal';
+                const flagClass = flag.toLowerCase().includes('high') || flag.toLowerCase().includes('abnormal') ? 'flag-high' : 'flag-normal';
+                return `<tr><td><strong>${k}</strong></td><td>${val} ${unit}</td><td><span class="flag-badge ${flagClass}">${flag}</span></td></tr>`;
+            }).join('');
+
+            contentHtml = `
+                <div style="margin-bottom:12px;">
+                    <div style="font-size:0.92rem;font-weight:700;color:#0f172a;margin-bottom:4px;">Test: <span style="color:#1A50A0;text-transform:uppercase;">${payload.test_category || 'Laboratory Panel'}</span> (Report ID: ${payload.report_id})</div>
+                    <div style="font-size:0.82rem;color:#64748b;margin-bottom:10px;">Status: <strong>${payload.status || 'Finalized'}</strong> | Sampling Date: ${payload.created_at ? new Date(payload.created_at).toLocaleDateString() : 'N/A'}</div>
+                    <div class="table-responsive">
+                        <table class="results-table">
+                            <thead><tr><th>Parameter</th><th>Value</th><th>Flag</th></tr></thead>
+                            <tbody>${paramsHtml}</tbody>
+                        </table>
+                    </div>
+                    ${payload.doctor_remarks ? `<div style="margin-top:10px;padding:8px 12px;background:#f0f9ff;border-left:3px solid #0284c7;border-radius:6px;font-size:0.82rem;color:#0369a1;"><strong>Pathologist Remarks:</strong> ${payload.doctor_remarks}</div>` : ''}
+                </div>
+            `;
+        } else {
+            contentHtml = `<pre style="font-size:0.78rem;color:#334155;line-height:1.6;white-space:pre-wrap;font-family:monospace;">${JSON.stringify(payload, null, 2)}</pre>`;
+        }
+
+        resultDiv.innerHTML = `
+            <div style="background:linear-gradient(135deg,#eef3fc,#f8fbff);border:1.5px solid #bfd0f0;border-left:4px solid #1A50A0;border-radius:12px;padding:18px 22px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+                    <div style="font-size:1rem;font-weight:800;color:#1A50A0;display:flex;align-items:center;gap:8px;">🔐 Shared Patient Session — PIN: <code style="background:#1A50A0;color:#fff;padding:2px 8px;border-radius:6px;font-size:0.9rem;">${pin}</code></div>
+                    <span style="font-size:0.72rem;color:#64748b;">Expires: ${expiresAt}</span>
+                </div>
+                <div style="display:flex;gap:8px;margin-bottom:12px;">
+                    <span style="background:#eef3fc;border:1px solid #bfd0f0;color:#1A50A0;font-size:0.75rem;font-weight:700;padding:3px 10px;border-radius:999px;">👤 Patient ID: ${patientId}</span>
+                </div>
+                <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:14px;max-height:360px;overflow-y:auto;">
+                    ${contentHtml}
+                </div>
+            </div>
+        `;
+    } catch (err) {
+        resultDiv.innerHTML = `
+            <div style="background:#fee2e2;border:1px solid #fecaca;border-radius:10px;padding:14px;">
+                <strong style="color:#991b1b;">Error:</strong> <span style="color:#991b1b;">${err.message}</span>
+            </div>
+        `;
+    }
+}
+
+
+// ================================================================
+// FEATURE 5: Personal Health Timeline
+// ================================================================
+async function loadPatientTimeline(patientId, token) {
+    const container = document.getElementById('patient-timeline-container');
+    if (!container) return;
+
+    const pid = patientId || currentAuth.patientId;
+    const tk = token || currentAuth.token;
+
+    if (!pid || !tk) return;
+
+    container.innerHTML = `
+        <div style="display:flex;align-items:center;gap:10px;padding:16px 0;color:var(--text-muted);">
+            <div class="spinner" style="width:18px;height:18px;"></div>
+            <span style="font-size:0.85rem;">Loading your health timeline...</span>
+        </div>
+    `;
+
+    try {
+        const res = await fetch(apiUrl(`/api/timeline/${pid}`), {
+            headers: { 'Authorization': `Bearer ${tk}` }
+        });
+
+        if (!res.ok) {
+            container.innerHTML = `<div class="timeline-empty-state"><div class="tes-icon">📅</div><div>Could not load timeline.</div></div>`;
+            return;
+        }
+
+        const data = await safeJson(res);
+        renderTimeline(data.timeline || [], container);
+    } catch (err) {
+        container.innerHTML = `<div class="timeline-empty-state"><div class="tes-icon">⚠️</div><div>Timeline unavailable (server offline).</div></div>`;
+    }
+}
+
+function renderTimeline(items, container) {
+    if (!items || items.length === 0) {
+        container.innerHTML = `
+            <div class="timeline-empty-state">
+                <div class="tes-icon">📅</div>
+                <div style="font-size:0.85rem;">No health records found. Your lab reports and AI analyses will appear here.</div>
+            </div>
+        `;
+        return;
+    }
+
+    const html = `<div class="timeline-container">${items.map((item, idx) => {
+        const dateStr = item.date ? new Date(item.date).toLocaleDateString('en-IN', {
+            day: 'numeric', month: 'short', year: 'numeric'
+        }) : 'Unknown Date';
+        const timeStr = item.date ? new Date(item.date).toLocaleTimeString('en-IN', {
+            hour: '2-digit', minute: '2-digit'
+        }) : '';
+
+        const statusKey = (item.status || '').toLowerCase().replace(/[\s\/]/g, '-').replace('high-attention', 'high');
+        const badgeClass = statusKey.includes('high') || statusKey.includes('elevated') ? 'badge-high'
+            : statusKey.includes('moderate') ? 'badge-moderate'
+            : statusKey.includes('normal') || statusKey === 'finalized' ? 'badge-finalized'
+            : 'badge-draft';
+
+        const isLast = idx === items.length - 1;
+
+        return `
+            <div class="timeline-item">
+                <div class="timeline-left">
+                    <div class="timeline-dot dot-${item.type}">${item.icon || '📋'}</div>
+                    ${!isLast ? '<div class="timeline-connector"></div>' : ''}
+                </div>
+                <div class="timeline-body">
+                    <div class="timeline-meta">
+                        <span>${dateStr} ${timeStr}</span>
+                        <span class="timeline-status-badge ${badgeClass}">${item.status || 'N/A'}</span>
+                    </div>
+                    <div class="timeline-title">${item.title || 'Health Record'}</div>
+                    <div class="timeline-summary">${item.summary || ''}</div>
+                </div>
+            </div>
+        `;
+    }).join('')}</div>`;
+
+    container.innerHTML = html;
+}
+
+
+// =========================================================
+// Patient Symptom Issue Reporting & Doctor Care Reminders
+// =========================================================
+
+async function fileReportedIssueFromSymptoms() {
+    const sympInput = document.getElementById('symp-input');
+    const symptoms = sympInput ? sympInput.value.trim() : '';
+
+    if (!symptoms) {
+        alert("Please enter or describe your symptoms first before filing an official issue.");
+        return;
+    }
+
+    // Determine target patient ID
+    let patientId = currentAuth.patientId;
+    if (!patientId || currentAuth.role !== 'patient') {
+        const entered = prompt("Enter your Medicover Patient ID (e.g. PAT-1001) to file this issue with your doctor:");
+        if (!entered || !entered.trim()) {
+            return;
+        }
+        patientId = entered.trim();
+    }
+
+    const age = document.getElementById('symp-age')?.value || null;
+    const gender = document.getElementById('symp-gender')?.value || null;
+    const duration = document.getElementById('symp-duration')?.value || null;
+    const severity = document.getElementById('symp-severity')?.value || null;
+
+    // Grab summary text from stream if present
+    const streamEl = document.getElementById('symp-streamed-content');
+    const aiSummary = streamEl ? streamEl.innerText.slice(0, 500) : '';
+
+    const btn = document.getElementById('btn-file-symptom-issue');
+    const origHtml = btn ? btn.innerHTML : '';
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<span>⏳</span> Filing to Doctor...`;
+    }
+
+    try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (currentAuth.token) {
+            headers['Authorization'] = `Bearer ${currentAuth.token}`;
+        }
+
+        const res = await fetch(apiUrl('/api/issues/report'), {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({
+                patient_id: patientId,
+                symptoms: symptoms,
+                severity: severity,
+                duration: duration,
+                ai_summary: aiSummary
+            })
+        });
+
+        if (!res.ok) {
+            const err = await safeJson(res);
+            throw new Error(err.detail || "Failed to file symptom issue.");
+        }
+
+        const data = await safeJson(res);
+        if (btn) {
+            btn.innerHTML = `<span>✓</span> Filed to Doctor!`;
+            btn.style.background = "#10b981";
+        }
+        alert(`✅ Official Issue Filed Successfully!\n\nIssue Reference: ${data.issue.id}\nTriage Priority: ${(data.issue.triage_level || 'ROUTINE').toUpperCase()}\n\nYour attending Medicover physician has received your reported symptoms and will review them shortly.`);
+
+        // If currently in patient portal, reload issues
+        if (currentAuth.patientId === patientId) {
+            loadPatientReportedIssues(patientId);
+        }
+    } catch (err) {
+        alert("Error filing issue: " + err.message);
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = origHtml;
+        }
+    }
+}
+
+window._currentPatientReminders = [];
+window._selectedReminderFilter = 'all';
+
+async function loadPatientReminders(patientId) {
+    const container = document.getElementById('patient-reminders-list');
+    if (!container) return;
+
+    try {
+        const headers = {};
+        if (currentAuth.token) headers['Authorization'] = `Bearer ${currentAuth.token}`;
+
+        const res = await fetch(apiUrl(`/api/reminders/${encodeURIComponent(patientId)}`), { headers });
+        if (!res.ok) throw new Error("Could not load care reminders.");
+
+        const data = await safeJson(res);
+        window._currentPatientReminders = data.reminders || [];
+        renderPatientReminders();
+    } catch (err) {
+        container.innerHTML = `
+            <div class="timeline-empty-state">
+                <div class="tes-icon">🔔</div>
+                <div style="font-size:0.85rem;">No active care reminders at this time.</div>
+            </div>
+        `;
+    }
+}
+
+function filterPatientReminders(category) {
+    window._selectedReminderFilter = category;
+    const tabs = ['all', 'daily_care', 'diagnosis', 'checkup'];
+    tabs.forEach(t => {
+        const tabId = t === 'daily_care' ? 'btn-rem-daily' : `btn-rem-${t}`;
+        const el = document.getElementById(tabId);
+        if (el) {
+            if (t === category) {
+                el.classList.add('active');
+            } else {
+                el.classList.remove('active');
+            }
+        }
+    });
+    renderPatientReminders();
+}
+
+function renderPatientReminders() {
+    const container = document.getElementById('patient-reminders-list');
+    if (!container) return;
+
+    let items = window._currentPatientReminders || [];
+    if (window._selectedReminderFilter && window._selectedReminderFilter !== 'all') {
+        items = items.filter(r => r.reminder_type === window._selectedReminderFilter);
+    }
+
+    if (items.length === 0) {
+        container.innerHTML = `
+            <div class="timeline-empty-state">
+                <div class="tes-icon">✓</div>
+                <div style="font-size:0.85rem; color:#64748b;">No reminders in this category. You are all caught up!</div>
+            </div>
+        `;
+        return;
+    }
+
+    const typeIcons = {
+        'daily_care': '💊 Daily Care',
+        'diagnosis': '🩺 Diagnosis Follow-Up',
+        'checkup': '🏥 Health Checkup'
+    };
+
+    const html = `
+        <div class="care-reminder-list">
+            ${items.map(r => {
+                const isDone = r.status === 'completed';
+                const createdDate = r.created_at ? new Date(r.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '';
+                const dueDateStr = r.due_date ? `Due: ${r.due_date}` : 'Ongoing Daily';
+
+                return `
+                    <div class="care-reminder-item type-${r.reminder_type} ${isDone ? 'completed' : ''}" id="rem-item-${r.id}">
+                        <div class="reminder-content">
+                            <div class="reminder-header-row">
+                                <span class="reminder-badge ${r.reminder_type}">${typeIcons[r.reminder_type] || r.reminder_type}</span>
+                                <span class="reminder-freq-tag">${r.frequency ? r.frequency.toUpperCase() : 'ONCE'}</span>
+                                ${isDone ? '<span class="reminder-done-badge">✓ Completed</span>' : ''}
+                            </div>
+                            <h4 class="reminder-title">${escapeHtml(r.title)}</h4>
+                            <p class="reminder-message">${escapeHtml(r.message)}</p>
+                            <div class="reminder-meta-row">
+                                <span>📅 ${dueDateStr}</span>
+                                <span>👨‍⚕️ ${escapeHtml(r.sent_by || 'Medicover Clinical Desk')}</span>
+                                <span>🕒 Sent ${createdDate}</span>
+                            </div>
+                        </div>
+                        <div class="reminder-action">
+                            ${!isDone ? `
+                                <button type="button" class="reminder-ack-btn" onclick="acknowledgeCareReminder('${r.id}')">
+                                    <span>✓</span> Mark Done
+                                </button>
+                            ` : `
+                                <span style="color: #10b981; font-weight: 800; font-size: 0.9rem;">✓</span>
+                            `}
+                        </div>
+                    </div>
+                `;
+            }).join('')}
+        </div>
+    `;
+
+    container.innerHTML = html;
+}
+
+async function acknowledgeCareReminder(reminderId) {
+    try {
+        const headers = {};
+        if (currentAuth.token) headers['Authorization'] = `Bearer ${currentAuth.token}`;
+
+        const res = await fetch(apiUrl(`/api/reminders/${encodeURIComponent(reminderId)}/acknowledge`), {
+            method: 'PATCH',
+            headers: headers
+        });
+
+        if (!res.ok) throw new Error("Could not update reminder.");
+
+        // Update local state
+        const item = (window._currentPatientReminders || []).find(r => r.id === reminderId);
+        if (item) {
+            item.status = 'completed';
+            item.acknowledged_at = new Date().toISOString();
+        }
+        renderPatientReminders();
+    } catch (err) {
+        alert("Error updating reminder: " + err.message);
+    }
+}
+
+async function loadPatientReportedIssues(patientId) {
+    const container = document.getElementById('patient-reported-issues-list');
+    if (!container) return;
+
+    try {
+        const headers = {};
+        if (currentAuth.token) headers['Authorization'] = `Bearer ${currentAuth.token}`;
+
+        const res = await fetch(apiUrl(`/api/issues?patient_id=${encodeURIComponent(patientId)}`), { headers });
+        if (!res.ok) throw new Error("Could not load issues.");
+
+        const data = await safeJson(res);
+        const issues = data.issues || [];
+
+        if (issues.length === 0) {
+            container.innerHTML = `
+                <div class="timeline-empty-state">
+                    <div class="tes-icon">📋</div>
+                    <div style="font-size:0.85rem;">No symptoms reported yet. You can file symptoms anytime from the Symptoms AI view.</div>
+                </div>
+            `;
+            return;
+        }
+
+        const html = `
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Reported Symptoms</th>
+                        <th>Triage</th>
+                        <th>Status</th>
+                        <th>Doctor Notes / Guidance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${issues.map(iss => {
+                        const dateStr = iss.created_at ? new Date(iss.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '—';
+                        const triageClass = (iss.triage_level || 'green').toLowerCase();
+                        const statusClass = (iss.status || 'open').toLowerCase();
+                        const statusLabel = iss.status === 'resolved' ? '🟢 Resolved' : iss.status === 'in_review' ? '🟡 In Review' : '⚪ Open';
+
+                        return `
+                            <tr>
+                                <td style="white-space: nowrap; font-size: 0.8rem; font-weight: 600;">${dateStr}</td>
+                                <td style="max-width: 260px; font-size: 0.85rem;">
+                                    <strong>${escapeHtml(iss.symptoms)}</strong>
+                                    ${iss.severity ? `<div style="font-size: 0.74rem; color: #64748b;">Severity: ${escapeHtml(iss.severity)} (${escapeHtml(iss.duration || 'N/A')})</div>` : ''}
+                                </td>
+                                <td><span class="triage-pill ${triageClass}">${iss.triage_level || 'routine'}</span></td>
+                                <td><span class="issue-status-pill ${statusClass}">${statusLabel}</span></td>
+                                <td style="font-size: 0.82rem; color: #334155;">
+                                    ${iss.doctor_notes ? `<strong>${escapeHtml(iss.doctor_notes)}</strong><div style="font-size: 0.72rem; color: #64748b;">— ${escapeHtml(iss.doctor_name || 'Medicover Doctor')}</div>` : '<em style="color: #94a3b8;">Pending physician review</em>'}
+                                </td>
+                            </tr>
+                        `;
+                    }).join('')}
+                </tbody>
+            </table>
+        `;
+        container.innerHTML = html;
+    } catch (err) {
+        container.innerHTML = `<div class="timeline-empty-state"><div class="tes-icon">⚠️</div><div>Could not load reported issues.</div></div>`;
+    }
+}
+
+window._adminIssues = [];
+window._adminReminders = [];
+
+async function loadAdminReportedIssues() {
+    const tbody = document.getElementById('admin-issues-table-body');
+    const badge = document.getElementById('adm-issues-badge');
+    if (!tbody) return;
+
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px; color:#64748b;">Loading reported issues...</td></tr>`;
+
+    try {
+        const headers = {};
+        if (currentAuth.token) headers['Authorization'] = `Bearer ${currentAuth.token}`;
+
+        const res = await fetch(apiUrl('/api/issues'), { headers });
+        if (!res.ok) throw new Error("Failed to load reported issues.");
+
+        const data = await safeJson(res);
+        window._adminIssues = data.issues || [];
+
+        // Count open/in_review issues for badge
+        const pending = window._adminIssues.filter(i => i.status !== 'resolved').length;
+        if (badge) {
+            badge.innerText = pending;
+            badge.style.display = pending > 0 ? 'inline-block' : 'none';
+        }
+
+        if (window._adminIssues.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:30px; color:#64748b;">No patient-reported issues found in inbox.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = window._adminIssues.map(iss => {
+            const dateStr = iss.created_at ? new Date(iss.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '—';
+            const triageClass = (iss.triage_level || 'green').toLowerCase();
+            const statusClass = (iss.status || 'open').toLowerCase();
+            const statusLabel = iss.status === 'resolved' ? '🟢 Resolved' : iss.status === 'in_review' ? '🟡 In Review' : '⚪ Open';
+
+            return `
+                <tr>
+                    <td style="white-space:nowrap; font-size:0.78rem;">${dateStr}</td>
+                    <td style="white-space:nowrap;">
+                        <strong>${escapeHtml(iss.patient_name || iss.patient_id)}</strong>
+                        <div style="font-size:0.72rem; color:#64748b;">ID: ${iss.patient_id}</div>
+                    </td>
+                    <td style="max-width:240px; font-size:0.84rem;">
+                        <div>${escapeHtml(iss.symptoms)}</div>
+                        ${iss.severity ? `<span style="font-size:0.72rem; color:#64748b;">[${escapeHtml(iss.severity)} &bull; ${escapeHtml(iss.duration || '')}]</span>` : ''}
+                    </td>
+                    <td><span class="triage-pill ${triageClass}">${iss.triage_level || 'routine'}</span></td>
+                    <td><span class="issue-status-pill ${statusClass}">${statusLabel}</span></td>
+                    <td style="max-width:180px; font-size:0.8rem; color:#475569;">
+                        ${iss.doctor_notes ? escapeHtml(iss.doctor_notes) : '<em style="color:#94a3b8;">No notes yet</em>'}
+                    </td>
+                    <td style="text-align:center; white-space:nowrap;">
+                        <button type="button" class="btn-secondary" style="font-size:0.75rem; padding:4px 8px; margin-right:4px;" onclick="openDoctorIssueReviewModal('${iss.id}')">
+                            ✏️ Review
+                        </button>
+                        <button type="button" class="btn-primary" style="font-size:0.75rem; padding:4px 8px; background:var(--mc-blue);" onclick="openSendCareReminderModal('${iss.patient_id}', '${iss.id}')">
+                            🔔 Reminder
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px; color:#ef4444;">Error loading issues: ${err.message}</td></tr>`;
+    }
+}
+
+async function loadAdminReminders() {
+    const tbody = document.getElementById('admin-reminders-table-body');
+    if (!tbody) return;
+
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px; color:#64748b;">Loading care directives and reminders...</td></tr>`;
+
+    try {
+        let targetPatients = (allPatients && allPatients.length) ? allPatients : [{ patient_id: 'PAT-1001' }];
+        const headers = {};
+        if (currentAuth.token) headers['Authorization'] = `Bearer ${currentAuth.token}`;
+
+        const promises = targetPatients.map(p => fetch(apiUrl(`/api/reminders/${encodeURIComponent(p.patient_id)}`), { headers }).then(r => r.ok ? r.json() : { reminders: [] }).catch(() => ({ reminders: [] })));
+        const results = await Promise.all(promises);
+        let allRem = [];
+        results.forEach(r => {
+            if (r.reminders) allRem = allRem.concat(r.reminders);
+        });
+
+        allRem.sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+        window._adminReminders = allRem;
+
+        if (allRem.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:30px; color:#64748b;">No dispatched care reminders found.</td></tr>`;
+            return;
+        }
+
+        const typeLabels = {
+            'daily_care': '💊 Daily Care',
+            'diagnosis': '🩺 Diagnosis',
+            'checkup': '🏥 Checkup'
+        };
+
+        tbody.innerHTML = allRem.map(r => {
+            const dateStr = r.created_at ? new Date(r.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '—';
+            const isDone = r.status === 'completed';
+
+            return `
+                <tr>
+                    <td style="white-space:nowrap; font-size:0.78rem;">${dateStr}</td>
+                    <td style="font-weight:700; font-size:0.82rem;">${r.patient_id}</td>
+                    <td><span class="reminder-badge ${r.reminder_type}">${typeLabels[r.reminder_type] || r.reminder_type}</span></td>
+                    <td style="font-weight:700; font-size:0.85rem;">${escapeHtml(r.title)}</td>
+                    <td style="max-width:260px; font-size:0.8rem; color:#475569;">${escapeHtml(r.message)}</td>
+                    <td style="white-space:nowrap; font-size:0.78rem;">${r.due_date || 'Ongoing'}</td>
+                    <td>${isDone ? '<span class="reminder-done-badge">✓ Completed</span>' : '<span style="color:#047857; font-weight:700; font-size:0.78rem;">Active</span>'}</td>
+                </tr>
+            `;
+        }).join('');
+    } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px; color:#ef4444;">Error: ${err.message}</td></tr>`;
+    }
+}
+
+function openDoctorIssueReviewModal(issueId) {
+    const iss = (window._adminIssues || []).find(i => i.id === issueId);
+    if (!iss) return;
+
+    document.getElementById('rev-issue-id').value = iss.id;
+    document.getElementById('rev-patient-meta').innerHTML = `Patient: <strong>${escapeHtml(iss.patient_name || iss.patient_id)}</strong> (${iss.patient_id}) &bull; Triage: <strong>${(iss.triage_level || 'ROUTINE').toUpperCase()}</strong>`;
+    document.getElementById('rev-reported-symptoms').innerText = iss.symptoms;
+    document.getElementById('rev-ai-summary').innerText = iss.ai_summary || 'No AI summary generated for this query.';
+    document.getElementById('rev-case-status').value = iss.status || 'in_review';
+    document.getElementById('rev-doctor-notes').value = iss.doctor_notes || '';
+    if (iss.doctor_name) document.getElementById('rev-doctor-name').value = iss.doctor_name;
+
+    document.getElementById('doctor-issue-review-modal').style.display = 'flex';
+}
+
+function closeDoctorIssueReviewModal() {
+    document.getElementById('doctor-issue-review-modal').style.display = 'none';
+}
+
+async function submitDoctorIssueReview(e) {
+    e.preventDefault();
+    const issueId = document.getElementById('rev-issue-id').value;
+    const doctorNotes = document.getElementById('rev-doctor-notes').value.trim();
+    const status = document.getElementById('rev-case-status').value;
+    const doctorName = document.getElementById('rev-doctor-name').value.trim();
+
+    try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (currentAuth.token) headers['Authorization'] = `Bearer ${currentAuth.token}`;
+
+        const res = await fetch(apiUrl(`/api/issues/${encodeURIComponent(issueId)}`), {
+            method: 'PATCH',
+            headers: headers,
+            body: JSON.stringify({
+                doctor_notes: doctorNotes,
+                status: status,
+                doctor_name: doctorName
+            })
+        });
+
+        if (!res.ok) throw new Error("Failed to save doctor review.");
+
+        closeDoctorIssueReviewModal();
+        loadAdminReportedIssues();
+        alert("✅ Doctor clinical review and notes saved successfully!");
+    } catch (err) {
+        alert("Error saving review: " + err.message);
+    }
+}
+
+function openSendCareReminderModal(patientId, issueId) {
+    const select = document.getElementById('rem-patient-id');
+    if (select) {
+        select.innerHTML = '';
+        const list = (allPatients && allPatients.length) ? allPatients : [
+            { patient_id: 'PAT-1001', name: 'Rajesh Kumar' },
+            { patient_id: 'PAT-1002', name: 'Priya Sharma' },
+            { patient_id: 'PAT-1003', name: 'Ananya Rao' },
+            { patient_id: 'PAT-1004', name: 'Sunita Nair' }
+        ];
+
+        list.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p.patient_id;
+            opt.text = `${p.name || p.patient_id} (${p.patient_id})`;
+            if (patientId && p.patient_id === patientId) opt.selected = true;
+            select.appendChild(opt);
+        });
+    }
+
+    document.getElementById('rem-issue-id').value = issueId || '';
+    document.getElementById('send-care-reminder-modal').style.display = 'flex';
+}
+
+function closeSendCareReminderModal() {
+    document.getElementById('send-care-reminder-modal').style.display = 'none';
+}
+
+async function submitCareReminder(e) {
+    e.preventDefault();
+    const patientId = document.getElementById('rem-patient-id').value;
+    const reminderType = document.getElementById('rem-type').value;
+    const title = document.getElementById('rem-title').value.trim();
+    const message = document.getElementById('rem-message').value.trim();
+    const dueDate = document.getElementById('rem-due-date').value || null;
+    const frequency = document.getElementById('rem-frequency').value;
+    const sentBy = document.getElementById('rem-sent-by').value.trim();
+    const issueId = document.getElementById('rem-issue-id').value || null;
+
+    try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (currentAuth.token) headers['Authorization'] = `Bearer ${currentAuth.token}`;
+
+        const res = await fetch(apiUrl('/api/reminders'), {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({
+                patient_id: patientId,
+                reminder_type: reminderType,
+                title: title,
+                message: message,
+                due_date: dueDate,
+                frequency: frequency,
+                sent_by: sentBy,
+                issue_id: issueId
+            })
+        });
+
+        if (!res.ok) throw new Error("Failed to dispatch care reminder.");
+
+        closeSendCareReminderModal();
+        alert(`✅ Care Directive Dispatched!\n\nDispatched to ${patientId}: "${title}". It will now appear on the patient's portal with checkup and daily care alerts.`);
+
+        const remCont = document.getElementById('adm-reminders-container');
+        if (remCont && remCont.style.display !== 'none') {
+            loadAdminReminders();
+        }
+    } catch (err) {
+        alert("Error sending reminder: " + err.message);
+    }
+}

@@ -157,3 +157,76 @@ def perform_comprehensive_analysis(
         "total_parameters_analyzed": len(parameters),
         "data_quality": data_quality
     }
+
+
+# ================================================================
+# FEATURE 4: Multi-Panel Correlation Engine
+# ================================================================
+def correlate_and_flatten_multipanel_data(panel_reports: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """
+    Accepts an array of extracted biomarkers from different uploaded panels (e.g. CBC, LFT, KFT, Lipid).
+    Aggregates and flattens this multi-panel data into a single, unified JSON payload for the
+    OpenRouter LLM, identifying cross-panel synergies rather than analyzing panels in isolation.
+    """
+    unified_parameters: List[Dict[str, Any]] = []
+    seen_canonical_keys = {}
+    panels_included = []
+    cross_panel_correlations = []
+
+    for panel_item in panel_reports:
+        panel_name = panel_item.get("panel") or panel_item.get("test_category") or "Laboratory Panel"
+        if panel_name not in panels_included:
+            panels_included.append(panel_name)
+
+        params = panel_item.get("parameters") or []
+        for p in params:
+            c_key = p.get("canonical_key") or p.get("parameter")
+            if not c_key:
+                continue
+
+            p_enriched = dict(p)
+            p_enriched["source_panel"] = panel_name
+
+            if c_key in seen_canonical_keys:
+                idx = seen_canonical_keys[c_key]
+                if str(p.get("status", "")).upper() in ["CRITICAL", "HIGH", "LOW"]:
+                    unified_parameters[idx] = p_enriched
+            else:
+                seen_canonical_keys[c_key] = len(unified_parameters)
+                unified_parameters.append(p_enriched)
+
+    # Detect cross-panel synergistic interactions
+    param_keys = {str(k).upper() for k in seen_canonical_keys.keys()}
+    
+    # 1. Hematology + Hepatic interaction
+    if any(k in param_keys for k in ["PLT", "PLATELET_COUNT"]) and any(k in param_keys for k in ["ALT", "TOTAL_BILIRUBIN", "AST"]):
+        cross_panel_correlations.append({
+            "correlation_type": "Hepato-Hematologic Axis",
+            "panels": ["CBC", "LFT"],
+            "clinical_significance": "Thrombocytopenia coinciding with elevated transaminases/bilirubin indicates acute systemic febrile illness (e.g., Dengue with hepatic involvement) or portal hypertension."
+        })
+
+    # 2. Hematology + Renal interaction
+    if any(k in param_keys for k in ["HGB", "HEMOGLOBIN"]) and any(k in param_keys for k in ["CREATININE", "BUN", "UREA"]):
+        cross_panel_correlations.append({
+            "correlation_type": "Cardiorenal-Anemia Axis",
+            "panels": ["CBC", "KFT"],
+            "clinical_significance": "Anemia concurrent with elevated renal markers suggests diminished renal erythropoietin synthesis (Anemia of Chronic Kidney Disease)."
+        })
+
+    # 3. Hepatic + Metabolic interaction
+    if any(k in param_keys for k in ["TOTAL_BILIRUBIN", "ALT"]) and any(k in param_keys for k in ["CHOLESTEROL", "TRIGLYCERIDES"]):
+        cross_panel_correlations.append({
+            "correlation_type": "Hepato-Metabolic Axis",
+            "panels": ["LFT", "Lipid Profile"],
+            "clinical_significance": "Transaminase elevation with dyslipidemia suggests Metabolic Dysfunction-Associated Steatohepatitis (MASH / NAFLD)."
+        })
+
+    return {
+        "panels_analyzed": panels_included,
+        "total_biomarkers": len(unified_parameters),
+        "unified_parameters": unified_parameters,
+        "cross_panel_correlations": cross_panel_correlations,
+        "aggregated_summary": f"Unified multi-panel profile encompassing {len(panels_included)} panels ({', '.join(panels_included)}) with {len(unified_parameters)} unique biomarkers evaluated simultaneously."
+    }
+

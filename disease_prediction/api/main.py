@@ -11,7 +11,7 @@ import time
 import secrets
 from datetime import datetime
 from typing import Optional, Dict, Any, List
-from fastapi import FastAPI, UploadFile, File, HTTPException, status, Depends, Header
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, status, Depends, Header, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
@@ -823,6 +823,7 @@ class AnalyzeParametersRequest(BaseModel):
     patient_meta: Optional[Dict[str, Any]] = None
     filename: Optional[str] = "Uploaded_Report"
     file_type: Optional[str] = "CUSTOM"
+    language: Optional[str] = "English"  # Feature 4: Multi-language support
 
 
 @app.post("/api/analyzer/extract", tags=["AI Health Report Analyzer"])
@@ -880,7 +881,7 @@ def analyze_reviewed_parameters(
 
         analysis = analyzer_service.perform_comprehensive_analysis(
             parameters=req.parameters,
-            patient_meta={"patient_id": patient_id, "name": pat_name, "age": pat_age, "gender": pat_gender},
+            patient_meta={"patient_id": patient_id, "name": pat_name, "age": pat_age, "gender": pat_gender, "language": req.language or "English"},
             metadata=req.metadata
         )
 
@@ -962,6 +963,138 @@ def get_single_analysis(analysis_id: str, auth: Dict[str, Any] = Depends(require
     return record
 
 
+# =============================================================
+# FEATURE 5: "What Changed?" Report Comparison (Dual Upload & Delta Logic)
+# =============================================================
+@app.post("/api/compare-reports", tags=["Report Comparison"])
+async def compare_reports(
+    baseline_file: Optional[UploadFile] = File(None),
+    current_file: Optional[UploadFile] = File(None),
+    baseline_data: Optional[str] = Form(None),
+    current_data: Optional[str] = Form(None)
+):
+    """
+    Accepts two diagnostic reports (Baseline and Current) as uploaded files or JSON data.
+    Extracts biomarkers from both, matches parameters by canonical key, calculates numerical
+    deltas, and assigns a clinical trajectory status ('improving', 'worsening', or 'stable').
+    """
+    try:
+        baseline_params = []
+        current_params = []
+        baseline_name = "Baseline Report"
+        current_name = "Current Report"
+
+        # 1. Parse Baseline
+        if baseline_file:
+            baseline_name = baseline_file.filename
+            b_bytes = await baseline_file.read()
+            extracted_b = analyzer_service.extract_report_from_file_bytes(baseline_file.filename, b_bytes)
+            baseline_params = extracted_b.get("parameters", [])
+        elif baseline_data:
+            baseline_params = json.loads(baseline_data)
+
+        # 2. Parse Current
+        if current_file:
+            current_name = current_file.filename
+            c_bytes = await current_file.read()
+            extracted_c = analyzer_service.extract_report_from_file_bytes(current_file.filename, c_bytes)
+            current_params = extracted_c.get("parameters", [])
+        elif current_data:
+            current_params = json.loads(current_data)
+
+        if not baseline_params or not current_params:
+            raise HTTPException(status_code=400, detail="Both baseline and current report parameters must be provided.")
+
+        # Build baseline lookup table by canonical_key or parameter name
+        b_map = {}
+        for p in baseline_params:
+            key = (p.get("canonical_key") or p.get("parameter") or "").strip().upper()
+            if key:
+                b_map[key] = p
+
+        matched = []
+        improving_count = 0
+        worsening_count = 0
+        stable_count = 0
+
+        for cp in current_params:
+            key = (cp.get("canonical_key") or cp.get("parameter") or "").strip().upper()
+            if not key or key not in b_map:
+                continue
+
+            bp = b_map[key]
+            try:
+                b_val = float(bp.get("value"))
+                c_val = float(cp.get("value"))
+            except (ValueError, TypeError):
+                continue
+
+            delta = round(c_val - b_val, 2)
+            pct = round((delta / b_val) * 100, 1) if b_val != 0 else 0.0
+
+            b_status = str(bp.get("status", "NORMAL")).upper()
+            c_status = str(cp.get("status", "NORMAL")).upper()
+
+            # Determine clinical trajectory status
+            if abs(pct) < 3.0 or delta == 0:
+                status = "stable"
+                stable_count += 1
+            elif b_status in ["LOW", "CRITICAL LOW"]:
+                if delta > 0:
+                    status = "improving"
+                    improving_count += 1
+                else:
+                    status = "worsening"
+                    worsening_count += 1
+            elif b_status in ["HIGH", "CRITICAL HIGH"]:
+                if delta < 0:
+                    status = "improving"
+                    improving_count += 1
+                else:
+                    status = "worsening"
+                    worsening_count += 1
+            else:
+                # Baseline was Normal
+                if c_status in ["HIGH", "LOW", "CRITICAL", "CRITICAL HIGH", "CRITICAL LOW"]:
+                    status = "worsening"
+                    worsening_count += 1
+                else:
+                    status = "stable"
+                    stable_count += 1
+
+            matched.append({
+                "parameter": cp.get("parameter") or bp.get("parameter") or key,
+                "canonical_key": key,
+                "unit": cp.get("unit") or bp.get("unit") or "",
+                "reference_range": cp.get("reference_range") or bp.get("reference_range") or "",
+                "baseline": b_val,
+                "current": c_val,
+                "delta": delta,
+                "pct_change": pct,
+                "baseline_status": b_status,
+                "current_status": c_status,
+                "status": status
+            })
+
+        return {
+            "comparison_id": f"CMP-{int(time.time())}",
+            "baseline_filename": baseline_name,
+            "current_filename": current_name,
+            "total_matched": len(matched),
+            "summary": {
+                "improving": improving_count,
+                "worsening": worsening_count,
+                "stable": stable_count
+            },
+            "comparisons": matched
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Report comparison failed: {str(e)}")
+
+
+
 
 # =============================================================
 # SYMPTOMS → AI SUGGESTIONS  (SSE Streaming & Reasoning Tokens)
@@ -975,6 +1108,251 @@ class SymptomsRequest(BaseModel):
     duration: Optional[str] = None
     severity: Optional[str] = None
     known_conditions: Optional[str] = None
+    language: Optional[str] = "English"  # Feature 4: Multi-language support
+
+
+# Feature 2: Deterministic triage level engine
+def compute_triage_level(symptoms: str, severity: Optional[str] = None) -> str:
+    """
+    Deterministically computes a triage level from symptom text and severity.
+    Returns 'red', 'amber', or 'green'.
+    """
+    lower = symptoms.lower()
+
+    # RED keywords — life-threatening, require emergency care
+    red_terms = [
+        "chest pain", "crushing chest", "heart attack", "cardiac arrest", "chest tightness", "chest pressure",
+        "severe breathing", "can't breathe", "cannot breathe", "stopped breathing", "gasping", "cyanosis", "blue lips",
+        "unconscious", "unresponsive", "collapse", "collapsed", "fainting", "passed out", "syncope",
+        "stroke", "mini stroke", "slurred speech", "speech slurred", "difficulty speaking", "unable to speak",
+        "facial droop", "face drooping", "weakness on one side", "sudden weakness", "paralysis", "hemiparesis",
+        "seizure", "convulsion", "severe bleeding", "blood in stool", "black stool", "hemorrhage", "haemorrhage",
+        "coughing blood", "vomiting blood", "haemoptysis", "hemoptysis",
+        "platelet 10", "platelet 20", "platelet 30", "platelet 40",
+        "sepsis", "septic shock", "high fever 104", "high fever 105", "high fever 106",
+        "meningitis", "encephalitis", "anaphylaxis", "severe allergic", "swollen tongue", "throat closing",
+        "sudden vision loss", "sudden speech loss", "dengue shock", "internal bleeding", "overdose", "poisoning",
+        "severe abdominal", "appendix", "kidney failure", "liver failure",
+        "critical", "emergency", "icu", "sos"
+    ]
+
+    # AMBER keywords — urgent, needs prompt evaluation
+    amber_terms = [
+        "high fever", "103", "102", "persistent vomiting", "severe headache",
+        "severe pain", "extreme fatigue", "jaundice", "yellowing",
+        "difficulty breathing", "shortness of breath", "wheezing", "stridor",
+        "petechiae", "bruising easily", "dark urine", "swollen abdomen",
+        "dengue", "malaria", "typhoid", "bleeding gums", "nose bleed",
+        "confusion", "disoriented", "dizziness severe", "cold extremities",
+        "swollen ankle", "rapid heartbeat", "palpitations", "tachycardia",
+        "dehydrated", "unable to keep fluids", "severe diarrhea", "blood urine",
+        "hematuria", "haematuria", "flank pain"
+    ]
+
+    # Override to RED if severity is 'Acute / Severe Distress'
+    if severity and "acute" in severity.lower():
+        for term in red_terms:
+            if term in lower:
+                return "red"
+        return "amber"
+
+    for term in red_terms:
+        if term in lower:
+            return "red"
+
+    for term in amber_terms:
+        if term in lower:
+            return "amber"
+
+    return "green"
+
+
+# Feature 3: Shared session models
+class ShareReportRequest(BaseModel):
+    patient_id: str
+    data_payload: Dict[str, Any]
+
+
+@app.post("/api/share", tags=["Secure Report Sharing"])
+def share_report(req: ShareReportRequest, auth: Dict[str, Any] = Depends(require_authenticated_user)):
+    """
+    Generates a unique 6-digit PIN for securely sharing a patient report with a doctor.
+    The shared session expires after 24 hours.
+    """
+    # IDOR protection: patients can only share their own reports
+    if auth.get("role") != "admin" and auth.get("patient_id") != req.patient_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You can only share your own reports.")
+
+    try:
+        pin = db.create_shared_session(req.patient_id, req.data_payload)
+        return {
+            "status": "success",
+            "pin": pin,
+            "expires_in": "24 hours",
+            "message": f"Share this 6-digit PIN with your Medicover doctor: {pin}"
+        }
+    except RuntimeError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/retrieve/{pin}", tags=["Secure Report Sharing"])
+def retrieve_shared_session(pin: str):
+    """
+    Retrieves a shared patient session by 6-digit PIN.
+    No authentication required — the PIN itself is the access credential.
+    Returns 404 if not found or 410 if expired.
+    """
+    session = db.get_shared_session_by_pin(pin)
+    if not session:
+        raise HTTPException(
+            status_code=410,
+            detail="Session not found or PIN has expired (valid for 24 hours only)."
+        )
+    return session
+
+
+# Feature 5: Patient health timeline
+@app.get("/api/timeline/{patient_id}", tags=["Health Timeline"])
+def get_patient_health_timeline(patient_id: str, auth: Dict[str, Any] = Depends(require_authenticated_user)):
+    """
+    Returns a unified chronological health timeline for a patient,
+    merging lab reports and AI analyses sorted by most recent first.
+    """
+    # IDOR protection
+    if auth.get("role") != "admin" and auth.get("patient_id") != patient_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied: You can only view your own health timeline.")
+
+    timeline = db.get_patient_timeline(patient_id)
+    return {"patient_id": patient_id, "timeline": timeline, "count": len(timeline)}
+
+
+# =============================================================
+# PATIENT REPORTED ISSUES & DOCTOR CARE REMINDERS
+# =============================================================
+class ReportIssueRequest(BaseModel):
+    patient_id: str
+    symptoms: str
+    severity: Optional[str] = None
+    duration: Optional[str] = None
+    ai_summary: Optional[str] = None
+
+
+class UpdateIssueRequest(BaseModel):
+    doctor_notes: str
+    status: Optional[str] = "in_review"
+    doctor_name: Optional[str] = "Dr. Medicover Specialist"
+
+
+class CreateReminderRequest(BaseModel):
+    patient_id: str
+    reminder_type: str  # 'checkup', 'diagnosis', 'daily_care'
+    title: str
+    message: str
+    due_date: Optional[str] = None
+    frequency: Optional[str] = "once"
+    sent_by: Optional[str] = "Dr. Medicover Clinical Desk"
+    issue_id: Optional[str] = None
+
+
+@app.post("/api/issues/report", tags=["Patient Reported Issues"])
+def report_patient_issue(body: ReportIssueRequest, auth: Dict[str, Any] = Depends(require_authenticated_user)):
+    """Logs a symptom consultation as an official patient-reported issue for clinical review."""
+    if auth.get("role") != "admin" and auth.get("patient_id") != body.patient_id:
+        raise HTTPException(status_code=403, detail="Cannot file issue for another patient.")
+
+    triage = compute_triage_level(body.symptoms, body.severity)
+    created = db.create_reported_issue(
+        patient_id=body.patient_id,
+        symptoms=body.symptoms,
+        severity=body.severity,
+        duration=body.duration,
+        triage_level=triage,
+        ai_summary=body.ai_summary
+    )
+    return {"status": "success", "message": "Issue logged to clinical record.", "issue": created}
+
+
+@app.get("/api/issues", tags=["Patient Reported Issues"])
+def list_reported_issues(
+    patient_id: Optional[str] = Query(None),
+    status: Optional[str] = Query(None),
+    auth: Dict[str, Any] = Depends(require_authenticated_user)
+):
+    """Retrieves reported patient issues. Doctors can see all; patients only see their own."""
+    if auth.get("role") != "admin":
+        patient_id = auth.get("patient_id")
+    issues = db.get_reported_issues(patient_id=patient_id, status=status)
+    return {"total": len(issues), "issues": issues}
+
+
+@app.patch("/api/issues/{issue_id}", tags=["Patient Reported Issues"])
+def review_reported_issue(
+    issue_id: str,
+    body: UpdateIssueRequest,
+    auth: Dict[str, Any] = Depends(require_authenticated_user)
+):
+    """Doctor reviews reported issue, appends clinical notes, and updates case status."""
+    if auth.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Only doctors and clinical staff can review patient issues.")
+
+    updated = db.update_reported_issue(
+        issue_id=issue_id,
+        doctor_notes=body.doctor_notes,
+        status=body.status or "in_review",
+        doctor_name=body.doctor_name or "Dr. Medicover Specialist"
+    )
+    if not updated:
+        raise HTTPException(status_code=404, detail="Reported issue not found.")
+    return {"status": "success", "issue": updated}
+
+
+@app.post("/api/reminders", tags=["Doctor Care Reminders"])
+def send_care_reminder(
+    body: CreateReminderRequest,
+    auth: Dict[str, Any] = Depends(require_authenticated_user)
+):
+    """Doctor dispatches a health checkup, diagnosis follow-up, or daily care reminder to a patient."""
+    if auth.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Only clinical staff can create patient care reminders.")
+
+    created = db.create_care_reminder(
+        patient_id=body.patient_id,
+        reminder_type=body.reminder_type,
+        title=body.title,
+        message=body.message,
+        due_date=body.due_date,
+        frequency=body.frequency or "once",
+        sent_by=body.sent_by or "Dr. Medicover Clinical Desk",
+        issue_id=body.issue_id
+    )
+    return {"status": "success", "message": "Care reminder dispatched to patient.", "reminder": created}
+
+
+@app.get("/api/reminders/{patient_id}", tags=["Doctor Care Reminders"])
+def get_patient_care_reminders(
+    patient_id: str,
+    status: Optional[str] = Query(None),
+    auth: Dict[str, Any] = Depends(require_authenticated_user)
+):
+    """Retrieves active or completed care reminders and checkup notices for a patient."""
+    if auth.get("role") != "admin" and auth.get("patient_id") != patient_id:
+        raise HTTPException(status_code=403, detail="Cannot access care reminders for another patient.")
+
+    reminders = db.get_patient_reminders(patient_id=patient_id, status=status)
+    return {"patient_id": patient_id, "total": len(reminders), "reminders": reminders}
+
+
+@app.patch("/api/reminders/{reminder_id}/acknowledge", tags=["Doctor Care Reminders"])
+def acknowledge_reminder(
+    reminder_id: str,
+    auth: Dict[str, Any] = Depends(require_authenticated_user)
+):
+    """Patient acknowledges/completes a daily care directive or checkup reminder."""
+    updated = db.acknowledge_care_reminder(reminder_id)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Reminder not found.")
+    return {"status": "success", "message": "Care reminder marked as completed.", "reminder": updated}
+
 
 @app.post("/api/symptoms/suggest", tags=["Symptoms AI"])
 def symptoms_suggest(body: SymptomsRequest):
@@ -1000,7 +1378,13 @@ def symptoms_suggest(body: SymptomsRequest):
     
     demo_ctx = " (" + ", ".join(ctx_parts) + ")" if ctx_parts else ""
 
-    system_msg = """You are MEDLENS HealthGuide — an intelligent, compassionate, clinical decision-support AI.
+    # Feature 4: Build language instruction dynamically
+    selected_language = (body.language or "English").strip()
+    language_instruction = ""
+    if selected_language.lower() != "english":
+        language_instruction = f"\n\nLANGUAGE INSTRUCTION: Translate ALL output text strictly into {selected_language}. Use accessible, layman's terms throughout. Keep medical parameter names (e.g. CBC, TSH, Hemoglobin, CBC) and section headers in their original form but explain all content in {selected_language}."
+
+    system_msg = f"""You are MEDLENS HealthGuide — an intelligent, compassionate, clinical decision-support AI.
 Analyze the reported symptoms and provide clear, empathetic, structured patient guidance in this EXACT markdown format:
 
 ## 🔍 Possible Conditions & Pattern Signals
@@ -1021,10 +1405,13 @@ Analyze the reported symptoms and provide clear, empathetic, structured patient 
 ## 💡 Related Things Patients Should Know
 (2-3 insightful educational facts or questions the patient can ask their healthcare provider.)
 
+## 🩺 Questions to Ask Your Medicover Specialist
+(Generate exactly 3 highly specific, clinically relevant questions the patient should ask their Medicover doctor at their appointment. Frame as direct questions starting with 'Should I...', 'What does...', or 'How do I...'. Make them specific to the symptoms described.)
+
 STRICT CLINICAL RULES:
 - Never prescribe specific prescription drug names or dosages (e.g. no "Take 500mg X").
 - Never state a definitive or guaranteed diagnosis. Always use cautious clinical screening phrasing ("Findings may suggest", "Possible pattern consistent with").
-- Be encouraging, clear, and well-structured with bullet points and bold highlights.
+- Be encouraging, clear, and well-structured with bullet points and bold highlights.{language_instruction}
 """
 
     user_msg = f"Patient reports the following symptoms{demo_ctx}:\n\n\"{body.symptoms.strip()}\"\n\nPlease provide comprehensive, structured guidance following the required format."
@@ -1196,13 +1583,52 @@ STRICT CLINICAL RULES:
                 "Over 80% of routine clinical presentations are successfully resolved with early, targeted decision support and hydration."
             ]
 
+        # Tailored Questions for Medicover Specialist (Feature 1 fallback support)
+        if is_dengue_like or (is_fever and any(w in symp_lower for w in ["headache", "muscle", "joint", "rash"])):
+            doctor_questions = [
+                "Should I repeat a Complete Blood Count (CBC) in 24 to 48 hours to track my platelet and hematocrit trends?",
+                "What are the specific warning signs of plasma leakage or fluid shifts that should bring me to Medicover Emergency?",
+                "How do I manage my fever safely without using NSAIDs like ibuprofen or aspirin?"
+            ]
+        elif is_gi_liver:
+            doctor_questions = [
+                "Should I undergo an urgent Liver Function Test (LFT) and abdominal ultrasound to assess hepatic and biliary inflammation?",
+                "What dietary protocol and hydration regimen should I follow while my digestive tract and liver recover?",
+                "How do I know if my symptoms indicate acute hepatobiliary strain requiring hospitalization?"
+            ]
+        elif is_anemia_fatigue:
+            doctor_questions = [
+                "Should I have my serum ferritin, total iron binding capacity, and vitamin B12 levels evaluated alongside my CBC?",
+                "What potential underlying causes of anemia (such as nutritional deficiency or absorption issues) should we investigate?",
+                "How do I safely begin iron and micronutrient therapy without aggravating gastrointestinal symptoms?"
+            ]
+        elif is_thyroid:
+            doctor_questions = [
+                "Should I order a comprehensive thyroid panel including Free T3, Free T4, and TSH to evaluate metabolic balance?",
+                "Would antibody testing such as Anti-TPO be beneficial to rule out autoimmune thyroid disorders?",
+                "How frequently will my dosage and thyroid biomarkers need monitoring once treatment begins?"
+            ]
+        elif is_respiratory:
+            doctor_questions = [
+                "Should I undergo a chest X-ray or spirometry screening to clarify the underlying cause of this cough?",
+                "What indicators of secondary bacterial bronchopulmonary infection should I monitor closely?",
+                "How can I maintain comfortable airway clearance and adequate oxygenation during the night?"
+            ]
+        else:
+            doctor_questions = [
+                "Should I complete the recommended baseline pathology panels before our next follow-up consultation?",
+                "What specific clinical red flags should prompt me to visit the Medicover emergency department immediately?",
+                "How do my reported symptoms correlate with my overall vital signs and recent health records?"
+            ]
+
         sections = [
             ("## 🔍 Possible Conditions & Pattern Signals", "\n".join(f"- {c}" for c in conditions)),
             ("## ⚠️ AI Safety Precautions & Immediate Care Steps", "\n".join(f"- {p}" for p in precautions)),
             ("## 🌿 Evidence-Informed Home Care & Natural Remedies", "\n".join(f"- {r}" for r in remedies)),
             ("## 🚨 Red-Flag Emergency Warning Signs", "\n".join(f"- {rf}" for rf in red_flags)),
             ("## 🧪 Recommended Laboratory Panels to Discuss with Your Doctor", "\n".join(f"- {t}" for t in tests)),
-            ("## 💡 Related Things Patients Should Know", "\n".join(f"- {rel}" for rel in related))
+            ("## 💡 Related Things Patients Should Know", "\n".join(f"- {rel}" for rel in related)),
+            ("## 🩺 Questions to Ask Your Medicover Specialist", "\n".join(f"- {dq}" for dq in doctor_questions))
         ]
 
         # Stream sections with small delays to create a smooth, beautiful streaming experience
@@ -1226,7 +1652,11 @@ STRICT CLINICAL RULES:
     def event_stream():
         success = False
         last_err = "No response"
-        
+
+        # Feature 2: Emit triage level as the VERY FIRST SSE event
+        triage_level = compute_triage_level(body.symptoms, body.severity)
+        yield f"data: {json.dumps({'triage': triage_level})}\n\n"
+
         for cand_model in models_to_try:
             payload = {
                 "model": cand_model,
@@ -1236,7 +1666,7 @@ STRICT CLINICAL RULES:
                 ],
                 "stream": True,
                 "temperature": 0.2,
-                "max_tokens": 1400
+                "max_tokens": 1800
             }
             try:
                 with _requests.post(OR_URL, headers=headers_or, json=payload,

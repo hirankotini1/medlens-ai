@@ -3,44 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MEDLENS Diagnostic Center &amp; Clinical Decision Support</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>MEDLENS AI x Medicover — Clinical Precision Health Platform</title>
+    <!-- Google Fonts: Geist & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Material Symbols Outlined -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- Top Navigation Bar (Clean, Minimal & Top-Right Admin Login) -->
+    <!-- Top Navigation Bar (Stitch Clinical Precision Header) -->
     <header class="top-navbar">
         <div class="brand-logo" onclick="switchView('home')">
-            <span class="brand-icon">🔬</span>
-            <div style="display: flex; flex-direction: column; line-height: 1.1;">
-                <span style="font-weight: 800; font-size: 1.22rem; color: var(--text-main); letter-spacing: -0.02em;">MEDLENS <span style="color: var(--primary);">AI</span></span>
-                <span style="font-size: 0.65rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;">Diagnostic &amp; Clinical Pathology</span>
+            <span class="brand-icon">
+                <span class="material-symbols-outlined" style="font-size: 22px; color: var(--primary);">biotech</span>
+            </span>
+            <div style="display: flex; flex-direction: column; line-height: 1.15;">
+                <span style="font-weight: 800; font-size: 1.18rem; color: var(--primary); letter-spacing: -0.02em;">MEDLENS <span style="color: var(--mc-blue-light);">AI</span></span>
+                <span style="font-size: 0.65rem; color: var(--text-dim); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;">Medicover Clinical EHR</span>
             </div>
         </div>
 
         <nav class="nav-links">
             <button type="button" class="nav-btn active" id="tab-home" onclick="switchView('home')">
-                <span>🏠</span> Home
+                <span class="material-symbols-outlined">dashboard</span> Home
             </button>
             <button type="button" class="nav-btn" id="tab-patient" onclick="switchView('patient')">
-                <span>📄</span> Patient Reports
+                <span class="material-symbols-outlined">description</span> Patient Portal
+            </button>
+            <button type="button" class="nav-btn" id="tab-analyzer" onclick="switchView('analyzer')">
+                <span class="material-symbols-outlined">analytics</span> AI Analyzer
             </button>
             <button type="button" class="nav-btn" id="tab-symptoms" onclick="switchView('symptoms')">
-                <span>✨</span> Symptoms AI
+                <span class="material-symbols-outlined">psychology</span> Symptoms AI
             </button>
             <button type="button" class="nav-btn" id="tab-sandbox" onclick="switchView('sandbox')">
-                <span>🔬</span> ML Decision Sandbox
+                <span class="material-symbols-outlined">query_stats</span> ML Sandbox
             </button>
             <button type="button" class="nav-btn" id="tab-about" onclick="switchView('about')">
-                <span>ℹ️</span> About
+                <span class="material-symbols-outlined">info</span> About
             </button>
+
+            <!-- Medicover Emergency 1066 Quick Action Pill from Stitch -->
+            <a href="tel:1066" style="background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; padding: 5px 12px; border-radius: 999px; font-family: var(--font-headline); font-weight: 800; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; margin-left: 6px;" title="Medicover Vizag Emergency Hotline 1066">
+                <span class="material-symbols-outlined" style="font-size: 16px; color: #ef4444;">emergency</span> 1066
+            </a>
+
+            <!-- FEATURE 4: Language Selector Pill -->
+            <div class="lang-selector-wrapper" style="margin-left: 6px; margin-right: 4px;">
+                <span class="material-symbols-outlined" style="font-size: 16px; color: var(--primary);">translate</span>
+                <select id="global-lang-select" class="lang-selector" onchange="onLanguageChange(this.value)" title="Select AI response language">
+                    <option value="English">English</option>
+                    <option value="Hindi">हिन्दी (Hindi)</option>
+                    <option value="Telugu">తెలుగు (Telugu)</option>
+                </select>
+            </div>
 
             <div class="portal-divider"></div>
 
-            <!-- TOP-RIGHT PROMINENT ADMIN LOGIN BUTTON (OPENS IN SEPARATE NEW TAB) -->
-            <button type="button" class="admin-corner-btn" id="tab-admin" onclick="openAdminPortalNewTab()" title="Access Doctor &amp; Laboratory Admin Console in a new tab">
-                <span>🩺</span> Admin Login ↗
+            <!-- TOP-RIGHT PROMINENT ADMIN LOGIN BUTTON -->
+            <button type="button" class="admin-corner-btn" id="tab-admin" onclick="openAdminPortalNewTab()" title="Access Doctor & Laboratory Admin Console in a new tab">
+                <span class="material-symbols-outlined" style="font-size: 16px;">stethoscope</span> Doctor Console ↗
             </button>
         </nav>
     </header>
@@ -60,7 +85,7 @@
             <!-- INNOVATIVE WELCOME PATIENT HERO (AS DRAWN IN USER SKETCH) -->
             <div class="patient-welcome-hero">
                 <div class="patient-hero-badge">
-                    <span>👋</span> Welcome Patient &bull; Innovative Digital Healthcare Hub
+                    <span class="material-symbols-outlined" style="font-size: 16px;">waving_hand</span> Welcome Patient &bull; Medicover Digital Healthcare Hub
                 </div>
                 <h1 class="patient-hero-title">
                     Welcome to <span class="highlight">MEDLENS AI</span> Health Portal
@@ -72,13 +97,13 @@
                 <!-- Innovative Quick Report Lookup Directly from Hero -->
                 <div class="patient-quick-lookup">
                     <div style="font-size: 0.82rem; font-weight: 800; color: #005e66; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
-                        <span>🔍</span> Instant Patient Report Access &bull; Enter Credentials:
+                        <span class="material-symbols-outlined" style="font-size: 16px; color: var(--primary);">search</span> Instant Patient Report Access &bull; Enter Credentials:
                     </div>
                     <div class="patient-lookup-inputs">
                         <input type="text" id="hero-pat-id" class="patient-lookup-input" placeholder="Patient ID (e.g. PAT-1001)" value="PAT-1001" style="flex: 1.2;">
                         <input type="password" id="hero-pat-pin" class="patient-lookup-input" placeholder="Security PIN (e.g. PIN-1001)" value="PIN-1001" style="flex: 1.2;">
                         <button type="button" class="btn-primary" style="background: linear-gradient(135deg, #005e66, #0284c7); padding: 11px 24px; font-weight: 700; flex: 0.8; justify-content: center;" onclick="handleHeroPatientLogin()">
-                            <span>🔓</span> View My Report Now →
+                            <span class="material-symbols-outlined" style="font-size: 18px;">lock_open</span> View My Report Now →
                         </button>
                     </div>
 
@@ -97,7 +122,7 @@
                         <div class="hero-ai-card" onclick="switchView('analyzer')" style="background: linear-gradient(135deg, #ffffff 0%, #f5f3ff 100%); border: 1.5px solid #c7d2fe; border-radius: 14px; padding: 18px 20px; cursor: pointer; transition: all 0.25s ease; display: flex; flex-direction: column; justify-content: space-between; gap: 14px; box-shadow: 0 4px 14px rgba(79, 70, 229, 0.08);">
                             <div>
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                                    <span style="font-size: 1.7rem;">⚡</span>
+                                    <span class="material-symbols-outlined" style="font-size: 28px; color: var(--primary);">analytics</span>
                                     <span style="background: #e0e7ff; color: #4338ca; font-size: 0.72rem; font-weight: 800; padding: 3px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.04em;">PDF &bull; IMAGE &bull; CSV</span>
                                 </div>
                                 <h3 style="font-size: 1.15rem; font-weight: 800; color: #1e1b4b; margin: 0 0 6px 0;">
@@ -116,7 +141,7 @@
                         <div class="hero-ai-card" onclick="switchView('symptoms')" style="background: linear-gradient(135deg, #ffffff 0%, #f0fdfa 100%); border: 1.5px solid #99f6e4; border-radius: 14px; padding: 18px 20px; cursor: pointer; transition: all 0.25s ease; display: flex; flex-direction: column; justify-content: space-between; gap: 14px; box-shadow: 0 4px 14px rgba(13, 148, 136, 0.08);">
                             <div>
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                                    <span style="font-size: 1.7rem;">✨</span>
+                                    <span class="material-symbols-outlined" style="font-size: 28px; color: var(--primary-light);">psychology</span>
                                     <span style="background: #ccfbf1; color: #0f766e; font-size: 0.72rem; font-weight: 800; padding: 3px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.04em;">REAL-TIME AI GUIDANCE</span>
                                 </div>
                                 <h3 style="font-size: 1.15rem; font-weight: 800; color: #0f172a; margin: 0 0 6px 0;">
@@ -139,7 +164,7 @@
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
                     <div>
                         <div style="display: inline-flex; align-items: center; gap: 6px; background: var(--primary-surface); color: var(--primary); border: 1px solid var(--primary-border); padding: 4px 12px; border-radius: 999px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">
-                            <span>🧬</span> Interactive Biological Reference Explorer
+                            <span class="material-symbols-outlined" style="font-size: 16px; color: var(--primary);">biotech</span> Interactive Biological Reference Explorer
                         </div>
                         <h2 style="font-size: 1.45rem; font-weight: 800; color: var(--text-main);">
                             Explore Clinical Biomarkers &amp; Reference Ranges
@@ -224,7 +249,7 @@
             <!-- Patient Division Banner -->
             <div class="subpage-division-banner patient-banner">
                 <span style="display: flex; align-items: center; gap: 8px;">
-                    <span>👤</span> <strong>PATIENT CARE DIVISION</strong> &bull; Confidential Patient Services &amp; Lab Report Retrieval
+                    <span class="material-symbols-outlined" style="font-size: 18px;">person</span> <strong>PATIENT CARE DIVISION</strong> &bull; Confidential Patient Services &amp; Lab Report Retrieval
                 </span>
                 <span style="font-size: 0.74rem; background: #ffffff; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--primary-border); color: var(--primary); font-weight: 700;">
                     🔒 Protected by Receipt PIN
@@ -234,7 +259,7 @@
             <!-- Unauthenticated Login Box -->
             <div id="patient-login-container" class="card" style="max-width: 550px; margin: 20px auto;">
                 <div class="card-header">
-                    <h2><span>🔐</span> Patient Portal Authentication</h2>
+                    <h2><span class="material-symbols-outlined" style="font-size: 22px; color: var(--primary);">lock</span> Patient Portal Authentication</h2>
                 </div>
                 <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 20px;">
                     Please enter your Patient ID and Security PIN provided on your pathology receipt.
@@ -249,7 +274,7 @@
                         <input type="password" id="patient-pin-input" class="search-input" placeholder="e.g. PIN-1001">
                     </div>
                     <button type="button" class="btn-primary" style="justify-content: center; margin-top: 6px;" onclick="handlePatientLogin()">
-                        <span>🔓</span> Authenticate &amp; Access Dashboard
+                        <span class="material-symbols-outlined" style="font-size: 18px;">key</span> Authenticate &amp; Access Dashboard
                     </button>
                 </div>
 
@@ -312,6 +337,61 @@
                     </div>
                 </div>
 
+                <!-- FEATURE 5: Personal Health Timeline -->
+                <div class="card" id="patient-timeline-card" style="margin-top: 0;">
+                    <div class="card-header" style="padding-bottom: 0;">
+                        <h2><span>📅</span> My Health Timeline</h2>
+                        <span style="font-size: 0.75rem; color: var(--text-dim); font-weight: 600;">Chronological record of all reports &amp; analyses</span>
+                    </div>
+                    <div id="patient-timeline-container" style="margin-top: 18px;">
+                        <div class="timeline-empty-state">
+                            <div class="tes-icon">📅</div>
+                            <div style="font-size: 0.85rem;">Loading your health timeline...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DOCTOR CARE REMINDERS & HEALTH CHECKUPS CARD -->
+                <div class="card" id="patient-reminders-card" style="margin-top: 20px;">
+                    <div class="card-header" style="padding-bottom: 0;">
+                        <div>
+                            <h2><span class="material-symbols-outlined" style="color: var(--primary);">notifications_active</span> Doctor Care Directives &amp; Reminders</h2>
+                            <span style="font-size: 0.75rem; color: var(--text-dim); font-weight: 600;">Directives, daily care tasks, and checkup alerts from your attending physician</span>
+                        </div>
+                        <div class="reminder-filter-tabs">
+                            <button type="button" class="reminder-tab-btn active" id="btn-rem-all" onclick="filterPatientReminders('all')">All</button>
+                            <button type="button" class="reminder-tab-btn" id="btn-rem-daily" onclick="filterPatientReminders('daily_care')">💊 Daily Care</button>
+                            <button type="button" class="reminder-tab-btn" id="btn-rem-diagnosis" onclick="filterPatientReminders('diagnosis')">🩺 Diagnosis</button>
+                            <button type="button" class="reminder-tab-btn" id="btn-rem-checkup" onclick="filterPatientReminders('checkup')">🏥 Checkup</button>
+                        </div>
+                    </div>
+                    <div id="patient-reminders-list" style="margin-top: 18px;">
+                        <div class="timeline-empty-state">
+                            <div class="tes-icon">🔔</div>
+                            <div style="font-size: 0.85rem;">Loading care directives and reminders...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PATIENT REPORTED ISSUES LOG CARD -->
+                <div class="card" id="patient-reported-issues-card" style="margin-top: 20px;">
+                    <div class="card-header">
+                        <div>
+                            <h2><span class="material-symbols-outlined" style="color: var(--primary);">clinical_notes</span> My Reported Health Issues</h2>
+                            <span style="font-size: 0.75rem; color: var(--text-dim); font-weight: 600;">Symptom consultations filed for physician review</span>
+                        </div>
+                        <button type="button" class="btn-secondary" style="font-size: 0.8rem; padding: 6px 14px;" onclick="switchView('symptoms')">
+                            <span>➕</span> Report New Symptoms
+                        </button>
+                    </div>
+                    <div id="patient-reported-issues-list" class="table-responsive">
+                        <div class="timeline-empty-state">
+                            <div class="tes-icon">📋</div>
+                            <div style="font-size: 0.85rem;">Loading your reported health issues...</div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Active Full Report View (Clinical Sheet + ML Card) -->
                 <div id="patient-active-report-sheet" style="display: none;">
                     <!-- Injected dynamically -->
@@ -327,7 +407,7 @@
             <!-- Doctor / Admin Division Banner -->
             <div class="subpage-division-banner doctor-banner">
                 <span style="display: flex; align-items: center; gap: 8px;">
-                    <span>🩺</span> <strong>DOCTOR &amp; LAB ADMIN DIVISION</strong> &bull; Patient Registry, Lab Report Authoring &amp; Clinical Management
+                    <span class="material-symbols-outlined" style="font-size: 18px;">stethoscope</span> <strong>DOCTOR &amp; LAB ADMIN DIVISION</strong> &bull; Patient Registry, Lab Report Authoring &amp; Clinical Management
                 </span>
                 <span style="font-size: 0.74rem; background: #ffffff; padding: 2px 10px; border-radius: 999px; border: 1px solid #c7d2fe; color: #4338ca; font-weight: 700;">
                     🛡️ Authorized Clinical Personnel Only
@@ -336,7 +416,7 @@
 
             <!-- Staff Login Form -->
             <div id="admin-login-box" class="card" style="max-width: 450px; margin: 40px auto; text-align: center;">
-                <div style="font-size: 2.5rem; margin-bottom: 10px;">🩺</div>
+                <div style="margin-bottom: 12px;"><span class="material-symbols-outlined" style="font-size: 48px; color: var(--primary);">shield_person</span></div>
                 <h3 style="margin-bottom: 8px; font-size: 1.25rem;">Laboratory Staff Authentication</h3>
                 <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 20px;">Accredited pathologist and clinical technician access.</p>
                 <form onsubmit="handleAdminLogin(event)" style="display: flex; flex-direction: column; gap: 12px; text-align: left;">
@@ -349,7 +429,7 @@
                         <input type="password" id="admin-pass-input" class="search-input" value="admin123" required>
                     </div>
                     <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; margin-top: 8px;">
-                        <span>🔐</span> Authenticate Staff Session
+                        <span class="material-symbols-outlined" style="font-size: 18px;">badge</span> Authenticate Staff Session
                     </button>
                 </form>
             </div>
@@ -379,7 +459,7 @@
                 <!-- Admin Action Toolbar -->
                 <div class="card">
                     <div class="card-header">
-                        <h2><span>🩺</span> Pathology Management &amp; Laboratory Operations</h2>
+                        <h2><span class="material-symbols-outlined" style="color: var(--primary);">medical_services</span> Pathology Management &amp; Laboratory Operations</h2>
                         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                             <button type="button" class="btn-secondary" onclick="openNewPatientModal()"><span>👤</span> + Register Patient</button>
                             <button type="button" class="btn-primary" onclick="openNewReportModal()"><span>📄</span> + Create Lab Report</button>
@@ -391,9 +471,27 @@
                     </div>
 
                     <!-- Filter / Subtabs -->
-                    <div style="display: flex; gap: 10px; margin-bottom: 16px;">
-                        <button type="button" class="btn-secondary active" id="btn-adm-tab-reports" onclick="switchAdminSubtab('reports')">All Reports</button>
-                        <button type="button" class="btn-secondary" id="btn-adm-tab-patients" onclick="switchAdminSubtab('patients')">Patient Directory</button>
+                    <div style="margin-bottom: 16px;">
+                        <!-- FEATURE 3: Admin PIN Access for Shared Sessions -->
+                        <div class="admin-pin-access-card" id="admin-pin-access-card">
+                            <span class="material-symbols-outlined" style="font-size: 22px; color: var(--primary);">pin</span>
+                            <span class="apac-label">Access Patient Session (Enter PIN):</span>
+                            <input type="text" id="admin-pin-input" class="apac-input" placeholder="Enter 6-digit PIN" maxlength="6" pattern="[0-9]{6}" inputmode="numeric" onkeydown="if(event.key==='Enter') fetchSharedSession()">
+                            <button type="button" class="apac-btn" onclick="fetchSharedSession()">
+                                <span>🔓</span> Fetch Shared Report
+                            </button>
+                        </div>
+                        <div id="admin-shared-session-result" style="display: none; margin-bottom: 14px;"></div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button type="button" class="btn-secondary active" id="btn-adm-tab-reports" onclick="switchAdminSubtab('reports')">All Reports</button>
+                            <button type="button" class="btn-secondary" id="btn-adm-tab-patients" onclick="switchAdminSubtab('patients')">Patient Directory</button>
+                            <button type="button" class="btn-secondary" id="btn-adm-tab-issues" onclick="switchAdminSubtab('issues')">
+                                📥 Reported Patient Issues <span id="adm-issues-badge" style="background: #ef4444; color: white; border-radius: 999px; padding: 2px 7px; font-size: 0.72rem; margin-left: 4px; display: none;">0</span>
+                            </button>
+                            <button type="button" class="btn-secondary" id="btn-adm-tab-reminders" onclick="switchAdminSubtab('reminders')">
+                                🔔 Care Directives &amp; Reminders
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Reports Table Container -->
@@ -427,6 +525,58 @@
                                 </tr>
                             </thead>
                             <tbody id="admin-patients-table-body"></tbody>
+                        </table>
+                    </div>
+
+                    <!-- Patient Reported Issues Table Container -->
+                    <div id="adm-issues-container" class="table-responsive" style="display: none;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                            <div style="font-size: 0.85rem; color: var(--text-muted);">
+                                Incoming patient symptom consultations requiring physician review and triage action.
+                            </div>
+                            <button type="button" class="btn-secondary" style="font-size: 0.8rem; padding: 4px 10px;" onclick="loadAdminReportedIssues()">
+                                🔄 Refresh Inbox
+                            </button>
+                        </div>
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Patient</th>
+                                    <th>Reported Symptoms</th>
+                                    <th>Triage</th>
+                                    <th>Case Status</th>
+                                    <th>Doctor Notes</th>
+                                    <th style="text-align: center;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-issues-table-body"></tbody>
+                        </table>
+                    </div>
+
+                    <!-- Care Reminders Table Container -->
+                    <div id="adm-reminders-container" class="table-responsive" style="display: none;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                            <div style="font-size: 0.85rem; color: var(--text-muted);">
+                                Dispatched health checkups, diagnosis follow-ups, and daily care directives.
+                            </div>
+                            <button type="button" class="btn-primary" style="font-size: 0.82rem; padding: 6px 14px; background: var(--mc-blue);" onclick="openSendCareReminderModal()">
+                                ➕ New Care Directive
+                            </button>
+                        </div>
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th>Dispatched</th>
+                                    <th>Patient ID</th>
+                                    <th>Category</th>
+                                    <th>Directive / Title</th>
+                                    <th>Instructions</th>
+                                    <th>Due Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-reminders-table-body"></tbody>
                         </table>
                     </div>
                 </div>
@@ -528,6 +678,149 @@
                     </div>
                 </div>
             </div>
+        
+
+<!-- Preset Clinical Scenario Buttons -->
+            <div class="card" style="margin-bottom: 20px; padding: 18px 22px;">
+                <div style="font-size: 0.8rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+                    <span>💡</span> Quick Load Clinical Scenario Presets:
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                    <button type="button" class="preset-pill-btn" onclick="loadMainSandboxPreset('normal')">
+                        🟢 Normal / Healthy Profile
+                    </button>
+                    <button type="button" class="preset-pill-btn" onclick="loadMainSandboxPreset('anemia')">
+                        🩸 Iron Deficiency Anemia (Microcytic, Hb: 7.8)
+                    </button>
+                    <button type="button" class="preset-pill-btn" onclick="loadMainSandboxPreset('dengue')">
+                        🦟 Critical Dengue Thrombocytopenia (PLT: 32,000)
+                    </button>
+                    <button type="button" class="preset-pill-btn" onclick="loadMainSandboxPreset('liver')">
+                        🫁 Obstructive Jaundice / Liver Stress (Bilirubin: 4.6)
+                    </button>
+                    <button type="button" class="preset-pill-btn" onclick="loadMainSandboxPreset('thyroid')">
+                        🦋 Overt Hypothyroidism (TSH: 14.2)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Interactive Parameters Control Grid -->
+            <div class="card" style="margin-bottom: 24px; padding: 22px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px;">
+                    <div>
+                        <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin: 0;">
+                            🎛️ Interactive Laboratory Biomarker Sliders
+                        </h3>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin: 2px 0 0 0;">
+                            Drag sliders to test model sensitivity and observe instantaneous risk threshold shifts.
+                        </p>
+                    </div>
+                    <button type="button" class="btn-primary" style="background: linear-gradient(135deg, #005e66, #0284c7); padding: 8px 18px; font-size: 0.84rem; font-weight: 700;" onclick="simulateMainSandboxPrediction()">
+                        <span>⚡</span> Recalculate Models
+                    </button>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 18px;">
+                    <!-- Hemoglobin -->
+                    <div>
+                        <label style="font-size: 0.78rem; font-weight: 700; color: #475569; display: flex; justify-content: space-between;">
+                            <span>🩸 Hemoglobin (Hb)</span>
+                            <span id="lbl-main-sb-hb" style="color: var(--primary); font-weight: 800;">13.5 g/dL</span>
+                        </label>
+                        <input type="range" min="4.0" max="20.0" step="0.1" value="13.5" id="main-sb-hb" style="width: 100%; margin-top: 6px;" oninput="document.getElementById('lbl-main-sb-hb').innerText = this.value + ' g/dL'; simulateMainSandboxPrediction()">
+                    </div>
+
+                    <!-- Platelet Count -->
+                    <div>
+                        <label style="font-size: 0.78rem; font-weight: 700; color: #475569; display: flex; justify-content: space-between;">
+                            <span>🦟 Platelet Count (PLT)</span>
+                            <span id="lbl-main-sb-plt" style="color: var(--primary); font-weight: 800;">250,000 /µL</span>
+                        </label>
+                        <input type="range" min="10000" max="600000" step="5000" value="250000" id="main-sb-plt" style="width: 100%; margin-top: 6px;" oninput="document.getElementById('lbl-main-sb-plt').innerText = parseInt(this.value).toLocaleString() + ' /µL'; simulateMainSandboxPrediction()">
+                    </div>
+
+                    <!-- MCV -->
+                    <div>
+                        <label style="font-size: 0.78rem; font-weight: 700; color: #475569; display: flex; justify-content: space-between;">
+                            <span>🔴 Mean Corpuscular Vol (MCV)</span>
+                            <span id="lbl-main-sb-mcv" style="color: var(--primary); font-weight: 800;">88.0 fL</span>
+                        </label>
+                        <input type="range" min="50" max="130" step="1" value="88" id="main-sb-mcv" style="width: 100%; margin-top: 6px;" oninput="document.getElementById('lbl-main-sb-mcv').innerText = this.value + ' fL'; simulateMainSandboxPrediction()">
+                    </div>
+
+                    <!-- Total WBC -->
+                    <div>
+                        <label style="font-size: 0.78rem; font-weight: 700; color: #475569; display: flex; justify-content: space-between;">
+                            <span>🛡️ Total WBC Count</span>
+                            <span id="lbl-main-sb-wbc" style="color: var(--primary); font-weight: 800;">6,500 /µL</span>
+                        </label>
+                        <input type="range" min="1000" max="30000" step="500" value="6500" id="main-sb-wbc" style="width: 100%; margin-top: 6px;" oninput="document.getElementById('lbl-main-sb-wbc').innerText = parseInt(this.value).toLocaleString() + ' /µL'; simulateMainSandboxPrediction()">
+                    </div>
+
+                    <!-- Total Bilirubin -->
+                    <div>
+                        <label style="font-size: 0.78rem; font-weight: 700; color: #475569; display: flex; justify-content: space-between;">
+                            <span>🫁 Total Bilirubin (LFT)</span>
+                            <span id="lbl-main-sb-bili" style="color: var(--primary); font-weight: 800;">0.8 mg/dL</span>
+                        </label>
+                        <input type="range" min="0.1" max="15.0" step="0.1" value="0.8" id="main-sb-bili" style="width: 100%; margin-top: 6px;" oninput="document.getElementById('lbl-main-sb-bili').innerText = this.value + ' mg/dL'; simulateMainSandboxPrediction()">
+                    </div>
+
+                    <!-- TSH -->
+                    <div>
+                        <label style="font-size: 0.78rem; font-weight: 700; color: #475569; display: flex; justify-content: space-between;">
+                            <span>🦋 TSH (Thyroid)</span>
+                            <span id="lbl-main-sb-tsh" style="color: var(--primary); font-weight: 800;">2.1 µIU/mL</span>
+                        </label>
+                        <input type="range" min="0.05" max="25.0" step="0.1" value="2.1" id="main-sb-tsh" style="width: 100%; margin-top: 6px;" oninput="document.getElementById('lbl-main-sb-tsh').innerText = this.value + ' µIU/mL'; simulateMainSandboxPrediction()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live ML Model Predictions Output Grid -->
+            <div style="font-size: 0.82rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 12px;">
+                🤖 Live Evaluated Production Machine Learning Models:
+            </div>
+            
+            <div id="main-sb-output-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                <!-- Cards dynamically populated by simulateMainSandboxPrediction -->
+            </div>
+
+            <!-- Microscopic Malaria Smear Image Classifier Card -->
+            <div class="card" style="padding: 22px; margin-bottom: 24px; border: 1.5px dashed #cbd5e1;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                    <div style="display: flex; align-items: center; gap: 14px;">
+                        <span style="font-size: 2.2rem;">🔬</span>
+                        <div>
+                            <h3 style="font-size: 1.05rem; font-weight: 800; color: var(--text-main); margin: 0 0 4px 0;">
+                                Microscopic Malaria Smear Image Computer Vision Classifier
+                            </h3>
+                            <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0;">
+                                Upload a thin/thick blood smear microscopy photograph (.png, .jpg) to classify intracellular parasite presence with trained computer vision morphology pipelines.
+                            </p>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <input type="file" id="main-sb-smear-input" style="display: none;" accept=".png,.jpg,.jpeg" onchange="handleMainSandboxSmearUpload(event)">
+                        <button type="button" class="btn-secondary" style="font-size: 0.84rem; padding: 9px 16px; font-weight: 700;" onclick="document.getElementById('main-sb-smear-input').click()">
+                            <span>📷</span> Upload Blood Smear Photo
+                        </button>
+                        <button type="button" class="btn-primary" style="font-size: 0.84rem; padding: 9px 16px; font-weight: 700; background: linear-gradient(135deg, #0d9488, #0284c7);" onclick="runDemoMalariaSmearTest()">
+                            <span>🧪</span> Run Demo Smear Test
+                        </button>
+                    </div>
+                </div>
+
+                <div id="main-sb-smear-result" style="display: none; margin-top: 16px; padding: 14px; border-radius: 8px; background: #f0fdf4; border: 1px solid #bbf7d0; font-size: 0.86rem; color: #166534;">
+                </div>
+            </div>
+
+            <!-- Disclaimer -->
+            <div class="disclaimer-box" style="margin-top: 14px;">
+                <span style="font-size: 1.1rem; color: var(--primary);">ℹ️</span>
+                <span><strong>DECISION SUPPORT NOTICE:</strong> The Experimental ML Decision Support Sandbox evaluates validated statistical and neural network algorithms strictly for clinical research, decision-support, and educational simulation. It does not replace professional diagnostic pathology consultation.</span>
+            </div>
+        
         </section>
 
 
@@ -538,7 +831,7 @@
             <!-- Doctor / Pathology Analyzer Banner -->
             <div class="subpage-division-banner doctor-banner">
                 <span style="display: flex; align-items: center; gap: 8px;">
-                    <span>🩺</span> <strong>DOCTOR &amp; PATHOLOGY ANALYZER</strong> &bull; Deep AI Lab Report Analysis &amp; Rare Disease Concordance
+                    <span class="material-symbols-outlined" style="font-size: 18px;">biotech</span> <strong>DOCTOR &amp; PATHOLOGY ANALYZER</strong> &bull; Deep AI Lab Report Analysis &amp; Rare Disease Concordance
                 </span>
                 <span style="font-size: 0.74rem; background: #ffffff; padding: 2px 10px; border-radius: 999px; border: 1px solid #c7d2fe; color: #4338ca; font-weight: 700;">
                     🧠 Multi-Biomarker Evidence Engine
@@ -548,7 +841,7 @@
             <!-- Step 1: Upload Hero Box -->
             <div class="card">
                 <div class="card-header">
-                    <h2><span>🤖</span> AI Health Report Analyzer</h2>
+                    <h2><span class="material-symbols-outlined" style="color: var(--primary);">smart_toy</span> AI Health Report Analyzer</h2>
                     <span class="ml-badge">OpenRouter AI &bull; Multi-Model Decision Support</span>
                 </div>
                 <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 18px; line-height: 1.6;">
@@ -557,7 +850,7 @@
 
                 <!-- Dropzone Area -->
                 <div class="upload-dropzone" id="anl-drop-zone" onclick="document.getElementById('anl-file-input').click()">
-                    <div class="dropzone-icon">📄</div>
+                    <div class="dropzone-icon"><span class="material-symbols-outlined" style="font-size: 52px; color: var(--primary); margin-bottom: 8px;">upload_file</span></div>
                     <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">Drag &amp; Drop Health Report Here</h3>
                     <p style="font-size: 0.84rem; color: var(--text-muted); margin-bottom: 12px;">or click to browse files from your device</p>
                     <div style="display: inline-flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
@@ -784,6 +1077,93 @@
 
             <!-- Step 3: Visual Health Summary Output Sheet -->
             <div id="anl-results-sheet" style="display: none;"></div>
+
+            <!-- FEATURE 1: AI Differential Diagnosis Map -->
+            <div id="diagnosis-map" style="display: none;" class="diagnosis-map-card">
+                <div class="card-header" style="border: none; padding: 0 0 12px 0;">
+                    <h2><span class="material-symbols-outlined" style="color: var(--primary);">map</span> AI Differential Diagnosis Map</h2>
+                    <span class="ml-badge">Evidence Correlation &bull; Top 2 Clinical Candidates</span>
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.84rem; margin-bottom: 8px;">
+                    Comparative biochemical mapping contrasting concordant laboratory biomarkers against counter-indicative findings.
+                </p>
+                <div id="diagnosis-map-content" class="diagnosis-map-grid"></div>
+            </div>
+
+            <!-- FEATURE 2: Missing Test Intelligence -->
+            <div id="missing-tests-card" style="display: none;" class="missing-tests-card">
+                <div class="missing-tests-header">
+                    <div>
+                        <h3 style="color: var(--mc-blue); font-size: 1.05rem; font-weight: 800; margin-bottom: 4px;">
+                            <span class="material-symbols-outlined" style="color: var(--primary); vertical-align: middle;">labs</span> Missing Test Intelligence
+                        </h3>
+                        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0;">
+                            The following confirmatory diagnostic investigations are recommended to definitively resolve the differential diagnosis.
+                        </p>
+                    </div>
+                    <button type="button" class="btn-medicover-booking" onclick="bookMissingTestsAtMedicover()">
+                        <span>🏥</span> Book these tests at Medicover Vizag
+                    </button>
+                </div>
+                <div id="missing-tests-list-container" class="missing-tests-list"></div>
+            </div>
+
+            <!-- FEATURE 5: "What Changed?" Report Comparison Section -->
+            <div id="report-comparison-section" class="report-compare-card">
+                <div class="card-header" style="border: none; padding: 0 0 14px 0;">
+                    <div>
+                        <h2><span class="material-symbols-outlined" style="color: var(--primary);">compare_arrows</span> "What Changed?" Report Comparison</h2>
+                        <p style="color: var(--text-muted); font-size: 0.84rem; margin-top: 4px; margin-bottom: 0;">
+                            Upload two longitudinal diagnostic reports to compute biomarker trajectories, numerical deltas, and automated clinical prognosis flags.
+                        </p>
+                    </div>
+                    <span class="ml-badge" style="background: var(--mc-blue-surface); color: var(--mc-blue); border: 1px solid var(--mc-blue-border);">Dual-Panel Trajectory Engine</span>
+                </div>
+
+                <div class="compare-dropzones-grid">
+                    <!-- Dropzone 1: Baseline -->
+                    <div class="compare-dropzone" id="cmp-baseline-dropzone" onclick="document.getElementById('cmp-baseline-input').click()">
+                        <div style="margin-bottom: 8px;"><span class="material-symbols-outlined" style="font-size: 36px; color: var(--outline);">upload_file</span></div>
+                        <strong style="font-size: 0.95rem; color: var(--text-main); display: block;">Upload Baseline Report</strong>
+                        <span style="font-size: 0.78rem; color: var(--text-muted);" id="cmp-baseline-label">Prior lab test (PDF, CSV, Image)</span>
+                        <input type="file" id="cmp-baseline-input" accept=".pdf,.csv,.jpg,.jpeg,.png,.txt" style="display: none;" onchange="handleCompareFileSelect(event, 'baseline')">
+                    </div>
+
+                    <!-- Dropzone 2: Current -->
+                    <div class="compare-dropzone" id="cmp-current-dropzone" onclick="document.getElementById('cmp-current-input').click()">
+                        <div style="margin-bottom: 8px;"><span class="material-symbols-outlined" style="font-size: 36px; color: var(--primary);">description</span></div>
+                        <strong style="font-size: 0.95rem; color: var(--text-main); display: block;">Upload Current Report</strong>
+                        <span style="font-size: 0.78rem; color: var(--text-muted);" id="cmp-current-label">Latest follow-up test (PDF, CSV, Image)</span>
+                        <input type="file" id="cmp-current-input" accept=".pdf,.csv,.jpg,.jpeg,.png,.txt" style="display: none;" onchange="handleCompareFileSelect(event, 'current')">
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; margin-top: 14px;">
+                    <button type="button" class="btn-primary" id="btn-run-comparison" style="background: var(--mc-blue); padding: 10px 24px;" onclick="runReportComparison()">
+                        <span>🔍</span> Compare Reports &amp; Compute Deltas
+                    </button>
+                </div>
+
+                <!-- Comparison Results Container -->
+                <div id="compare-results-container" style="display: none; margin-top: 24px;">
+                    <div id="compare-summary-bar" style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px;"></div>
+                    <div class="table-responsive">
+                        <table class="results-table" id="compare-results-table">
+                            <thead>
+                                <tr>
+                                    <th>Biomarker</th>
+                                    <th>Baseline Value</th>
+                                    <th>Current Value</th>
+                                    <th>Absolute Delta</th>
+                                    <th>% Shift</th>
+                                    <th style="text-align: center;">Clinical Trajectory</th>
+                                </tr>
+                            </thead>
+                            <tbody id="compare-results-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </section>
 
 
@@ -791,10 +1171,26 @@
         <!-- 6. SYMPTOMS TO AI SUGGESTIONS VIEW         -->
         <!-- ========================================== -->
         <section id="view-symptoms" class="section-view">
+
+            <!-- FEATURE 2: Critical Alert Banner (hidden by default, shown on triage trigger) -->
+            <div id="critical-alert-banner" class="critical-alert-banner">
+                <div class="cab-content">
+                    <span class="cab-icon" id="cab-icon">🚨</span>
+                    <div class="cab-text">
+                        <strong id="cab-headline">Critical Status Detected: Please seek immediate medical attention</strong>
+                        <span id="cab-detail">Visit Medicover Vizag Emergency immediately or call <strong>1066</strong> (National Ambulance)</span>
+                    </div>
+                </div>
+                <div class="cab-actions">
+                    <a href="tel:1066" class="cab-call red-call" id="cab-call-link">📞 Call 1066</a>
+                    <button type="button" class="cab-dismiss" onclick="dismissTriageBanner()">✕ Dismiss</button>
+                </div>
+            </div>
+
             <!-- Patient Division Banner -->
             <div class="subpage-division-banner patient-banner">
                 <span style="display: flex; align-items: center; gap: 8px;">
-                    <span>👤</span> <strong>PATIENT CARE DIVISION</strong> &bull; Symptoms to AI Suggestions &amp; Guidance
+                    <span class="material-symbols-outlined" style="font-size: 18px;">psychology</span> <strong>PATIENT CARE DIVISION</strong> &bull; Symptoms to AI Suggestions &amp; Guidance
                 </span>
                 <span style="font-size: 0.74rem; background: #ffffff; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--primary-border); color: var(--primary); font-weight: 700;">
                     ✨ OpenRouter Free AI
@@ -1084,7 +1480,37 @@
                     <!-- DEDICATED DOCTORS & FOLLOW-UP TESTS (MEDICOVER VIZAG) -->
                     <div id="symp-medicover-doctors-container" style="margin-top: 24px;"></div>
 
-                    <!-- Quick Lab Test Navigation Callout -->
+                    <!-- FEATURE 1: Suggested Questions for Doctor Card (populated after stream DONE) -->
+                    <div id="medicover-questions-card" class="medicover-questions-card" style="display: none;">
+                        <div class="mq-header">
+                            <div class="mq-title">
+                                <span>🩺</span>
+                                <span>Questions for your Medicover Specialist</span>
+                                <span class="mq-badge">Medicover</span>
+                            </div>
+                            <button type="button" class="mq-copy-btn" onclick="copyDoctorQuestions()">
+                                <span id="mq-copy-icon">📋</span> Copy to Clipboard
+                            </button>
+                        </div>
+                        <ul class="mq-question-list" id="mq-question-list">
+                            <!-- Questions injected by JS -->
+                        </ul>
+                    </div>
+
+                    <!-- PATIENT SYMPTOM LOGGING BANNER: File Issue to Doctor -->
+                    <div id="symp-file-issue-banner" style="margin-top: 18px; padding: 14px 18px; border-radius: 12px; background: linear-gradient(135deg, #f0fdf4 0%, #eef3fc 100%); border: 1.5px solid #bfd0f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                        <div>
+                            <div style="font-weight: 800; font-size: 0.92rem; color: var(--mc-blue); display: flex; align-items: center; gap: 6px;">
+                                <span>📋</span> Official Clinical Logging
+                            </div>
+                            <p style="font-size: 0.8rem; color: var(--text-muted); margin: 2px 0 0 0;">
+                                Send this symptom consultation directly to Medicover physicians as an official reported issue.
+                            </p>
+                        </div>
+                        <button type="button" id="btn-file-symptom-issue" class="btn-primary" style="background: var(--mc-blue); padding: 8px 18px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px;" onclick="fileReportedIssueFromSymptoms()">
+                            <span>📨</span> File Issue to Doctor
+                        </button>
+                    </div>
                     <div style="margin-top: 20px; background: var(--primary-surface); border: 1px dashed var(--primary); border-radius: 8px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
                         <div>
                             <strong style="font-size: 0.88rem; color: var(--primary);">🔬 Want to confirm these symptoms with quantitative blood markers?</strong>
@@ -1108,162 +1534,6 @@
         </section>
 
 
-        <!-- ========================================== -->
-        <!-- 6. EXPERIMENTAL ML DECISION SUPPORT SANDBOX -->
-        <!-- ========================================== -->
-        <section id="view-sandbox" class="section-view">
-            <div class="patient-welcome-hero" style="margin-bottom: 24px;">
-                <div class="patient-hero-badge" style="background: #e0e7ff; color: #3730a3; border-color: #c7d2fe;">
-                    <span>🔬</span> Real-Time Multi-Model Diagnostic Simulation
-                </div>
-                <h1 class="patient-hero-title">
-                    Experimental <span class="highlight">ML Decision Support</span> Sandbox
-                </h1>
-                <p class="patient-hero-subtitle">
-                    Adjust laboratory biomarker sliders or load clinical scenarios in real time to simulate how validated machine learning models evaluate multi-panel pathology data.
-                </p>
-            </div>
-
-            <!-- Preset Clinical Scenario Buttons -->
-            <div class="card" style="margin-bottom: 20px; padding: 18px 22px;">
-                <div style="font-size: 0.8rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
-                    <span>💡</span> Quick Load Clinical Scenario Presets:
-                </div>
-                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                    <button type="button" class="preset-pill-btn" onclick="loadMainSandboxPreset('normal')">
-                        🟢 Normal / Healthy Profile
-                    </button>
-                    <button type="button" class="preset-pill-btn" onclick="loadMainSandboxPreset('anemia')">
-                        🩸 Iron Deficiency Anemia (Microcytic, Hb: 7.8)
-                    </button>
-                    <button type="button" class="preset-pill-btn" onclick="loadMainSandboxPreset('dengue')">
-                        🦟 Critical Dengue Thrombocytopenia (PLT: 32,000)
-                    </button>
-                    <button type="button" class="preset-pill-btn" onclick="loadMainSandboxPreset('liver')">
-                        🫁 Obstructive Jaundice / Liver Stress (Bilirubin: 4.6)
-                    </button>
-                    <button type="button" class="preset-pill-btn" onclick="loadMainSandboxPreset('thyroid')">
-                        🦋 Overt Hypothyroidism (TSH: 14.2)
-                    </button>
-                </div>
-            </div>
-
-            <!-- Interactive Parameters Control Grid -->
-            <div class="card" style="margin-bottom: 24px; padding: 22px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px;">
-                    <div>
-                        <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin: 0;">
-                            🎛️ Interactive Laboratory Biomarker Sliders
-                        </h3>
-                        <p style="font-size: 0.8rem; color: var(--text-muted); margin: 2px 0 0 0;">
-                            Drag sliders to test model sensitivity and observe instantaneous risk threshold shifts.
-                        </p>
-                    </div>
-                    <button type="button" class="btn-primary" style="background: linear-gradient(135deg, #005e66, #0284c7); padding: 8px 18px; font-size: 0.84rem; font-weight: 700;" onclick="simulateMainSandboxPrediction()">
-                        <span>⚡</span> Recalculate Models
-                    </button>
-                </div>
-
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 18px;">
-                    <!-- Hemoglobin -->
-                    <div>
-                        <label style="font-size: 0.78rem; font-weight: 700; color: #475569; display: flex; justify-content: space-between;">
-                            <span>🩸 Hemoglobin (Hb)</span>
-                            <span id="lbl-main-sb-hb" style="color: var(--primary); font-weight: 800;">13.5 g/dL</span>
-                        </label>
-                        <input type="range" min="4.0" max="20.0" step="0.1" value="13.5" id="main-sb-hb" style="width: 100%; margin-top: 6px;" oninput="document.getElementById('lbl-main-sb-hb').innerText = this.value + ' g/dL'; simulateMainSandboxPrediction()">
-                    </div>
-
-                    <!-- Platelet Count -->
-                    <div>
-                        <label style="font-size: 0.78rem; font-weight: 700; color: #475569; display: flex; justify-content: space-between;">
-                            <span>🦟 Platelet Count (PLT)</span>
-                            <span id="lbl-main-sb-plt" style="color: var(--primary); font-weight: 800;">250,000 /µL</span>
-                        </label>
-                        <input type="range" min="10000" max="600000" step="5000" value="250000" id="main-sb-plt" style="width: 100%; margin-top: 6px;" oninput="document.getElementById('lbl-main-sb-plt').innerText = parseInt(this.value).toLocaleString() + ' /µL'; simulateMainSandboxPrediction()">
-                    </div>
-
-                    <!-- MCV -->
-                    <div>
-                        <label style="font-size: 0.78rem; font-weight: 700; color: #475569; display: flex; justify-content: space-between;">
-                            <span>🔴 Mean Corpuscular Vol (MCV)</span>
-                            <span id="lbl-main-sb-mcv" style="color: var(--primary); font-weight: 800;">88.0 fL</span>
-                        </label>
-                        <input type="range" min="50" max="130" step="1" value="88" id="main-sb-mcv" style="width: 100%; margin-top: 6px;" oninput="document.getElementById('lbl-main-sb-mcv').innerText = this.value + ' fL'; simulateMainSandboxPrediction()">
-                    </div>
-
-                    <!-- Total WBC -->
-                    <div>
-                        <label style="font-size: 0.78rem; font-weight: 700; color: #475569; display: flex; justify-content: space-between;">
-                            <span>🛡️ Total WBC Count</span>
-                            <span id="lbl-main-sb-wbc" style="color: var(--primary); font-weight: 800;">6,500 /µL</span>
-                        </label>
-                        <input type="range" min="1000" max="30000" step="500" value="6500" id="main-sb-wbc" style="width: 100%; margin-top: 6px;" oninput="document.getElementById('lbl-main-sb-wbc').innerText = parseInt(this.value).toLocaleString() + ' /µL'; simulateMainSandboxPrediction()">
-                    </div>
-
-                    <!-- Total Bilirubin -->
-                    <div>
-                        <label style="font-size: 0.78rem; font-weight: 700; color: #475569; display: flex; justify-content: space-between;">
-                            <span>🫁 Total Bilirubin (LFT)</span>
-                            <span id="lbl-main-sb-bili" style="color: var(--primary); font-weight: 800;">0.8 mg/dL</span>
-                        </label>
-                        <input type="range" min="0.1" max="15.0" step="0.1" value="0.8" id="main-sb-bili" style="width: 100%; margin-top: 6px;" oninput="document.getElementById('lbl-main-sb-bili').innerText = this.value + ' mg/dL'; simulateMainSandboxPrediction()">
-                    </div>
-
-                    <!-- TSH -->
-                    <div>
-                        <label style="font-size: 0.78rem; font-weight: 700; color: #475569; display: flex; justify-content: space-between;">
-                            <span>🦋 TSH (Thyroid)</span>
-                            <span id="lbl-main-sb-tsh" style="color: var(--primary); font-weight: 800;">2.1 µIU/mL</span>
-                        </label>
-                        <input type="range" min="0.05" max="25.0" step="0.1" value="2.1" id="main-sb-tsh" style="width: 100%; margin-top: 6px;" oninput="document.getElementById('lbl-main-sb-tsh').innerText = this.value + ' µIU/mL'; simulateMainSandboxPrediction()">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Live ML Model Predictions Output Grid -->
-            <div style="font-size: 0.82rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 12px;">
-                🤖 Live Evaluated Production Machine Learning Models:
-            </div>
-            
-            <div id="main-sb-output-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px;">
-                <!-- Cards dynamically populated by simulateMainSandboxPrediction -->
-            </div>
-
-            <!-- Microscopic Malaria Smear Image Classifier Card -->
-            <div class="card" style="padding: 22px; margin-bottom: 24px; border: 1.5px dashed #cbd5e1;">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
-                    <div style="display: flex; align-items: center; gap: 14px;">
-                        <span style="font-size: 2.2rem;">🔬</span>
-                        <div>
-                            <h3 style="font-size: 1.05rem; font-weight: 800; color: var(--text-main); margin: 0 0 4px 0;">
-                                Microscopic Malaria Smear Image Computer Vision Classifier
-                            </h3>
-                            <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0;">
-                                Upload a thin/thick blood smear microscopy photograph (.png, .jpg) to classify intracellular parasite presence with trained computer vision morphology pipelines.
-                            </p>
-                        </div>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                        <input type="file" id="main-sb-smear-input" style="display: none;" accept=".png,.jpg,.jpeg" onchange="handleMainSandboxSmearUpload(event)">
-                        <button type="button" class="btn-secondary" style="font-size: 0.84rem; padding: 9px 16px; font-weight: 700;" onclick="document.getElementById('main-sb-smear-input').click()">
-                            <span>📷</span> Upload Blood Smear Photo
-                        </button>
-                        <button type="button" class="btn-primary" style="font-size: 0.84rem; padding: 9px 16px; font-weight: 700; background: linear-gradient(135deg, #0d9488, #0284c7);" onclick="runDemoMalariaSmearTest()">
-                            <span>🧪</span> Run Demo Smear Test
-                        </button>
-                    </div>
-                </div>
-
-                <div id="main-sb-smear-result" style="display: none; margin-top: 16px; padding: 14px; border-radius: 8px; background: #f0fdf4; border: 1px solid #bbf7d0; font-size: 0.86rem; color: #166534;">
-                </div>
-            </div>
-
-            <!-- Disclaimer -->
-            <div class="disclaimer-box" style="margin-top: 14px;">
-                <span style="font-size: 1.1rem; color: var(--primary);">ℹ️</span>
-                <span><strong>DECISION SUPPORT NOTICE:</strong> The Experimental ML Decision Support Sandbox evaluates validated statistical and neural network algorithms strictly for clinical research, decision-support, and educational simulation. It does not replace professional diagnostic pathology consultation.</span>
-            </div>
         </section>
 
 
@@ -1432,6 +1702,142 @@
         </div>
     </div>
 
+    <!-- FEATURE 3: Share PIN Modal Overlay -->
+    <div id="share-pin-modal-overlay" class="share-pin-modal-overlay" onclick="closeSharePinModal(event)">
+        <div class="share-pin-modal-box" onclick="event.stopPropagation()">
+            <div class="spm-header">
+                <span>🔐</span> Secure Medicover Share PIN
+            </div>
+            <p class="spm-sub">
+                Share this 6-digit PIN with your Medicover doctor.<br>
+                They can use it to securely access this report summary.
+            </p>
+            <div class="spm-pin-display" id="spm-pin-display">
+                <!-- 6 digit boxes injected by JS -->
+            </div>
+            <div class="spm-expiry">⏱ PIN expires in <strong>24 hours</strong> from generation</div>
+            <div class="spm-actions">
+                <button type="button" class="spm-copy-btn" onclick="copySharePin()">
+                    <span id="spm-copy-icon">📋</span> Copy PIN
+                </button>
+                <button type="button" class="spm-close-btn" onclick="closeSharePinModalBtn()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DOCTOR REVIEW MODAL: Review Patient Reported Issue -->
+    <div id="doctor-issue-review-modal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+        <div class="card" style="width: 100%; max-width: 620px; max-height: 90vh; overflow-y: auto; background: #ffffff; border-radius: 14px; box-shadow: var(--shadow-hover); border: 2px solid var(--mc-blue); margin: 20px;">
+            <div class="card-header" style="border-bottom: 1.5px solid var(--mc-border); padding-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 1.4rem;">🩺</span>
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.1rem; color: var(--mc-blue);">Doctor Review &amp; Triage Action</h3>
+                        <span style="font-size: 0.76rem; color: var(--text-muted);" id="rev-patient-meta">Patient: Loading...</span>
+                    </div>
+                </div>
+                <button type="button" class="btn-secondary" style="padding: 4px 10px; font-size: 0.8rem;" onclick="closeDoctorIssueReviewModal()">✕</button>
+            </div>
+            <form id="form-doctor-review" onsubmit="submitDoctorIssueReview(event)" style="padding-top: 14px;">
+                <input type="hidden" id="rev-issue-id">
+                <div style="margin-bottom: 12px; background: #f8fafc; padding: 10px 14px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    <label style="font-size: 0.74rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Patient Reported Symptoms:</label>
+                    <div id="rev-reported-symptoms" style="font-size: 0.88rem; color: #1e293b; margin-top: 4px; font-weight: 600;"></div>
+                </div>
+                <div style="margin-bottom: 12px; background: #f0fdf4; padding: 10px 14px; border-radius: 8px; border: 1px solid #bbf7d0;">
+                    <label style="font-size: 0.74rem; font-weight: 700; color: #15803d; text-transform: uppercase;">AI Guidance Summary:</label>
+                    <div id="rev-ai-summary" style="font-size: 0.82rem; color: #166534; margin-top: 4px;"></div>
+                </div>
+                <div class="form-grid" style="margin-bottom: 12px;">
+                    <div class="form-group">
+                        <label for="rev-case-status">Clinical Case Status</label>
+                        <select id="rev-case-status" class="form-control">
+                            <option value="in_review">🟡 In Clinical Review</option>
+                            <option value="resolved">🟢 Resolved / Care Plan Provided</option>
+                            <option value="open">⚪ Open / Re-open</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="rev-doctor-name">Reviewing Physician</label>
+                        <input type="text" id="rev-doctor-name" class="form-control" value="Dr. Rajesh Varma (Medicover Vizag)">
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label for="rev-doctor-notes">Doctor Clinical Notes &amp; Advice to Patient</label>
+                    <textarea id="rev-doctor-notes" class="form-control" rows="4" placeholder="Enter clinical assessment, prescription notes, or advised precautions for the patient..." required></textarea>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button type="button" class="btn-secondary" onclick="closeDoctorIssueReviewModal()">Cancel</button>
+                    <button type="submit" class="btn-primary" style="background: var(--mc-blue);">Save Clinical Review</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SEND CARE REMINDER MODAL: Send Checkup, Diagnosis, or Daily Care Directives -->
+    <div id="send-care-reminder-modal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+        <div class="card" style="width: 100%; max-width: 620px; max-height: 90vh; overflow-y: auto; background: #ffffff; border-radius: 14px; box-shadow: var(--shadow-hover); border: 2px solid var(--mc-blue); margin: 20px;">
+            <div class="card-header" style="border-bottom: 1.5px solid var(--mc-border); padding-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 1.4rem;">🔔</span>
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.1rem; color: var(--mc-blue);">Dispatch Care Directive &amp; Reminder</h3>
+                        <span style="font-size: 0.76rem; color: var(--text-muted);">Send health checkup alerts, diagnosis follow-ups, or daily care regimens</span>
+                    </div>
+                </div>
+                <button type="button" class="btn-secondary" style="padding: 4px 10px; font-size: 0.8rem;" onclick="closeSendCareReminderModal()">✕</button>
+            </div>
+            <form id="form-send-reminder" onsubmit="submitCareReminder(event)" style="padding-top: 14px;">
+                <input type="hidden" id="rem-issue-id" value="">
+                <div class="form-grid" style="margin-bottom: 12px;">
+                    <div class="form-group">
+                        <label for="rem-patient-id">Target Patient</label>
+                        <select id="rem-patient-id" class="form-control" required>
+                            <!-- Populated dynamically with registered patients -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="rem-type">Category</label>
+                        <select id="rem-type" class="form-control" required>
+                            <option value="daily_care">💊 Daily Care &amp; Medication</option>
+                            <option value="diagnosis">🩺 Diagnosis &amp; Lab Follow-Up</option>
+                            <option value="checkup">🏥 Scheduled Health Checkup</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label for="rem-title">Directive Title / Headline</label>
+                    <input type="text" id="rem-title" class="form-control" placeholder="e.g., Hydration &amp; Blood Pressure Monitoring" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label for="rem-message">Clinical Instructions &amp; Actionable Guidelines</label>
+                    <textarea id="rem-message" class="form-control" rows="3" placeholder="Provide step-by-step care instructions or diagnostic preparations..." required></textarea>
+                </div>
+                <div class="form-grid" style="margin-bottom: 16px;">
+                    <div class="form-group">
+                        <label for="rem-due-date">Target Due / Execution Date</label>
+                        <input type="date" id="rem-due-date" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="rem-frequency">Frequency</label>
+                        <select id="rem-frequency" class="form-control">
+                            <option value="once">One-Time Directive</option>
+                            <option value="daily">Daily Regimen</option>
+                            <option value="weekly">Weekly Routine</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label for="rem-sent-by">Issued By</label>
+                    <input type="text" id="rem-sent-by" class="form-control" value="Dr. Rajesh Varma (Medicover Vizag Clinical Desk)">
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button type="button" class="btn-secondary" onclick="closeSendCareReminderModal()">Cancel</button>
+                    <button type="submit" class="btn-primary" style="background: var(--mc-blue);">Dispatch to Patient Portal</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script src="app.js"></script>
 </body>
