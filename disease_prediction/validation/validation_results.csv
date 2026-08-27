@@ -1,0 +1,6 @@
+Disease,Model,Accuracy,Precision,Recall,F1,CV Mean,CV Std,Leakage Found
+Anemia,Logistic Regression,1.0000,1.0000,1.0000,1.0000,0.9549,0.0164,No
+Dengue,Random Forest,0.9293,0.9323,0.9612,0.9466,0.9130,0.0236,No
+Liver Disease,Gradient Boosting,0.7281,0.7404,0.9506,0.8324,0.6930,0.0294,No
+Thyroid,Multinomial Logistic Regression,1.0000,1.0000,1.0000,1.0000,0.9581,0.0309,No
+Malaria,Gradient Boosting,0.9403,0.9368,0.9780,0.9570,N/A (Fixed Split),N/A,No (0 Hash Overlap)

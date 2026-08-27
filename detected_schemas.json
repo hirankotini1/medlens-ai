@@ -1,0 +1,158 @@
+{
+  "anemia": {
+    "columns": [
+      "Age",
+      "Sex",
+      "HGB",
+      "RBC",
+      "PCV",
+      "MCV",
+      "MCH",
+      "MCHC",
+      "RDW",
+      "TLC",
+      "PLT /mm3",
+      "Anemia"
+    ],
+    "dtypes": {
+      "Age": "int64",
+      "Sex": "object",
+      "HGB": "float64",
+      "RBC": "float64",
+      "PCV": "float64",
+      "MCV": "float64",
+      "MCH": "float64",
+      "MCHC": "float64",
+      "RDW": "float64",
+      "TLC": "float64",
+      "PLT /mm3": "float64",
+      "Anemia": "object"
+    },
+    "null_counts": {},
+    "sample_row": {
+      "Age": 28,
+      "Sex": "Female",
+      "HGB": 9.6,
+      "RBC": 5.66,
+      "PCV": 34.0,
+      "MCV": 60.1,
+      "MCH": 17.0,
+      "MCHC": 28.2,
+      "RDW": 20.0,
+      "TLC": 11.1,
+      "PLT /mm3": 128.3,
+      "Anemia": "Anemic"
+    }
+  },
+  "dengue": {
+    "columns": [
+      "age",
+      "gender",
+      "hemoglobin_g_dl",
+      "wbc_count",
+      "differential_count",
+      "rbc_count",
+      "platelet_count",
+      "platelet_distribution_width",
+      "dengue_label"
+    ],
+    "dtypes": {
+      "age": "int64",
+      "gender": "object",
+      "hemoglobin_g_dl": "float64",
+      "wbc_count": "float64",
+      "differential_count": "int64",
+      "rbc_count": "int64",
+      "platelet_count": "float64",
+      "platelet_distribution_width": "float64",
+      "dengue_label": "int64"
+    },
+    "null_counts": {
+      "wbc_count": 24,
+      "platelet_count": 16,
+      "platelet_distribution_width": 19
+    },
+    "sample_row": {
+      "age": 43,
+      "gender": "Male",
+      "hemoglobin_g_dl": 12.6,
+      "wbc_count": 2200.0,
+      "differential_count": 1,
+      "rbc_count": 1,
+      "platelet_count": 62000.0,
+      "platelet_distribution_width": 11.0,
+      "dengue_label": 1
+    }
+  },
+  "liver": {
+    "columns": [
+      "age",
+      "gender",
+      "total_bilirubin",
+      "direct_bilirubin",
+      "alkaline_phosphotase",
+      "alamine_aminotransferase",
+      "aspartate_aminotransferase",
+      "total_protiens",
+      "albumin",
+      "albumin_and_globulin_ratio",
+      "dataset"
+    ],
+    "dtypes": {
+      "age": "int64",
+      "gender": "object",
+      "total_bilirubin": "float64",
+      "direct_bilirubin": "float64",
+      "alkaline_phosphotase": "int64",
+      "alamine_aminotransferase": "int64",
+      "aspartate_aminotransferase": "int64",
+      "total_protiens": "float64",
+      "albumin": "float64",
+      "albumin_and_globulin_ratio": "float64",
+      "dataset": "int64"
+    },
+    "null_counts": {
+      "albumin_and_globulin_ratio": 4
+    },
+    "sample_row": {
+      "age": 65,
+      "gender": "Female",
+      "total_bilirubin": 0.7,
+      "direct_bilirubin": 0.1,
+      "alkaline_phosphotase": 187,
+      "alamine_aminotransferase": 16,
+      "aspartate_aminotransferase": 18,
+      "total_protiens": 6.8,
+      "albumin": 3.3,
+      "albumin_and_globulin_ratio": 0.9,
+      "dataset": 1
+    }
+  },
+  "thyroid": {
+    "columns": [
+      "TSH",
+      "T4",
+      "T3",
+      "TSH_response",
+      "T3_resin_uptake",
+      "target"
+    ],
+    "dtypes": {
+      "TSH": "float64",
+      "T4": "float64",
+      "T3": "float64",
+      "TSH_response": "float64",
+      "T3_resin_uptake": "int64",
+      "target": "int64"
+    },
+    "null_counts": {},
+    "sample_row": {
+      "TSH": 0.9,
+      "T4": 10.1,
+      "T3": 2.2,
+      "TSH_response": 2.7,
+      "T3_resin_uptake": 107.0,
+      "target": 1.0
+    }
+  }
+}

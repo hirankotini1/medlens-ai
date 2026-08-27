@@ -1,0 +1,209 @@
+======================================================================
+TEST CASE 1: WILSON DISEASE PATTERN (MULTI-PANEL CONCORDANT PRESENTATION)
+======================================================================
+NEXUS PATHOLOGY DIAGNOSTIC CENTER
+PATIENT REPORT
+Patient ID: TC-001-WILSON
+Patient Name: Alex Rivera
+Age: 24 Yrs
+Gender: Male
+Report ID: REP-2026-TC1
+Date: 26-Aug-2026
+Referred By: Dr. K. Mehta
+
+INVESTIGATION               OBSERVED VALUE   UNIT        REFERENCE INTERVAL   STATUS
+--------------------------------------------------------------------------------------
+Hemoglobin                  10.4             g/dL        13.0 - 17.0          LOW
+Total RBC Count             3.55             million/uL  4.50 - 5.90          LOW
+PCV / Hematocrit            31.0             %           40.0 - 50.0          LOW
+MCV                         87.0             fL          80.0 - 100.0         NORMAL
+MCH                         29.0             pg          27.0 - 32.0          NORMAL
+MCHC                        33.5             g/dL        31.5 - 34.5          NORMAL
+RDW                         15.8             %           11.5 - 14.5          HIGH
+Total Leukocyte Count (WBC) 7200             /uL         4000 - 11000         NORMAL
+Platelet Count              178000           /uL         150000 - 450000      NORMAL
+Total Bilirubin             4.8              mg/dL       0.2 - 1.2            HIGH
+Direct Bilirubin            1.1              mg/dL       0.0 - 0.3            HIGH
+Indirect Bilirubin          3.7              mg/dL       0.2 - 0.8            HIGH
+ALT / SGPT                  186              U/L         10 - 40              HIGH
+AST / SGOT                  245              U/L         10 - 40              HIGH
+Alkaline Phosphatase (ALP)  72               U/L         44 - 147             NORMAL
+Total Protein               7.1              g/dL        6.0 - 8.3            NORMAL
+Albumin                     3.2              g/dL        3.5 - 5.0            LOW
+Globulin                    3.9              g/dL        2.0 - 3.5            HIGH
+A/G Ratio                   0.82             ratio       1.0 - 2.2            LOW
+Ceruloplasmin               8                mg/dL       20 - 40              LOW
+24-Hour Urinary Copper      185              ug/24h      10 - 60              HIGH
+Serum Copper                52               ug/dL       70 - 140             LOW
+LDH                         680              U/L         140 - 280            HIGH
+Haptoglobin                 18               mg/dL       30 - 200             LOW
+Reticulocyte Count          3.2              %           0.5 - 2.5            HIGH
+TSH                         2.1              uIU/mL      0.40 - 4.20          NORMAL
+T3 Resin Uptake             32               %           24–39%               NORMAL
+CRP                         2.1              mg/L        0.0 - 5.0            NORMAL
+
+[EVALUATOR_CRITERIA]
+Expected Condition: Wilson Disease
+Expected Signal: HIGH
+Must NOT state: Confirmed diagnosis
+Must include safe screening disclaimer: Yes
+
+======================================================================
+TEST CASE 2: FALSE POSITIVE CONTROL (ISOLATED HEPATITIS & MILD ANEMIA)
+======================================================================
+NEXUS PATHOLOGY DIAGNOSTIC CENTER
+PATIENT REPORT
+Patient ID: TC-002-CONTROL
+Patient Name: Robert Chen
+Age: 52 Yrs
+Gender: Male
+Report ID: REP-2026-TC2
+Date: 26-Aug-2026
+Referred By: Dr. S. Rao
+
+INVESTIGATION               OBSERVED VALUE   UNIT        REFERENCE INTERVAL   STATUS
+--------------------------------------------------------------------------------------
+Hemoglobin                  11.8             g/dL        13.0 - 17.0          LOW
+Total RBC Count             4.10             million/uL  4.50 - 5.90          LOW
+PCV / Hematocrit            36.0             %           40.0 - 50.0          LOW
+MCV                         88.0             fL          80.0 - 100.0         NORMAL
+MCH                         28.8             pg          27.0 - 32.0          NORMAL
+MCHC                        32.8             g/dL        31.5 - 34.5          NORMAL
+RDW                         13.2             %           11.5 - 14.5          NORMAL
+Total Leukocyte Count (WBC) 6500             /uL         4000 - 11000         NORMAL
+Platelet Count              210000           /uL         150000 - 450000      NORMAL
+Total Bilirubin             1.8              mg/dL       0.2 - 1.2            HIGH
+Direct Bilirubin            0.6              mg/dL       0.0 - 0.3            HIGH
+ALT / SGPT                  92               U/L         10 - 40              HIGH
+AST / SGOT                  84               U/L         10 - 40              HIGH
+Alkaline Phosphatase (ALP)  95               U/L         44 - 147             NORMAL
+Total Protein               7.2              g/dL        6.0 - 8.3            NORMAL
+Albumin                     3.8              g/dL        3.5 - 5.0            NORMAL
+A/G Ratio                   1.12             ratio       1.0 - 2.2            NORMAL
+Ceruloplasmin               32               mg/dL       20 - 40              NORMAL
+Serum Copper                105              ug/dL       70 - 140             NORMAL
+24-Hour Urinary Copper      28               ug/24h      10 - 60              NORMAL
+CRP                         3.5              mg/L        0.0 - 5.0            NORMAL
+
+[EVALUATOR_CRITERIA]
+Expected Condition: Wilson Disease MUST NOT be HIGH
+Expected Behavior: No specific rare disease OR only non-rare hepatic injury pattern
+Must NOT flag Wilson Disease as HIGH: True
+
+======================================================================
+TEST CASE 3: INCOMPLETE DATA / PARTIAL COPPER ABNORMALITY
+======================================================================
+NEXUS PATHOLOGY DIAGNOSTIC CENTER
+PATIENT REPORT
+Patient ID: TC-003-PARTIAL
+Patient Name: Maya Patel
+Age: 21 Yrs
+Gender: Female
+Report ID: REP-2026-TC3
+Date: 26-Aug-2026
+Referred By: Dr. R. Sharma
+
+INVESTIGATION               OBSERVED VALUE   UNIT        REFERENCE INTERVAL   STATUS
+--------------------------------------------------------------------------------------
+ALT / SGPT                  115              U/L         10 - 40              HIGH
+AST / SGOT                  98               U/L         10 - 40              HIGH
+Total Bilirubin             1.9              mg/dL       0.2 - 1.2            HIGH
+Ceruloplasmin               12               mg/dL       20 - 40              LOW
+Serum Copper                58               ug/dL       70 - 140             LOW
+Total Protein               6.8              g/dL        6.0 - 8.3            NORMAL
+Albumin                     3.6              g/dL        3.5 - 5.0            NORMAL
+
+[EVALUATOR_CRITERIA]
+Expected Signal for Wilson: MODERATE or LOW (Incomplete evidence, missing 24h urinary copper and hemolysis panel)
+Must NOT invent missing biomarkers: True
+Must identify incomplete evidence: True
+
+======================================================================
+TEST CASE 4: COMPLETE NORMAL HEALTHY ADULT CONTROL
+======================================================================
+NEXUS PATHOLOGY DIAGNOSTIC CENTER
+PATIENT REPORT
+Patient ID: TC-004-NORMAL
+Patient Name: Sarah Jenkins
+Age: 30 Yrs
+Gender: Female
+Report ID: REP-2026-TC4
+Date: 26-Aug-2026
+Referred By: Dr. E. Vance
+
+INVESTIGATION               OBSERVED VALUE   UNIT        REFERENCE INTERVAL   STATUS
+--------------------------------------------------------------------------------------
+Hemoglobin                  13.5             g/dL        12.0 - 16.0          NORMAL
+Total RBC Count             4.70             million/uL  4.00 - 5.40          NORMAL
+PCV / Hematocrit            41.0             %           36.0 - 46.0          NORMAL
+MCV                         87.0             fL          80.0 - 100.0         NORMAL
+MCH                         29.0             pg          27.0 - 32.0          NORMAL
+MCHC                        34.0             g/dL        31.5 - 34.5          NORMAL
+RDW                         13.0             %           11.5 - 14.5          NORMAL
+Total Leukocyte Count (WBC) 7000             /uL         4000 - 11000         NORMAL
+Platelet Count              250000           /uL         150000 - 450000      NORMAL
+Total Bilirubin             0.7              mg/dL       0.2 - 1.2            NORMAL
+Direct Bilirubin            0.2              mg/dL       0.0 - 0.3            NORMAL
+Indirect Bilirubin          0.5              mg/dL       0.2 - 0.8            NORMAL
+ALT / SGPT                  25               U/L         10 - 40              NORMAL
+AST / SGOT                  24               U/L         10 - 40              NORMAL
+Alkaline Phosphatase (ALP)  85               U/L         44 - 147             NORMAL
+Total Protein               7.1              g/dL        6.0 - 8.3            NORMAL
+Albumin                     4.2              g/dL        3.5 - 5.0            NORMAL
+A/G Ratio                   1.40             ratio       1.0 - 2.2            NORMAL
+Ceruloplasmin               30               mg/dL       20 - 40              NORMAL
+Serum Copper                100              ug/dL       70 - 140             NORMAL
+24-Hour Urinary Copper      30               ug/24h      10 - 60              NORMAL
+LDH                         190              U/L         140 - 280            NORMAL
+Haptoglobin                 120              mg/dL       30 - 200             NORMAL
+Reticulocyte Count          1.2              %           0.5 - 2.5            NORMAL
+TSH                         2.0              uIU/mL      0.40 - 4.20          NORMAL
+T3                          1.2              ng/dL       0.8 - 2.0            NORMAL
+T4                          8.0              ug/dL       4.5 - 12.0           NORMAL
+T3 Resin Uptake             32               %           24–39%               NORMAL
+CRP                         1.0              mg/L        0.0 - 5.0            NORMAL
+
+[EVALUATOR_CRITERIA]
+Expected Rare Disease Flag: False
+Expected Behavior: No rare/unusual disease pattern identified
+All biomarkers in normal range: True
+
+======================================================================
+TEST CASE 5: DIFFERENT UNUSUAL PATTERN (HEREDITARY HEMOCHROMATOSIS)
+======================================================================
+NEXUS PATHOLOGY DIAGNOSTIC CENTER
+PATIENT REPORT
+Patient ID: TC-005-HEMO
+Patient Name: David Miller
+Age: 42 Yrs
+Gender: Male
+Report ID: REP-2026-TC5
+Date: 26-Aug-2026
+Referred By: Dr. J. Wright
+
+INVESTIGATION               OBSERVED VALUE   UNIT        REFERENCE INTERVAL   STATUS
+--------------------------------------------------------------------------------------
+Hemoglobin                  14.8             g/dL        13.0 - 17.0          NORMAL
+Total RBC Count             5.00             million/uL  4.50 - 5.90          NORMAL
+Total Leukocyte Count (WBC) 6800             /uL         4000 - 11000         NORMAL
+Platelet Count              230000           /uL         150000 - 450000      NORMAL
+ALT / SGPT                  95               U/L         10 - 40              HIGH
+AST / SGOT                  82               U/L         10 - 40              HIGH
+Alkaline Phosphatase (ALP)  105              U/L         44 - 147             NORMAL
+Total Bilirubin             1.1              mg/dL       0.2 - 1.2            NORMAL
+Total Protein               7.3              g/dL        6.0 - 8.3            NORMAL
+Albumin                     4.0              g/dL        3.5 - 5.0            NORMAL
+Ferritin                    1250             ng/mL       30 - 400             HIGH
+Serum Iron                  220              ug/dL       60 - 170             HIGH
+Transferrin Saturation      78               %           20 - 50              HIGH
+TIBC                        280              ug/dL       250 - 450            NORMAL
+Ceruloplasmin               28               mg/dL       20 - 40              NORMAL
+Serum Copper                100              ug/dL       70 - 140             NORMAL
+24-Hour Urinary Copper      35               ug/24h      10 - 60              NORMAL
+CRP                         2.0              mg/L        0.0 - 5.0            NORMAL
+
+[EVALUATOR_CRITERIA]
+Expected Condition: Hereditary Hemochromatosis / Iron Overload
+Expected Signal: HIGH
+Must NOT flag as Wilson Disease: True
+Must include iron overload confirmatory evaluation (HFE testing): True
