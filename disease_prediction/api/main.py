@@ -1700,17 +1700,20 @@ STRICT CLINICAL RULES:
 
         # Stream sections with small delays to create a smooth, beautiful streaming experience
         yield f"data: {json.dumps({'event': 'start', 'model': 'MEDLENS Clinical Engine (Verified)'})}\n\n"
+        nl_token = json.dumps({'token': '\n'})
         for title, body_text in sections:
-            yield f"data: {json.dumps({'token': title + '\n\n'})}\n\n"
+            sec_header = json.dumps({'token': title + '\n\n'})
+            yield f"data: {sec_header}\n\n"
             time.sleep(0.04)
             for line in body_text.split('\n'):
                 words = line.split(' ')
                 for i in range(0, len(words), 3):
                     chunk = ' '.join(words[i:i+3]) + ' '
-                    yield f"data: {json.dumps({'token': chunk})}\n\n"
+                    chunk_payload = json.dumps({'token': chunk})
+                    yield f"data: {chunk_payload}\n\n"
                     time.sleep(0.02)
-                yield f"data: {json.dumps({'token': '\n'})}\n\n"
-            yield f"data: {json.dumps({'token': '\n'})}\n\n"
+                yield f"data: {nl_token}\n\n"
+            yield f"data: {nl_token}\n\n"
             time.sleep(0.03)
         
         yield f"data: {json.dumps({'usage': {'total_tokens': 420, 'prompt_tokens': 80, 'completion_tokens': 340, 'completion_tokens_details': {'reasoning_tokens': 48}}, 'reasoning_tokens': 48, 'model': 'MEDLENS Clinical Engine (Offline Mode)'})}\n\n"
