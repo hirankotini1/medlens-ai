@@ -3526,12 +3526,13 @@ input:focus, select:focus, textarea:focus {
     }
 }
 
-/* Primary Mobile Breakpoint (<= 768px - Phones & Phablets) */
+/* Primary Mobile & Tablet Breakpoint (<= 768px - Phones & Phablets) */
 @media (max-width: 768px) {
     /* Safe-area viewport padding for phones with notches/gesture bars */
     body {
         padding-bottom: calc(72px + env(safe-area-inset-bottom));
         overflow-x: hidden;
+        width: 100%;
     }
 
     main {
@@ -3540,42 +3541,89 @@ input:focus, select:focus, textarea:focus {
         overflow-x: hidden;
     }
 
-    /* Top Navigation Bar: Clean & Compact */
+    /* Top Navigation Bar: Seamless Single-Row Precision Alignment */
     .top-navbar {
-        padding: 0.6rem 0.9rem !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        flex-wrap: nowrap !important;
+        width: 100% !important;
+        min-height: 54px !important;
+        padding: 8px 12px !important;
+        gap: 8px !important;
         position: sticky;
         top: 0;
         z-index: 900;
-        background: rgba(255, 255, 255, 0.96) !important;
+        background: rgba(255, 255, 255, 0.98) !important;
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
         box-shadow: 0 1px 4px rgba(11, 28, 48, 0.06);
     }
 
     .brand-logo {
-        gap: 8px;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        flex-shrink: 1 !important;
+        min-width: 0 !important;
+        cursor: pointer;
+        text-decoration: none;
     }
 
     .brand-icon {
-        width: 32px;
-        height: 32px;
+        width: 32px !important;
+        height: 32px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-shrink: 0 !important;
+    }
+
+    .brand-text-block {
+        display: flex !important;
+        flex-direction: column !important;
+        line-height: 1.15 !important;
+        min-width: 0 !important;
+    }
+
+    .brand-title {
+        font-size: 1.05rem !important;
+        font-weight: 800 !important;
+        letter-spacing: -0.02em !important;
+        white-space: nowrap !important;
+    }
+
+    .brand-subtitle {
+        font-size: 0.58rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.05em !important;
+        white-space: nowrap !important;
+        color: var(--text-dim) !important;
     }
 
     /* Hide desktop text nav links in top bar on mobile */
-    .nav-links > .nav-btn {
-        display: none !important;
+    .nav-links {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+        flex-wrap: nowrap !important;
+        gap: 6px !important;
+        margin-left: auto !important;
+        flex-shrink: 0 !important;
     }
 
+    .nav-links > .nav-btn,
     .portal-divider {
         display: none !important;
     }
 
+    /* Right Actions Cluster: Clean Horizontal Single-Row Layout */
     .header-right-actions {
         display: flex !important;
-        flex-direction: column !important;
-        align-items: flex-end !important;
-        gap: 3px !important;
-        margin-left: auto !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 6px !important;
+        margin: 0 !important;
     }
 
     .header-action-top-row {
@@ -3586,31 +3634,63 @@ input:focus, select:focus, textarea:focus {
 
     .header-action-bottom-row {
         display: flex !important;
-        justify-content: flex-end !important;
-        width: 100% !important;
-    }
-
-    .admin-corner-btn {
-        padding: 5px 10px !important;
-        font-size: 0.72rem !important;
-        white-space: nowrap !important;
-        margin-left: 0 !important;
-        gap: 4px !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: auto !important;
+        margin: 0 !important;
     }
 
     .lang-selector-wrapper {
-        margin: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
         padding: 2px 6px !important;
+        gap: 2px !important;
+        border-radius: 8px !important;
+        background: var(--bg-subtle) !important;
+        border: 1px solid var(--card-border) !important;
+        height: 32px !important;
+        margin: 0 !important;
     }
 
     .lang-selector {
         font-size: 0.76rem !important;
-        padding: 2px 4px !important;
+        font-weight: 700 !important;
+        padding: 2px 2px !important;
+        border: none !important;
+        background: transparent !important;
+        outline: none !important;
+        cursor: pointer !important;
+        max-width: 76px !important;
     }
 
     .emergency-1066-pill {
-        padding: 2px 8px !important;
-        font-size: 0.68rem !important;
+        padding: 4px 9px !important;
+        font-size: 0.72rem !important;
+        font-weight: 800 !important;
+        white-space: nowrap !important;
+        border-radius: 999px !important;
+        height: 32px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 3px !important;
+        background: #fef2f2 !important;
+        border: 1px solid #fecaca !important;
+        color: #b91c1c !important;
+        text-decoration: none;
+    }
+
+    .admin-corner-btn {
+        padding: 5px 10px !important;
+        font-size: 0.74rem !important;
+        font-weight: 800 !important;
+        white-space: nowrap !important;
+        border-radius: 8px !important;
+        height: 32px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        margin-left: 0 !important;
+        box-shadow: 0 2px 6px rgba(99, 102, 241, 0.2) !important;
     }
 
     /* Native Mobile Bottom Navigation Bar */
@@ -3684,7 +3764,7 @@ input:focus, select:focus, textarea:focus {
     .patient-welcome-hero {
         padding: 18px 14px !important;
         border-radius: 16px !important;
-        margin-bottom: 16px !important;
+        margin: 10px 0 16px 0 !important;
     }
 
     .patient-hero-badge {
@@ -3737,6 +3817,17 @@ input:focus, select:focus, textarea:focus {
     .hero-ai-card {
         padding: 16px !important;
         border-radius: 14px !important;
+    }
+
+    /* Multi-Column Layouts to 1-Column Stacking */
+    .symptoms-layout-grid {
+        grid-template-columns: 1fr !important;
+        gap: 14px !important;
+    }
+
+    .compare-dropzones-grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
     }
 
     /* Biomarker Reference Chips: Horizontal Touch Rail */
@@ -3892,16 +3983,48 @@ input:focus, select:focus, textarea:focus {
 
 /* Compact Phones (<= 480px - iPhone SE, small Galaxy) */
 @media (max-width: 480px) {
+    .top-navbar {
+        padding: 6px 8px !important;
+        gap: 4px !important;
+    }
+
+    .brand-title {
+        font-size: 0.95rem !important;
+    }
+
+    .brand-subtitle {
+        font-size: 0.54rem !important;
+        letter-spacing: 0.02em !important;
+    }
+
+    .lang-selector-wrapper {
+        padding: 2px 4px !important;
+        height: 30px !important;
+    }
+
+    .lang-selector {
+        font-size: 0.72rem !important;
+        max-width: 60px !important;
+    }
+
+    .emergency-1066-pill {
+        padding: 3px 7px !important;
+        font-size: 0.7rem !important;
+        height: 30px !important;
+    }
+
+    .admin-corner-btn {
+        padding: 4px 8px !important;
+        font-size: 0.72rem !important;
+        height: 30px !important;
+    }
+
     .patient-hero-title {
         font-size: 1.3rem !important;
     }
 
     .patient-hero-subtitle {
         font-size: 0.8rem !important;
-    }
-
-    .brand-logo span:first-child {
-        font-size: 1.05rem !important;
     }
 
     .preset-pill-btn {
@@ -3911,5 +4034,32 @@ input:focus, select:focus, textarea:focus {
 
     .card {
         padding: 14px 12px !important;
+    }
+}
+
+/* Ultra-Compact Phones (<= 380px) */
+@media (max-width: 380px) {
+    .brand-subtitle {
+        display: none !important;
+    }
+
+    .emergency-text {
+        display: none !important;
+    }
+
+    .emergency-1066-pill::after {
+        content: "1066";
+        font-size: 0.7rem;
+        font-weight: 800;
+    }
+
+    .doc-btn-text {
+        display: none !important;
+    }
+
+    .admin-corner-btn::after {
+        content: "Doctor";
+        font-size: 0.7rem;
+        font-weight: 800;
     }
 }
