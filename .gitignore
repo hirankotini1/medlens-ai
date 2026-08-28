@@ -17,11 +17,7 @@ dist/
 *.db
 *.sqlite3
 
-# Virtual environments
-venv/
-.venv/
-env/
-
-# IDE
-.vscode/
-.idea/
+# Local runtime & tunnel configs
+tunnel_info.json
+tunnel_url.txt
+live_webhook_url.txt

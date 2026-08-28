@@ -11,10 +11,10 @@ import time
 import secrets
 from datetime import datetime
 from typing import Optional, Dict, Any, List
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException, status, Depends, Header, Query
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Request, status, Depends, Header, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse, Response
 from pydantic import BaseModel, Field
 
 # ---------------------------------------------------------
@@ -1742,6 +1742,98 @@ STRICT CLINICAL RULES:
             "X-Accel-Buffering": "no"
         }
     )
+
+
+# ---------------------------------------------------------
+# WhatsApp Chatbot Webhook (Twilio)
+# ---------------------------------------------------------
+try:
+    from disease_prediction.api import whatsapp_bot as _whatsapp_bot
+except ImportError:
+    try:
+        from api import whatsapp_bot as _whatsapp_bot
+    except ImportError:
+        import whatsapp_bot as _whatsapp_bot
+
+
+@app.get("/api/whatsapp/status", tags=["WhatsApp Chatbot"])
+def whatsapp_status():
+    """
+    Health check for the WhatsApp chatbot integration.
+    Returns Twilio configuration status and chatbot readiness.
+    """
+    twilio_sid   = os.getenv("TWILIO_ACCOUNT_SID", "")
+    twilio_token = os.getenv("TWILIO_AUTH_TOKEN", "")
+    twilio_from  = os.getenv("TWILIO_WHATSAPP_FROM", "")
+    return {
+        "status": "active",
+        "chatbot": "MEDLENS AI WhatsApp Assistant",
+        "twilio_configured": bool(twilio_sid and twilio_token and twilio_from),
+        "twilio_from": twilio_from or "not configured",
+        "webhook_endpoint": "/api/whatsapp/webhook",
+        "supported_flows": [
+            "Symptom Checker (AI-powered)",
+            "Patient Lab Report Lookup",
+            "Emergency Triage",
+            "Medicover Doctor Finder",
+            "ML Prediction Status"
+        ],
+        "demo_credentials": {
+            "note": "Send 'hi' to the Twilio sandbox number to begin",
+            "patient_ids": ["PAT-1001", "PAT-1002", "PAT-1003", "PAT-1004"],
+            "pins": ["PIN-1001", "PIN-1002", "PIN-1003", "PIN-1004"]
+        }
+    }
+
+
+@app.post("/api/whatsapp/webhook", tags=["WhatsApp Chatbot"])
+async def whatsapp_webhook(request: Request):
+    """
+    Twilio WhatsApp webhook endpoint.
+    Receives form-encoded POST from Twilio, routes through chatbot state machine,
+    and returns TwiML XML response while also ensuring reliable delivery.
+    """
+    try:
+        form_data = await request.form()
+        params: Dict[str, str] = dict(form_data)
+    except Exception:
+        params = {}
+
+    from_number = params.get("From", "").strip()
+    body        = params.get("Body", "").strip()
+
+    print("=" * 60)
+    print(f"[WHATSAPP-INCOMING] From: '{from_number}' | Body: '{body}'")
+    print("=" * 60)
+
+    if not from_number:
+        return Response(
+            content='<?xml version="1.0" encoding="UTF-8"?><Response></Response>',
+            media_type="application/xml"
+        )
+
+    # Handle empty body gracefully
+    if not body:
+        body = "hi"
+
+    # Route through chatbot and get reply
+    try:
+        reply_text = _whatsapp_bot.handle_message(from_number, body)
+    except Exception as e:
+        print(f"[WHATSAPP-HANDLER-ERROR] {e}")
+        reply_text = "Welcome to MEDLENS AI Health Assistant!\nType 'hi' or 'menu' to see options."
+
+    print(f"[WHATSAPP-REPLY] Generated reply for {from_number} ({len(reply_text)} chars)")
+
+    # Direct dispatch via Twilio REST API for guaranteed delivery to user's phone
+    try:
+        _whatsapp_bot.send_whatsapp_message_direct(from_number, reply_text)
+    except Exception as ex:
+        print(f"[WHATSAPP-DIRECT-DISPATCH-EX] {ex}")
+
+    # Return standard TwiML XML response
+    twiml = _whatsapp_bot.twiml_response(reply_text)
+    return Response(content=twiml, media_type="application/xml; charset=utf-8")
 
 
 # ---------------------------------------------------------

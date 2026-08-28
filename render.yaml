@@ -1,0 +1,38 @@
+services:
+  - type: web
+    name: medlens-ai
+    runtime: python
+    region: singapore
+    plan: free
+    rootDir: .
+    buildCommand: pip install -r disease_prediction/requirements.txt
+    startCommand: python -m uvicorn disease_prediction.api.main:app --host 0.0.0.0 --port     healthCheckPath: /health
+    autoDeploy: true
+
+    envVars:
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: OPENROUTER_MODEL
+        value: google/gemma-4-31b-it:free
+      - key: OPENROUTER_SITE_URL
+        fromService:
+          type: web
+          name: medlens-ai
+          property: host
+      - key: OPENROUTER_APP_NAME
+        value: MEDLENS AI Health Assistant
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_WHATSAPP_FROM
+        value: whatsapp:+14155238886
+      - key: PATHOLOGY_SECRET_KEY
+        generateValue: true
+      - key: RENDER_EXTERNAL_URL
+        fromService:
+          type: web
+          name: medlens-ai
+          property: host
+      - key: PYTHON_VERSION
+        value: 3.11.0

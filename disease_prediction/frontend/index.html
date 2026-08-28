@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <meta name="theme-color" content="#00397e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>MEDLENS AI x Medicover — Clinical Precision Health Platform</title>
     <!-- Google Fonts: Geist & Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -46,27 +49,32 @@
                 <span class="material-symbols-outlined">info</span> About
             </button>
 
-            <!-- Medicover Emergency 1066 Quick Action Pill from Stitch -->
-            <a href="tel:1066" style="background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; padding: 5px 12px; border-radius: 999px; font-family: var(--font-headline); font-weight: 800; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; margin-left: 6px;" title="Medicover Vizag Emergency Hotline 1066">
-                <span class="material-symbols-outlined" style="font-size: 16px; color: #ef4444;">emergency</span> 1066
-            </a>
+            <!-- RIGHT ACTIONS CLUSTER: English & Doctor Console on top, 1066 directly underneath -->
+            <div class="header-right-actions">
+                <div class="header-action-top-row">
+                    <!-- FEATURE 4: Language Selector Pill -->
+                    <div class="lang-selector-wrapper">
+                        <span class="material-symbols-outlined" style="font-size: 16px; color: var(--primary);">translate</span>
+                        <select id="global-lang-select" class="lang-selector" onchange="onLanguageChange(this.value)" title="Select AI response language">
+                            <option value="English">English</option>
+                            <option value="Hindi">हिन्दी (Hindi)</option>
+                            <option value="Telugu">తెలుగు (Telugu)</option>
+                        </select>
+                    </div>
 
-            <!-- FEATURE 4: Language Selector Pill -->
-            <div class="lang-selector-wrapper" style="margin-left: 6px; margin-right: 4px;">
-                <span class="material-symbols-outlined" style="font-size: 16px; color: var(--primary);">translate</span>
-                <select id="global-lang-select" class="lang-selector" onchange="onLanguageChange(this.value)" title="Select AI response language">
-                    <option value="English">English</option>
-                    <option value="Hindi">हिन्दी (Hindi)</option>
-                    <option value="Telugu">తెలుగు (Telugu)</option>
-                </select>
+                    <!-- TOP-RIGHT PROMINENT DOCTOR CONSOLE BUTTON -->
+                    <button type="button" class="admin-corner-btn" id="tab-admin" onclick="openAdminPortalNewTab()" title="Access Doctor & Laboratory Admin Console in a new tab">
+                        <span class="material-symbols-outlined" style="font-size: 16px;">stethoscope</span> Doctor Console ↗
+                    </button>
+                </div>
+
+                <!-- Medicover Emergency 1066 Quick Action Pill directly under Doctor Console -->
+                <div class="header-action-bottom-row">
+                    <a href="tel:1066" class="emergency-1066-pill" title="Medicover Vizag Emergency Hotline 1066">
+                        <span class="material-symbols-outlined" style="font-size: 14px; color: #ef4444;">emergency</span> 1066 Emergency
+                    </a>
+                </div>
             </div>
-
-            <div class="portal-divider"></div>
-
-            <!-- TOP-RIGHT PROMINENT ADMIN LOGIN BUTTON -->
-            <button type="button" class="admin-corner-btn" id="tab-admin" onclick="openAdminPortalNewTab()" title="Access Doctor & Laboratory Admin Console in a new tab">
-                <span class="material-symbols-outlined" style="font-size: 16px;">stethoscope</span> Doctor Console ↗
-            </button>
         </nav>
     </header>
 
@@ -100,20 +108,11 @@
                         <span class="material-symbols-outlined" style="font-size: 16px; color: var(--primary);">search</span> Instant Patient Report Access &bull; Enter Credentials:
                     </div>
                     <div class="patient-lookup-inputs">
-                        <input type="text" id="hero-pat-id" class="patient-lookup-input" placeholder="Patient ID (e.g. PAT-1001)" value="PAT-1001" style="flex: 1.2;">
-                        <input type="password" id="hero-pat-pin" class="patient-lookup-input" placeholder="Security PIN (e.g. PIN-1001)" value="PIN-1001" style="flex: 1.2;">
+                        <input type="text" id="hero-pat-id" class="patient-lookup-input" placeholder="Enter Patient ID (e.g. PAT-1001)" value="" style="flex: 1.2;" autocomplete="username">
+                        <input type="password" id="hero-pat-pin" class="patient-lookup-input" placeholder="Enter Security PIN" value="" style="flex: 1.2;" autocomplete="current-password">
                         <button type="button" class="btn-primary" style="background: linear-gradient(135deg, #005e66, #0284c7); padding: 11px 24px; font-weight: 700; flex: 0.8; justify-content: center;" onclick="handleHeroPatientLogin()">
                             <span class="material-symbols-outlined" style="font-size: 18px;">lock_open</span> View My Report Now →
                         </button>
-                    </div>
-
-                    <!-- Quick Preset Demo Chips -->
-                    <div style="margin-top: 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                        <span style="font-size: 0.75rem; color: #64748b; font-weight: 700;">Demo Quick Logins:</span>
-                        <button type="button" class="preset-pill-btn" onclick="handleHeroPatientLogin('PAT-1001', 'PIN-1001')">PAT-1001 (Priya Sharma)</button>
-                        <button type="button" class="preset-pill-btn" onclick="handleHeroPatientLogin('PAT-1002', 'PIN-1002')">PAT-1002 (Rahul Verma)</button>
-                        <button type="button" class="preset-pill-btn" onclick="handleHeroPatientLogin('PAT-1003', 'PIN-1003')">PAT-1003 (Amitabh Sen)</button>
-                        <button type="button" class="preset-pill-btn" onclick="handleHeroPatientLogin('PAT-1004', 'PIN-1004')">PAT-1004 (Sunita Nair)</button>
                     </div>
 
                     <!-- TWO SYMMETRICAL AI ACTION CARDS DIRECTLY BELOW CREDENTIALS -->
@@ -267,11 +266,11 @@
                 <div style="display: flex; flex-direction: column; gap: 14px;">
                     <div class="form-group">
                         <label>Patient ID</label>
-                        <input type="text" id="patient-id-input" class="search-input" placeholder="e.g. PAT-1001">
+                        <input type="text" id="patient-id-input" class="search-input" placeholder="Enter Patient ID (e.g. PAT-1001)" value="" autocomplete="username">
                     </div>
                     <div class="form-group">
                         <label>Security PIN</label>
-                        <input type="password" id="patient-pin-input" class="search-input" placeholder="e.g. PIN-1001">
+                        <input type="password" id="patient-pin-input" class="search-input" placeholder="Enter Security PIN (e.g. PIN-1001)" value="" autocomplete="current-password">
                     </div>
                     <button type="button" class="btn-primary" style="justify-content: center; margin-top: 6px;" onclick="handlePatientLogin()">
                         <span class="material-symbols-outlined" style="font-size: 18px;">key</span> Authenticate &amp; Access Dashboard
@@ -280,14 +279,10 @@
 
                 <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--card-border);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <span style="font-size: 0.8rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;">Registered Patient Quick Logins:</span>
+                        <span style="font-size: 0.8rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;">Registered Patient Directory:</span>
                         <button type="button" class="btn-secondary" style="padding: 2px 8px; font-size: 0.72rem;" onclick="loadPublicPatients()"><span>🔄</span> Refresh Directory</button>
                     </div>
                     <div id="patient-quick-login-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px;">
-                        <button type="button" class="btn-secondary" onclick="fillPatientCreds('PAT-1001', 'PIN-1001')">PAT-1001 (Priya Sharma)</button>
-                        <button type="button" class="btn-secondary" onclick="fillPatientCreds('PAT-1002', 'PIN-1002')">PAT-1002 (Rahul Verma)</button>
-                        <button type="button" class="btn-secondary" onclick="fillPatientCreds('PAT-1003', 'PIN-1003')">PAT-1003 (Amitabh Sen)</button>
-                        <button type="button" class="btn-secondary" onclick="fillPatientCreds('PAT-1004', 'PIN-1004')">PAT-1004 (Sunita Nair)</button>
                     </div>
                 </div>
             </div>
@@ -422,11 +417,11 @@
                 <form onsubmit="handleAdminLogin(event)" style="display: flex; flex-direction: column; gap: 12px; text-align: left;">
                     <div class="form-group">
                         <label>Staff Username</label>
-                        <input type="text" id="admin-user-input" class="search-input" value="admin" required>
+                        <input type="text" id="admin-user-input" class="search-input" placeholder="Enter Staff Username (e.g. admin)" value="" autocomplete="username" required>
                     </div>
                     <div class="form-group">
                         <label>Password</label>
-                        <input type="password" id="admin-pass-input" class="search-input" value="admin123" required>
+                        <input type="password" id="admin-pass-input" class="search-input" placeholder="Enter Password" value="" autocomplete="current-password" required>
                     </div>
                     <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; margin-top: 8px;">
                         <span class="material-symbols-outlined" style="font-size: 18px;">badge</span> Authenticate Staff Session
@@ -1838,6 +1833,33 @@
             </form>
         </div>
     </div>
+
+    <!-- ========================================================= -->
+    <!-- NATIVE MOBILE BOTTOM NAVIGATION BAR                        -->
+    <!-- Clinical glassmorphic bottom bar for one-thumb navigation   -->
+    <!-- ========================================================= -->
+    <nav class="mobile-bottom-nav" id="mobile-bottom-bar" aria-label="Mobile Navigation">
+        <button type="button" class="mob-nav-btn active" id="mob-tab-home" onclick="switchView('home')" aria-label="Home Dashboard">
+            <span class="material-symbols-outlined">dashboard</span>
+            <span class="mob-nav-label">Home</span>
+        </button>
+        <button type="button" class="mob-nav-btn" id="mob-tab-patient" onclick="switchView('patient')" aria-label="Patient Portal">
+            <span class="material-symbols-outlined">person</span>
+            <span class="mob-nav-label">Patient</span>
+        </button>
+        <button type="button" class="mob-nav-btn" id="mob-tab-analyzer" onclick="switchView('analyzer')" aria-label="AI Lab Analyzer">
+            <span class="material-symbols-outlined">analytics</span>
+            <span class="mob-nav-label">Analyzer</span>
+        </button>
+        <button type="button" class="mob-nav-btn" id="mob-tab-symptoms" onclick="switchView('symptoms')" aria-label="Symptoms AI">
+            <span class="material-symbols-outlined">psychology</span>
+            <span class="mob-nav-label">Symptoms</span>
+        </button>
+        <button type="button" class="mob-nav-btn" id="mob-tab-admin" onclick="switchView('admin')" aria-label="Doctor Console">
+            <span class="material-symbols-outlined">stethoscope</span>
+            <span class="mob-nav-label">Doctor</span>
+        </button>
+    </nav>
 
     <script src="app.js"></script>
 </body>

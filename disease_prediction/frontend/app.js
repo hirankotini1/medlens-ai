@@ -86,17 +86,19 @@ const clinicalRefRanges = {
 
 // ---------------------------------------------------------
 // ---------------------------------------------------------
-// Session & Auth Persistence Helpers
+// Session & Auth Persistence Helpers (Persistent Across Page Refresh)
 // ---------------------------------------------------------
 function saveSessionAuth() {
     try {
-        sessionStorage.setItem('nexus_auth', JSON.stringify(currentAuth));
+        const payload = JSON.stringify(currentAuth);
+        localStorage.setItem('medlens_auth', payload);
+        sessionStorage.setItem('nexus_auth', payload);
     } catch (e) {}
 }
 
 function restoreSessionAuth() {
     try {
-        const stored = sessionStorage.getItem('nexus_auth');
+        const stored = localStorage.getItem('medlens_auth') || sessionStorage.getItem('nexus_auth');
         if (stored) {
             currentAuth = JSON.parse(stored);
         }
@@ -105,6 +107,7 @@ function restoreSessionAuth() {
 
 function clearSessionAuth() {
     try {
+        localStorage.removeItem('medlens_auth');
         sessionStorage.removeItem('nexus_auth');
     } catch (e) {}
 }
@@ -171,16 +174,23 @@ function renderPatientPortalQuickButtons(patients) {
 // ---------------------------------------------------------
 function switchView(viewName) {
     try {
+        localStorage.setItem('medlens_active_view', viewName);
         sessionStorage.setItem('nexus_active_view', viewName);
     } catch (e) {}
 
     document.querySelectorAll('.section-view').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.mob-nav-btn').forEach(el => el.classList.remove('active'));
 
     const viewEl = document.getElementById(`view-${viewName}`);
     const tabEl = document.getElementById(`tab-${viewName}`);
+    const mobTabEl = document.getElementById(`mob-tab-${viewName}`);
     if (viewEl) viewEl.classList.add('active');
     if (tabEl) tabEl.classList.add('active');
+    if (mobTabEl) mobTabEl.classList.add('active');
+
+    // Smooth scroll to top on mobile view switch
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 
     if (viewName === 'admin') {
         if (currentAuth.role === 'admin' && currentAuth.token) {
@@ -5248,4 +5258,23 @@ async function submitCareReminder(e) {
     } catch (err) {
         alert("Error sending reminder: " + err.message);
     }
+}
+
+// ---------------------------------------------------------
+// Global Application Initialization & Session Recovery on Page Load / Refresh
+// ---------------------------------------------------------
+async function initializeMedlensApp() {
+    restoreSessionAuth();
+    await checkBackendHealth();
+    await loadPublicPatients();
+
+    // Recover previous active tab or default to 'home'
+    const savedView = localStorage.getItem('medlens_active_view') || sessionStorage.getItem('nexus_active_view') || 'home';
+    switchView(savedView);
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeMedlensApp);
+} else {
+    initializeMedlensApp();
 }
