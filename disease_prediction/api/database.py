@@ -196,6 +196,34 @@ def init_db():
     );
     """)
 
+    # 9. Patient Outpatient Appointments & Registrations Table (No Bed Allocation)
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS patient_appointments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        appointment_id TEXT UNIQUE NOT NULL,
+        patient_id TEXT NOT NULL,
+        full_name TEXT NOT NULL,
+        age INTEGER NOT NULL,
+        gender TEXT NOT NULL,
+        phone TEXT NOT NULL,
+        email TEXT,
+        address TEXT,
+        emergency_contact TEXT,
+        department TEXT NOT NULL,
+        doctor_name TEXT NOT NULL,
+        appointment_date TEXT NOT NULL,
+        time_slot TEXT NOT NULL,
+        reason_for_visit TEXT,
+        has_insurance INTEGER DEFAULT 0,
+        insurance_provider TEXT,
+        policy_number TEXT,
+        status TEXT DEFAULT 'Confirmed',
+        access_pin TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        FOREIGN KEY (patient_id) REFERENCES patients (patient_id)
+    );
+    """)
+
     # Schema migration check for access_pin_hash in patients
 
     cursor.execute("PRAGMA table_info(patients)")
@@ -444,6 +472,27 @@ def create_patient(data: Dict[str, Any]) -> Dict[str, Any]:
     result = get_patient_by_id(patient_id)
     if result:
         result['generated_pin'] = raw_pin
+        
+    # Auto-sync newly created patient to Supabase Cloud dataset
+    try:
+        from disease_prediction.hospital_operations.supabase_client import SupabaseHospitalClient
+        SupabaseHospitalClient.create_admission({
+            "patient_id": patient_id,
+            "full_name": data.get('name', 'Unknown'),
+            "age": int(data.get('age', 30)),
+            "gender": data.get('gender', 'Other'),
+            "phone": data.get('contact', ''),
+            "email": data.get('email', ''),
+            "has_insurance": bool(data.get('has_insurance', False)),
+            "insurance_provider": data.get('insurance_provider'),
+            "policy_number": data.get('policy_number'),
+            "preferred_bed_type": data.get('preferred_bed_type', 'General'),
+            "admitting_department": data.get('department', 'General Medicine'),
+            "admitting_doctor": data.get('doctor_name', 'Attending Physician')
+        })
+    except Exception as sync_err:
+        print(f"[SUPABASE-PATIENT-SYNC-WARN] {sync_err}")
+        
     return result
 
 def ensure_patient_exists(patient_id: str, name: str, age: int, gender: str, contact: str = "", email: str = "", access_pin: Optional[str] = None) -> Dict[str, Any]:
@@ -1148,4 +1197,114 @@ def backup_database(destination_dir: Optional[str] = None) -> str:
     conn.close()
     
     return backup_file
+
+
+# ---------------------------------------------------------
+# Outpatient Registration & Appointment Scheduling (No Bed Allocation)
+# ---------------------------------------------------------
+def register_patient_appointment(data: Dict[str, Any]) -> Dict[str, Any]:
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # 1. Generate unique identifiers
+    timestamp_suffix = datetime.now().strftime("%y%m%d%H%M")
+    rand_suffix = secrets.token_hex(2).upper()
+    appointment_id = f"APT-{timestamp_suffix}-{rand_suffix}"
+    
+    # Find next patient ID if not provided
+    cursor.execute("SELECT patient_id FROM patients ORDER BY id DESC LIMIT 1")
+    last_row = cursor.fetchone()
+    if last_row and '-' in last_row['patient_id']:
+        try:
+            last_num = int(last_row['patient_id'].split('-')[-1])
+            new_pat_num = max(1005, last_num + 1)
+        except Exception:
+            new_pat_num = 1005
+    else:
+        new_pat_num = 1005
+    
+    patient_id = data.get("patient_id") or f"PAT-{new_pat_num}"
+    
+    # Check if patient exists or create patient
+    cursor.execute("SELECT * FROM patients WHERE patient_id = ?", (patient_id,))
+    existing_pat = cursor.fetchone()
+    
+    now_iso = datetime.now().isoformat()
+    raw_pin = data.get("access_pin") or f"PIN-{new_pat_num}"
+    
+    if not existing_pat:
+        cursor.execute("""
+        INSERT INTO patients (patient_id, name, age, gender, contact, email, access_pin_hash, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            patient_id,
+            data.get("full_name"),
+            int(data.get("age", 30)),
+            data.get("gender", "Male"),
+            data.get("phone", ""),
+            data.get("email", ""),
+            hash_secret(raw_pin),
+            now_iso
+        ))
+    
+    # 2. Insert into patient_appointments
+    cursor.execute("""
+    INSERT INTO patient_appointments (
+        appointment_id, patient_id, full_name, age, gender, phone, email, address,
+        emergency_contact, department, doctor_name, appointment_date, time_slot,
+        reason_for_visit, has_insurance, insurance_provider, policy_number, status, access_pin, created_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Confirmed', ?, ?)
+    """, (
+        appointment_id,
+        patient_id,
+        data.get("full_name"),
+        int(data.get("age", 30)),
+        data.get("gender", "Male"),
+        data.get("phone", ""),
+        data.get("email", ""),
+        data.get("address", ""),
+        data.get("emergency_contact", ""),
+        data.get("department", "General Medicine"),
+        data.get("doctor_name", "Dr. Ramesh Gupta"),
+        data.get("appointment_date", datetime.now().strftime("%Y-%m-%d")),
+        data.get("time_slot", "10:00 AM - 10:30 AM"),
+        data.get("reason_for_visit", "General Clinical Consultation"),
+        1 if data.get("has_insurance") else 0,
+        data.get("insurance_provider", ""),
+        data.get("policy_number", ""),
+        raw_pin,
+        now_iso
+    ))
+    
+    conn.commit()
+    
+    cursor.execute("SELECT * FROM patient_appointments WHERE appointment_id = ?", (appointment_id,))
+    new_apt = cursor.fetchone()
+    conn.close()
+    
+    res = dict(new_apt)
+    res["access_pin"] = raw_pin
+    return res
+
+
+def list_patient_appointments(patient_id: Optional[str] = None, limit: int = 50) -> List[Dict[str, Any]]:
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    if patient_id:
+        cursor.execute("SELECT * FROM patient_appointments WHERE patient_id = ? ORDER BY id DESC LIMIT ?", (patient_id, limit))
+    else:
+        cursor.execute("SELECT * FROM patient_appointments ORDER BY id DESC LIMIT ?", (limit,))
+    rows = [dict(r) for r in cursor.fetchall()]
+    conn.close()
+    return rows
+
+
+def get_patient_appointment(appointment_id: str) -> Optional[Dict[str, Any]]:
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM patient_appointments WHERE appointment_id = ?", (appointment_id,))
+    row = cursor.fetchone()
+    conn.close()
+    return dict(row) if row else None
+
 

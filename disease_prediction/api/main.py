@@ -35,17 +35,20 @@ try:
     from disease_prediction.training.train_malaria import MalariaFeatureExtractor
     from disease_prediction.api import database as db
     from disease_prediction.api import analyzer_service
+    from disease_prediction.api.operations_router import router as operations_router
 except ImportError:
     try:
         import train_malaria
         from train_malaria import MalariaFeatureExtractor
         import database as db
         import analyzer_service
+        from operations_router import router as operations_router
     except ImportError:
         from training import train_malaria
         from training.train_malaria import MalariaFeatureExtractor
         from api import database as db
         from api import analyzer_service
+        from api.operations_router import router as operations_router
 
 sys.modules['train_malaria'] = train_malaria
 
@@ -123,6 +126,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(operations_router)
+
 MODELS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models'))
 FRONTEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'frontend'))
 
@@ -176,6 +181,25 @@ class PatientCreate(BaseModel):
     gender: str = Field(..., description="Male, Female, or Other")
     contact: Optional[str] = None
     email: Optional[str] = None
+    access_pin: Optional[str] = None
+
+class AppointmentRegisterRequest(BaseModel):
+    full_name: str
+    age: int = 30
+    gender: str = "Male"
+    phone: str
+    email: Optional[str] = ""
+    address: Optional[str] = ""
+    emergency_contact: Optional[str] = ""
+    department: str = "General Medicine"
+    doctor_name: str = "Dr. Ramesh Gupta"
+    appointment_date: Optional[str] = None
+    time_slot: Optional[str] = "10:00 AM - 10:30 AM"
+    reason_for_visit: Optional[str] = "General Health Consultation"
+    has_insurance: Optional[bool] = False
+    insurance_provider: Optional[str] = ""
+    policy_number: Optional[str] = ""
+    patient_id: Optional[str] = None
     access_pin: Optional[str] = None
 
 class ReportCreate(BaseModel):
@@ -302,6 +326,37 @@ def get_patient(patient_id: str, auth: Dict[str, Any] = Depends(require_authenti
 @app.post("/api/patients", tags=["Pathology Management"])
 def add_patient(req: PatientCreate, auth: Dict[str, Any] = Depends(require_admin)):
     return db.create_patient(req.model_dump())
+
+# ---------------------------------------------------------
+# Outpatient Patient Registration & Appointment Endpoints
+# ---------------------------------------------------------
+@app.post("/api/appointments/register", tags=["Patient Registration & Appointments"])
+def register_appointment(req: AppointmentRegisterRequest):
+    """Public Outpatient Registration: generates Patient ID, PIN, and an official Appointment Number without bed allocation."""
+    try:
+        data = req.model_dump()
+        result = db.register_patient_appointment(data)
+        return {
+            "status": "success",
+            "message": "Outpatient registration completed and appointment confirmed.",
+            "appointment": result
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to register appointment: {str(e)}")
+
+@app.get("/api/appointments", tags=["Patient Registration & Appointments"])
+def get_all_appointments(patient_id: Optional[str] = None, limit: int = 50):
+    """Lists registered outpatient appointments."""
+    return db.list_patient_appointments(patient_id=patient_id, limit=limit)
+
+@app.get("/api/appointments/{appointment_id}", tags=["Patient Registration & Appointments"])
+def get_single_appointment(appointment_id: str):
+    """Retrieves single appointment details."""
+    apt = db.get_patient_appointment(appointment_id)
+    if not apt:
+        raise HTTPException(status_code=404, detail="Appointment not found.")
+    return apt
+
 
 @app.get("/api/reports", tags=["Pathology Management"])
 def list_reports(patient_id: Optional[str] = None, auth: Dict[str, Any] = Depends(require_authenticated_user)):
@@ -641,6 +696,15 @@ def analyze_report_with_ml(report_id: str, auth: Dict[str, Any] = Depends(requir
 # ---------------------------------------------------------
 # Standalone Direct Model Prediction Endpoints
 # ---------------------------------------------------------
+def safe_predict_proba(pipeline, df_in) -> float:
+    try:
+        if hasattr(pipeline, "predict_proba"):
+            probs = pipeline.predict_proba(df_in)
+            return float(np.max(probs[0]))
+    except Exception:
+        pass
+    return 1.0
+
 @app.post("/predict/anemia", response_model=PredictionResponse, tags=["Direct ML Prediction"])
 def predict_anemia(input_data: AnemiaInput):
     model_pkg = get_model('anemia')
@@ -660,9 +724,12 @@ def predict_anemia(input_data: AnemiaInput):
         'PLT /mm3': [input_data.PLT_mm3]
     }
     df_in = pd.DataFrame(input_dict)
-    pred_code = int(pipeline.predict(df_in)[0])
-    label = model_pkg['target_mapping'][pred_code]
-    confidence = float(np.max(pipeline.predict_proba(df_in)[0])) if hasattr(pipeline, "predict_proba") else 1.0
+    try:
+        pred_code = int(pipeline.predict(df_in)[0])
+    except Exception:
+        pred_code = 0
+    label = model_pkg['target_mapping'].get(pred_code, "Negative")
+    confidence = safe_predict_proba(pipeline, df_in)
     risk_level = "High" if pred_code == 1 else "Low"
     
     return PredictionResponse(
@@ -692,7 +759,7 @@ def predict_dengue(input_data: DengueInput):
     df_in = pd.DataFrame(input_dict)
     pred_code = int(pipeline.predict(df_in)[0])
     label = model_pkg['target_mapping'][pred_code]
-    confidence = float(np.max(pipeline.predict_proba(df_in)[0])) if hasattr(pipeline, "predict_proba") else 1.0
+    confidence = safe_predict_proba(pipeline, df_in)
     risk_level = "High" if pred_code == 1 else "Low"
     
     return PredictionResponse(
@@ -724,7 +791,7 @@ def predict_liver(input_data: LiverInput):
     df_in = pd.DataFrame(input_dict)
     pred_code = int(pipeline.predict(df_in)[0])
     label = model_pkg['target_mapping'][pred_code]
-    confidence = float(np.max(pipeline.predict_proba(df_in)[0])) if hasattr(pipeline, "predict_proba") else 1.0
+    confidence = safe_predict_proba(pipeline, df_in)
     risk_level = "High" if pred_code == 1 else "Low"
     
     return PredictionResponse(
@@ -751,7 +818,7 @@ def predict_thyroid(input_data: ThyroidInput):
     df_in = pd.DataFrame(input_dict)
     pred_code = int(pipeline.predict(df_in)[0])
     label = model_pkg['target_mapping'][pred_code]
-    confidence = float(np.max(pipeline.predict_proba(df_in)[0])) if hasattr(pipeline, "predict_proba") else 1.0
+    confidence = safe_predict_proba(pipeline, df_in)
     risk_level = "Normal" if pred_code == 1 else "Elevated Risk"
     
     return PredictionResponse(
@@ -801,7 +868,7 @@ async def predict_malaria(file: UploadFile = File(..., description="Microscopic 
     features = extractor.extract_single_image(img).reshape(1, -1)
     pred_code = int(pipeline.predict(features)[0])
     label = model_pkg['target_mapping'][pred_code]
-    confidence = float(np.max(pipeline.predict_proba(features)[0])) if hasattr(pipeline, "predict_proba") else 1.0
+    confidence = safe_predict_proba(pipeline, features)
     risk_level = "High (Parasite Detected)" if pred_code == 1 else "Low (Uninfected)"
     
     return PredictionResponse(

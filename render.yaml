@@ -5,11 +5,24 @@ services:
     region: singapore
     plan: free
     rootDir: .
-    buildCommand: pip install -r disease_prediction/requirements.txt
-    startCommand: python -m uvicorn disease_prediction.api.main:app --host 0.0.0.0 --port     healthCheckPath: /health
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn disease_prediction.api.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
     autoDeploy: true
 
     envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: SUPABASE_DB_HOST
+        value: aws-0-ap-southeast-2.pooler.supabase.com
+      - key: SUPABASE_DB_PORT
+        value: "6543"
+      - key: SUPABASE_DB_USER
+        value: postgres.qvupcpgoxdcfdqowwhls
+      - key: SUPABASE_DB_PASSWORD
+        value: Hiran@56151
+      - key: SUPABASE_DB_NAME
+        value: postgres
       - key: OPENROUTER_API_KEY
         sync: false
       - key: OPENROUTER_MODEL
@@ -34,5 +47,3 @@ services:
           type: web
           name: medlens-ai
           property: host
-      - key: PYTHON_VERSION
-        value: 3.11.0

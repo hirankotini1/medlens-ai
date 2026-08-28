@@ -1,1 +1,1 @@
-web: python -m uvicorn disease_prediction.api.main:app --host 0.0.0.0 --port \n
+web: uvicorn disease_prediction.api.main:app --host 0.0.0.0 --port $PORT

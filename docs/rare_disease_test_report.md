@@ -31,7 +31,7 @@
   - **Why Flagged Rationale:** Multiple concordant laboratory findings (marked ceruloplasmin depression, elevated urinary copper excretion, transaminitis, and Coombs-negative hemolytic markers in a young individual) support a Wilson disease copper metabolism pattern and warrant confirmatory evaluation.
   - **Confirmatory Evaluation:** Ophthalmologic slit-lamp examination for Kayser-Fleischer (KF) corneal rings
 - **Production ML Inferences:**
-  - **ANEMIA:** Evaluated=True | Status=`MODEL ANALYSIS AVAILABLE` | Prediction=`Anemic` | Available=11/11 | Missing=[]
+  - **ANEMIA:** Evaluated=False | Status=`PIPELINE ERROR` | Prediction=`None` | Available=11/11 | Missing=[]
   - **DENGUE:** Evaluated=False | Status=`PARTIAL DATA` | Prediction=`None` | Available=6/8 | Missing=['Differential Count Flag', 'Platelet Distribution Width']
   - **LIVER:** Evaluated=True | Status=`MODEL ANALYSIS AVAILABLE` | Prediction=`Liver Disease Pattern` | Available=10/10 | Missing=[]
   - **THYROID:** Evaluated=False | Status=`PARTIAL DATA` | Prediction=`None` | Available=2/5 | Missing=['Thyroxine (T4)', 'Triiodothyronine (T3)', 'TSH Response to TRH']
@@ -51,7 +51,7 @@
   - **Why Flagged Rationale:** Non-specific hepatocellular transaminitis detected (elevated ALT/AST). Evaluated rare metabolic/autoimmune etiologies (Wilson disease, Hemochromatosis, Alpha-1 Antitrypsin Deficiency) do not meet multi-marker concordance criteria due to absence or normal values of disease-specific markers.
   - **Confirmatory Evaluation:** Periodic wellness review with primary healthcare provider.
 - **Production ML Inferences:**
-  - **ANEMIA:** Evaluated=True | Status=`MODEL ANALYSIS AVAILABLE` | Prediction=`Anemic` | Available=11/11 | Missing=[]
+  - **ANEMIA:** Evaluated=False | Status=`PIPELINE ERROR` | Prediction=`None` | Available=11/11 | Missing=[]
   - **DENGUE:** Evaluated=False | Status=`PARTIAL DATA` | Prediction=`None` | Available=6/8 | Missing=['Differential Count Flag', 'Platelet Distribution Width']
   - **LIVER:** Evaluated=True | Status=`MODEL ANALYSIS AVAILABLE` | Prediction=`Liver Disease Pattern` | Available=10/10 | Missing=[]
   - **THYROID:** Evaluated=False | Status=`INSUFFICIENT DATA` | Prediction=`None` | Available=0/5 | Missing=['TSH', 'Thyroxine (T4)', 'Triiodothyronine (T3)', 'TSH Response to TRH', 'T3 Resin Uptake']
@@ -91,7 +91,7 @@
   - **Why Flagged Rationale:** No sufficiently specific multi-marker pattern was identified from the available laboratory data.
   - **Confirmatory Evaluation:** Periodic wellness review with primary healthcare provider.
 - **Production ML Inferences:**
-  - **ANEMIA:** Evaluated=True | Status=`MODEL ANALYSIS AVAILABLE` | Prediction=`Normal` | Available=11/11 | Missing=[]
+  - **ANEMIA:** Evaluated=False | Status=`PIPELINE ERROR` | Prediction=`None` | Available=11/11 | Missing=[]
   - **DENGUE:** Evaluated=False | Status=`PARTIAL DATA` | Prediction=`None` | Available=6/8 | Missing=['Differential Count Flag', 'Platelet Distribution Width']
   - **LIVER:** Evaluated=True | Status=`MODEL ANALYSIS AVAILABLE` | Prediction=`Normal Liver Panel` | Available=10/10 | Missing=[]
   - **THYROID:** Evaluated=False | Status=`PARTIAL DATA` | Prediction=`None` | Available=4/5 | Missing=['TSH Response to TRH']
