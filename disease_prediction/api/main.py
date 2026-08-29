@@ -336,6 +336,16 @@ def register_appointment(req: AppointmentRegisterRequest):
     try:
         data = req.model_dump()
         result = db.register_patient_appointment(data)
+        
+        # Sync to Supabase cloud table as Registered
+        try:
+            from disease_prediction.hospital_operations.supabase_client import SupabaseHospitalClient
+            supa_data = dict(data)
+            supa_data["patient_id"] = result["patient_id"]
+            SupabaseHospitalClient.register_patient(supa_data)
+        except Exception as se:
+            logger.warning(f"Supabase sync warning during appointment register: {se}")
+
         return {
             "status": "success",
             "message": "Outpatient registration completed and appointment confirmed.",

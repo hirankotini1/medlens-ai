@@ -380,18 +380,23 @@ def register_patient_record(req: PatientRegisterRequest):
             data["name"] = data["full_name"]
             
         import disease_prediction.api.database as db
-        try:
-            sqlite_res = db.register_patient_appointment(data)
-        except Exception as sqle:
-            sqlite_res = {}
+        sqlite_res = db.register_patient_appointment(data)
+        
+        # Pass the unified patient_id to Supabase so both databases have identical ID and credentials
+        if sqlite_res.get("patient_id"):
+            data["patient_id"] = sqlite_res["patient_id"]
             
-        patient = SupabaseHospitalClient.register_patient(data)
-        if sqlite_res.get("pin"):
-            patient["pin"] = sqlite_res["pin"]
-            patient["access_pin"] = sqlite_res["pin"]
-        elif not patient.get("pin"):
-            patient["pin"] = f"PIN-{patient.get('patient_id', '1001').split('-')[-1]}"
-            patient["access_pin"] = patient["pin"]
+        try:
+            patient = SupabaseHospitalClient.register_patient(data)
+        except Exception as supa_err:
+            logger.warning(f"Supabase registration error: {supa_err}")
+            patient = dict(data)
+        
+        # Ensure identical PIN across both
+        active_pin = sqlite_res.get("pin") or sqlite_res.get("access_pin") or f"PIN-{data.get('patient_id', '1001').split('-')[-1]}"
+        patient["pin"] = active_pin
+        patient["access_pin"] = active_pin
+        patient["patient_id"] = data.get("patient_id", sqlite_res.get("patient_id"))
             
         if sqlite_res.get("appointment_id"):
             patient["appointment_id"] = sqlite_res["appointment_id"]

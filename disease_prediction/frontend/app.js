@@ -6508,25 +6508,26 @@ function onRegDeptChange(dept) {
 }
 
 async function handlePatientRegistrationSubmit(event) {
-    event.preventDefault();
+    if (event) event.preventDefault();
     try {
-        const fullName = document.getElementById('reg-full-name').value.trim();
-        const phone = document.getElementById('reg-phone').value.trim();
-        const age = parseInt(document.getElementById('reg-age').value) || 30;
-        const gender = document.getElementById('reg-gender').value;
-        const email = document.getElementById('reg-email').value.trim();
-        const address = document.getElementById('reg-address').value.trim();
-        const department = document.getElementById('reg-department').value;
-        const doctorName = document.getElementById('reg-doctor').value;
-        const appointmentDate = document.getElementById('reg-date').value;
-        const timeSlot = document.getElementById('reg-time-slot').value;
-        const symptoms = document.getElementById('reg-symptoms').value.trim();
+        const fullName = (document.getElementById('reg-full-name')?.value || '').trim();
+        const phone = (document.getElementById('reg-phone')?.value || '').trim();
+        const age = parseInt(document.getElementById('reg-age')?.value) || 30;
+        const gender = document.getElementById('reg-gender')?.value || 'Male';
+        const email = (document.getElementById('reg-email')?.value || '').trim();
+        const address = (document.getElementById('reg-address')?.value || '').trim();
+        const department = document.getElementById('reg-department')?.value || 'General Medicine';
+        const doctorName = document.getElementById('reg-doctor')?.value || 'Dr. K. Rama Murty';
+        const appointmentDate = document.getElementById('reg-date')?.value || new Date().toISOString().split('T')[0];
+        const timeSlot = document.getElementById('reg-time-slot')?.value || '10:00 AM - 10:30 AM';
+        const symptoms = (document.getElementById('reg-symptoms')?.value || '').trim();
         
         const isInsured = document.querySelector('input[name="reg-insurance-toggle"]:checked')?.value === 'yes';
-        const insuranceProvider = isInsured ? document.getElementById('reg-insurance-provider').value : '';
-        const policyNumber = isInsured ? document.getElementById('reg-policy-number').value.trim() : '';
+        const insuranceProvider = isInsured ? (document.getElementById('reg-insurance-provider')?.value || '') : 'Self Pay';
+        const policyNumber = isInsured ? (document.getElementById('reg-policy-number')?.value || '').trim() : '';
 
         const payload = {
+            name: fullName,
             full_name: fullName,
             phone: phone,
             age: age,
@@ -6536,52 +6537,71 @@ async function handlePatientRegistrationSubmit(event) {
             department: department,
             doctor_name: doctorName,
             appointment_date: appointmentDate,
+            appointment_time: timeSlot,
             time_slot: timeSlot,
+            symptoms: symptoms || 'General Clinical Consultation',
             reason_for_visit: symptoms || 'General Clinical Consultation',
             has_insurance: isInsured,
+            insurance_covered: isInsured,
             insurance_provider: insuranceProvider,
             policy_number: policyNumber
         };
 
-        const res = await fetch(apiUrl('/api/appointments/register'), {
+        const res = await fetch(apiUrl('/api/operations/patients'), {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                ...(staffAuthToken ? { 'Authorization': `Bearer ${staffAuthToken}` } : {})
+            },
             body: JSON.stringify(payload)
         });
 
-        if (res.ok) {
-            const data = await res.json();
-            const apt = data.appointment;
-            lastRegisteredAppointment = apt;
+        const data = await safeJson(res);
+        if (!res.ok) throw new Error(data.detail || 'Registration failed');
 
-            // Populate Success Slip
-            document.getElementById('slip-apt-id').textContent = apt.appointment_id;
-            document.getElementById('slip-patient-id').textContent = apt.patient_id;
-            document.getElementById('slip-patient-pin').textContent = apt.access_pin;
-            document.getElementById('slip-patient-name').textContent = apt.full_name;
-            document.getElementById('slip-age-gender').textContent = `${apt.age} yrs / ${apt.gender}`;
-            document.getElementById('slip-department').textContent = apt.department;
-            document.getElementById('slip-doctor').textContent = apt.doctor_name;
-            document.getElementById('slip-date').textContent = apt.appointment_date;
-            document.getElementById('slip-time').textContent = apt.time_slot;
+        const assignedPatId = data.patient_id || data.appointment?.patient_id;
+        const assignedPin = data.pin || data.access_pin || data.appointment?.access_pin || `PIN-${assignedPatId ? assignedPatId.split('-').pop() : '1001'}`;
+        const aptId = data.appointment_id || data.appointment?.appointment_id || `APT-${Date.now().toString().slice(-6)}`;
 
-            closePatientRegistrationModal();
+        // Populate Success Slip
+        const slipAptId = document.getElementById('slip-apt-id');
+        if (slipAptId) slipAptId.textContent = aptId;
+        const slipPatId = document.getElementById('slip-patient-id');
+        if (slipPatId) slipPatId.textContent = assignedPatId;
+        const slipPatPin = document.getElementById('slip-patient-pin');
+        if (slipPatPin) slipPatPin.textContent = assignedPin;
+        const slipPatName = document.getElementById('slip-patient-name');
+        if (slipPatName) slipPatName.textContent = fullName;
+        const slipAgeGender = document.getElementById('slip-age-gender');
+        if (slipAgeGender) slipAgeGender.textContent = `${age} yrs / ${gender}`;
+        const slipDept = document.getElementById('slip-department');
+        if (slipDept) slipDept.textContent = department;
+        const slipDoc = document.getElementById('slip-doctor');
+        if (slipDoc) slipDoc.textContent = doctorName;
+        const slipDate = document.getElementById('slip-date');
+        if (slipDate) slipDate.textContent = appointmentDate;
+        const slipTime = document.getElementById('slip-time');
+        if (slipTime) slipTime.textContent = timeSlot;
 
-            // Open Confirmation Slip
-            const successModal = document.getElementById('modal-appointment-success');
-            if (successModal) successModal.style.display = 'flex';
+        closePatientRegistrationModal();
 
-            // Refresh public directory if available
-            if (typeof loadPublicPatients === 'function') {
-                loadPublicPatients();
-            }
-        } else {
-            const err = await res.json();
-            alert(`Registration failed: ${err.detail || 'Server error'}`);
+        // Open Confirmation Slip Modal
+        const successModal = document.getElementById('modal-appointment-success');
+        if (successModal) successModal.style.display = 'flex';
+
+        // Immediately update all metrics, tables & public login directory
+        if (typeof updateReceptionistHeroStats === 'function') {
+            updateReceptionistHeroStats();
+        }
+        if (typeof loadReceptionistPatients === 'function') {
+            loadReceptionistPatients();
+        }
+        if (typeof loadPublicPatients === 'function') {
+            loadPublicPatients();
         }
     } catch (err) {
-        console.error("Error submitting appointment registration:", err);
-        alert("Failed to submit registration. Please check your network connection.");
+        console.error("Error submitting patient registration:", err);
+        alert(`❌ Registration Failed: ${err.message || 'Server error'}`);
     }
 }
 
@@ -6803,10 +6823,60 @@ function switchStaffRole(role) {
 // ---------------------------------------------------------
 
 async function loadReceptionistDashboard() {
+    updateReceptionistHeroStats();
     loadReceptionistPatients();
     loadSupabaseAdmissions();
     checkBedQuotaStatus();
     calculateReceptionistBill();
+}
+
+async function updateReceptionistHeroStats() {
+    try {
+        const [patRes, admRes, aptRes] = await Promise.allSettled([
+            fetch(apiUrl('/api/operations/patients?limit=200')).then(r => safeJson(r)),
+            fetch(apiUrl('/api/operations/admissions?status=Active')).then(r => safeJson(r)),
+            fetch(apiUrl('/api/appointments?limit=200')).then(r => safeJson(r))
+        ]);
+
+        const patients = (patRes.status === 'fulfilled' && Array.isArray(patRes.value)) ? patRes.value : [];
+        const admissions = (admRes.status === 'fulfilled' && Array.isArray(admRes.value)) ? admRes.value : [];
+        const appointments = (aptRes.status === 'fulfilled' && Array.isArray(aptRes.value)) ? aptRes.value : [];
+
+        const now = new Date();
+        const todayIso = now.toISOString().slice(0, 10);
+        const localYear = now.getFullYear();
+        const localMonth = String(now.getMonth() + 1).padStart(2, '0');
+        const localDay = String(now.getDate()).padStart(2, '0');
+        const localDateStr = `${localYear}-${localMonth}-${localDay}`;
+
+        // Count new registrations created today
+        const newToday = patients.filter(p => {
+            if (!p.created_at) return true;
+            const cDate = String(p.created_at).slice(0, 10);
+            return cDate === todayIso || cDate === localDateStr;
+        }).length;
+
+        // Count appointments today
+        const aptsToday = appointments.filter(a => {
+            if (!a.appointment_date) return false;
+            const aDate = String(a.appointment_date).slice(0, 10);
+            return aDate === todayIso || aDate === localDateStr;
+        }).length;
+
+        // Total patients today = active inpatients + today's outpatient registrations/appointments
+        const patientsToday = admissions.length + Math.max(newToday, aptsToday);
+
+        const elPatientsToday = document.getElementById('rec-stat-patients-today');
+        if (elPatientsToday) elPatientsToday.textContent = patientsToday || (admissions.length + newToday);
+
+        const elNewReg = document.getElementById('rec-stat-new-reg');
+        if (elNewReg) elNewReg.textContent = newToday;
+
+        const elApts = document.getElementById('rec-stat-appointments');
+        if (elApts) elApts.textContent = Math.max(aptsToday, appointments.length);
+    } catch (e) {
+        console.warn('Failed updating receptionist hero stats:', e);
+    }
 }
 
 async function checkBedQuotaStatus() {
@@ -7002,6 +7072,9 @@ async function handlePatientAdmissionSubmit(e) {
         closeAdmissionModal();
         loadSupabaseAdmissions();
         checkBedQuotaStatus();
+        if (typeof updateReceptionistHeroStats === 'function') {
+            updateReceptionistHeroStats();
+        }
         if (typeof renderRoomServiceBedMatrix === 'function') {
             renderRoomServiceBedMatrix('', currentWardFilter);
         }
@@ -7092,71 +7165,7 @@ function closePatientRegistrationModal() {
     if (modal) modal.style.display = 'none';
 }
 
-async function handlePatientRegistrationSubmit(e) {
-    if (e) e.preventDefault();
 
-    const name = document.getElementById('reg-full-name')?.value;
-    const phone = document.getElementById('reg-phone')?.value;
-    const age = parseInt(document.getElementById('reg-age')?.value) || 30;
-    const gender = document.getElementById('reg-gender')?.value || 'Male';
-    const email = document.getElementById('reg-email')?.value;
-    const address = document.getElementById('reg-address')?.value;
-    const dept = document.getElementById('reg-department')?.value;
-    const doc = document.getElementById('reg-doctor')?.value;
-    const date = document.getElementById('reg-date')?.value;
-    const time = document.getElementById('reg-time-slot')?.value;
-    const symptoms = document.getElementById('reg-symptoms')?.value;
-
-    const isInsured = document.querySelector('input[name="reg-insurance-toggle"]:checked')?.value === 'yes';
-    const provider = isInsured ? document.getElementById('reg-insurance-provider')?.value : 'Self Pay';
-    const policy = isInsured ? document.getElementById('reg-policy-number')?.value : null;
-
-    try {
-        const payload = {
-            name,
-            phone,
-            age,
-            gender,
-            email,
-            address,
-            department: dept,
-            doctor_name: doc,
-            appointment_date: date,
-            appointment_time: time,
-            symptoms: symptoms,
-            insurance_covered: isInsured,
-            insurance_provider: provider,
-            policy_number: policy
-        };
-
-        const res = await fetch(apiUrl('/api/operations/patients'), {
-            method: 'POST',
-            headers: getStaffAuthHeaders(),
-            body: JSON.stringify(payload)
-        });
-
-        const data = await safeJson(res);
-        if (!res.ok) throw new Error(data.detail || 'Registration failed');
-
-        closePatientRegistrationModal();
-        loadReceptionistPatients();
-
-        // Show Appointment Confirmation Slip
-        showAppointmentSlip({
-            aptId: data.appointment_id || `APT-${Date.now().toString().slice(-4)}`,
-            patientId: data.patient_id,
-            patientPin: data.pin || 'PIN-1001',
-            patientName: name,
-            ageGender: `${age}y / ${gender}`,
-            department: dept,
-            doctor: doc,
-            date: date || 'Tomorrow',
-            time: time || '10:00 AM'
-        });
-    } catch (err) {
-        alert(`❌ Registration Failed: ${err.message}`);
-    }
-}
 
 function showAppointmentSlip(info) {
     const modal = document.getElementById('modal-appointment-success');

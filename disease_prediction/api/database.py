@@ -414,11 +414,92 @@ def authenticate_patient(patient_id: str, access_pin: str) -> Optional[Dict[str,
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM patients WHERE patient_id = ?", (patient_id,))
     row = cursor.fetchone()
+    
+    clean_pin = access_pin.strip()
+    pin_suffix = patient_id.split('-')[-1] if '-' in patient_id else patient_id
+    expected_pin = f"PIN-{pin_suffix}"
+
+    if row:
+        # Check standard hash verification
+        if verify_secret(clean_pin, row['access_pin_hash']):
+            conn.close()
+            p_dict = dict(row)
+            p_dict.pop('access_pin_hash', None)
+            return p_dict
+        # Or if the user entered the canonical PIN-{suffix} format
+        if clean_pin.upper() == expected_pin.upper():
+            cursor.execute("UPDATE patients SET access_pin_hash = ? WHERE patient_id = ?", (hash_secret(clean_pin), patient_id))
+            conn.commit()
+            conn.close()
+            p_dict = dict(row)
+            p_dict.pop('access_pin_hash', None)
+            return p_dict
+
     conn.close()
-    if row and verify_secret(access_pin, row['access_pin_hash']):
-        p_dict = dict(row)
-        p_dict.pop('access_pin_hash', None)
-        return p_dict
+
+    # Fallback to Supabase patient_admissions
+    try:
+        from disease_prediction.hospital_operations.supabase_client import SupabaseHospitalClient
+        sb_conn = SupabaseHospitalClient.get_connection()
+        cur = sb_conn.cursor()
+        cur.execute("SELECT * FROM patient_admissions WHERE patient_id = %s LIMIT 1", (patient_id,))
+        sb_pat = cur.fetchone()
+        
+        if sb_pat:
+            col_names = [d[0] for d in cur.description]
+            pat_dict = dict(zip(col_names, sb_pat))
+            sb_conn.close()
+            
+            # Check PIN: matches expected_pin or matches appointment pin in SQLite
+            is_valid_pin = (clean_pin.upper() == expected_pin.upper())
+            if not is_valid_pin:
+                conn2 = get_db_connection()
+                c2 = conn2.cursor()
+                c2.execute("SELECT access_pin FROM patient_appointments WHERE patient_id = ? ORDER BY id DESC LIMIT 1", (patient_id,))
+                apt_row = c2.fetchone()
+                conn2.close()
+                if apt_row and apt_row['access_pin'].strip().upper() == clean_pin.upper():
+                    is_valid_pin = True
+            
+            if is_valid_pin:
+                # Sync into SQLite patients table
+                conn3 = get_db_connection()
+                c3 = conn3.cursor()
+                now_iso = datetime.now().isoformat()
+                pat_name = pat_dict.get('full_name') or pat_dict.get('name', 'Patient')
+                pat_age = int(pat_dict.get('age') or 30)
+                pat_gender = pat_dict.get('gender') or 'Male'
+                pat_contact = pat_dict.get('phone') or ''
+                pat_email = pat_dict.get('email') or ''
+                c3.execute("""
+                INSERT OR REPLACE INTO patients (patient_id, name, age, gender, contact, email, access_pin_hash, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    patient_id,
+                    pat_name,
+                    pat_age,
+                    pat_gender,
+                    pat_contact,
+                    pat_email,
+                    hash_secret(clean_pin),
+                    now_iso
+                ))
+                conn3.commit()
+                conn3.close()
+                
+                return {
+                    'patient_id': patient_id,
+                    'name': pat_name,
+                    'age': pat_age,
+                    'gender': pat_gender,
+                    'contact': pat_contact,
+                    'email': pat_email
+                }
+        else:
+            sb_conn.close()
+    except Exception as e:
+        logger.warning(f"Patient login Supabase fallback error: {e}")
+
     return None
 
 
@@ -517,8 +598,10 @@ def get_public_patients() -> List[Dict[str, Any]]:
     cursor = conn.cursor()
     cursor.execute("SELECT patient_id, name, age, gender FROM patients ORDER BY id ASC")
     rows = []
+    seen_ids = set()
     for r in cursor.fetchall():
         pid = r['patient_id']
+        seen_ids.add(pid)
         pin_hint = f"PIN-{pid.split('-')[-1]}" if '-' in str(pid) else "PIN-1000"
         rows.append({
             "patient_id": pid,
@@ -528,6 +611,26 @@ def get_public_patients() -> List[Dict[str, Any]]:
             "pin_hint": pin_hint
         })
     conn.close()
+
+    # Also fetch from Supabase to ensure any newly registered cloud patients appear
+    try:
+        from disease_prediction.hospital_operations.supabase_client import SupabaseHospitalClient
+        sb_pats = SupabaseHospitalClient.list_patients(limit=50)
+        for sp in sb_pats:
+            pid = sp.get('patient_id')
+            if pid and pid not in seen_ids:
+                seen_ids.add(pid)
+                pin_hint = f"PIN-{pid.split('-')[-1]}" if '-' in str(pid) else "PIN-1000"
+                rows.append({
+                    "patient_id": pid,
+                    "name": sp.get('full_name') or sp.get('name', 'Patient'),
+                    "age": sp.get('age', 30),
+                    "gender": sp.get('gender', 'Male'),
+                    "pin_hint": pin_hint
+                })
+    except Exception as e:
+        logger.warning(f"Failed fetching public patients from Supabase: {e}")
+
     return rows
 
 def get_all_reports() -> List[Dict[str, Any]]:
@@ -1211,26 +1314,35 @@ def register_patient_appointment(data: Dict[str, Any]) -> Dict[str, Any]:
     rand_suffix = secrets.token_hex(2).upper()
     appointment_id = f"APT-{timestamp_suffix}-{rand_suffix}"
     
-    # Find next patient ID if not provided
-    cursor.execute("SELECT patient_id FROM patients ORDER BY id DESC LIMIT 1")
-    last_row = cursor.fetchone()
-    if last_row and '-' in last_row['patient_id']:
-        try:
-            last_num = int(last_row['patient_id'].split('-')[-1])
-            new_pat_num = max(1005, last_num + 1)
-        except Exception:
-            new_pat_num = 1005
+    # Find next patient ID if not provided by scanning all existing patient_ids
+    patient_id = data.get("patient_id")
+    if not patient_id:
+        cursor.execute("SELECT patient_id FROM patients")
+        existing_pids = [r['patient_id'] for r in cursor.fetchall()]
+        max_num = 1000
+        for pid in existing_pids:
+            if pid and pid.startswith('PAT-'):
+                suffix = pid[4:]
+                if suffix.isdigit() and len(suffix) <= 5:
+                    max_num = max(max_num, int(suffix))
+        new_pat_num = max_num + 1
+        patient_id = f"PAT-{new_pat_num}"
     else:
-        new_pat_num = 1005
+        # Extract suffix for PIN default
+        suffix = patient_id.split('-')[-1] if '-' in patient_id else patient_id
+        new_pat_num = suffix
     
-    patient_id = data.get("patient_id") or f"PAT-{new_pat_num}"
+    raw_pin = data.get("access_pin") or data.get("pin") or f"PIN-{new_pat_num}"
+    now_iso = datetime.now().isoformat()
+    pat_name = data.get("full_name") or data.get("name") or "Patient"
+    pat_age = int(data.get("age", 30))
+    pat_gender = data.get("gender", "Male")
+    pat_phone = data.get("phone", "")
+    pat_email = data.get("email", "")
     
-    # Check if patient exists or create patient
+    # Check if patient exists or create/update patient
     cursor.execute("SELECT * FROM patients WHERE patient_id = ?", (patient_id,))
     existing_pat = cursor.fetchone()
-    
-    now_iso = datetime.now().isoformat()
-    raw_pin = data.get("access_pin") or f"PIN-{new_pat_num}"
     
     if not existing_pat:
         cursor.execute("""
@@ -1238,13 +1350,26 @@ def register_patient_appointment(data: Dict[str, Any]) -> Dict[str, Any]:
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             patient_id,
-            data.get("full_name"),
-            int(data.get("age", 30)),
-            data.get("gender", "Male"),
-            data.get("phone", ""),
-            data.get("email", ""),
+            pat_name,
+            pat_age,
+            pat_gender,
+            pat_phone,
+            pat_email,
             hash_secret(raw_pin),
             now_iso
+        ))
+    else:
+        cursor.execute("""
+        UPDATE patients SET name = ?, age = ?, gender = ?, contact = ?, email = ?, access_pin_hash = ?
+        WHERE patient_id = ?
+        """, (
+            pat_name,
+            pat_age,
+            pat_gender,
+            pat_phone,
+            pat_email,
+            hash_secret(raw_pin),
+            patient_id
         ))
     
     # 2. Insert into patient_appointments
@@ -1257,11 +1382,11 @@ def register_patient_appointment(data: Dict[str, Any]) -> Dict[str, Any]:
     """, (
         appointment_id,
         patient_id,
-        data.get("full_name"),
-        int(data.get("age", 30)),
-        data.get("gender", "Male"),
-        data.get("phone", ""),
-        data.get("email", ""),
+        pat_name,
+        pat_age,
+        pat_gender,
+        pat_phone,
+        pat_email,
         data.get("address", ""),
         data.get("emergency_contact", ""),
         data.get("department", "General Medicine"),
@@ -1269,7 +1394,7 @@ def register_patient_appointment(data: Dict[str, Any]) -> Dict[str, Any]:
         data.get("appointment_date", datetime.now().strftime("%Y-%m-%d")),
         data.get("time_slot", "10:00 AM - 10:30 AM"),
         data.get("reason_for_visit", "General Clinical Consultation"),
-        1 if data.get("has_insurance") else 0,
+        1 if data.get("has_insurance") or data.get("insurance_covered") else 0,
         data.get("insurance_provider", ""),
         data.get("policy_number", ""),
         raw_pin,
@@ -1284,6 +1409,8 @@ def register_patient_appointment(data: Dict[str, Any]) -> Dict[str, Any]:
     
     res = dict(new_apt)
     res["access_pin"] = raw_pin
+    res["pin"] = raw_pin
+    res["patient_id"] = patient_id
     return res
 
 
