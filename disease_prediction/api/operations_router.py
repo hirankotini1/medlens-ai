@@ -645,6 +645,7 @@ def complete_lab_order(order_id: str, req: Optional[LabResultUpdateRequest] = No
 class BillGenerateRequest(BaseModel):
     patient_id: str
     patient_name: str
+    admission_id: Optional[str] = None
     bed_type: str = "General"  # General (₹800), AC (₹1800), Premium (₹4500)
     bed_id: Optional[str] = "BED-GEN-101"
     admitted_date: Optional[str] = None
@@ -656,43 +657,78 @@ class BillGenerateRequest(BaseModel):
     lab_tests_fee: float = 1200.0
     nursing_fee_per_day: float = 500.0
     medicines_fee: float = 1500.0
+    linen_fee_per_day: float = 0.0   # bedsheets & linen
+    food_fee_per_day: float = 0.0    # meals
+    extra_charges: Optional[List[Dict[str, Any]]] = []  # [{label, amount}]
     is_insured: bool = False
     insurance_provider: Optional[str] = None
     policy_number: Optional[str] = None
     coverage_percentage: float = 80.0
 
 
+# Ward daily amenity rates by tier
+WARD_AMENITY_RATES = {
+    "General":  {"linen": 80.0,  "food": 180.0, "housekeeping": 60.0},
+    "AC":       {"linen": 150.0, "food": 280.0, "housekeeping": 100.0},
+    "Premium":  {"linen": 300.0, "food": 450.0, "housekeeping": 200.0},
+    "ICU":      {"linen": 300.0, "food": 0.0,   "housekeeping": 200.0},
+}
+
+
 @router.post("/billing/calculate")
 def calculate_patient_inpatient_bill(req: BillGenerateRequest):
     """
-    Calculates detailed itemized billing invoice for an inpatient based on bed tier, stay duration, doctor visits, and insurance deductions.
+    Calculates detailed itemized billing invoice for an inpatient.
+    Includes bed tier, stay duration, doctor visits, ward amenities (linen/food), custom extras, and insurance deductions.
     """
     tier_rates = {"General": 800.0, "AC": 1800.0, "Premium": 4500.0}
+    amenity = WARD_AMENITY_RATES.get(req.bed_type, WARD_AMENITY_RATES["General"])
+
     daily_bed_rate = tier_rates.get(req.bed_type, 800.0)
-    
     days = max(1, req.days_stayed)
+
     total_bed_charges = daily_bed_rate * days
     total_doctor_charges = req.doctor_fee_per_visit * max(1, req.doctor_visits_count)
     total_nursing_charges = req.nursing_fee_per_day * days
     total_lab_charges = req.lab_tests_fee
     total_pharmacy_charges = req.medicines_fee
-    
-    gross_subtotal = total_bed_charges + total_doctor_charges + total_nursing_charges + total_lab_charges + total_pharmacy_charges
+
+    # Ward amenities
+    linen_rate = req.linen_fee_per_day if req.linen_fee_per_day > 0 else amenity["linen"]
+    food_rate = req.food_fee_per_day if req.food_fee_per_day > 0 else amenity["food"]
+    housekeeping_rate = amenity["housekeeping"]
+    total_linen_charges = round(linen_rate * days, 2)
+    total_food_charges = round(food_rate * days, 2)
+    total_housekeeping_charges = round(housekeeping_rate * days, 2)
+
+    # Extra custom charges
+    extras = req.extra_charges or []
+    total_extras = round(sum(float(e.get("amount", 0)) for e in extras), 2)
+
+    gross_subtotal = round(
+        total_bed_charges + total_doctor_charges + total_nursing_charges +
+        total_lab_charges + total_pharmacy_charges +
+        total_linen_charges + total_food_charges + total_housekeeping_charges +
+        total_extras, 2
+    )
     tax_gst = round(gross_subtotal * 0.05, 2)
     gross_total = round(gross_subtotal + tax_gst, 2)
-    
+
     if req.is_insured:
         insurance_deduction = round(gross_total * (req.coverage_percentage / 100.0), 2)
         net_payable = max(0.0, round(gross_total - insurance_deduction, 2))
     else:
         insurance_deduction = 0.0
         net_payable = gross_total
-        
+
+    bill_id = f"INV-2026-{req.patient_id.replace('PAT-', '') if req.patient_id else '8891'}"
+
     bill_data = {
         "status": "success",
-        "bill_id": f"INV-2026-{req.patient_id.replace('PAT-', '') if req.patient_id else '8891'}",
+        "bill_id": bill_id,
         "patient_id": req.patient_id,
         "patient_name": req.patient_name,
+        "admission_id": req.admission_id,
         "bed_id": req.bed_id,
         "bed_type": req.bed_type,
         "days_stayed": days,
@@ -702,6 +738,11 @@ def calculate_patient_inpatient_bill(req: BillGenerateRequest):
         "total_nursing_charges": total_nursing_charges,
         "total_lab_charges": total_lab_charges,
         "total_pharmacy_charges": total_pharmacy_charges,
+        "total_linen_charges": total_linen_charges,
+        "total_food_charges": total_food_charges,
+        "total_housekeeping_charges": total_housekeeping_charges,
+        "extra_charges": extras,
+        "total_extras": total_extras,
         "gross_subtotal": gross_subtotal,
         "tax_gst": tax_gst,
         "gross_total": gross_total,
@@ -711,13 +752,13 @@ def calculate_patient_inpatient_bill(req: BillGenerateRequest):
         "insurance_deduction": insurance_deduction,
         "net_payable": net_payable
     }
-    
-    # Save invoice directly into Supabase billing_invoices table
+
+    # Save invoice to Supabase
     try:
         SupabaseHospitalClient.save_billing_invoice(bill_data)
     except Exception as e:
         print(f"[BILLING-WARN] Failed to auto-persist invoice to Supabase: {e}")
-        
+
     return bill_data
 
 
@@ -739,6 +780,227 @@ def list_inpatient_billing_invoices(patient_id: Optional[str] = Query(None), lim
         return {"total": len(invoices), "invoices": invoices}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to list billing invoices: {str(e)}")
+
+
+class MarkPaidRequest(BaseModel):
+    admission_id: str
+    patient_id: str
+    bill_id: Optional[str] = None
+    net_payable: Optional[float] = 0.0
+
+
+@router.post("/billing/mark-paid")
+def mark_bill_as_paid(req: MarkPaidRequest):
+    """
+    Marks a patient bill as PAID.
+    1. Discharges the patient (frees the bed) if still Active.
+    2. Updates invoice status to 'Paid' in Supabase billing_invoices.
+    3. Returns updated state for frontend to refresh.
+    """
+    try:
+        # Step 1: Discharge the patient (frees bed)
+        discharge_result = None
+        try:
+            discharge_result = SupabaseHospitalClient.discharge_patient(req.admission_id)
+        except Exception as de:
+            print(f"[BILLING-MARK-PAID] Discharge attempt: {de} (may already be discharged)")
+
+        # Step 2: Update billing invoice to Paid
+        sb = SupabaseHospitalClient.get_connection()
+        sc = sb.cursor()
+        if req.bill_id:
+            sc.execute(
+                "UPDATE billing_invoices SET status = 'Paid' WHERE invoice_id = %s",
+                (req.bill_id,)
+            )
+        else:
+            sc.execute(
+                "UPDATE billing_invoices SET status = 'Paid' WHERE patient_id = %s AND status != 'Paid'",
+                (req.patient_id,)
+            )
+        sb.commit()
+        sb.close()
+
+        return {
+            "status": "success",
+            "message": f"Bill for patient {req.patient_id} marked as PAID. Bed freed.",
+            "discharge": discharge_result,
+            "bill_id": req.bill_id
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to mark bill as paid: {str(e)}")
+
+
+@router.get("/billing/amenity-rates")
+def get_ward_amenity_rates():
+    """Returns daily amenity charge rates per bed tier for ward monetization display."""
+    return WARD_AMENITY_RATES
+
+
+@router.get("/patient-location")
+def get_patient_location(q: str = Query(..., description="Patient name or Patient ID")):
+    """
+    Tracks exact patient location across the hospital.
+    Returns: Active (ward + bed), Outpatient (appointment), or Discharged (with bill info).
+    """
+    try:
+        q_lower = q.strip().lower()
+        result = {"query": q, "found": False}
+
+        # 1. Search active/discharged admissions in Supabase
+        try:
+            sb = SupabaseHospitalClient.get_connection()
+            sc = sb.cursor()
+            sc.execute("""
+                SELECT pa.admission_id, pa.patient_id, pa.full_name, pa.age, pa.gender,
+                       pa.assigned_bed_id, pa.assigned_ward, pa.admitting_doctor,
+                       pa.admitting_department, pa.admission_date, pa.discharge_date,
+                       pa.status, pa.has_insurance, pa.insurance_provider,
+                       pa.preferred_bed_type,
+                       hb.ward_name, hb.bed_type, hb.daily_rate_inr
+                FROM patient_admissions pa
+                LEFT JOIN hospital_beds hb ON pa.assigned_bed_id = hb.bed_id
+                WHERE LOWER(pa.full_name) LIKE %s OR pa.patient_id = %s
+                ORDER BY pa.admission_date DESC
+                LIMIT 5
+            """, (f"%{q_lower}%", q.strip()))
+            admissions = sc.fetchall()
+            sb.close()
+
+            if admissions:
+                adm = admissions[0]
+                (adm_id, pat_id, full_name, age, gender,
+                 bed_id, ward, doctor, dept, adm_date, disc_date,
+                 status, has_ins, ins_provider, bed_type,
+                 ward_name, hb_bed_type, daily_rate) = adm
+
+                # Days stayed
+                from datetime import datetime as dt
+                try:
+                    adm_dt = dt.fromisoformat(str(adm_date).replace('Z','').split('+')[0]) if adm_date else dt.now()
+                    end_dt = dt.fromisoformat(str(disc_date).replace('Z','').split('+')[0]) if disc_date else dt.now()
+                    days = max(1, (end_dt - adm_dt).days or 1)
+                except Exception:
+                    days = 1
+
+                # Fetch bill info if discharged
+                bill_info = None
+                try:
+                    sb2 = SupabaseHospitalClient.get_connection()
+                    sc2 = sb2.cursor()
+                    sc2.execute(
+                        "SELECT invoice_id, net_payable, status FROM billing_invoices WHERE patient_id = %s ORDER BY created_at DESC LIMIT 1",
+                        (pat_id,)
+                    )
+                    bill_row = sc2.fetchone()
+                    sb2.close()
+                    if bill_row:
+                        bill_info = {"bill_id": bill_row[0], "invoice_id": bill_row[0], "net_payable": float(bill_row[1] or 0), "bill_status": bill_row[2]}
+                except Exception:
+                    pass
+
+                result = {
+                    "found": True,
+                    "source": "inpatient",
+                    "admission_id": adm_id,
+                    "patient_id": pat_id,
+                    "full_name": full_name,
+                    "age": age,
+                    "gender": gender,
+                    "status": status,
+                    "bed_id": bed_id,
+                    "ward": ward_name or ward or "—",
+                    "bed_type": hb_bed_type or bed_type or "General",
+                    "daily_rate": float(daily_rate or 0),
+                    "attending_doctor": doctor or "—",
+                    "department": dept or "—",
+                    "admission_date": str(adm_date)[:10] if adm_date else None,
+                    "discharge_date": str(disc_date)[:10] if disc_date else None,
+                    "days_stayed": days,
+                    "has_insurance": bool(has_ins),
+                    "insurance_provider": ins_provider or "—",
+                    "bill": bill_info
+                }
+                return result
+        except Exception as se:
+            print(f"[PATIENT-LOCATION] Supabase search error: {se}")
+
+        # 2. Fallback: Search outpatient appointments in SQLite
+        import disease_prediction.api.database as db
+        conn = db.get_db_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT a.appointment_id, a.patient_id, a.full_name, a.age, a.gender,
+                   a.department, a.doctor_name, a.appointment_date, a.time_slot,
+                   a.status, p.contact, p.email
+            FROM patient_appointments a
+            LEFT JOIN patients p ON a.patient_id = p.patient_id
+            WHERE LOWER(a.full_name) LIKE ? OR a.patient_id = ?
+            ORDER BY a.appointment_date DESC
+            LIMIT 3
+        """, (f"%{q_lower}%", q.strip()))
+        appts = cur.fetchall()
+
+        if appts:
+            a = appts[0]
+            conn.close()
+            result = {
+                "found": True,
+                "source": "outpatient",
+                "appointment_id": a["appointment_id"],
+                "patient_id": a["patient_id"],
+                "full_name": a["full_name"],
+                "age": a["age"],
+                "gender": a["gender"],
+                "status": "Outpatient",
+                "department": a["department"],
+                "attending_doctor": a["doctor_name"],
+                "appointment_date": a["appointment_date"],
+                "time_slot": a["time_slot"],
+                "appointment_status": a["status"],
+                "contact": a["contact"],
+                "email": a["email"],
+            }
+            return result
+
+        # 3. Fallback: Search primary patients directory in SQLite
+        cur.execute("""
+            SELECT patient_id, name, age, gender, contact, email, created_at
+            FROM patients
+            WHERE LOWER(name) LIKE ? OR patient_id = ?
+            ORDER BY id DESC
+            LIMIT 1
+        """, (f"%{q_lower}%", q.strip()))
+        pat = cur.fetchone()
+
+        if pat:
+            # Check for lab reports
+            cur.execute("SELECT COUNT(*) as report_count FROM lab_reports WHERE patient_id = ?", (pat["patient_id"],))
+            rep_cnt = cur.fetchone()["report_count"]
+            conn.close()
+
+            result = {
+                "found": True,
+                "source": "registered",
+                "patient_id": pat["patient_id"],
+                "full_name": pat["name"],
+                "age": pat["age"],
+                "gender": pat["gender"],
+                "status": "Registered",
+                "contact": pat["contact"],
+                "email": pat["email"],
+                "registered_on": str(pat["created_at"])[:10] if pat["created_at"] else "Recorded",
+                "lab_reports_count": rep_cnt,
+            }
+            return result
+
+        conn.close()
+        result["message"] = f"No patient found matching '{q}'"
+        return result
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Patient location search failed: {str(e)}")
+
 
 
 

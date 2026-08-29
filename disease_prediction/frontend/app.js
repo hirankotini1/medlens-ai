@@ -6551,7 +6551,7 @@ async function handlePatientRegistrationSubmit(event) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                ...(staffAuthToken ? { 'Authorization': `Bearer ${staffAuthToken}` } : {})
+                ...(currentAuth && currentAuth.token ? { 'Authorization': `Bearer ${currentAuth.token}` } : {})
             },
             body: JSON.stringify(payload)
         });
@@ -7111,9 +7111,12 @@ async function loadSupabaseAdmissions() {
                     <td><span class="badge" style="background: #e0f2fe; color: #0369a1; font-weight: 800;">${bedId}</span></td>
                     <td>${tier}</td>
                     <td>${dateStr}</td>
-                    <td>
-                        <button type="button" class="btn-secondary" style="font-size: 0.72rem; padding: 3px 8px; color: #dc2626; border-color: #fca5a5;" onclick="dischargeInpatient('${admId}', '${patName.replace(/'/g, "\\'")}', '${bedId}')">
-                            <span>🚪</span> Discharge
+                    <td style="display:flex; gap:4px; flex-wrap:wrap;">
+                        <button type="button" class="btn-secondary" style="font-size: 0.7rem; padding: 3px 7px; color: #0284c7; border-color: #bae6fd;" onclick="openBillingForPatient('${patName.replace(/'/g,"\\'")}',' ','${admId}','${patId}','${tier}',1)">
+                            <span>🧾</span> Bill
+                        </button>
+                        <button type="button" class="btn-secondary" style="font-size: 0.7rem; padding: 3px 7px; color: #dc2626; border-color: #fca5a5;" onclick="dischargeInpatient('${admId}', '${patName.replace(/'/g,"\\'")}',' ${bedId}', '${tier}', '${patId}', '${rawDate || ''}')">
+                            <span>🚪</span> Discharge & Bill
                         </button>
                     </td>
                 </tr>
@@ -7124,8 +7127,8 @@ async function loadSupabaseAdmissions() {
     }
 }
 
-async function dischargeInpatient(admissionId, patientName, bedId) {
-    if (!confirm(`Confirm discharge for inpatient "${patientName}" (Bed: ${bedId})?\nThis will immediately free the bed for new admissions.`)) {
+async function dischargeInpatient(admissionId, patientName, bedId, bedTier, patientId, admissionDate) {
+    if (!confirm(`Confirm discharge for "${patientName}" (Bed: ${bedId})?\nThis will free the bed and open billing.`)) {
         return;
     }
 
@@ -7140,12 +7143,25 @@ async function dischargeInpatient(admissionId, patientName, bedId) {
             throw new Error(data.detail || 'Discharge failed');
         }
 
-        alert(`✅ Patient ${patientName} successfully discharged. Bed ${bedId} is now Available.`);
+        // Calculate days stayed
+        let days = 1;
+        if (admissionDate) {
+            try {
+                const admDt = new Date(admissionDate);
+                days = Math.max(1, Math.ceil((Date.now() - admDt.getTime()) / 86400000));
+            } catch (e) { days = 1; }
+        }
+
+        // Reload admissions + bed status
         loadSupabaseAdmissions();
         checkBedQuotaStatus();
-        if (typeof renderRoomServiceBedMatrix === 'function') {
-            renderRoomServiceBedMatrix('', currentWardFilter);
+        if (typeof filterWardManager === 'function') {
+            filterWardManager(currentWardFilter || 'General Ward A');
         }
+
+        // Auto-redirect to billing with pre-filled values
+        openBillingForPatient(patientName, '', admissionId, patientId || '', bedTier || 'General', days);
+
     } catch (err) {
         alert(`❌ Discharge Error: ${err.message}`);
     }
@@ -7607,34 +7623,69 @@ async function filterWardManager(wardName) {
     }
 }
 
-function openBillingForPatient(patientName, wardName) {
+function openBillingForPatient(patientName, wardName, admissionId, patientId, bedTier, days) {
     switchStaffRole('receptionist');
     setTimeout(() => {
         const nameInput = document.getElementById('bill-patient-name');
-        if (nameInput) nameInput.value = patientName;
+        if (nameInput) nameInput.value = patientName || '';
+        const tierSelect = document.getElementById('bill-bed-tier');
+        if (tierSelect && bedTier) tierSelect.value = bedTier;
+        const daysInput = document.getElementById('bill-days');
+        if (daysInput && days) daysInput.value = Math.max(1, days);
+        const admInput = document.getElementById('bill-admission-id');
+        if (admInput) admInput.value = admissionId || '';
+        const pidInput = document.getElementById('bill-patient-id');
+        if (pidInput) pidInput.value = patientId || '';
         calculateReceptionistBill();
-    }, 150);
+        // Scroll billing into view
+        const billingForm = document.getElementById('reception-billing-form');
+        if (billingForm) billingForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 200);
 }
 
 // ---------------------------------------------------------
 // 7. INPATIENT BILLING CALCULATOR
 // ---------------------------------------------------------
 
+// Ward amenity rates matching backend
+const WARD_AMENITY_RATES = {
+    'General': { linen: 80,  food: 180, housekeeping: 60 },
+    'AC':      { linen: 150, food: 280, housekeeping: 100 },
+    'Premium': { linen: 300, food: 450, housekeeping: 200 },
+    'ICU':     { linen: 300, food: 0,   housekeeping: 200 },
+};
+
 function calculateReceptionistBill() {
-    const patName = document.getElementById('bill-patient-name')?.value || 'Rahul Verma';
-    const bedTier = document.getElementById('bill-bed-tier')?.value || 'AC';
-    const days = parseInt(document.getElementById('bill-days')?.value) || 4;
-    const docVisits = parseInt(document.getElementById('bill-doc-visits')?.value) || days;
-    const isInsured = document.getElementById('bill-insured-toggle')?.checked ?? true;
+    const patName = document.getElementById('bill-patient-name')?.value || 'Patient';
+    const bedTier = document.getElementById('bill-bed-tier')?.value || 'General';
+    const days = Math.max(1, parseInt(document.getElementById('bill-days')?.value) || 1);
+    const docVisits = Math.max(1, parseInt(document.getElementById('bill-doc-visits')?.value) || days);
+    const isInsured = document.getElementById('bill-insured-toggle')?.checked ?? false;
 
     const tierRates = { 'General': 800, 'AC': 1800, 'Premium': 4500 };
     const bedRate = tierRates[bedTier] || 800;
+    const amenity = WARD_AMENITY_RATES[bedTier] || WARD_AMENITY_RATES['General'];
 
     const bedCharges = bedRate * days;
     const docCharges = 1000 * docVisits;
     const nursing = 500 * days;
-    const lab = 2200;
-    const subtotal = bedCharges + docCharges + nursing + lab;
+    const lab = 1200;
+    const linen = amenity.linen * days;
+    const food = amenity.food * days;
+    const housekeeping = amenity.housekeeping * days;
+
+    // Sum extras from dynamic rows
+    let extrasTotal = 0;
+    const extraRows = document.querySelectorAll('.billing-extra-row');
+    const extras = [];
+    extraRows.forEach(row => {
+        const label = row.querySelector('.extra-label-input')?.value || 'Extra';
+        const amt = parseFloat(row.querySelector('.extra-amount-input')?.value) || 0;
+        extrasTotal += amt;
+        if (amt > 0) extras.push({ label, amount: amt });
+    });
+
+    const subtotal = bedCharges + docCharges + nursing + lab + linen + food + housekeeping + extrasTotal;
     const gst = Math.round(subtotal * 0.05);
     const grossTotal = subtotal + gst;
     const insuranceDeduct = isInsured ? Math.round(grossTotal * 0.8) : 0;
@@ -7642,29 +7693,40 @@ function calculateReceptionistBill() {
 
     lastGeneratedBill = {
         patientName: patName,
-        bedTier: bedTier,
-        days: days,
-        bedCharges: bedCharges,
-        docCharges: docCharges,
-        grossTotal: grossTotal,
-        insuranceDeduct: insuranceDeduct,
-        netPayable: netPayable
+        admissionId: document.getElementById('bill-admission-id')?.value || '',
+        patientId: document.getElementById('bill-patient-id')?.value || '',
+        billId: `INV-2026-${Date.now().toString().slice(-6)}`,
+        bedTier, days, bedRate,
+        bedCharges, docCharges, nursing, lab, linen, food, housekeeping,
+        extras, extrasTotal,
+        subtotal, grossTotal, insuranceDeduct, netPayable, isInsured
     };
 
-    const dBed = document.getElementById('disp-bill-bed-charges');
-    if (dBed) dBed.textContent = `₹${bedCharges.toLocaleString()}`;
+    const dispLinen = document.getElementById('disp-linen-rate');
+    if (dispLinen) dispLinen.textContent = `₹${amenity.linen}/d`;
+    const dispFood = document.getElementById('disp-food-rate');
+    if (dispFood) dispFood.textContent = `₹${amenity.food}/d`;
+    const dispHk = document.getElementById('disp-housekeeping-rate');
+    if (dispHk) dispHk.textContent = `₹${amenity.housekeeping}/d`;
 
-    const dDoc = document.getElementById('disp-bill-doc-charges');
-    if (dDoc) dDoc.textContent = `₹${docCharges.toLocaleString()}`;
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    set('disp-bill-bed-charges', `₹${bedCharges.toLocaleString()}`);
+    set('disp-bill-doc-charges', `₹${docCharges.toLocaleString()}`);
+    set('disp-bill-nursing-charges', `₹${nursing.toLocaleString()}`);
+    set('disp-bill-lab-charges', `₹${lab.toLocaleString()}`);
+    set('disp-bill-linen-charges', `₹${linen.toLocaleString()}`);
+    set('disp-bill-food-charges', `₹${food.toLocaleString()}`);
+    set('disp-bill-housekeeping-charges', `₹${housekeeping.toLocaleString()}`);
 
-    const dGross = document.getElementById('disp-bill-gross-total');
-    if (dGross) dGross.textContent = `₹${grossTotal.toLocaleString()}`;
+    const extrasRow = document.getElementById('disp-bill-extras-row');
+    if (extrasRow) extrasRow.style.display = extrasTotal > 0 ? '' : 'none';
+    set('disp-bill-extras-total', `₹${extrasTotal.toLocaleString()}`);
 
-    const dIns = document.getElementById('disp-bill-insurance-deduct');
-    if (dIns) dIns.textContent = isInsured ? `-₹${insuranceDeduct.toLocaleString()}` : '₹0';
-
-    const dNet = document.getElementById('disp-bill-net-payable');
-    if (dNet) dNet.textContent = `₹${netPayable.toLocaleString()}`;
+    set('disp-bill-gross-total', `₹${grossTotal.toLocaleString()}`);
+    const insRow = document.getElementById('disp-insurance-row');
+    if (insRow) insRow.style.display = isInsured ? '' : 'none';
+    set('disp-bill-insurance-deduct', `-₹${insuranceDeduct.toLocaleString()}`);
+    set('disp-bill-net-payable', `₹${netPayable.toLocaleString()}`);
 }
 
 function printInpatientInvoice() {
@@ -7731,5 +7793,221 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 
+// ============================================================
+// BILLING EXTRAS: Add/Remove custom charge rows
+// ============================================================
+
+let _extraRowCounter = 0;
+
+function addBillingExtraRow() {
+    const container = document.getElementById('billing-extras-container');
+    if (!container) return;
+    const idx = ++_extraRowCounter;
+    const row = document.createElement('div');
+    row.className = 'billing-extra-row';
+    row.id = `extra-row-${idx}`;
+    row.style.cssText = 'display:flex; gap:6px; align-items:center;';
+    row.innerHTML = `
+        <input type="text" class="extra-label-input search-input" placeholder="e.g. Ambulance, Physio..." style="flex:1.5; padding:4px 8px; font-size:0.78rem;" oninput="calculateReceptionistBill()">
+        <input type="number" class="extra-amount-input search-input" placeholder="₹ Amount" min="0" style="flex:1; padding:4px 8px; font-size:0.78rem;" oninput="calculateReceptionistBill()">
+        <button type="button" onclick="removeBillingExtraRow(${idx})" title="Remove" style="background:#fee2e2; color:#dc2626; border:1px solid #fca5a5; border-radius:6px; padding:4px 8px; font-size:0.78rem; cursor:pointer; font-weight:800;">×</button>
+    `;
+    container.appendChild(row);
+}
+
+function removeBillingExtraRow(idx) {
+    const row = document.getElementById(`extra-row-${idx}`);
+    if (row) row.remove();
+    calculateReceptionistBill();
+}
 
 
+// ============================================================
+// MARK BILL AS PAID
+// ============================================================
+
+async function markBillAsPaid() {
+    const admissionId = document.getElementById('bill-admission-id')?.value;
+    const patientId = document.getElementById('bill-patient-id')?.value;
+    const patientName = document.getElementById('bill-patient-name')?.value || 'Patient';
+
+    if (!admissionId || !patientId) {
+        alert('ℹ️ Please select a patient from the Active Inpatients table first (click "Bill" or "Discharge & Bill") before marking as paid.');
+        return;
+    }
+
+    if (!lastGeneratedBill) calculateReceptionistBill();
+    const netPayable = lastGeneratedBill?.netPayable || 0;
+    const billId = lastGeneratedBill?.billId || '';
+
+    if (!confirm(`Mark bill as PAID for "${patientName}"?\nNet Payable: ₹${netPayable.toLocaleString()}\n\nThis will:\n• Mark the invoice as PAID\n• Free the bed for new admissions\n• Remove patient from Doctor Dashboard`)) {
+        return;
+    }
+
+    try {
+        const btn = document.getElementById('btn-mark-paid');
+        if (btn) { btn.disabled = true; btn.textContent = 'Processing...'; }
+
+        const res = await fetch(apiUrl('/api/operations/billing/mark-paid'), {
+            method: 'POST',
+            headers: { ...getStaffAuthHeaders(), 'Content-Type': 'application/json' },
+            body: JSON.stringify({ admission_id: admissionId, patient_id: patientId, bill_id: billId, net_payable: netPayable })
+        });
+
+        const data = await safeJson(res);
+        if (!res.ok) throw new Error(data.detail || 'Failed to mark as paid');
+
+        // Show success state on button
+        if (btn) { btn.style.background = '#15803d'; btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:14px;">check_circle</span> PAID ✓'; }
+
+        // Reset billing form after 2 seconds
+        setTimeout(() => {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:15px;">check_circle</span> Mark as PAID';
+                btn.style.background = '#16a34a';
+            }
+            const nameEl = document.getElementById('bill-patient-name');
+            if (nameEl) nameEl.value = '';
+            const admEl = document.getElementById('bill-admission-id');
+            if (admEl) admEl.value = '';
+            const pidEl = document.getElementById('bill-patient-id');
+            if (pidEl) pidEl.value = '';
+            const extCont = document.getElementById('billing-extras-container');
+            if (extCont) extCont.innerHTML = '';
+            _extraRowCounter = 0;
+            calculateReceptionistBill();
+        }, 2200);
+
+        // Refresh all affected panels
+        loadSupabaseAdmissions();
+        checkBedQuotaStatus();
+        if (typeof filterWardManager === 'function') filterWardManager(currentWardFilter || 'General Ward A');
+
+    } catch (err) {
+        const btn = document.getElementById('btn-mark-paid');
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:15px;">check_circle</span> Mark as PAID';
+        }
+        alert(`❌ Error: ${err.message}`);
+    }
+}
+
+
+// ============================================================
+// PATIENT FLOW TRACKER
+// ============================================================
+
+async function searchPatientFlow() {
+    const q = document.getElementById('pft-search-input')?.value?.trim();
+    if (!q) return;
+
+    const resultCard = document.getElementById('pft-result-card');
+    if (!resultCard) return;
+    resultCard.style.display = 'block';
+    resultCard.innerHTML = `<div style="color:#64748b; text-align:center; padding:12px;"><span style="font-size:1.4rem;">🔍</span><br>Searching for "${q}"...</div>`;
+
+    try {
+        const res = await fetch(apiUrl(`/api/operations/patient-location?q=${encodeURIComponent(q)}`));
+        const data = await safeJson(res);
+        resultCard.innerHTML = renderPatientFlowCard(data);
+    } catch (e) {
+        resultCard.innerHTML = `<div style="color:#dc2626; padding:10px;">❌ Search failed: ${e.message}</div>`;
+    }
+}
+
+function renderPatientFlowCard(d) {
+    if (!d || !d.found) {
+        return `<div style="text-align:center; padding:20px; color:#64748b;">
+            <span style="font-size:2.2rem;">🤷</span><br>
+            <strong style="color:#334155; font-size:1rem;">No patient found</strong><br>
+            <span style="font-size:0.82rem; margin-top:4px; display:block;">${d?.message || 'Try searching by full name or Patient ID'}</span>
+        </div>`;
+    }
+
+    const statusColors = { 'Active': '#0284c7', 'Registered': '#7c3aed', 'Discharged': '#16a34a', 'Outpatient': '#d97706' };
+    const statusEmojis = { 'Active': '🟡', 'Discharged': '✅', 'Outpatient': '📋', 'Registered': '📝' };
+    const statusColor = statusColors[d.status] || '#64748b';
+    const statusEmoji = statusEmojis[d.status] || '📍';
+
+    let locationHtml = '';
+
+    if (d.source === 'inpatient' && d.status === 'Active') {
+        const esc = (s) => (s || '').toString().replace(/'/g, "\\'");
+        locationHtml = `
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:12px 0;">
+                <div style="background:#f0f9ff; border-radius:8px; padding:10px;">
+                    <div style="font-size:0.7rem; font-weight:700; color:#0369a1; text-transform:uppercase;">Location</div>
+                    <div style="font-size:1rem; font-weight:800; color:#0f172a; margin-top:3px;">${d.ward || '—'}</div>
+                    <div style="font-size:0.78rem; color:#0284c7; font-weight:700;">Bed: ${d.bed_id || '—'}</div>
+                </div>
+                <div style="background:#fefce8; border-radius:8px; padding:10px;">
+                    <div style="font-size:0.7rem; font-weight:700; color:#a16207; text-transform:uppercase;">Admitted</div>
+                    <div style="font-size:0.9rem; font-weight:800; color:#0f172a; margin-top:3px;">${d.admission_date || 'Unknown'}</div>
+                    <div style="font-size:0.78rem; color:#64748b;">${d.days_stayed || 1} day(s) stayed</div>
+                </div>
+                <div style="background:#f0fdf4; border-radius:8px; padding:10px;">
+                    <div style="font-size:0.7rem; font-weight:700; color:#15803d; text-transform:uppercase;">Doctor</div>
+                    <div style="font-size:0.88rem; font-weight:700; color:#0f172a; margin-top:3px;">${d.attending_doctor || '—'}</div>
+                    <div style="font-size:0.78rem; color:#64748b;">${d.department || '—'}</div>
+                </div>
+                <div style="background:#fdf4ff; border-radius:8px; padding:10px;">
+                    <div style="font-size:0.7rem; font-weight:700; color:#7c3aed; text-transform:uppercase;">Insurance</div>
+                    <div style="font-size:0.88rem; font-weight:700; color:#0f172a; margin-top:3px;">${d.has_insurance ? (d.insurance_provider || 'Insured') : 'Self Pay'}</div>
+                    <div style="font-size:0.78rem; color:#64748b;">${d.bed_type || 'General'} Tier · ₹${((d.daily_rate || 0)).toLocaleString()}/day</div>
+                </div>
+            </div>
+            <div style="display:flex; gap:8px; margin-top:8px;">
+                <button type="button" onclick="openBillingForPatient('${esc(d.full_name)}','','${d.admission_id}','${d.patient_id}','${d.bed_type || 'General'}',${d.days_stayed || 1})" style="flex:1; background:#0284c7; color:#fff; border:none; border-radius:8px; padding:8px; font-weight:700; cursor:pointer; font-size:0.82rem;">🧾 Open Billing</button>
+                <button type="button" onclick="dischargeInpatient('${d.admission_id}','${esc(d.full_name)}','${d.bed_id}','${d.bed_type || 'General'}','${d.patient_id}','${d.admission_date}')" style="flex:1; background:#dc2626; color:#fff; border:none; border-radius:8px; padding:8px; font-weight:700; cursor:pointer; font-size:0.82rem;">🚪 Discharge & Bill</button>
+            </div>`;
+
+    } else if (d.source === 'inpatient' && d.status === 'Discharged') {
+        const bill = d.bill;
+        const billStatusBg = bill && bill.bill_status === 'Paid' ? '#dcfce7' : '#fef9c3';
+        const billStatusColor = bill && bill.bill_status === 'Paid' ? '#15803d' : '#92400e';
+        locationHtml = `
+            <div style="background:#f0fdf4; border-radius:8px; padding:14px; margin:12px 0;">
+                <div style="font-size:0.78rem; font-weight:700; color:#15803d;">✅ Discharged on ${d.discharge_date || 'Unknown'}</div>
+                ${bill ? `<div style="margin-top:6px; font-size:0.84rem; color:#0f172a;">
+                    Invoice: <strong>${bill.bill_id}</strong> · Net Payable: <strong>₹${(bill.net_payable || 0).toLocaleString()}</strong>
+                    <span style="margin-left:8px; background:${billStatusBg}; color:${billStatusColor}; padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:800;">${bill.bill_status || 'Pending'}</span>
+                </div>` : '<div style="font-size:0.82rem; color:#64748b; margin-top:4px;">No billing invoice found</div>'}
+                <div style="margin-top:4px; font-size:0.78rem; color:#64748b;">Stayed ${d.days_stayed || '?'} day(s) · ${d.ward || '—'} · ${d.bed_type || 'General'} Tier</div>
+            </div>`;
+
+    } else if (d.source === 'outpatient') {
+        locationHtml = `
+            <div style="background:#fefce8; border-radius:8px; padding:14px; margin:12px 0;">
+                <div style="font-size:0.78rem; font-weight:700; color:#92400e;">📋 Outpatient Appointment</div>
+                <div style="margin-top:6px; font-size:0.88rem; color:#0f172a;">${d.department || '—'} · ${d.appointment_date || '—'} · ${d.time_slot || ''}</div>
+                <div style="font-size:0.8rem; color:#64748b; margin-top:4px;">Doctor: ${d.attending_doctor || '—'} · Status: <strong>${d.appointment_status || '—'}</strong></div>
+                ${d.contact ? `<div style="font-size:0.78rem; color:#64748b; margin-top:2px;">📞 ${d.contact}</div>` : ''}
+            </div>`;
+    } else if (d.source === 'registered') {
+        const esc = (s) => (s || '').toString().replace(/'/g, "\\'");
+        locationHtml = `
+            <div style="background:#f5f3ff; border-radius:8px; padding:14px; margin:12px 0; border:1px solid #ddd6fe;">
+                <div style="font-size:0.78rem; font-weight:700; color:#6d28d9;">📝 Registered Patient Directory</div>
+                <div style="margin-top:6px; font-size:0.88rem; color:#0f172a;">Pathology Lab Records: <strong>${d.lab_reports_count || 0} report(s) on file</strong></div>
+                <div style="font-size:0.8rem; color:#64748b; margin-top:4px;">Registered on ${d.registered_on || 'System Record'} · ${d.contact ? '📞 ' + d.contact : ''}</div>
+                <div style="display:flex; gap:8px; margin-top:10px;">
+                    <button type="button" onclick="openBillingForPatient('${esc(d.full_name)}','','','${d.patient_id}','General',1)" style="flex:1; background:#7c3aed; color:#fff; border:none; border-radius:8px; padding:8px; font-weight:700; cursor:pointer; font-size:0.82rem;">🧾 Open Billing Slip</button>
+                    <button type="button" onclick="openPatientAdmissionModal(); setTimeout(()=>{ const n=document.getElementById('adm-pat-name'); if(n) n.value='${esc(d.full_name)}'; }, 200);" style="flex:1; background:#0284c7; color:#fff; border:none; border-radius:8px; padding:8px; font-weight:700; cursor:pointer; font-size:0.82rem;">🏥 Admit to Ward Bed</button>
+                </div>
+            </div>`;
+    }
+
+    return `
+    <div>
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+            <div>
+                <div style="font-size:1.15rem; font-weight:800; color:#0f172a;">${d.full_name || '—'}</div>
+                <div style="font-size:0.8rem; color:#64748b;">${d.patient_id} · Age ${d.age || '?'} · ${d.gender || '?'}</div>
+            </div>
+            <span style="background:${statusColor}1a; color:${statusColor}; border:1.5px solid ${statusColor}; border-radius:20px; padding:3px 12px; font-size:0.8rem; font-weight:800; white-space:nowrap;">${statusEmoji} ${d.status}</span>
+        </div>
+        ${locationHtml}
+    </div>`;
+}

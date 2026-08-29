@@ -49,6 +49,8 @@ def verify_secret(secret: str, stored_hash: str) -> bool:
 def get_db_connection():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
+    # Enforce FK constraints on every connection — SQLite disables them by default
+    conn.execute("PRAGMA foreign_keys = ON")
     return conn
 
 def init_db():
@@ -174,7 +176,8 @@ def init_db():
         doctor_name TEXT,
         status TEXT DEFAULT 'open',
         created_at TEXT NOT NULL,
-        reviewed_at TEXT
+        reviewed_at TEXT,
+        FOREIGN KEY (patient_id) REFERENCES patients (patient_id) ON DELETE CASCADE
     );
     """)
 
@@ -192,7 +195,8 @@ def init_db():
         status TEXT DEFAULT 'active',
         sent_by TEXT DEFAULT 'Dr. Medicover Clinical Desk',
         created_at TEXT NOT NULL,
-        acknowledged_at TEXT
+        acknowledged_at TEXT,
+        FOREIGN KEY (patient_id) REFERENCES patients (patient_id) ON DELETE CASCADE
     );
     """)
 
@@ -220,7 +224,36 @@ def init_db():
         status TEXT DEFAULT 'Confirmed',
         access_pin TEXT NOT NULL,
         created_at TEXT NOT NULL,
-        FOREIGN KEY (patient_id) REFERENCES patients (patient_id)
+        FOREIGN KEY (patient_id) REFERENCES patients (patient_id) ON DELETE CASCADE
+    );
+    """)
+
+    # 10. Hospital Beds (mirror of Supabase — ensures local FK enforcement)
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS hospital_beds (
+        bed_id TEXT PRIMARY KEY,
+        bed_number TEXT NOT NULL,
+        ward_name TEXT NOT NULL,
+        bed_type TEXT NOT NULL,
+        daily_rate_inr REAL DEFAULT 0,
+        status TEXT DEFAULT 'Available',
+        current_patient_id TEXT,
+        amenities TEXT,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (current_patient_id) REFERENCES patients (patient_id) ON DELETE SET NULL
+    );
+    """)
+
+    # 11. Shared sessions with FK
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS shared_sessions_v2 (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        patient_id TEXT NOT NULL,
+        data_payload TEXT NOT NULL,
+        access_pin TEXT UNIQUE NOT NULL,
+        expires_at TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        FOREIGN KEY (patient_id) REFERENCES patients (patient_id) ON DELETE CASCADE
     );
     """)
 
