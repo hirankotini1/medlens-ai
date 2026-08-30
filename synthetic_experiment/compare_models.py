@@ -7,126 +7,126 @@ Generates:
 4. README.md
 """
 
-import os
-import sys
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
+import os 
+import sys 
+import numpy as np 
+import pandas as pd 
+import matplotlib .pyplot as plt 
+import seaborn as sns 
 
-# Ensure module pathing
-sys.path.insert(0, os.path.dirname(__file__))
 
-from generate_anemia import generate_anemia_synthetic
-from generate_dengue import generate_dengue_synthetic
-from generate_liver import generate_liver_synthetic
-from generate_thyroid import generate_thyroid_synthetic
-from train_augmented import run_all_experiments
+sys .path .insert (0 ,os .path .dirname (__file__ ))
 
-RESULTS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'results'))
-PLOTS_DIR = os.path.join(RESULTS_DIR, 'plots')
-CSV_PATH = os.path.join(RESULTS_DIR, 'comparison.csv')
-REPORT_PATH = os.path.join(RESULTS_DIR, 'report.md')
-README_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), 'README.md'))
+from generate_anemia import generate_anemia_synthetic 
+from generate_dengue import generate_dengue_synthetic 
+from generate_liver import generate_liver_synthetic 
+from generate_thyroid import generate_thyroid_synthetic 
+from train_augmented import run_all_experiments 
 
-def main():
-    os.makedirs(PLOTS_DIR, exist_ok=True)
-    
-    print("\n[Step 1/4] Generating all synthetic datasets (25%, 50%, 100%)...")
-    generate_anemia_synthetic()
-    generate_dengue_synthetic()
-    generate_liver_synthetic()
-    generate_thyroid_synthetic()
-    
-    print("\n[Step 2/4] Executing controlled benchmarks & in-fold 5-fold CV...")
-    results = run_all_experiments()
-    df_results = pd.DataFrame(results)
-    
-    # Save CSV
-    df_results.to_csv(CSV_PATH, index=False)
-    print(f"\n[Step 3/4] Saved numerical results table to: {CSV_PATH}")
-    
-    # Generate Visualizations
-    generate_plots(df_results)
-    
-    # Generate Report
-    generate_report(df_results)
-    
-    # Generate README
-    generate_readme()
-    
-    print("\n============================================================")
-    print("      SYNTHETIC DATA EXPERIMENT COMPLETED SUCCESSFULLY      ")
-    print("============================================================")
+RESULTS_DIR =os .path .abspath (os .path .join (os .path .dirname (__file__ ),'results'))
+PLOTS_DIR =os .path .join (RESULTS_DIR ,'plots')
+CSV_PATH =os .path .join (RESULTS_DIR ,'comparison.csv')
+REPORT_PATH =os .path .join (RESULTS_DIR ,'report.md')
+README_PATH =os .path .abspath (os .path .join (os .path .dirname (__file__ ),'README.md'))
 
-def generate_plots(df):
-    sns.set_theme(style="whitegrid")
-    
-    # 1. Holdout Accuracy & F1 Comparison Bar Chart
-    fig, axes = plt.subplots(2, 2, figsize=(14, 10))
-    diseases = ['Anemia', 'Dengue', 'Liver', 'Thyroid']
-    
-    for i, disease in enumerate(diseases):
-        ax = axes[i // 2, i % 2]
-        sub_df = df[df['Disease'] == disease]
-        
-        x = np.arange(len(sub_df))
-        width = 0.35
-        
-        rects1 = ax.bar(x - width/2, sub_df['Holdout Acc'] * 100, width, label='Holdout Accuracy (%)', color='#4f46e5', alpha=0.85)
-        rects2 = ax.bar(x + width/2, sub_df['Holdout F1'] * 100, width, label='Holdout F1-Score (%)', color='#06b6d4', alpha=0.85)
-        
-        ax.set_title(f"{disease} - Real Holdout Test Set Performance", fontsize=12, fontweight='bold')
-        ax.set_xticks(x)
-        ax.set_xticklabels(sub_df['Synthetic %'], fontsize=10)
-        ax.set_xlabel("Synthetic Augmentation Level")
-        ax.set_ylabel("Score (%)")
-        ax.set_ylim(0, 110)
-        ax.legend(loc='lower right')
-        
-        # Add labels on bars
-        for r in rects1:
-            h = r.get_height()
-            ax.annotate(f'{h:.1f}%', xy=(r.get_x() + r.get_width() / 2, h), xytext=(0, 3),
-                        textcoords="offset points", ha='center', va='bottom', fontsize=8, fontweight='bold')
-        for r in rects2:
-            h = r.get_height()
-            ax.annotate(f'{h:.1f}%', xy=(r.get_x() + r.get_width() / 2, h), xytext=(0, 3),
-                        textcoords="offset points", ha='center', va='bottom', fontsize=8, fontweight='bold')
+def main ():
+    os .makedirs (PLOTS_DIR ,exist_ok =True )
 
-    plt.tight_layout()
-    plot_path1 = os.path.join(PLOTS_DIR, 'holdout_metrics_comparison.png')
-    plt.savefig(plot_path1, dpi=300)
-    plt.close()
-    
-    # 2. Stratified 5-Fold CV Mean & Std Chart
-    fig, ax = plt.subplots(figsize=(12, 6))
-    
-    for disease in diseases:
-        sub_df = df[df['Disease'] == disease]
-        ax.errorbar(
-            sub_df['Synthetic %'], sub_df['CV Acc Mean'] * 100,
-            yerr=sub_df['CV Acc Std'] * 100,
-            marker='o', capsize=5, capthick=2, elinewidth=1.5,
-            linewidth=2.5, label=f"{disease} (CV Mean ± Std)"
+    print ("\n[Step 1/4] Generating all synthetic datasets (25%, 50%, 100%)...")
+    generate_anemia_synthetic ()
+    generate_dengue_synthetic ()
+    generate_liver_synthetic ()
+    generate_thyroid_synthetic ()
+
+    print ("\n[Step 2/4] Executing controlled benchmarks & in-fold 5-fold CV...")
+    results =run_all_experiments ()
+    df_results =pd .DataFrame (results )
+
+
+    df_results .to_csv (CSV_PATH ,index =False )
+    print (f"\n[Step 3/4] Saved numerical results table to: {CSV_PATH }")
+
+
+    generate_plots (df_results )
+
+
+    generate_report (df_results )
+
+
+    generate_readme ()
+
+    print ("\n============================================================")
+    print ("      SYNTHETIC DATA EXPERIMENT COMPLETED SUCCESSFULLY      ")
+    print ("============================================================")
+
+def generate_plots (df ):
+    sns .set_theme (style ="whitegrid")
+
+
+    fig ,axes =plt .subplots (2 ,2 ,figsize =(14 ,10 ))
+    diseases =['Anemia','Dengue','Liver','Thyroid']
+
+    for i ,disease in enumerate (diseases ):
+        ax =axes [i //2 ,i %2 ]
+        sub_df =df [df ['Disease']==disease ]
+
+        x =np .arange (len (sub_df ))
+        width =0.35 
+
+        rects1 =ax .bar (x -width /2 ,sub_df ['Holdout Acc']*100 ,width ,label ='Holdout Accuracy (%)',color ='#4f46e5',alpha =0.85 )
+        rects2 =ax .bar (x +width /2 ,sub_df ['Holdout F1']*100 ,width ,label ='Holdout F1-Score (%)',color ='#06b6d4',alpha =0.85 )
+
+        ax .set_title (f"{disease } - Real Holdout Test Set Performance",fontsize =12 ,fontweight ='bold')
+        ax .set_xticks (x )
+        ax .set_xticklabels (sub_df ['Synthetic %'],fontsize =10 )
+        ax .set_xlabel ("Synthetic Augmentation Level")
+        ax .set_ylabel ("Score (%)")
+        ax .set_ylim (0 ,110 )
+        ax .legend (loc ='lower right')
+
+
+        for r in rects1 :
+            h =r .get_height ()
+            ax .annotate (f'{h :.1f}%',xy =(r .get_x ()+r .get_width ()/2 ,h ),xytext =(0 ,3 ),
+            textcoords ="offset points",ha ='center',va ='bottom',fontsize =8 ,fontweight ='bold')
+        for r in rects2 :
+            h =r .get_height ()
+            ax .annotate (f'{h :.1f}%',xy =(r .get_x ()+r .get_width ()/2 ,h ),xytext =(0 ,3 ),
+            textcoords ="offset points",ha ='center',va ='bottom',fontsize =8 ,fontweight ='bold')
+
+    plt .tight_layout ()
+    plot_path1 =os .path .join (PLOTS_DIR ,'holdout_metrics_comparison.png')
+    plt .savefig (plot_path1 ,dpi =300 )
+    plt .close ()
+
+
+    fig ,ax =plt .subplots (figsize =(12 ,6 ))
+
+    for disease in diseases :
+        sub_df =df [df ['Disease']==disease ]
+        ax .errorbar (
+        sub_df ['Synthetic %'],sub_df ['CV Acc Mean']*100 ,
+        yerr =sub_df ['CV Acc Std']*100 ,
+        marker ='o',capsize =5 ,capthick =2 ,elinewidth =1.5 ,
+        linewidth =2.5 ,label =f"{disease } (CV Mean ± Std)"
         )
-        
-    ax.set_title("5-Fold Cross-Validation Accuracy across Synthetic Augmentation Levels", fontsize=14, fontweight='bold')
-    ax.set_xlabel("Synthetic Augmentation Level (%)", fontsize=12)
-    ax.set_ylabel("5-Fold CV Accuracy (%)", fontsize=12)
-    ax.set_ylim(60, 105)
-    ax.legend(fontsize=11)
-    ax.grid(True, linestyle='--', alpha=0.6)
-    
-    plt.tight_layout()
-    plot_path2 = os.path.join(PLOTS_DIR, 'cv_accuracy_trends.png')
-    plt.savefig(plot_path2, dpi=300)
-    plt.close()
-    
-    print(f"Generated comparison plots in: {PLOTS_DIR}")
 
-def generate_report(df):
-    report_content = f"""# Controlled Synthetic Data Experiment Report
+    ax .set_title ("5-Fold Cross-Validation Accuracy across Synthetic Augmentation Levels",fontsize =14 ,fontweight ='bold')
+    ax .set_xlabel ("Synthetic Augmentation Level (%)",fontsize =12 )
+    ax .set_ylabel ("5-Fold CV Accuracy (%)",fontsize =12 )
+    ax .set_ylim (60 ,105 )
+    ax .legend (fontsize =11 )
+    ax .grid (True ,linestyle ='--',alpha =0.6 )
+
+    plt .tight_layout ()
+    plot_path2 =os .path .join (PLOTS_DIR ,'cv_accuracy_trends.png')
+    plt .savefig (plot_path2 ,dpi =300 )
+    plt .close ()
+
+    print (f"Generated comparison plots in: {PLOTS_DIR }")
+
+def generate_report (df ):
+    report_content =f"""# Controlled Synthetic Data Experiment Report
 
 ## Executive Summary
 This experiment rigorously investigated whether controlled synthetic data augmentation improves the performance and generalization of our four tabular clinical machine learning pipelines: **Anemia**, **Dengue**, **Liver Disease**, and **Thyroid Disorders**.
@@ -145,55 +145,55 @@ This experiment rigorously investigated whether controlled synthetic data augmen
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 """
 
-    for _, row in df.iterrows():
-        report_content += (
-            f"| **{row['Disease']}** | {row['Training Method']} | {row['Synthetic %']} | "
-            f"{row['Train Size'] - (0 if row['Synthetic %'] == '0%' else int(row['Train Size'] * (int(row['Synthetic %'].replace('%','')) / (100 + int(row['Synthetic %'].replace('%',''))))))} | "
-            f"{row['Train Size']} | **{row['Holdout Acc']*100:.2f}%** | {row['Holdout Prec']*100:.2f}% | "
-            f"{row['Holdout Rec']*100:.2f}% | **{row['Holdout F1']*100:.2f}%** | "
-            f"{row['CV Acc Mean']*100:.2f}% ± {row['CV Acc Std']*100:.2f}% | {row['CV F1 Mean']*100:.2f}% ± {row['CV F1 Std']*100:.2f}% |\n"
+    for _ ,row in df .iterrows ():
+        report_content +=(
+        f"| **{row ['Disease']}** | {row ['Training Method']} | {row ['Synthetic %']} | "
+        f"{row ['Train Size']-(0 if row ['Synthetic %']=='0%'else int (row ['Train Size']*(int (row ['Synthetic %'].replace ('%',''))/(100 +int (row ['Synthetic %'].replace ('%',''))))))} | "
+        f"{row ['Train Size']} | **{row ['Holdout Acc']*100 :.2f}%** | {row ['Holdout Prec']*100 :.2f}% | "
+        f"{row ['Holdout Rec']*100 :.2f}% | **{row ['Holdout F1']*100 :.2f}%** | "
+        f"{row ['CV Acc Mean']*100 :.2f}% ± {row ['CV Acc Std']*100 :.2f}% | {row ['CV F1 Mean']*100 :.2f}% ± {row ['CV F1 Std']*100 :.2f}% |\n"
         )
 
-    # Detailed Analysis by Disease
-    anemia_df = df[df['Disease'] == 'Anemia']
-    dengue_df = df[df['Disease'] == 'Dengue']
-    liver_df = df[df['Disease'] == 'Liver']
-    thyroid_df = df[df['Disease'] == 'Thyroid']
-    
-    report_content += f"""
+
+    anemia_df =df [df ['Disease']=='Anemia']
+    dengue_df =df [df ['Disease']=='Dengue']
+    liver_df =df [df ['Disease']=='Liver']
+    thyroid_df =df [df ['Disease']=='Thyroid']
+
+    report_content +=f"""
 ---
 
 ## 2. Disease-by-Disease Detailed Audit
 
 ### 2.1 Anemia Pipeline (Logistic Regression on 11 CBC Parameters)
-- **Baseline (Real Only)**: Holdout Accuracy = {anemia_df.iloc[0]['Holdout Acc']*100:.2f}%, 5-Fold CV = {anemia_df.iloc[0]['CV Acc Mean']*100:.2f}% ± {anemia_df.iloc[0]['CV Acc Std']*100:.2f}%
-- **25% Augmentation**: Holdout Accuracy = {anemia_df.iloc[1]['Holdout Acc']*100:.2f}%, 5-Fold CV = {anemia_df.iloc[1]['CV Acc Mean']*100:.2f}% ± {anemia_df.iloc[1]['CV Acc Std']*100:.2f}%
-- **50% Augmentation**: Holdout Accuracy = {anemia_df.iloc[2]['Holdout Acc']*100:.2f}%, 5-Fold CV = {anemia_df.iloc[2]['CV Acc Mean']*100:.2f}% ± {anemia_df.iloc[2]['CV Acc Std']*100:.2f}%
-- **100% Augmentation**: Holdout Accuracy = {anemia_df.iloc[3]['Holdout Acc']*100:.2f}%, 5-Fold CV = {anemia_df.iloc[3]['CV Acc Mean']*100:.2f}% ± {anemia_df.iloc[3]['CV Acc Std']*100:.2f}%
+- **Baseline (Real Only)**: Holdout Accuracy = {anemia_df .iloc [0 ]['Holdout Acc']*100 :.2f}%, 5-Fold CV = {anemia_df .iloc [0 ]['CV Acc Mean']*100 :.2f}% ± {anemia_df .iloc [0 ]['CV Acc Std']*100 :.2f}%
+- **25% Augmentation**: Holdout Accuracy = {anemia_df .iloc [1 ]['Holdout Acc']*100 :.2f}%, 5-Fold CV = {anemia_df .iloc [1 ]['CV Acc Mean']*100 :.2f}% ± {anemia_df .iloc [1 ]['CV Acc Std']*100 :.2f}%
+- **50% Augmentation**: Holdout Accuracy = {anemia_df .iloc [2 ]['Holdout Acc']*100 :.2f}%, 5-Fold CV = {anemia_df .iloc [2 ]['CV Acc Mean']*100 :.2f}% ± {anemia_df .iloc [2 ]['CV Acc Std']*100 :.2f}%
+- **100% Augmentation**: Holdout Accuracy = {anemia_df .iloc [3 ]['Holdout Acc']*100 :.2f}%, 5-Fold CV = {anemia_df .iloc [3 ]['CV Acc Mean']*100 :.2f}% ± {anemia_df .iloc [3 ]['CV Acc Std']*100 :.2f}%
 - **Findings**: The baseline model already achieves 100% holdout accuracy and ~95.5% 5-fold CV. Adding synthetic data yields identical holdout performance and nearly identical CV accuracy (within variance margin).
 - **Decision**: **REJECT synthetic augmentation. Keep original baseline model.**
 
 ### 2.2 Dengue Pipeline (Random Forest on Hematology & Platelet Profile)
-- **Baseline (Real Only)**: Holdout Accuracy = {dengue_df.iloc[0]['Holdout Acc']*100:.2f}%, 5-Fold CV = {dengue_df.iloc[0]['CV Acc Mean']*100:.2f}% ± {dengue_df.iloc[0]['CV Acc Std']*100:.2f}%
-- **25% Augmentation**: Holdout Accuracy = {dengue_df.iloc[1]['Holdout Acc']*100:.2f}%, 5-Fold CV = {dengue_df.iloc[1]['CV Acc Mean']*100:.2f}% ± {dengue_df.iloc[1]['CV Acc Std']*100:.2f}%
-- **50% Augmentation**: Holdout Accuracy = {dengue_df.iloc[2]['Holdout Acc']*100:.2f}%, 5-Fold CV = {dengue_df.iloc[2]['CV Acc Mean']*100:.2f}% ± {dengue_df.iloc[2]['CV Acc Std']*100:.2f}%
-- **100% Augmentation**: Holdout Accuracy = {dengue_df.iloc[3]['Holdout Acc']*100:.2f}%, 5-Fold CV = {dengue_df.iloc[3]['CV Acc Mean']*100:.2f}% ± {dengue_df.iloc[3]['CV Acc Std']*100:.2f}%
+- **Baseline (Real Only)**: Holdout Accuracy = {dengue_df .iloc [0 ]['Holdout Acc']*100 :.2f}%, 5-Fold CV = {dengue_df .iloc [0 ]['CV Acc Mean']*100 :.2f}% ± {dengue_df .iloc [0 ]['CV Acc Std']*100 :.2f}%
+- **25% Augmentation**: Holdout Accuracy = {dengue_df .iloc [1 ]['Holdout Acc']*100 :.2f}%, 5-Fold CV = {dengue_df .iloc [1 ]['CV Acc Mean']*100 :.2f}% ± {dengue_df .iloc [1 ]['CV Acc Std']*100 :.2f}%
+- **50% Augmentation**: Holdout Accuracy = {dengue_df .iloc [2 ]['Holdout Acc']*100 :.2f}%, 5-Fold CV = {dengue_df .iloc [2 ]['CV Acc Mean']*100 :.2f}% ± {dengue_df .iloc [2 ]['CV Acc Std']*100 :.2f}%
+- **100% Augmentation**: Holdout Accuracy = {dengue_df .iloc [3 ]['Holdout Acc']*100 :.2f}%, 5-Fold CV = {dengue_df .iloc [3 ]['CV Acc Mean']*100 :.2f}% ± {dengue_df .iloc [3 ]['CV Acc Std']*100 :.2f}%
 - **Findings**: Synthetic augmentation maintained strong holdout accuracy (91-93%) and stabilized tree variance across folds.
 - **Decision**: **Keep original baseline model as primary production model. Augmentation is verified feasible as a fallback.**
 
 ### 2.3 Liver Disease Pipeline (Gradient Boosting on Indian Liver Patient Dataset)
-- **Baseline (Real Only)**: Holdout Accuracy = {liver_df.iloc[0]['Holdout Acc']*100:.2f}%, Holdout Recall = {liver_df.iloc[0]['Holdout Rec']*100:.2f}%, 5-Fold CV = {liver_df.iloc[0]['CV Acc Mean']*100:.2f}% ± {liver_df.iloc[0]['CV Acc Std']*100:.2f}%
-- **25% Augmentation**: Holdout Accuracy = {liver_df.iloc[1]['Holdout Acc']*100:.2f}%, Holdout Recall = {liver_df.iloc[1]['Holdout Rec']*100:.2f}%, 5-Fold CV = {liver_df.iloc[1]['CV Acc Mean']*100:.2f}% ± {liver_df.iloc[1]['CV Acc Std']*100:.2f}%
-- **50% Augmentation**: Holdout Accuracy = {liver_df.iloc[2]['Holdout Acc']*100:.2f}%, Holdout Recall = {liver_df.iloc[2]['Holdout Rec']*100:.2f}%, 5-Fold CV = {liver_df.iloc[2]['CV Acc Mean']*100:.2f}% ± {liver_df.iloc[2]['CV Acc Std']*100:.2f}%
-- **100% Augmentation**: Holdout Accuracy = {liver_df.iloc[3]['Holdout Acc']*100:.2f}%, Holdout Recall = {liver_df.iloc[3]['Holdout Rec']*100:.2f}%, 5-Fold CV = {liver_df.iloc[3]['CV Acc Mean']*100:.2f}% ± {liver_df.iloc[3]['CV Acc Std']*100:.2f}%
+- **Baseline (Real Only)**: Holdout Accuracy = {liver_df .iloc [0 ]['Holdout Acc']*100 :.2f}%, Holdout Recall = {liver_df .iloc [0 ]['Holdout Rec']*100 :.2f}%, 5-Fold CV = {liver_df .iloc [0 ]['CV Acc Mean']*100 :.2f}% ± {liver_df .iloc [0 ]['CV Acc Std']*100 :.2f}%
+- **25% Augmentation**: Holdout Accuracy = {liver_df .iloc [1 ]['Holdout Acc']*100 :.2f}%, Holdout Recall = {liver_df .iloc [1 ]['Holdout Rec']*100 :.2f}%, 5-Fold CV = {liver_df .iloc [1 ]['CV Acc Mean']*100 :.2f}% ± {liver_df .iloc [1 ]['CV Acc Std']*100 :.2f}%
+- **50% Augmentation**: Holdout Accuracy = {liver_df .iloc [2 ]['Holdout Acc']*100 :.2f}%, Holdout Recall = {liver_df .iloc [2 ]['Holdout Rec']*100 :.2f}%, 5-Fold CV = {liver_df .iloc [2 ]['CV Acc Mean']*100 :.2f}% ± {liver_df .iloc [2 ]['CV Acc Std']*100 :.2f}%
+- **100% Augmentation**: Holdout Accuracy = {liver_df .iloc [3 ]['Holdout Acc']*100 :.2f}%, Holdout Recall = {liver_df .iloc [3 ]['Holdout Rec']*100 :.2f}%, 5-Fold CV = {liver_df .iloc [3 ]['CV Acc Mean']*100 :.2f}% ± {liver_df .iloc [3 ]['CV Acc Std']*100 :.2f}%
 - **Findings**: Liver dataset exhibits inherent class overlap between borderline healthy and early-stage liver disease patients. Synthetic augmentation maintains high sensitivity (92-95% recall).
 - **Decision**: **Keep original baseline model. Synthetic augmentation did not yield statistically superior holdout generalizability.**
 
 ### 2.4 Thyroid Pipeline (Multinomial Logistic Regression on Hormone Panel)
-- **Baseline (Real Only)**: Holdout Accuracy = {thyroid_df.iloc[0]['Holdout Acc']*100:.2f}%, 5-Fold CV = {thyroid_df.iloc[0]['CV Acc Mean']*100:.2f}% ± {thyroid_df.iloc[0]['CV Acc Std']*100:.2f}%
-- **25% Augmentation**: Holdout Accuracy = {thyroid_df.iloc[1]['Holdout Acc']*100:.2f}%, 5-Fold CV = {thyroid_df.iloc[1]['CV Acc Mean']*100:.2f}% ± {thyroid_df.iloc[1]['CV Acc Std']*100:.2f}%
-- **50% Augmentation**: Holdout Accuracy = {thyroid_df.iloc[2]['Holdout Acc']*100:.2f}%, 5-Fold CV = {thyroid_df.iloc[2]['CV Acc Mean']*100:.2f}% ± {thyroid_df.iloc[2]['CV Acc Std']*100:.2f}%
-- **100% Augmentation**: Holdout Accuracy = {thyroid_df.iloc[3]['Holdout Acc']*100:.2f}%, 5-Fold CV = {thyroid_df.iloc[3]['CV Acc Mean']*100:.2f}% ± {thyroid_df.iloc[3]['CV Acc Std']*100:.2f}%
+- **Baseline (Real Only)**: Holdout Accuracy = {thyroid_df .iloc [0 ]['Holdout Acc']*100 :.2f}%, 5-Fold CV = {thyroid_df .iloc [0 ]['CV Acc Mean']*100 :.2f}% ± {thyroid_df .iloc [0 ]['CV Acc Std']*100 :.2f}%
+- **25% Augmentation**: Holdout Accuracy = {thyroid_df .iloc [1 ]['Holdout Acc']*100 :.2f}%, 5-Fold CV = {thyroid_df .iloc [1 ]['CV Acc Mean']*100 :.2f}% ± {thyroid_df .iloc [1 ]['CV Acc Std']*100 :.2f}%
+- **50% Augmentation**: Holdout Accuracy = {thyroid_df .iloc [2 ]['Holdout Acc']*100 :.2f}%, 5-Fold CV = {thyroid_df .iloc [2 ]['CV Acc Mean']*100 :.2f}% ± {thyroid_df .iloc [2 ]['CV Acc Std']*100 :.2f}%
+- **100% Augmentation**: Holdout Accuracy = {thyroid_df .iloc [3 ]['Holdout Acc']*100 :.2f}%, 5-Fold CV = {thyroid_df .iloc [3 ]['CV Acc Mean']*100 :.2f}% ± {thyroid_df .iloc [3 ]['CV Acc Std']*100 :.2f}%
 - **Findings**: The baseline model exhibits physiological separability (100% holdout, 95.8% CV). Synthetic augmentation retains 97-100% holdout accuracy without noticeable degradation.
 - **Decision**: **Keep original baseline model. Synthetic augmentation is unnecessary.**
 
@@ -232,12 +232,12 @@ This experiment rigorously investigated whether controlled synthetic data augmen
 - **Malaria** -> **Keep Original Model** (`malaria_pipeline.joblib`)
 """
 
-    with open(REPORT_PATH, 'w', encoding='utf-8') as f:
-        f.write(report_content)
-    print(f"Generated comprehensive audit report at: {REPORT_PATH}")
+    with open (REPORT_PATH ,'w',encoding ='utf-8')as f :
+        f .write (report_content )
+    print (f"Generated comprehensive audit report at: {REPORT_PATH }")
 
-def generate_readme():
-    content = """# Synthetic Data Experiment
+def generate_readme ():
+    content ="""# Synthetic Data Experiment
 
 This directory houses the controlled synthetic data generation, augmentation training, cross-validation, and audit benchmarking for the 4 tabular disease pipelines.
 
@@ -254,9 +254,9 @@ This directory houses the controlled synthetic data generation, augmentation tra
   - `report.md`: Detailed audit report.
   - `plots/`: Comparison charts for Holdout accuracy, F1-scores, and CV distributions.
 """
-    with open(README_PATH, 'w', encoding='utf-8') as f:
-        f.write(content)
-    print(f"Generated README at: {README_PATH}")
+    with open (README_PATH ,'w',encoding ='utf-8')as f :
+        f .write (content )
+    print (f"Generated README at: {README_PATH }")
 
-if __name__ == '__main__':
-    main()
+if __name__ =='__main__':
+    main ()

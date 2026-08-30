@@ -1,5 +1,5 @@
-// API Base URL Resolution
-// If page is loaded via file:// protocol or a port other than 8000 (e.g. Live Server), route to http://127.0.0.1:8000
+
+
 const API_BASE = (window.location.protocol === 'file:' || (window.location.port !== '8000' && window.location.port !== ''))
     ? 'http://127.0.0.1:8000'
     : '';
@@ -18,9 +18,9 @@ async function safeJson(response) {
     }
 }
 
-// Application State
+
 let currentAuth = {
-    role: null, // 'admin' or 'patient'
+    role: null, 
     token: null,
     patientId: null,
     patientName: null,
@@ -34,11 +34,11 @@ let patientReports = [];
 let currentSandboxDisease = 'anemia';
 let selectedSandboxFile = null;
 
-// Feature 4: Multi-Language State
+
 window._selectedLanguage = 'English';
 function onLanguageChange(val) {
     window._selectedLanguage = val || 'English';
-    // If active report is open in patient view, re-render it to update language explanation
+    
     if (patientReports && patientReports.length > 0) {
         const activeDoc = document.querySelector('.official-report-doc');
         if (activeDoc && activeDoc.id) {
@@ -48,7 +48,7 @@ function onLanguageChange(val) {
     }
 }
 
-// Reference Range definitions for clinical parameters
+
 const clinicalRefRanges = {
     HGB: { unit: 'g/dL', ref: '12.0 - 15.5', name: 'Hemoglobin (HGB)' },
     RBC: { unit: 'x10^12/L', ref: '3.80 - 5.20', name: 'Total RBC Count' },
@@ -84,10 +84,10 @@ const clinicalRefRanges = {
     T3_resin_uptake: { unit: '%', ref: '95 - 120', name: 'T3 Resin Uptake' }
 };
 
-// ---------------------------------------------------------
-// ---------------------------------------------------------
-// Session & Auth Persistence Helpers (Persistent Across Page Refresh)
-// ---------------------------------------------------------
+
+
+
+
 function saveSessionAuth() {
     try {
         const payload = JSON.stringify(currentAuth);
@@ -162,16 +162,18 @@ function renderPatientPortalQuickButtons(patients) {
         container.innerHTML = `<div style="font-size: 0.8rem; color: #94a3b8; padding: 6px;">No registered patients found. Register via Lab Staff portal.</div>`;
         return;
     }
-    container.innerHTML = patients.map(p => `
-        <button type="button" class="btn-secondary" style="font-size: 0.78rem; padding: 6px 10px; text-align: left;" onclick="fillPatientCreds('${p.patient_id}', '${p.pin_hint}')">
-            <strong>${p.patient_id}</strong> &bull; ${p.name} (${p.gender}, ${p.age}Y)
+    // Limit suggestions strictly to latest 2 entries only
+    const latestTwo = patients.slice(0, 2);
+    container.innerHTML = latestTwo.map(p => `
+        <button type="button" class="btn-secondary" style="font-size: 0.8rem; padding: 8px 12px; text-align: left; border: 1.5px solid #bae6fd; background: #f8fafc; border-radius: 8px; cursor: pointer; transition: all 0.2s ease;" onclick="fillPatientCreds('${p.patient_id}', '${p.pin_hint}')">
+            <span style="font-weight: 800; color: #0284c7;">${p.patient_id}</span> &bull; <span>${p.name} (${p.gender}, ${p.age}Y)</span>
         </button>
     `).join('');
 }
 
-// ---------------------------------------------------------
-// Navigation Logic
-// ---------------------------------------------------------
+
+
+
 function switchView(viewName) {
     try {
         localStorage.setItem('medlens_active_view', viewName);
@@ -190,7 +192,7 @@ function switchView(viewName) {
     if (tabEl) tabEl.classList.add('active');
     if (mobTabEl) mobTabEl.classList.add('active');
 
-    // Smooth scroll to top on mobile view switch
+    
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     if (viewName === 'admin') {
@@ -230,9 +232,9 @@ function switchView(viewName) {
     }
 }
 
-// ---------------------------------------------------------
-// Top Navigation ML Decision Support Sandbox Functions
-// ---------------------------------------------------------
+
+
+
 function loadMainSandboxPreset(type) {
     if (type === 'normal') {
         setMainSandboxValues(14.2, 260000, 88.0, 6800, 0.8, 2.1);
@@ -289,7 +291,7 @@ function simulateMainSandboxPrediction() {
     const bili = parseFloat(document.getElementById('main-sb-bili')?.value || 0.8);
     const tsh = parseFloat(document.getElementById('main-sb-tsh')?.value || 2.1);
 
-    // 1. Anemia Classifier
+    
     let anemiaRisk = "Normal (Non-Anemic)";
     let anemiaConfidence = 96;
     let anemiaClass = "risk-normal";
@@ -314,7 +316,7 @@ function simulateMainSandboxPrediction() {
         anemiaBadge = "• BORDERLINE";
     }
 
-    // 2. Dengue Thrombocytopenia Model
+    
     let dengueRisk = "Normal Platelet Kinetics (Low Probability)";
     let dengueConfidence = 95;
     let dengueClass = "risk-normal";
@@ -331,7 +333,7 @@ function simulateMainSandboxPrediction() {
         dengueBadge = "• MONITOR";
     }
 
-    // 3. Liver Function Model
+    
     let liverRisk = "Normal Hepatobiliary Function";
     let liverConfidence = 96;
     let liverClass = "risk-normal";
@@ -348,7 +350,7 @@ function simulateMainSandboxPrediction() {
         liverBadge = "• MILD";
     }
 
-    // 4. Thyroid Metabolic Model
+    
     let thyroidRisk = "Euthyroid (Balanced Regulation)";
     let thyroidConfidence = 97;
     let thyroidClass = "risk-normal";
@@ -479,9 +481,9 @@ function runDemoMalariaSmearTest() {
     }, 1000);
 }
 
-// ---------------------------------------------------------
-// Patient Authentication & Portal Logic
-// ---------------------------------------------------------
+
+
+
 function fillPatientCreds(patientId, pin) {
     document.getElementById('patient-id-input').value = patientId;
     document.getElementById('patient-pin-input').value = pin;
@@ -537,7 +539,7 @@ async function handlePatientLogin() {
         document.getElementById('patient-login-container').style.display = 'none';
         document.getElementById('patient-dashboard-container').style.display = 'block';
 
-        // Update dashboard banner
+        
         document.getElementById('dash-patient-name').innerText = `Welcome, ${data.patient.name}`;
         document.getElementById('dash-patient-meta').innerHTML = `
             Patient ID: <strong>${data.patient.patient_id}</strong> &bull; 
@@ -546,7 +548,7 @@ async function handlePatientLogin() {
         `;
 
         fetchAndRenderPatientReports();
-        // Feature 5: Load health timeline after login
+        
         loadPatientTimeline(data.patient.patient_id, data.token);
         loadPatientReminders(data.patient.patient_id);
         loadPatientReportedIssues(data.patient.patient_id);
@@ -588,7 +590,7 @@ async function fetchAndRenderPatientReports() {
         if (!res.ok) throw new Error("Failed to fetch reports.");
         patientReports = await res.json();
 
-        // Update stats
+        
         document.getElementById('pstat-total-reports').innerText = patientReports.length;
         document.getElementById('pstat-finalized-reports').innerText = patientReports.filter(r => r.status === 'Finalized').length;
 
@@ -636,7 +638,7 @@ async function fetchAndRenderPatientReports() {
             </table>
         `;
 
-        // Automatically open the first report
+        
         if (patientReports.length > 0) {
             viewPatientReportDetails(patientReports[0].report_id);
         }
@@ -656,9 +658,9 @@ function viewPatientReportDetails(reportId) {
     sheetContainer.scrollIntoView({ behavior: 'smooth' });
 }
 
-// ---------------------------------------------------------
-// 1. Explain My Report in Simple Language Generator
-// ---------------------------------------------------------
+
+
+
 function generateLaymanReportExplanation(report) {
     const data = report.report_data || {};
     const cat = (report.test_category || '').toLowerCase();
@@ -794,10 +796,10 @@ function generateLaymanReportExplanation(report) {
     `;
 }
 
-// ---------------------------------------------------------
-// 2. Suggested Follow-Up Tests & Doctors (MEDICOVER VIZAG)
-// Sourced directly from https://www.medicoverhospitals.in/doctors/vizag
-// ---------------------------------------------------------
+
+
+
+
 function generateMedicoverVizagDoctors(report) {
     const cat = (report.test_category || '').toLowerCase();
     
@@ -912,9 +914,9 @@ function generateMedicoverVizagDoctors(report) {
     `;
 }
 
-// ---------------------------------------------------------
-// 3. Patient-Friendly Abnormal Results Summary Generator
-// ---------------------------------------------------------
+
+
+
 function generatePatientFriendlyAbnormalSummary(report) {
     const data = report.report_data || {};
     
@@ -990,9 +992,9 @@ function generatePatientFriendlyAbnormalSummary(report) {
     `;
 }
 
-// ---------------------------------------------------------
-// 4. Experimental ML Decision Support Sandbox Generator
-// ---------------------------------------------------------
+
+
+
 function generateReportMLDecisionSandbox(report) {
     const data = report.report_data || {};
     const getVal = (k, def) => {
@@ -1143,7 +1145,7 @@ function simulateSandboxPrediction(reportId) {
     const bili = parseFloat(document.getElementById(`sb-bili-${reportId}`)?.value || 0.8);
     const tsh = parseFloat(document.getElementById(`sb-tsh-${reportId}`)?.value || 2.1);
 
-    // 1. Anemia Classifier
+    
     let anemiaRisk = "Normal (Non-Anemic)";
     let anemiaConfidence = 96;
     let anemiaClass = "risk-normal";
@@ -1168,7 +1170,7 @@ function simulateSandboxPrediction(reportId) {
         anemiaBadge = "• BORDERLINE";
     }
 
-    // 2. Dengue Thrombocytopenia Model
+    
     let dengueRisk = "Normal Platelet Kinetics";
     let dengueConfidence = 95;
     let dengueClass = "risk-normal";
@@ -1185,7 +1187,7 @@ function simulateSandboxPrediction(reportId) {
         dengueBadge = "• MONITOR";
     }
 
-    // 3. Liver Function Model
+    
     let liverRisk = "Normal Hepatobiliary Function";
     let liverConfidence = 96;
     let liverClass = "risk-normal";
@@ -1202,7 +1204,7 @@ function simulateSandboxPrediction(reportId) {
         liverBadge = "• MILD";
     }
 
-    // 4. Thyroid Metabolic Model
+    
     let thyroidRisk = "Euthyroid (Normal Regulation)";
     let thyroidConfidence = 97;
     let thyroidClass = "risk-normal";
@@ -1497,7 +1499,7 @@ function renderOfficialReportHTML(report) {
 }
 
 
-// Trigger Report-Linked ML Decision Support
+
 async function triggerReportMLAnalysis(reportId) {
     const container = document.getElementById(`ml-container-${reportId}`);
     if (!container) return;
@@ -1598,9 +1600,9 @@ function renderMLAnalysisCard(reportId, pred) {
 }
 
 
-// ---------------------------------------------------------
-// Admin / Lab Staff Portal Logic
-// ---------------------------------------------------------
+
+
+
 async function handleAdminLogin(e) {
     e.preventDefault();
     const u = document.getElementById('admin-user-input').value.trim();
@@ -1674,7 +1676,7 @@ async function loadAdminData() {
 
         loadPublicPatients();
 
-        // Update Stat counters
+        
         const statPat = document.getElementById('stat-patients-count');
         const statRep = document.getElementById('stat-reports-count');
         const statFin = document.getElementById('stat-finalized-count');
@@ -1682,7 +1684,7 @@ async function loadAdminData() {
         if (statRep) statRep.innerText = allReports.length;
         if (statFin) statFin.innerText = allReports.filter(r => r.status === 'Finalized').length;
 
-        // Render Reports Table
+        
         const tbodyRep = document.getElementById('admin-reports-table-body');
         if (tbodyRep) {
             tbodyRep.innerHTML = allReports.map(r => `
@@ -1706,7 +1708,7 @@ async function loadAdminData() {
 
 
 
-        // Render Patients Table
+        
         const tbodyPat = document.getElementById('admin-patients-table-body');
         if (tbodyPat) {
             tbodyPat.innerHTML = allPatients.map(p => `
@@ -1754,7 +1756,7 @@ async function adminDeleteReport(reportId) {
             const err = await res.json();
             throw new Error(err.detail || 'Failed to delete report');
         }
-        // If previewing this report, close preview
+        
         document.getElementById('admin-preview-sheet').style.display = 'none';
         loadAdminData();
     } catch (err) {
@@ -1964,9 +1966,9 @@ async function submitReportWithStatus(status) {
 }
 
 
-// ---------------------------------------------------------
-// Direct ML Sandbox Logic
-// ---------------------------------------------------------
+
+
+
 const sandboxConfigs = {
     anemia: {
         title: "Complete Blood Count (CBC / Anemia Panel)",
@@ -2217,9 +2219,9 @@ function renderSandboxResult(res) {
 }
 
 
-// ---------------------------------------------------------
-// AI Health Report Analyzer Controller Logic
-// ---------------------------------------------------------
+
+
+
 let selectedAnalyzerFile = null;
 let currentExtractedData = null;
 
@@ -2296,7 +2298,7 @@ async function triggerReportExtraction() {
 
         currentExtractedData = await safeJson(res);
         
-        // Populate Patient / Report Metadata fields
+        
         const meta = currentExtractedData.metadata || {};
         const patIdEl = document.getElementById('anl-meta-patient-id');
         const patNameEl = document.getElementById('anl-meta-patient-name');
@@ -2318,7 +2320,7 @@ async function triggerReportExtraction() {
         if (repIdEl) repIdEl.value = meta.report_id || '';
         if (repDateEl) repDateEl.value = meta.report_date || '';
 
-        // Render Extraction Quality & Audit Indicators
+        
         const dq = currentExtractedData.data_quality || {};
         const paramsList = currentExtractedData.parameters || [];
         const countEl = document.getElementById('anl-audit-biomarker-count');
@@ -2341,7 +2343,7 @@ async function triggerReportExtraction() {
             }
         }
 
-        // Render Laboratory Findings Table
+        
         renderExtractedParametersTable(paramsList);
         
         document.getElementById('anl-review-card').style.display = 'block';
@@ -2545,7 +2547,7 @@ async function triggerFinalAIAnalysis() {
     resultsSheet.style.display = 'none';
     loadingEl.scrollIntoView({ behavior: 'smooth' });
 
-    // Animate step progress indicators
+    
     const activateStep = (stepNum) => {
         const el = document.getElementById(`anl-step-${stepNum}`);
         const badge = document.getElementById(`anl-step-${stepNum}-badge`);
@@ -2557,17 +2559,17 @@ async function triggerFinalAIAnalysis() {
         if (badge) { badge.textContent = '✓ Done'; badge.style.background = 'rgba(16,185,129,0.15)'; badge.style.color = '#10b981'; }
     };
 
-    // Steps 2 & 3 run in parallel — activate both immediately
+    
     activateStep(2); activateStep(3);
 
-    // Elapsed timer
+    
     const startTime = Date.now();
     const timerEl = document.getElementById('anl-elapsed-timer');
     const timerInterval = setInterval(() => {
         if (timerEl) timerEl.textContent = Math.round((Date.now() - startTime) / 1000) + 's';
     }, 1000);
 
-    // Step 4 appears after ~3s (ML models typically finish fast)
+    
     setTimeout(() => { completeStep(3); activateStep(4); }, 3000);
 
     const payload = {
@@ -2608,7 +2610,7 @@ async function triggerFinalAIAnalysis() {
         resultsSheet.style.display = 'block';
         resultsSheet.scrollIntoView({ behavior: 'smooth' });
 
-        // Refresh persistent directory caches
+        
         loadPublicPatients();
         if (currentAuth.role === 'admin') loadAdminData();
     } catch (err) {
@@ -2639,7 +2641,7 @@ function renderVisualHealthSummary(data) {
         attentionBorderClass = 'card-accent-teal';
     }
 
-    // 1. Abnormal findings rows
+    
     const abnormalList = ai.abnormal_findings || [];
     const abnormalRowsHTML = abnormalList.length > 0 ? abnormalList.map(a => `
         <tr>
@@ -2650,7 +2652,7 @@ function renderVisualHealthSummary(data) {
         </tr>
     `).join('') : `<tr><td colspan="4" style="text-align: center; color: var(--success); padding: 14px;">✓ All evaluated parameters are within standard reference intervals.</td></tr>`;
 
-    // 2. Existing ML Models evaluated cards (Transparent 3-State Tracking: AVAILABLE / PARTIAL / INSUFFICIENT)
+    
     const mlKeys = Object.keys(ml);
     const mlCardsHTML = mlKeys.length > 0 ? mlKeys.map(k => {
         const item = ml[k];
@@ -2713,7 +2715,7 @@ function renderVisualHealthSummary(data) {
         }
     }).join('') : '<p style="color: var(--text-muted); font-size: 0.84rem;">No matching ML panels evaluated.</p>';
 
-    // 3. Top Screening Signals
+    
     const rare = ai.rare_unusual_screening || {};
     const topSignals = rare.top_screening_patterns || [];
     let topSignalsHTML = '';
@@ -2739,7 +2741,7 @@ function renderVisualHealthSummary(data) {
         `;
     }
 
-    // 4. Multi-Disease Rare / Unusual Condition Screening Panel ("Why This Was Flagged")
+    
     const candidateConditions = (rare.conditions && Array.isArray(rare.conditions) && rare.conditions.length > 0) 
         ? rare.conditions 
         : (rare.condition ? [rare] : []);
@@ -2825,7 +2827,7 @@ function renderVisualHealthSummary(data) {
         `;
     }).join('');
 
-    // 5. Ruled-Out / Unsupported Conditions
+    
     const unsupported = rare.unsupported_conditions || [];
     let unsupportedHTML = '';
     if (unsupported.length > 0) {
@@ -2857,7 +2859,7 @@ function renderVisualHealthSummary(data) {
         `;
     }
 
-    // 5b. Missing / Helpful Diagnostic Tests
+    
     const missingTests = rare.missing_helpful_tests || [];
     let missingTestsHTML = '';
     if (missingTests.length > 0) {
@@ -2879,15 +2881,15 @@ function renderVisualHealthSummary(data) {
         `;
     }
 
-    // 6. Report Data Quality Metrics
+    
     const quality = data.data_quality || {};
     const qualityPillClass = (quality.overall_quality === 'GOOD') ? 'risk-normal' : (quality.overall_quality === 'FAIR' ? 'flag-high' : 'risk-high');
 
-    // 7. General Precautions
+    
     const precautions = ai.general_precautions || [];
     const precautionsHTML = precautions.map(p => `<li>${p}</li>`).join('');
 
-    // Synthetic report model for clinical assistance tabs
+    
     const syntheticReportData = {};
     (data.extracted_parameters || []).forEach(p => {
         syntheticReportData[p.canonical_key || p.parameter] = {
@@ -3087,20 +3089,20 @@ function renderVisualHealthSummary(data) {
         </div>
     `;
 
-    // FEATURE 1: Render AI Differential Diagnosis Map
+    
     renderDiagnosisMap(ai.differential_diagnosis);
 
-    // FEATURE 2: Render Missing Test Intelligence
+    
     renderMissingTests(ai.missing_tests);
 
-    // FEATURE 3: Render Hidden Abnormality Detector Warning Banner
+    
     renderHiddenAbnormalities(ai.hidden_abnormalities);
 }
 
 
-// ================================================================
-// FEATURE 1: AI Differential Diagnosis Map Logic
-// ================================================================
+
+
+
 function renderDiagnosisMap(diffList) {
     const container = document.getElementById('diagnosis-map');
     const content = document.getElementById('diagnosis-map-content');
@@ -3148,9 +3150,9 @@ function renderDiagnosisMap(diffList) {
     container.style.display = 'block';
 }
 
-// ================================================================
-// FEATURE 2: Missing Test Intelligence Logic
-// ================================================================
+
+
+
 let currentMissingTests = [];
 
 function renderMissingTests(missingTests) {
@@ -3179,9 +3181,9 @@ function bookMissingTestsAtMedicover() {
     alert(message);
 }
 
-// ================================================================
-// FEATURE 3: Hidden Abnormality Detector Logic
-// ================================================================
+
+
+
 function renderHiddenAbnormalities(hiddenList) {
     const existing = document.getElementById('hidden-abnormality-banner');
     if (existing) existing.remove();
@@ -3221,9 +3223,9 @@ function renderHiddenAbnormalities(hiddenList) {
     }
 }
 
-// ================================================================
-// FEATURE 5: "What Changed?" Report Comparison Logic
-// ================================================================
+
+
+
 let compareFiles = {
     baseline: null,
     current: null
@@ -3331,9 +3333,9 @@ async function runReportComparison() {
     }
 }
 
-// =========================================================
-// 8. Symptoms to AI Suggestions & Real-Time Streaming
-// =========================================================
+
+
+
 let currentSymptomText = "";
 let rawSymptomMarkdown = "";
 let rawReasoningText = "";
@@ -3400,7 +3402,7 @@ function toggleSymptomTag(chipEl, tagText) {
             textarea.value = tagText;
         }
     } else {
-        // Remove tag if present
+        
         let regex = new RegExp(`(,\\s*)?${tagText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'gi');
         textarea.value = currentVal.replace(regex, '').replace(/^,\s*/, '').trim();
     }
@@ -3415,7 +3417,7 @@ function loadSymptomPreset(presetKey) {
     const severitySelect = document.getElementById('symp-severity');
     if (!textarea) return;
 
-    // Reset chips
+    
     document.querySelectorAll('.symp-chip').forEach(c => c.classList.remove('active'));
 
     const presets = {
@@ -3486,7 +3488,7 @@ function loadSymptomPreset(presetKey) {
         if (severitySelect && data.severity) severitySelect.value = data.severity;
         updateSymptomCharCount();
 
-        // Highlight matching chips
+        
         document.querySelectorAll('.symp-chip').forEach(chip => {
             const chipText = chip.textContent.trim().toLowerCase();
             if (data.text.toLowerCase().includes(chipText)) {
@@ -3539,7 +3541,7 @@ function toggleReasoningCollapse() {
 function formatMarkdownAdvice(text) {
     if (!text) return "";
 
-    // Split text into section blocks by top-level markdown headers
+    
     const sections = text.split(/(?=^##\s+)/m);
 
     let formattedBlocks = sections.map(section => {
@@ -3550,22 +3552,22 @@ function formatMarkdownAdvice(text) {
         let headerTitle = headerMatch ? headerMatch[1] : "";
         let bodyContent = headerMatch ? trimmed.replace(/^##\s+.+$/m, '').trim() : trimmed;
 
-        // Escape basic HTML
+        
         let cleanBody = bodyContent
             .replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
             .replace(/>/g, "&gt;");
 
-        // Format subheaders, bold, italic
+        
         cleanBody = cleanBody.replace(/^### (.*$)/gim, '<h4 style="color: var(--primary); font-size: 0.95rem; margin-top: 10px; font-weight: 700;">$1</h4>');
         cleanBody = cleanBody.replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>');
         cleanBody = cleanBody.replace(/\*(.*?)\*/gim, '<em>$1</em>');
 
-        // Bullet points
+        
         cleanBody = cleanBody.replace(/^\s*[\-\*]\s+(.*$)/gim, '<li style="margin-bottom: 8px; line-height: 1.6;">$1</li>');
         cleanBody = cleanBody.replace(/(<li.*<\/li>\s*)+/gim, (match) => `<ul style="margin: 8px 0 10px 20px; list-style-type: disc;">${match}</ul>`);
 
-        // Convert double newlines to paragraphs
+        
         cleanBody = cleanBody.split('\n\n').map(p => {
             p = p.trim();
             if (!p) return '';
@@ -3573,7 +3575,7 @@ function formatMarkdownAdvice(text) {
             return `<p style="margin-bottom: 8px; line-height: 1.6;">${p}</p>`;
         }).join('\n');
 
-        // Determine card style based on section category
+        
         let cardStyle = "background: var(--card-bg); border: 1px solid var(--card-border);";
         let headerColor = "var(--primary)";
         let iconBadge = "📋";
@@ -3630,10 +3632,10 @@ function formatMarkdownAdvice(text) {
     return formattedBlocks;
 }
 
-// ---------------------------------------------------------
-// Suggested Follow-Up Tests & Doctors from MEDICOVER VIZAG (For Symptoms AI)
-// Sourced directly from https://www.medicoverhospitals.in/doctors/vizag
-// ---------------------------------------------------------
+
+
+
+
 function renderSymptomsMedicoverDoctors(symptomsText) {
     const container = document.getElementById('symp-medicover-doctors-container');
     if (!container) return;
@@ -3643,7 +3645,7 @@ function renderSymptomsMedicoverDoctors(symptomsText) {
     let doctors = [];
     let tests = [];
 
-    // 1. Fever / Infection / Dengue / Malaria / Chills
+    
     if (s.includes('fever') || s.includes('chill') || s.includes('shiver') || s.includes('dengue') || s.includes('platelet') || s.includes('body pain') || s.includes('rash') || s.includes('joint') || s.includes('headache')) {
         doctors.push({
             name: "Dr. K. Rama Murty",
@@ -3664,7 +3666,7 @@ function renderSymptomsMedicoverDoctors(symptomsText) {
         tests.push("Complete Blood Count (CBC) with Platelet Kinetics", "Dengue NS1 Antigen & IgM/IgG ELISA", "Serum Electrolytes & Widal Test");
     }
 
-    // 2. Anemia / Weakness / Dizziness / Fatigue / Pallor
+    
     if (s.includes('fatigue') || s.includes('tired') || s.includes('weak') || s.includes('pale') || s.includes('dizziness') || s.includes('breath') || s.includes('anemia') || s.includes('pallor')) {
         doctors.push({
             name: "Dr. Ramesh Uppada",
@@ -3685,7 +3687,7 @@ function renderSymptomsMedicoverDoctors(symptomsText) {
         tests.push("Serum Ferritin & Total Iron Binding Capacity (TIBC)", "Vitamin B12 & Folate Profile", "Peripheral Blood Smear Examination");
     }
 
-    // 3. Liver / Jaundice / Stomach / Nausea / Acidity / Diarrhea
+    
     if (s.includes('yellow') || s.includes('jaundice') || s.includes('urine') || s.includes('nausea') || s.includes('vomit') || s.includes('stomach') || s.includes('abdominal') || s.includes('liver') || s.includes('diarrhea') || s.includes('cramp')) {
         doctors.push({
             name: "Dr. Srinivas Nistala",
@@ -3706,7 +3708,7 @@ function renderSymptomsMedicoverDoctors(symptomsText) {
         tests.push("Liver Function Test (LFT: Total Bilirubin, SGPT/ALT, AST)", "Abdominal Ultrasound (USG)", "Viral Hepatitis Panel (HBsAg, Anti-HCV)");
     }
 
-    // 4. Thyroid / Weight / Cold / Heat / Hair Loss / Neck Swelling
+    
     if (s.includes('thyroid') || s.includes('weight') || s.includes('cold') || s.includes('heat') || s.includes('hair') || s.includes('tsh') || s.includes('throat') || s.includes('swelling') || s.includes('neck')) {
         doctors.push({
             name: "Dr. Kurumeti Vamsi Krishna",
@@ -3727,7 +3729,7 @@ function renderSymptomsMedicoverDoctors(symptomsText) {
         tests.push("Thyroid Panel (TSH, Total T3, Free T4)", "Anti-TPO Thyroid Antibodies", "Fasting Blood Glucose & HbA1c");
     }
 
-    // 5. Respiratory / Cough / Breathlessness / Chest Congestion
+    
     if (s.includes('cough') || s.includes('breath') || s.includes('chest') || s.includes('phlegm') || s.includes('wheez') || s.includes('dyspnea')) {
         doctors.push({
             name: "Dr. Allena Prem Kumar",
@@ -3748,7 +3750,7 @@ function renderSymptomsMedicoverDoctors(symptomsText) {
         tests.push("Chest X-Ray / High-Resolution CT", "Complete Blood Count (CBC) with Absolute Eosinophil Count", "Spirometry / Pulmonary Function Test (PFT)");
     }
 
-    // 6. Joint / Bone / Muscle / Orthopedic Pain
+    
     if (s.includes('joint') || s.includes('bone') || s.includes('back pain') || s.includes('spine') || s.includes('knee') || s.includes('arthrit')) {
         doctors.push({
             name: "Dr. A. Pratap Reddy",
@@ -3769,7 +3771,7 @@ function renderSymptomsMedicoverDoctors(symptomsText) {
         tests.push("Serum Uric Acid & ESR", "Rheumatoid Factor (RA Factor) & Anti-CCP", "Digital X-Ray / Musculoskeletal Ultrasound");
     }
 
-    // 7. Urinary / Burning / Kidney / Flank Pain
+    
     if (s.includes('urination') || s.includes('burning') || s.includes('flank') || s.includes('kidney') || s.includes('renal')) {
         doctors.push({
             name: "Dr. V. Srinivas",
@@ -3782,7 +3784,7 @@ function renderSymptomsMedicoverDoctors(symptomsText) {
         tests.push("Complete Urine Routine & Microscopy", "Kidney Function Test (KFT: Serum Creatinine, Urea, eGFR)", "Ultrasound KUB (Kidney, Ureter, Bladder)");
     }
 
-    // 8. Default fallback if no specific match
+    
     if (doctors.length === 0) {
         doctors.push({
             name: "Dr. K. Rama Murty",
@@ -3803,13 +3805,13 @@ function renderSymptomsMedicoverDoctors(symptomsText) {
         tests.push("Complete Blood Count (CBC)", "Complete Urine Routine & Microscopy", "Comprehensive Metabolic Panel (CMP)");
     }
 
-    // Deduplicate doctors by name and tests
+    
     const seenNames = new Set();
     doctors = doctors.filter(d => {
         if (seenNames.has(d.name)) return false;
         seenNames.add(d.name);
         return true;
-    }).slice(0, 4); // Show top 2-4 most relevant
+    }).slice(0, 4); 
 
     tests = [...new Set(tests)];
 
@@ -3919,11 +3921,11 @@ async function streamSymptomSuggestions(e) {
     stopSymptomSpeech();
     dismissTriageBanner();
 
-    // Show results container
+    
     if (resultsContainer) resultsContainer.style.display = 'block';
     resultsContainer.scrollIntoView({ behavior: 'smooth' });
 
-    // Render Medicover Vizag Doctor Suggestions directly into Symptoms AI Report!
+    
     renderSymptomsMedicoverDoctors(symptoms);
 
     if (contentEl) {
@@ -3962,7 +3964,7 @@ async function streamSymptomSuggestions(e) {
                 gender: gender,
                 duration: duration,
                 severity: severity,
-                language: window._selectedLanguage || 'English'  // Feature 4
+                language: window._selectedLanguage || 'English'  
             })
         });
 
@@ -3981,7 +3983,7 @@ async function streamSymptomSuggestions(e) {
 
             buffer += decoder.decode(value, { stream: true });
             const lines = buffer.split("\n\n");
-            buffer = lines.pop(); // Keep incomplete chunk in buffer
+            buffer = lines.pop(); 
 
             for (const line of lines) {
                 const trimmed = line.trim();
@@ -3995,7 +3997,7 @@ async function streamSymptomSuggestions(e) {
                         if (parsed.error) {
                             throw new Error(parsed.error);
                         }
-                        // Feature 2: Triage banner intercept (first event from stream)
+                        
                         if (parsed.triage) {
                             triggerTriageBanner(parsed.triage);
                         }
@@ -4018,13 +4020,13 @@ async function streamSymptomSuggestions(e) {
                             }
                         }
                     } catch (e) {
-                        // ignore malformed token JSON
+                        
                     }
                 }
             }
         }
 
-        // Finalize
+        
         if (contentEl) {
             contentEl.innerHTML = formatMarkdownAdvice(rawSymptomMarkdown);
         }
@@ -4035,7 +4037,7 @@ async function streamSymptomSuggestions(e) {
         }
         if (livePulse) livePulse.style.display = 'none';
 
-        // Feature 1: Extract and render doctor questions card
+        
         extractDoctorQuestions(rawSymptomMarkdown);
 
     } catch (err) {
@@ -4060,7 +4062,7 @@ async function streamSymptomSuggestions(e) {
     }
 }
 
-// Alias for backwards compatibility
+
 const handleSymptomSubmit = streamSymptomSuggestions;
 
 function toggleSymptomSpeech() {
@@ -4080,7 +4082,7 @@ function toggleSymptomSpeech() {
             return;
         }
 
-        // Clean markdown for smooth speech
+        
         const cleanSpeechText = rawSymptomMarkdown
             .replace(/[#*`~_>\-\[\]]/g, ' ')
             .replace(/##+/g, '.')
@@ -6732,6 +6734,7 @@ function handleStaffLogout() {
     localStorage.removeItem('medlens_staff_name');
     localStorage.removeItem('medlens_staff_role');
     localStorage.removeItem('medlens_staff_dept');
+    localStorage.removeItem('medlens_staff_subrole');
 
     const authGate = document.getElementById('staff-auth-gate');
     const activeDash = document.getElementById('staff-active-dashboard');
@@ -6758,62 +6761,102 @@ function applyStaffSessionUI() {
     const metaEl = document.getElementById('staff-active-meta');
     if (metaEl) metaEl.textContent = `${staffAuth.staffId} • ${staffAuth.department || 'Clinical Operations'}`;
 
-    const badgeEl = document.getElementById('staff-active-role-badge');
-    if (badgeEl) badgeEl.remove();
+    const nRole = (staffAuth.role || '').toUpperCase().replace(/[\s-]+/g, '_');
+    const isOpsManager = (nRole === 'OPERATIONS_MANAGER' || nRole === 'ADMINISTRATOR' || nRole === 'ADMIN' || nRole === 'DOCTOR' || nRole.includes('DIRECTOR') || nRole.includes('OPERATIONS'));
 
-    // Map staff role to default view
+    // Configure role-based tab pill visibility strictly
+    const pillRecep = document.getElementById('pill-role-receptionist');
+    const pillLab = document.getElementById('pill-role-lab');
+    const pillWard = document.getElementById('pill-role-ward');
+    const pillOps = document.getElementById('pill-role-operations');
+
+    if (isOpsManager) {
+        // Operations Manager: Can see and switch to ALL 4 portals
+        if (pillRecep) pillRecep.style.setProperty('display', 'inline-flex', 'important');
+        if (pillLab) pillLab.style.setProperty('display', 'inline-flex', 'important');
+        if (pillWard) pillWard.style.setProperty('display', 'inline-flex', 'important');
+        if (pillOps) pillOps.style.setProperty('display', 'inline-flex', 'important');
+    } else if (nRole.includes('RECEPTION') || nRole.includes('FRONT') || nRole.includes('BILLING')) {
+        // Receptionist: ONLY sees Receptionist portal
+        if (pillRecep) pillRecep.style.setProperty('display', 'inline-flex', 'important');
+        if (pillLab) pillLab.style.setProperty('display', 'none', 'important');
+        if (pillWard) pillWard.style.setProperty('display', 'none', 'important');
+        if (pillOps) pillOps.style.setProperty('display', 'none', 'important');
+    } else if (nRole.includes('LAB') || nRole.includes('PATHOLOG')) {
+        // Lab Staff: ONLY sees Lab portal
+        if (pillRecep) pillRecep.style.setProperty('display', 'none', 'important');
+        if (pillLab) pillLab.style.setProperty('display', 'inline-flex', 'important');
+        if (pillWard) pillWard.style.setProperty('display', 'none', 'important');
+        if (pillOps) pillOps.style.setProperty('display', 'none', 'important');
+    } else if (nRole.includes('WARD') || nRole.includes('NURSE')) {
+        // Ward Manager: ONLY sees Ward portal
+        if (pillRecep) pillRecep.style.setProperty('display', 'none', 'important');
+        if (pillLab) pillLab.style.setProperty('display', 'none', 'important');
+        if (pillWard) pillWard.style.setProperty('display', 'inline-flex', 'important');
+        if (pillOps) pillOps.style.setProperty('display', 'none', 'important');
+    }
+
+    // Determine initial workspace view
     let targetView = 'receptionist';
-    if (staffAuth.role === 'LAB_STAFF') targetView = 'lab';
-    else if (staffAuth.role === 'WARD_MANAGER') targetView = 'ward';
-    else if (staffAuth.role === 'OPERATIONS_MANAGER') targetView = 'operations';
-
-    const savedSubrole = localStorage.getItem('medlens_staff_subrole');
-    if (savedSubrole && (staffAuth.role === 'OPERATIONS_MANAGER' || (staffAuth.role === 'RECEPTIONIST' && savedSubrole === 'receptionist') || (staffAuth.role === 'LAB_STAFF' && savedSubrole === 'lab') || (staffAuth.role === 'WARD_MANAGER' && savedSubrole === 'ward'))) {
-        targetView = savedSubrole;
+    if (isOpsManager) {
+        const savedSubrole = localStorage.getItem('medlens_staff_subrole');
+        targetView = savedSubrole || 'operations';
+    } else if (nRole.includes('LAB') || nRole.includes('PATHOLOG')) {
+        targetView = 'lab';
+    } else if (nRole.includes('WARD') || nRole.includes('NURSE')) {
+        targetView = 'ward';
+    } else {
+        targetView = 'receptionist';
     }
 
     switchStaffRole(targetView);
 }
 
 function switchStaffRole(role) {
-    // Role permissions check
-    if (staffAuth.role && staffAuth.role !== 'OPERATIONS_MANAGER') {
-        const rolePermMap = {
-            'receptionist': ['RECEPTIONIST'],
-            'lab': ['LAB_STAFF'],
-            'ward': ['WARD_MANAGER'],
-            'operations': ['OPERATIONS_MANAGER']
-        };
-        const allowed = rolePermMap[role] || [];
-        if (!allowed.includes(staffAuth.role)) {
-            alert(`🔒 Role Restriction: You are signed in as ${staffAuth.role.replace('_', ' ')}. Access to the ${role.toUpperCase()} workspace is restricted to authorized staff or Operations Managers.`);
-            return;
+    const nRole = (staffAuth.role || '').toUpperCase().replace(/[\s-]+/g, '_');
+    const isOpsManager = (nRole === 'OPERATIONS_MANAGER' || nRole === 'ADMINISTRATOR' || nRole === 'ADMIN' || nRole === 'DOCTOR' || nRole.includes('DIRECTOR') || nRole.includes('OPERATIONS'));
+
+    // Strict Domain Isolation: Only Operations Manager can switch to other domains
+    let effectiveRole = role;
+    if (!isOpsManager) {
+        if (nRole.includes('LAB') || nRole.includes('PATHOLOG')) {
+            effectiveRole = 'lab';
+        } else if (nRole.includes('WARD') || nRole.includes('NURSE')) {
+            effectiveRole = 'ward';
+        } else {
+            effectiveRole = 'receptionist';
         }
     }
 
-    currentActiveStaffRoleView = role;
+    currentActiveStaffRoleView = effectiveRole;
     try {
-        localStorage.setItem('medlens_staff_subrole', role);
+        localStorage.setItem('medlens_staff_subrole', effectiveRole);
     } catch (e) {}
 
     // Update switcher pills
     document.querySelectorAll('.staff-role-pill').forEach(p => p.classList.remove('active'));
-    const activePill = document.getElementById(`pill-role-${role}`);
+    const activePill = document.getElementById(`pill-role-${effectiveRole}`);
     if (activePill) activePill.classList.add('active');
 
-    // Update panes
-    document.querySelectorAll('.staff-role-pane').forEach(p => p.classList.remove('active'));
-    const activePane = document.getElementById(`pane-role-${role}`);
-    if (activePane) activePane.classList.add('active');
+    // Update panes: hide ALL panes first, then show only the active one
+    document.querySelectorAll('.staff-role-pane').forEach(p => {
+        p.classList.remove('active');
+        p.style.display = 'none';
+    });
+    const activePane = document.getElementById(`pane-role-${effectiveRole}`);
+    if (activePane) {
+        activePane.classList.add('active');
+        activePane.style.display = 'block';
+    }
 
     // Lifecycle triggers
-    if (role === 'receptionist') {
+    if (effectiveRole === 'receptionist') {
         loadReceptionistDashboard();
-    } else if (role === 'lab') {
+    } else if (effectiveRole === 'lab') {
         loadLabStaffOrders();
-    } else if (role === 'ward') {
+    } else if (effectiveRole === 'ward') {
         loadWardManagerDashboard();
-    } else if (role === 'operations') {
+    } else if (effectiveRole === 'operations') {
         loadOpsOverview();
     }
 }

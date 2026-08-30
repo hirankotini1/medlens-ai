@@ -7,17 +7,17 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>MEDLENS AI x Medicover — Clinical Precision Health Platform</title>
-    <!-- Google Fonts: Geist & Inter -->
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Google Material Symbols Outlined -->
+    
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css?v=20260828symptoms_ai">
 </head>
 <body>
 
-    <!-- Top Navigation Bar (Stitch Clinical Precision Header) -->
+    
     <header class="top-navbar">
         <div class="brand-logo" onclick="switchView('home')">
             <span class="brand-icon">
@@ -52,10 +52,10 @@
                 <span class="material-symbols-outlined">info</span> About
             </button>
 
-            <!-- RIGHT ACTIONS CLUSTER: English, Book Appointment, and Staff Operations Hub -->
+            
             <div class="header-right-actions">
                 <div class="header-action-top-row">
-                    <!-- FEATURE 4: Language Selector Pill -->
+                    
                     <div class="lang-selector-wrapper">
                         <span class="material-symbols-outlined" style="font-size: 16px; color: var(--primary);">translate</span>
                         <select id="global-lang-select" class="lang-selector" onchange="onLanguageChange(this.value)" title="Select AI response language">
@@ -65,12 +65,12 @@
                         </select>
                     </div>
 
-                    <!-- REGISTER PATIENT & BOOK APPOINTMENT BUTTON -->
+                    
                     <button type="button" class="btn-primary" onclick="openPatientRegistrationModal()" style="background: linear-gradient(135deg, #0284c7, #0369a1); padding: 5px 12px; font-size: 0.8rem; font-weight: 700; border-radius: 8px; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25); display: inline-flex; align-items: center; gap: 4px;" title="Register new outpatient and get appointment slip">
                         <span class="material-symbols-outlined" style="font-size: 16px;">calendar_month</span> <span class="doc-btn-text">Book Appointment</span>
                     </button>
 
-                    <!-- TOP-RIGHT PROMINENT STAFF OPERATIONS HUB BUTTON -->
+                    
                     <button type="button" class="admin-corner-btn" id="tab-operations" onclick="switchView('operations')" title="Hospital Staff Operations Hub & Inpatient Management">
                         <span class="material-symbols-outlined" style="font-size: 16px;">badge</span> <span class="doc-btn-text">Staff Operations Hub</span>
                     </button>
@@ -79,19 +79,19 @@
         </nav>
     </header>
 
-    <!-- Server Offline Warning Banner (Auto-detects backend connection) -->
+    
     <div id="server-status-banner" style="display: none; background: linear-gradient(135deg, #b91c1c, #dc2626); color: #ffffff; padding: 12px 20px; font-size: 0.86rem; font-weight: 600; text-align: center; justify-content: center; align-items: center; gap: 14px; box-shadow: 0 4px 14px rgba(220,38,38,0.25); z-index: 1000; position: sticky; top: 68px;">
         <span>⚠️ <strong>Backend Server Offline (Port 8000)</strong> — Please double-click <code>RUN_MEDLENS.bat</code> to start the Python server.</span>
         <button type="button" onclick="checkBackendHealth(true)" style="background: #ffffff; color: #dc2626; border: none; padding: 4px 14px; border-radius: 6px; font-weight: 800; cursor: pointer; font-size: 0.8rem;">🔄 Retry Connection</button>
     </div>
 
     <main>
-        <!-- ========================================== -->
-        <!-- 1. LANDING / HOME VIEW                     -->
-        <!-- ========================================== -->
+        
+        
+        
         <section id="view-home" class="section-view active">
             
-            <!-- INNOVATIVE WELCOME PATIENT HERO (AS DRAWN IN USER SKETCH) -->
+            
             <div class="patient-welcome-hero">
                 <div class="patient-hero-badge">
                     <span class="material-symbols-outlined" style="font-size: 16px;">waving_hand</span> Welcome Patient &bull; Medicover Digital Healthcare Hub
@@ -103,7 +103,7 @@
                     Experience state-of-the-art pathology care: instant confidential lab report lookup with PIN verification, certified PDF downloads, and real-time evidence-informed AI guidance for symptoms and remedies.
                 </p>
 
-                <!-- Innovative Quick Report Lookup Directly from Hero -->
+                
                 <div class="patient-quick-lookup">
                     <div style="font-size: 0.82rem; font-weight: 800; color: #005e66; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
                         <span class="material-symbols-outlined" style="font-size: 16px; color: var(--primary);">search</span> Instant Patient Report Access &bull; Enter Credentials:
@@ -121,9 +121,9 @@
                         </button>
                     </div>
 
-                    <!-- TWO SYMMETRICAL AI ACTION CARDS DIRECTLY BELOW CREDENTIALS -->
+                    
                     <div class="hero-ai-split-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-top: 18px;">
-                        <!-- 1. AI Health Report Analyzer (Left Card) -->
+                        
                         <div class="hero-ai-card" onclick="switchView('analyzer')" style="background: linear-gradient(135deg, #ffffff 0%, #f5f3ff 100%); border: 1.5px solid #c7d2fe; border-radius: 14px; padding: 18px 20px; cursor: pointer; transition: all 0.25s ease; display: flex; flex-direction: column; justify-content: space-between; gap: 14px; box-shadow: 0 4px 14px rgba(79, 70, 229, 0.08);">
                             <div>
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
@@ -142,7 +142,7 @@
                             </button>
                         </div>
 
-                        <!-- 2. Symptoms to AI Guidance (Right Card) -->
+                        
                         <div class="hero-ai-card" onclick="switchView('symptoms')" style="background: linear-gradient(135deg, #ffffff 0%, #f0fdfa 100%); border: 1.5px solid #99f6e4; border-radius: 14px; padding: 18px 20px; cursor: pointer; transition: all 0.25s ease; display: flex; flex-direction: column; justify-content: space-between; gap: 14px; box-shadow: 0 4px 14px rgba(13, 148, 136, 0.08);">
                             <div>
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
@@ -164,7 +164,7 @@
                 </div>
             </div>
 
-            <!-- 1. INNOVATIVE INTERACTIVE BLOOD BIOMARKER REFERENCE EXPLORER -->
+            
             <div class="biomarker-explorer-card">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
                     <div>
@@ -180,7 +180,7 @@
                     </div>
                 </div>
 
-                <!-- Interactive Biomarker Selection Chips -->
+                
                 <div class="biomarker-chips-container">
                     <button type="button" class="bio-chip-btn active" id="bio-btn-hb" onclick="selectBiomarker('hb')">🩸 Hemoglobin (Hb)</button>
                     <button type="button" class="bio-chip-btn" id="bio-btn-plt" onclick="selectBiomarker('plt')">🦟 Platelet Count (PLT)</button>
@@ -192,7 +192,7 @@
                     <button type="button" class="bio-chip-btn" id="bio-btn-creat" onclick="selectBiomarker('creat')">🧬 Serum Creatinine</button>
                 </div>
 
-                <!-- Dynamic Biomarker Details Panel -->
+                
                 <div class="biomarker-display-grid">
                     <div>
                         <div style="font-size: 0.75rem; color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;" id="bio-category">Hematology &amp; Oxygen Transport</div>
@@ -201,7 +201,7 @@
                             Iron-rich protein in red blood cells that carries oxygen from the lungs to tissues throughout the body.
                         </p>
 
-                        <!-- Visual Range Gauge Bar -->
+                        
                         <div style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 12px; padding: 14px 16px;">
                             <div style="display: flex; justify-content: space-between; font-size: 0.76rem; font-weight: 700; color: var(--text-muted);">
                                 <span>Low / Deficiency</span>
@@ -217,7 +217,7 @@
                         </div>
                     </div>
 
-                    <!-- Clinical Findings Explanation -->
+                    
                     <div style="display: flex; flex-direction: column; gap: 10px; justify-content: center;">
                         <div style="background: #ffffff; border: 1px solid #fee2e2; border-left: 4px solid #ef4444; border-radius: 10px; padding: 12px 14px;">
                             <strong style="color: #991b1b; font-size: 0.82rem; text-transform: uppercase;">⚠️ If Elevated:</strong>
@@ -235,7 +235,7 @@
                 </div>
             </div>
 
-            <!-- Mandatory Educational Disclaimer -->
+            
             <div class="disclaimer-box" style="margin-top: 16px;">
                 <span style="font-size: 1.1rem; color: var(--primary);">ℹ️</span>
                 <div>
@@ -247,11 +247,11 @@
 
 
 
-        <!-- ========================================== -->
-        <!-- 2. PATIENT PORTAL VIEW                     -->
-        <!-- ========================================== -->
+        
+        
+        
         <section id="view-patient" class="section-view">
-            <!-- Patient Division Banner -->
+            
             <div class="subpage-division-banner patient-banner">
                 <span style="display: flex; align-items: center; gap: 8px;">
                     <span class="material-symbols-outlined" style="font-size: 18px;">person</span> <strong>PATIENT CARE DIVISION</strong> &bull; Confidential Patient Services &amp; Lab Report Retrieval
@@ -261,7 +261,7 @@
                 </span>
             </div>
 
-            <!-- Unauthenticated Login Box -->
+            
             <div id="patient-login-container" class="card" style="max-width: 550px; margin: 20px auto;">
                 <div class="card-header">
                     <h2><span class="material-symbols-outlined" style="font-size: 22px; color: var(--primary);">lock</span> Patient Portal Authentication</h2>
@@ -292,17 +292,17 @@
 
                 <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--card-border);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <span style="font-size: 0.8rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;">Registered Patient Directory:</span>
-                        <button type="button" class="btn-secondary" style="padding: 2px 8px; font-size: 0.72rem;" onclick="loadPublicPatients()"><span>🔄</span> Refresh Directory</button>
+                        <span style="font-size: 0.8rem; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;">Latest Registered Patients (Quick Select):</span>
+                        <button type="button" class="btn-secondary" style="padding: 2px 8px; font-size: 0.72rem;" onclick="loadPublicPatients()"><span>🔄</span> Refresh</button>
                     </div>
                     <div id="patient-quick-login-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px;">
                     </div>
                 </div>
             </div>
 
-            <!-- Authenticated Patient Dashboard -->
+            
             <div id="patient-dashboard-container" style="display: none;">
-                <!-- Patient Welcome Header -->
+                
                 <div class="card card-accent-teal">
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
                         <div>
@@ -318,7 +318,7 @@
                     </div>
                 </div>
 
-                <!-- Quick Patient Stats -->
+                
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px;">
                     <div class="card" style="padding: 16px; margin-bottom: 0;">
                         <div style="font-size: 0.74rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700;">Total Reports on File</div>
@@ -335,17 +335,17 @@
                 </div>
 
 
-                <!-- Patient's Reports List -->
+                
                 <div class="card">
                     <div class="card-header">
                         <h2><span>📋</span> My Laboratory Reports</h2>
                     </div>
                     <div id="patient-reports-list-container" class="table-responsive">
-                        <!-- Populated dynamically -->
+                        
                     </div>
                 </div>
 
-                <!-- FEATURE 5: Personal Health Timeline -->
+                
                 <div class="card" id="patient-timeline-card" style="margin-top: 0;">
                     <div class="card-header" style="padding-bottom: 0;">
                         <h2><span>📅</span> My Health Timeline</h2>
@@ -359,7 +359,7 @@
                     </div>
                 </div>
 
-                <!-- DOCTOR CARE REMINDERS & HEALTH CHECKUPS CARD -->
+                
                 <div class="card" id="patient-reminders-card" style="margin-top: 20px;">
                     <div class="card-header" style="padding-bottom: 0;">
                         <div>
@@ -381,7 +381,7 @@
                     </div>
                 </div>
 
-                <!-- PATIENT REPORTED ISSUES LOG CARD -->
+                
                 <div class="card" id="patient-reported-issues-card" style="margin-top: 20px;">
                     <div class="card-header">
                         <div>
@@ -400,19 +400,19 @@
                     </div>
                 </div>
 
-                <!-- Active Full Report View (Clinical Sheet + ML Card) -->
+                
                 <div id="patient-active-report-sheet" style="display: none;">
-                    <!-- Injected dynamically -->
+                    
                 </div>
             </div>
         </section>
 
 
-        <!-- ========================================== -->
-        <!-- 3. ADMIN / LAB STAFF PORTAL VIEW          -->
-        <!-- ========================================== -->
+        
+        
+        
         <section id="view-admin" class="section-view">
-            <!-- Doctor / Admin Division Banner -->
+            
             <div class="subpage-division-banner doctor-banner">
                 <span style="display: flex; align-items: center; gap: 8px;">
                     <span class="material-symbols-outlined" style="font-size: 18px;">stethoscope</span> <strong>DOCTOR &amp; LAB ADMIN DIVISION</strong> &bull; Patient Registry, Lab Report Authoring &amp; Clinical Management
@@ -422,7 +422,7 @@
                 </span>
             </div>
 
-            <!-- Staff Login Form -->
+            
             <div id="admin-login-box" class="card" style="max-width: 450px; margin: 40px auto; text-align: center;">
                 <div style="margin-bottom: 12px;"><span class="material-symbols-outlined" style="font-size: 48px; color: var(--primary);">shield_person</span></div>
                 <h3 style="margin-bottom: 8px; font-size: 1.25rem;">Laboratory Staff Authentication</h3>
@@ -442,9 +442,9 @@
                 </form>
             </div>
 
-            <!-- Staff Dashboard -->
+            
             <div id="admin-dashboard-box" style="display: none;">
-                <!-- Summary Stats -->
+                
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px;">
                     <div class="card" style="padding: 16px; margin-bottom: 0;">
                         <div style="font-size: 0.78rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Total Registered Patients</div>
@@ -464,7 +464,7 @@
                     </div>
                 </div>
 
-                <!-- Admin Action Toolbar -->
+                
                 <div class="card">
                     <div class="card-header">
                         <h2><span class="material-symbols-outlined" style="color: var(--primary);">medical_services</span> Pathology Management &amp; Laboratory Operations</h2>
@@ -478,9 +478,9 @@
                         </div>
                     </div>
 
-                    <!-- Filter / Subtabs -->
+                    
                     <div style="margin-bottom: 16px;">
-                        <!-- FEATURE 3: Admin PIN Access for Shared Sessions -->
+                        
                         <div class="admin-pin-access-card" id="admin-pin-access-card">
                             <span class="material-symbols-outlined" style="font-size: 22px; color: var(--primary);">pin</span>
                             <span class="apac-label">Access Patient Session (Enter PIN):</span>
@@ -502,7 +502,7 @@
                         </div>
                     </div>
 
-                    <!-- Reports Table Container -->
+                    
                     <div id="adm-reports-container" class="table-responsive">
                         <table class="results-table">
                             <thead>
@@ -519,7 +519,7 @@
                         </table>
                     </div>
 
-                    <!-- Patients Table Container -->
+                    
                     <div id="adm-patients-container" class="table-responsive" style="display: none;">
                         <table class="results-table">
                             <thead>
@@ -536,7 +536,7 @@
                         </table>
                     </div>
 
-                    <!-- Patient Reported Issues Table Container -->
+                    
                     <div id="adm-issues-container" class="table-responsive" style="display: none;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
                             <div style="font-size: 0.85rem; color: var(--text-muted);">
@@ -562,7 +562,7 @@
                         </table>
                     </div>
 
-                    <!-- Care Reminders Table Container -->
+                    
                     <div id="adm-reminders-container" class="table-responsive" style="display: none;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
                             <div style="font-size: 0.85rem; color: var(--text-muted);">
@@ -589,17 +589,17 @@
                     </div>
                 </div>
 
-                <!-- Admin Direct Report Preview / ML Viewer -->
+                
                 <div id="admin-preview-sheet" style="display: none;"></div>
             </div>
         </section>
 
 
-        <!-- ========================================== -->
-        <!-- 4. DIRECT ML SANDBOX VIEW                  -->
-        <!-- ========================================== -->
+        
+        
+        
         <section id="view-sandbox" class="section-view">
-            <!-- Doctor / Clinical Decision Support Banner -->
+            
             <div class="subpage-division-banner doctor-banner">
                 <span style="display: flex; align-items: center; gap: 8px;">
                     <span>🩺</span> <strong>DOCTOR &amp; CLINICAL DECISION SUPPORT</strong> &bull; Multi-Panel Machine-Learning Diagnostic Sandbox
@@ -638,13 +638,13 @@
                                 <span id="sb-risk-badge" class="risk-pill risk-high">Elevated Risk</span>
                             </div>
 
-                            <!-- Finding highlight box -->
+                            
                             <div id="sb-finding-box" class="alert-finding-box" style="margin-bottom: 16px;">
                                 <span style="font-size: 1.1rem;">⚠️</span>
                                 <span><strong>Classification Finding:</strong> <span id="sb-prediction-title">Positive Result</span></span>
                             </div>
 
-                            <!-- Confidence score -->
+                            
                             <div class="confidence-score-box">
                                 <div style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700; color: var(--text-dim); letter-spacing: 0.05em; margin-bottom: 4px;">Confidence Score</div>
                                 <div class="confidence-score-val">
@@ -656,7 +656,7 @@
                                 </div>
                             </div>
 
-                            <!-- Recommended follow-up -->
+                            
                             <div style="margin-top: 18px;">
                                 <div style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700; color: var(--text-dim); letter-spacing: 0.05em; margin-bottom: 6px;">Recommended Follow-Up</div>
                                 <div class="recommended-followup-box">
@@ -665,12 +665,12 @@
                                 </div>
                             </div>
 
-                            <!-- Model metadata -->
+                            
                             <div style="font-size: 0.76rem; color: var(--text-dim); margin-top: 14px;">
                                 <strong>Pipeline:</strong> <span id="sb-meta-pipeline">Validated Pipeline</span> &bull; <span id="sb-model-tag">Model: Logistic Regression</span>
                             </div>
 
-                            <!-- Disclaimer banner -->
+                            
                             <div class="disclaimer-box">
                                 <span style="font-size: 1.1rem; color: var(--primary);">ℹ️</span>
                                 <span><strong>Educational Decision Support Notice:</strong> This prediction is generated by an experimental machine-learning model for educational and research decision-support purposes only. It does not constitute a medical diagnosis.</span>
@@ -688,7 +688,7 @@
             </div>
         
 
-<!-- Preset Clinical Scenario Buttons -->
+
             <div class="card" style="margin-bottom: 20px; padding: 18px 22px;">
                 <div style="font-size: 0.8rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
                     <span>💡</span> Quick Load Clinical Scenario Presets:
@@ -712,7 +712,7 @@
                 </div>
             </div>
 
-            <!-- Interactive Parameters Control Grid -->
+            
             <div class="card" style="margin-bottom: 24px; padding: 22px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px;">
                     <div>
@@ -729,7 +729,7 @@
                 </div>
 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 18px;">
-                    <!-- Hemoglobin -->
+                    
                     <div>
                         <label style="font-size: 0.78rem; font-weight: 700; color: #475569; display: flex; justify-content: space-between;">
                             <span>🩸 Hemoglobin (Hb)</span>
@@ -738,7 +738,7 @@
                         <input type="range" min="4.0" max="20.0" step="0.1" value="13.5" id="main-sb-hb" style="width: 100%; margin-top: 6px;" oninput="document.getElementById('lbl-main-sb-hb').innerText = this.value + ' g/dL'; simulateMainSandboxPrediction()">
                     </div>
 
-                    <!-- Platelet Count -->
+                    
                     <div>
                         <label style="font-size: 0.78rem; font-weight: 700; color: #475569; display: flex; justify-content: space-between;">
                             <span>🦟 Platelet Count (PLT)</span>
@@ -747,7 +747,7 @@
                         <input type="range" min="10000" max="600000" step="5000" value="250000" id="main-sb-plt" style="width: 100%; margin-top: 6px;" oninput="document.getElementById('lbl-main-sb-plt').innerText = parseInt(this.value).toLocaleString() + ' /µL'; simulateMainSandboxPrediction()">
                     </div>
 
-                    <!-- MCV -->
+                    
                     <div>
                         <label style="font-size: 0.78rem; font-weight: 700; color: #475569; display: flex; justify-content: space-between;">
                             <span>🔴 Mean Corpuscular Vol (MCV)</span>
@@ -756,7 +756,7 @@
                         <input type="range" min="50" max="130" step="1" value="88" id="main-sb-mcv" style="width: 100%; margin-top: 6px;" oninput="document.getElementById('lbl-main-sb-mcv').innerText = this.value + ' fL'; simulateMainSandboxPrediction()">
                     </div>
 
-                    <!-- Total WBC -->
+                    
                     <div>
                         <label style="font-size: 0.78rem; font-weight: 700; color: #475569; display: flex; justify-content: space-between;">
                             <span>🛡️ Total WBC Count</span>
@@ -765,7 +765,7 @@
                         <input type="range" min="1000" max="30000" step="500" value="6500" id="main-sb-wbc" style="width: 100%; margin-top: 6px;" oninput="document.getElementById('lbl-main-sb-wbc').innerText = parseInt(this.value).toLocaleString() + ' /µL'; simulateMainSandboxPrediction()">
                     </div>
 
-                    <!-- Total Bilirubin -->
+                    
                     <div>
                         <label style="font-size: 0.78rem; font-weight: 700; color: #475569; display: flex; justify-content: space-between;">
                             <span>🫁 Total Bilirubin (LFT)</span>
@@ -774,7 +774,7 @@
                         <input type="range" min="0.1" max="15.0" step="0.1" value="0.8" id="main-sb-bili" style="width: 100%; margin-top: 6px;" oninput="document.getElementById('lbl-main-sb-bili').innerText = this.value + ' mg/dL'; simulateMainSandboxPrediction()">
                     </div>
 
-                    <!-- TSH -->
+                    
                     <div>
                         <label style="font-size: 0.78rem; font-weight: 700; color: #475569; display: flex; justify-content: space-between;">
                             <span>🦋 TSH (Thyroid)</span>
@@ -785,16 +785,16 @@
                 </div>
             </div>
 
-            <!-- Live ML Model Predictions Output Grid -->
+            
             <div style="font-size: 0.82rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 12px;">
                 🤖 Live Evaluated Production Machine Learning Models:
             </div>
             
             <div id="main-sb-output-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px;">
-                <!-- Cards dynamically populated by simulateMainSandboxPrediction -->
+                
             </div>
 
-            <!-- Microscopic Malaria Smear Image Classifier Card -->
+            
             <div class="card" style="padding: 22px; margin-bottom: 24px; border: 1.5px dashed #cbd5e1;">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
                     <div style="display: flex; align-items: center; gap: 14px;">
@@ -823,7 +823,7 @@
                 </div>
             </div>
 
-            <!-- Disclaimer -->
+            
             <div class="disclaimer-box" style="margin-top: 14px;">
                 <span style="font-size: 1.1rem; color: var(--primary);">ℹ️</span>
                 <span><strong>DECISION SUPPORT NOTICE:</strong> The Experimental ML Decision Support Sandbox evaluates validated statistical and neural network algorithms strictly for clinical research, decision-support, and educational simulation. It does not replace professional diagnostic pathology consultation.</span>
@@ -832,11 +832,11 @@
         </section>
 
 
-        <!-- ========================================== -->
-        <!-- 5. AI HEALTH REPORT ANALYZER VIEW          -->
-        <!-- ========================================== -->
+        
+        
+        
         <section id="view-analyzer" class="section-view">
-            <!-- Doctor / Pathology Analyzer Banner -->
+            
             <div class="subpage-division-banner doctor-banner">
                 <span style="display: flex; align-items: center; gap: 8px;">
                     <span class="material-symbols-outlined" style="font-size: 18px;">biotech</span> <strong>DOCTOR &amp; PATHOLOGY ANALYZER</strong> &bull; Deep AI Lab Report Analysis &amp; Rare Disease Concordance
@@ -846,7 +846,7 @@
                 </span>
             </div>
 
-            <!-- Step 1: Upload Hero Box -->
+            
             <div class="card">
                 <div class="card-header">
                     <h2><span class="material-symbols-outlined" style="color: var(--primary);">smart_toy</span> AI Health Report Analyzer</h2>
@@ -856,7 +856,7 @@
                     Upload a complete pathology or diagnostic health report to extract structured laboratory biomarkers, review parameters, and receive a comprehensive clinical AI analysis synthesized with validated machine-learning models.
                 </p>
 
-                <!-- Dropzone Area -->
+                
                 <div class="upload-dropzone" id="anl-drop-zone" onclick="document.getElementById('anl-file-input').click()">
                     <div class="dropzone-icon"><span class="material-symbols-outlined" style="font-size: 52px; color: var(--primary); margin-bottom: 8px;">upload_file</span></div>
                     <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">Drag &amp; Drop Health Report Here</h3>
@@ -871,7 +871,7 @@
                     <input type="file" id="anl-file-input" accept=".pdf,.csv,.jpg,.jpeg,.png,.txt" style="display: none;" onchange="handleAnalyzerFileSelect(event)">
                 </div>
 
-                <!-- Selected File Info & Extraction Action -->
+                
                 <div id="anl-file-info-box" style="display: none; background: #f8fafc; border: 1px solid var(--card-border); border-radius: var(--radius-sm); padding: 14px 18px; margin-top: 16px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                         <div style="display: flex; align-items: center; gap: 12px;">
@@ -892,7 +892,7 @@
                     </div>
                 </div>
 
-                <!-- Extraction Loading Spinner -->
+                
                 <div id="anl-extract-loading" style="display: none; text-align: center; padding: 30px;">
                     <div class="spinner" style="display: inline-block; margin-bottom: 10px;"></div>
                     <div style="font-weight: 700; color: var(--primary);">Extracting structured clinical parameters...</div>
@@ -900,7 +900,7 @@
                 </div>
             </div>
 
-            <!-- Step 2: Interactive Parameter Review & Editor Card -->
+            
             <div id="anl-review-card" class="card card-accent-teal" style="display: none;">
                 <div class="card-header">
                     <div>
@@ -920,7 +920,7 @@
                     </div>
                 </div>
 
-                <!-- Pre-Review Extraction Quality & Audit Banner -->
+                
                 <div id="anl-extraction-audit-banner" style="background: #f8fafc; border: 1px solid var(--card-border); border-radius: 12px; padding: 12px 18px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
                     <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
                         <div style="display: flex; align-items: center; gap: 6px;">
@@ -938,7 +938,7 @@
                     </div>
                 </div>
 
-                <!-- Part A: Patient / Report Metadata Panel -->
+                
                 <div style="background: #f8fafc; border: 1px solid var(--card-border); border-radius: 12px; padding: 18px; margin-bottom: 24px;">
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
                         <div style="display: flex; align-items: center; gap: 8px;">
@@ -981,7 +981,7 @@
                     </div>
                 </div>
 
-                <!-- Part B: Laboratory Findings Table -->
+                
                 <div>
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
                         <div style="display: flex; align-items: center; gap: 8px;">
@@ -1027,10 +1027,10 @@
             </div>
 
 
-            <!-- Analysis Loading Indicator -->
+            
             <div id="anl-analysis-loading" class="card" style="display: none; text-align: center; padding: 48px 32px;">
                 <div style="max-width: 480px; margin: 0 auto;">
-                    <!-- Animated brain icon -->
+                    
                     <div style="font-size: 3rem; margin-bottom: 16px; animation: pulse 1.5s ease-in-out infinite;">🧠</div>
                     <h3 style="color: var(--primary); font-size: 1.2rem; font-weight: 800; margin-bottom: 6px;">
                         Running Clinical AI Analysis...
@@ -1039,7 +1039,7 @@
                         AI &amp; ML pipelines are running in parallel. This takes 8–20 seconds.
                     </p>
 
-                    <!-- Step progress list -->
+                    
                     <div style="text-align: left; display: flex; flex-direction: column; gap: 12px;" id="anl-step-list">
                         <div class="anl-step" id="anl-step-1" style="display:flex; align-items:center; gap:12px; padding:10px 14px; border-radius:10px; background: rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.2);">
                             <span style="font-size:1.2rem;">🔬</span>
@@ -1075,7 +1075,7 @@
                         </div>
                     </div>
 
-                    <!-- Elapsed timer -->
+                    
                     <div style="margin-top: 20px; font-size: 0.8rem; color: var(--text-muted);">
                         Elapsed: <span id="anl-elapsed-timer" style="font-weight:700; color:var(--primary);">0s</span>
                         &nbsp;·&nbsp; AI + ML running concurrently
@@ -1083,10 +1083,10 @@
                 </div>
             </div>
 
-            <!-- Step 3: Visual Health Summary Output Sheet -->
+            
             <div id="anl-results-sheet" style="display: none;"></div>
 
-            <!-- FEATURE 1: AI Differential Diagnosis Map -->
+            
             <div id="diagnosis-map" style="display: none;" class="diagnosis-map-card">
                 <div class="card-header" style="border: none; padding: 0 0 12px 0;">
                     <h2><span class="material-symbols-outlined" style="color: var(--primary);">map</span> AI Differential Diagnosis Map</h2>
@@ -1098,7 +1098,7 @@
                 <div id="diagnosis-map-content" class="diagnosis-map-grid"></div>
             </div>
 
-            <!-- FEATURE 2: Missing Test Intelligence -->
+            
             <div id="missing-tests-card" style="display: none;" class="missing-tests-card">
                 <div class="missing-tests-header">
                     <div>
@@ -1116,7 +1116,7 @@
                 <div id="missing-tests-list-container" class="missing-tests-list"></div>
             </div>
 
-            <!-- FEATURE 5: "What Changed?" Report Comparison Section -->
+            
             <div id="report-comparison-section" class="report-compare-card">
                 <div class="card-header" style="border: none; padding: 0 0 14px 0;">
                     <div>
@@ -1129,7 +1129,7 @@
                 </div>
 
                 <div class="compare-dropzones-grid">
-                    <!-- Dropzone 1: Baseline -->
+                    
                     <div class="compare-dropzone" id="cmp-baseline-dropzone" onclick="document.getElementById('cmp-baseline-input').click()">
                         <div style="margin-bottom: 8px;"><span class="material-symbols-outlined" style="font-size: 36px; color: var(--outline);">upload_file</span></div>
                         <strong style="font-size: 0.95rem; color: var(--text-main); display: block;">Upload Baseline Report</strong>
@@ -1137,7 +1137,7 @@
                         <input type="file" id="cmp-baseline-input" accept=".pdf,.csv,.jpg,.jpeg,.png,.txt" style="display: none;" onchange="handleCompareFileSelect(event, 'baseline')">
                     </div>
 
-                    <!-- Dropzone 2: Current -->
+                    
                     <div class="compare-dropzone" id="cmp-current-dropzone" onclick="document.getElementById('cmp-current-input').click()">
                         <div style="margin-bottom: 8px;"><span class="material-symbols-outlined" style="font-size: 36px; color: var(--primary);">description</span></div>
                         <strong style="font-size: 0.95rem; color: var(--text-main); display: block;">Upload Current Report</strong>
@@ -1152,7 +1152,7 @@
                     </button>
                 </div>
 
-                <!-- Comparison Results Container -->
+                
                 <div id="compare-results-container" style="display: none; margin-top: 24px;">
                     <div id="compare-summary-bar" style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px;"></div>
                     <div class="table-responsive">
@@ -1175,12 +1175,12 @@
         </section>
 
 
-        <!-- ========================================== -->
-        <!-- 6. SYMPTOMS TO AI SUGGESTIONS VIEW         -->
-        <!-- ========================================== -->
+        
+        
+        
         <section id="view-symptoms" class="section-view">
 
-            <!-- FEATURE 2: Critical Alert Banner (hidden by default, shown on triage trigger) -->
+            
             <div id="critical-alert-banner" class="critical-alert-banner">
                 <div class="cab-content">
                     <span class="cab-icon" id="cab-icon">🚨</span>
@@ -1195,7 +1195,7 @@
                 </div>
             </div>
 
-            <!-- Patient Division Banner -->
+            
             <div class="subpage-division-banner patient-banner">
                 <span style="display: flex; align-items: center; gap: 8px;">
                     <span class="material-symbols-outlined" style="font-size: 18px;">psychology</span> <strong>PATIENT CARE DIVISION</strong> &bull; Symptoms to AI Suggestions &amp; Guidance
@@ -1205,7 +1205,7 @@
                 </span>
             </div>
 
-            <!-- Header Card -->
+            
             <div class="card" style="background: linear-gradient(135deg, rgba(0, 94, 102, 0.06) 0%, rgba(2, 132, 199, 0.08) 100%); border: 1px solid var(--primary-border);">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
                     <div>
@@ -1227,10 +1227,10 @@
                 </div>
             </div>
 
-            <!-- Input & Interactive Symptom Cloud Grid -->
+            
             <div style="display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 20px; margin-top: 20px;" class="symptoms-layout-grid">
                 
-                <!-- Left: Symptom Input, Demographics, Duration & Presets -->
+                
                 <div class="card" style="display: flex; flex-direction: column; gap: 16px;">
                     <div class="card-header" style="padding-bottom: 0;">
                         <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
@@ -1238,7 +1238,7 @@
                         </h3>
                     </div>
 
-                    <!-- Demographic Context -->
+                    
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                         <div class="form-group">
                             <label style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted);">Patient Age (Optional)</label>
@@ -1255,7 +1255,7 @@
                         </div>
                     </div>
 
-                    <!-- Duration & Severity Controls -->
+                    
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                         <div class="form-group">
                             <label style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted);">Symptom Duration</label>
@@ -1277,7 +1277,7 @@
                         </div>
                     </div>
 
-                    <!-- Free Textarea -->
+                    
                     <div class="form-group">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                             <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-main);">
@@ -1288,7 +1288,7 @@
                         <textarea id="symp-textarea" rows="4" placeholder="Type or click the symptom tags on the right... (e.g. Sudden high fever for 3 days with intense headache behind eyes, severe muscle pain, and mild nausea)" style="width: 100%; padding: 12px; font-size: 0.88rem; border-radius: 8px; border: 1px solid var(--card-border); resize: vertical; line-height: 1.5;" oninput="updateSymptomCharCount()"></textarea>
                     </div>
 
-                    <!-- Quick Clinical Case Presets -->
+                    
                     <div>
                         <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; display: block; margin-bottom: 8px;">
                             <span>💡</span> Quick Preset Clinical Scenarios
@@ -1321,7 +1321,7 @@
                         </div>
                     </div>
 
-                    <!-- Submit Button -->
+                    
                     <div style="margin-top: 6px;">
                         <button type="button" id="symp-submit-btn" class="btn-primary" style="width: 100%; padding: 14px; font-size: 0.98rem; font-weight: 700; background: linear-gradient(135deg, #005e66 0%, #0284c7 100%); display: flex; justify-content: center; align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(0, 94, 102, 0.25);" onclick="streamSymptomSuggestions()">
                             <span>✨</span> Analyze Symptoms &amp; Stream AI Guidance
@@ -1329,7 +1329,7 @@
                     </div>
                 </div>
 
-                <!-- Right: Interactive Symptom Cloud Selector with Search Filter -->
+                
                 <div class="card" style="display: flex; flex-direction: column; gap: 14px;">
                     <div class="card-header" style="padding-bottom: 0;">
                         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
@@ -1341,13 +1341,13 @@
                         <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">Click tags to toggle them into your clinical description:</p>
                     </div>
 
-                    <!-- Instant Search Filter -->
+                    
                     <div style="position: relative;">
                         <input type="text" id="symp-filter-input" placeholder="🔍 Search 50+ symptoms (e.g. fever, cough, rash)..." style="width: 100%; padding: 8px 12px; font-size: 0.82rem; border-radius: 6px; border: 1px solid var(--card-border);" oninput="filterSymptomTags()">
                     </div>
 
                     <div style="max-height: 520px; overflow-y: auto; padding-right: 4px;" id="symptom-tag-groups-container">
-                        <!-- Systemic / General -->
+                        
                         <div class="symp-tag-group">
                             <div class="symp-tag-group-title">🌡️ General &amp; Systemic</div>
                             <div class="symp-tag-container">
@@ -1361,7 +1361,7 @@
                             </div>
                         </div>
 
-                        <!-- Head & Neurological -->
+                        
                         <div class="symp-tag-group">
                             <div class="symp-tag-group-title">🧠 Head &amp; Neurological</div>
                             <div class="symp-tag-container">
@@ -1374,7 +1374,7 @@
                             </div>
                         </div>
 
-                        <!-- Respiratory & ENT -->
+                        
                         <div class="symp-tag-group">
                             <div class="symp-tag-group-title">🫁 Respiratory &amp; ENT</div>
                             <div class="symp-tag-container">
@@ -1387,7 +1387,7 @@
                             </div>
                         </div>
 
-                        <!-- Gastrointestinal & Liver -->
+                        
                         <div class="symp-tag-group">
                             <div class="symp-tag-group-title">🫄 Gastrointestinal &amp; Hepatic</div>
                             <div class="symp-tag-container">
@@ -1401,7 +1401,7 @@
                             </div>
                         </div>
 
-                        <!-- Musculoskeletal & Skin -->
+                        
                         <div class="symp-tag-group">
                             <div class="symp-tag-group-title">🩸 Musculoskeletal &amp; Skin</div>
                             <div class="symp-tag-container">
@@ -1415,7 +1415,7 @@
                             </div>
                         </div>
 
-                        <!-- Renal & Urinary -->
+                        
                         <div class="symp-tag-group">
                             <div class="symp-tag-group-title">🚽 Renal &amp; Urinary</div>
                             <div class="symp-tag-container">
@@ -1428,11 +1428,11 @@
                 </div>
             </div>
 
-            <!-- Streaming Output Container -->
+            
             <div id="symp-results-container" style="display: none; margin-top: 24px;">
                 <div class="card" style="border: 2px solid var(--primary); box-shadow: var(--shadow-hover); position: relative; overflow: hidden; border-radius: 12px;">
                     
-                    <!-- Live Header & Status Bar -->
+                    
                     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); padding-bottom: 14px; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
                         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                             <div id="symp-live-pulse" style="width: 12px; height: 12px; border-radius: 50%; background: #10b981; box-shadow: 0 0 0 rgba(16,185,129, 0.4); animation: pulse 1.5s infinite;"></div>
@@ -1450,7 +1450,7 @@
                             </span>
                         </div>
 
-                        <!-- Action Toolbar -->
+                        
                         <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
                             <button type="button" id="symp-tts-btn" class="btn-secondary" style="font-size: 0.8rem; padding: 6px 12px;" onclick="toggleSymptomSpeech()">
                                 <span id="symp-tts-icon">🔊</span> <span id="symp-tts-text">Listen</span>
@@ -1467,7 +1467,7 @@
                         </div>
                     </div>
 
-                    <!-- Collapsible Reasoning Drawer (Innovative feature) -->
+                    
                     <div id="symp-reasoning-drawer" style="display: none; background: rgba(124, 58, 237, 0.05); border: 1px solid rgba(124, 58, 237, 0.2); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="toggleReasoningCollapse()">
                             <strong style="font-size: 0.82rem; color: #6d28d9; display: flex; align-items: center; gap: 6px;">
@@ -1480,15 +1480,15 @@
                         </div>
                     </div>
 
-                    <!-- Formatted Streamed Markdown Content Area -->
+                    
                     <div id="symp-streamed-content" class="symp-output-markdown" style="font-size: 0.92rem; line-height: 1.7; color: var(--text-main); min-height: 120px;">
-                        <!-- Content stream goes here -->
+                        
                     </div>
 
-                    <!-- DEDICATED DOCTORS & FOLLOW-UP TESTS (MEDICOVER VIZAG) -->
+                    
                     <div id="symp-medicover-doctors-container" style="margin-top: 24px;"></div>
 
-                    <!-- FEATURE 1: Suggested Questions for Doctor Card (populated after stream DONE) -->
+                    
                     <div id="medicover-questions-card" class="medicover-questions-card" style="display: none;">
                         <div class="mq-header">
                             <div class="mq-title">
@@ -1501,11 +1501,11 @@
                             </button>
                         </div>
                         <ul class="mq-question-list" id="mq-question-list">
-                            <!-- Questions injected by JS -->
+                            
                         </ul>
                     </div>
 
-                    <!-- PATIENT SYMPTOM LOGGING BANNER: File Issue to Doctor -->
+                    
                     <div id="symp-file-issue-banner" style="margin-top: 18px; padding: 14px 18px; border-radius: 12px; background: linear-gradient(135deg, #f0fdf4 0%, #eef3fc 100%); border: 1.5px solid #bfd0f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
                         <div>
                             <div style="font-weight: 800; font-size: 0.92rem; color: var(--mc-blue); display: flex; align-items: center; gap: 6px;">
@@ -1529,7 +1529,7 @@
                         </button>
                     </div>
 
-                    <!-- Disclaimer Footer -->
+                    
                     <div class="disclaimer-box" style="margin-top: 20px;">
                         <span style="font-size: 1.2rem; color: var(--primary);">ℹ️</span>
                         <div style="font-size: 0.8rem;">
@@ -1544,9 +1544,9 @@
 
         <section id="view-operations" class="section-view">
 
-            <!-- ========================================================= -->
-            <!-- OPERATIONS HEADER BANNER                                  -->
-            <!-- ========================================================= -->
+            
+            
+            
             <div class="ops-header-card">
                 <div class="ops-header-left">
                     <div class="ops-badge">
@@ -1569,9 +1569,9 @@
                 </div>
             </div>
 
-            <!-- ========================================================= -->
-            <!-- 1. STAFF AUTHENTICATION GATE (SHOWN WHEN NOT LOGGED IN)   -->
-            <!-- ========================================================= -->
+            
+            
+            
             <div id="staff-auth-gate" class="staff-auth-gate-card">
                 <div class="staff-auth-icon-wrap">
                     <span class="material-symbols-outlined" style="font-size: 32px;">lock</span>
@@ -1594,7 +1594,7 @@
                     </button>
                 </form>
 
-                <!-- Quick Demo Logins -->
+                
                 <div style="margin-top: 22px; border-top: 1.5px solid #f1f5f9; padding-top: 16px; text-align: left;">
                     <div style="font-size: 0.74rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">
                         ⚡ Quick Demo Account Selector (1-Click Fill &amp; Sign In):
@@ -1612,16 +1612,22 @@
                         <button type="button" class="btn-secondary" style="font-size: 0.78rem; padding: 8px 10px; justify-content: flex-start;" onclick="fillStaffDemo('OPS001', 'Staff@2026')">
                             <span>📊</span> <strong>OPS001</strong> &bull; Operations Mgr
                         </button>
+                        <button type="button" class="btn-secondary" style="font-size: 0.78rem; padding: 8px 10px; justify-content: flex-start;" onclick="fillStaffDemo('admin', 'admin123')">
+                            <span>👑</span> <strong>admin</strong> &bull; Chief Admin
+                        </button>
+                        <button type="button" class="btn-secondary" style="font-size: 0.78rem; padding: 8px 10px; justify-content: flex-start;" onclick="fillStaffDemo('dr_rajesh', 'doctor123')">
+                            <span>👨⚕️</span> <strong>dr_rajesh</strong> &bull; Doctor
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <!-- ========================================================= -->
-            <!-- 2. ACTIVE LOGGED IN STAFF BAR & 4 ROLE PANES              -->
-            <!-- ========================================================= -->
+            
+            
+            
             <div id="staff-active-dashboard" style="display: none;">
                 
-                <!-- Staff Session Bar -->
+                
                 <div class="staff-role-selector-bar">
                     <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                         <div style="display: flex; align-items: center; gap: 8px;">
@@ -1633,7 +1639,7 @@
                         </div>
                     </div>
 
-                    <!-- Role Switcher Pills -->
+                    
                     <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                         <div class="staff-role-pills" id="staff-role-switcher-pills">
                             <button type="button" class="staff-role-pill" id="pill-role-receptionist" onclick="switchStaffRole('receptionist')">
@@ -1655,12 +1661,12 @@
                     </div>
                 </div>
 
-                <!-- ===================================================== -->
-                <!-- ROLE PANE 1: RECEPTIONIST DASHBOARD                   -->
-                <!-- ===================================================== -->
+                
+                
+                
                 <div id="pane-role-receptionist" class="staff-role-pane">
                     
-                    <!-- Receptionist Hero Metrics -->
+                    
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 20px;">
                         <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
                             <div style="font-size: 0.74rem; font-weight: 800; color: #64748b; text-transform: uppercase;">Patients Today</div>
@@ -1687,7 +1693,7 @@
                         </div>
                     </div>
 
-                    <!-- Receptionist Primary Action Buttons -->
+                    
                     <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 16px; margin-bottom: 20px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
                         <button type="button" class="btn-primary" onclick="openPatientRegisterModal()" style="background: linear-gradient(135deg, #0284c7, #0369a1); padding: 9px 18px;">
                             <span class="material-symbols-outlined">person_add</span> Register New Patient
@@ -1700,7 +1706,7 @@
                         </button>
                     </div>
 
-                    <!-- Patient Search & Directory Section -->
+                    
                     <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 14px rgba(0,0,0,0.03);">
                         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 14px;">
                             <h3 style="font-size: 1.05rem; font-weight: 800; color: #0f172a; margin: 0;">Registered Patients Directory (Supabase)</h3>
@@ -1728,7 +1734,7 @@
                         </div>
                     </div>
 
-                    <!-- Patient Flow Tracker -->
+                    
                     <div class="ops-card" style="margin-bottom: 20px;">
                         <div class="ops-card-header">
                             <h3><span class="material-symbols-outlined" style="color: #7c3aed;">location_on</span> Patient Flow Tracker</h3>
@@ -1743,10 +1749,10 @@
                         <div id="pft-result-card" style="display: none; border-radius: 12px; border: 1.5px solid #e2e8f0; padding: 18px; background: #f8fafc;"></div>
                     </div>
 
-                    <!-- Active Inpatient Admissions & Billing Split -->
+                    
                     <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; margin-bottom: 20px;">
                         
-                        <!-- Left: Admissions Roster -->
+                        
                         <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 20px; box-shadow: 0 4px 14px rgba(0,0,0,0.03);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                                 <h3 style="font-size: 1.05rem; font-weight: 800; color: #0f172a; margin: 0;">Active Inpatients</h3>
@@ -1772,7 +1778,7 @@
                             </div>
                         </div>
 
-                        <!-- Right: Quick Inpatient Billing Slip Calculator -->
+                        
                         <div class="invoice-paper-slip" style="box-shadow: 0 4px 14px rgba(0,0,0,0.04);">
                             <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #0284c7; padding-bottom: 10px; margin-bottom: 12px;">
                                 <div>
@@ -1813,7 +1819,7 @@
                                 </div>
                             </form>
 
-                            <!-- Ward Amenity Charges (auto-filled by tier) -->
+                            
                             <div style="background: #f0fdf4; border: 1.5px dashed #86efac; border-radius: 10px; padding: 10px 12px; margin-bottom: 10px;">
                                 <div style="font-size: 0.72rem; font-weight: 800; color: #15803d; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em;">Ward Amenities (auto by tier)</div>
                                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; font-size: 0.75rem;">
@@ -1823,7 +1829,7 @@
                                 </div>
                             </div>
 
-                            <!-- Extra Charges Block -->
+                            
                             <div style="margin-bottom: 10px;">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                                     <span style="font-size: 0.72rem; font-weight: 800; color: #334155; text-transform: uppercase;">Additional Charges</span>
@@ -1848,7 +1854,7 @@
                                 </tbody>
                             </table>
 
-                            <!-- Hidden state for current admission being billed -->
+                            
                             <input type="hidden" id="bill-admission-id" value="">
                             <input type="hidden" id="bill-patient-id" value="">
 
@@ -1862,14 +1868,14 @@
                             </div>
                         </div>
                     </div>
-                </div> <!-- End pane-role-receptionist -->
+                </div> 
 
-                <!-- ===================================================== -->
-                <!-- ROLE PANE 2: LAB STAFF DASHBOARD                      -->
-                <!-- ===================================================== -->
+                
+                
+                
                 <div id="pane-role-lab" class="staff-role-pane">
                     
-                    <!-- Lab Hero Metrics -->
+                    
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 20px;">
                         <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
                             <div style="font-size: 0.74rem; font-weight: 800; color: #64748b; text-transform: uppercase;">Today's Lab Orders</div>
@@ -1893,7 +1899,7 @@
                         </div>
                     </div>
 
-                    <!-- Lab Orders Feed & Result Completion Table -->
+                    
                     <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 14px rgba(0,0,0,0.03);">
                         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 14px;">
                             <h3 style="font-size: 1.05rem; font-weight: 800; color: #0f172a; margin: 0;">Laboratory Orders Queue (Supabase)</h3>
@@ -1923,14 +1929,14 @@
                             </table>
                         </div>
                     </div>
-                </div> <!-- End pane-role-lab -->
+                </div> 
 
-                <!-- ===================================================== -->
-                <!-- ROLE PANE 3: WARD MANAGER DASHBOARD                   -->
-                <!-- ===================================================== -->
+                
+                
+                
                 <div id="pane-role-ward" class="staff-role-pane">
 
-                    <!-- Ward Selector Pills -->
+                    
                     <div class="ops-card" style="margin-bottom: 16px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                             <h3 style="font-size: 1.05rem; font-weight: 800; color: #0f172a; margin: 0;">
@@ -1947,7 +1953,7 @@
                         </div>
                     </div>
 
-                    <!-- Ward Info & Stats -->
+                    
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 16px;">
                         <div class="ops-metric-card" style="cursor: default;">
                             <div class="ops-metric-header">
@@ -1979,7 +1985,7 @@
                         </div>
                     </div>
 
-                    <!-- Live Bed Matrix (Supabase) -->
+                    
                     <div class="ops-card" style="margin-bottom: 16px;">
                         <div class="ops-card-header">
                             <h3><span class="material-symbols-outlined" style="color: #0284c7;">grid_view</span> Live Bed Sanitization Matrix (Supabase)</h3>
@@ -1994,7 +2000,7 @@
                         </div>
                     </div>
 
-                    <!-- Ward Inpatient Roster -->
+                    
                     <div class="ops-card">
                         <div class="ops-card-header">
                             <h3><span class="material-symbols-outlined" style="color: #16a34a;">clinical_notes</span> Ward Inpatient Roster</h3>
@@ -2018,7 +2024,7 @@
                         </div>
                     </div>
 
-                    <!-- Ward Daily Charges Monetization Card -->
+                    
                     <div class="ops-card" style="margin-top: 16px;">
                         <div class="ops-card-header">
                             <h3><span class="material-symbols-outlined" style="color: #d97706;">payments</span> Ward Daily Charge Rates</h3>
@@ -2047,14 +2053,14 @@
                         </div>
                         <div style="font-size: 0.74rem; color: #64748b; margin-top: 8px; padding-top: 8px; border-top: 1px solid #f1f5f9;">* All charges are per patient per day. Linen and food are automatically included in discharge billing calculations. GST @ 5% applied on gross total.</div>
                     </div>
-                </div> <!-- End pane-role-ward -->
+                </div> 
 
-                <!-- ===================================================== -->
-                <!-- ROLE PANE 4: OPERATIONS MANAGER DASHBOARD             -->
-                <!-- ===================================================== -->
+                
+                
+                
                 <div id="pane-role-operations" class="staff-role-pane">
 
-                    <!-- Operations KPI Metrics -->
+                    
                     <div class="ops-hero-grid" style="margin-bottom: 20px;">
                         <div class="ops-metric-card" onclick="switchStaffRole('receptionist')">
                             <div class="ops-metric-header">
@@ -2102,7 +2108,7 @@
                         </div>
                     </div>
 
-                    <!-- Data Sources Cards -->
+                    
                     <div class="ops-card" style="margin-bottom: 20px;">
                         <div class="ops-card-header">
                             <h3><span class="material-symbols-outlined" style="color: #0284c7;">database</span> Challenge Dataset Sources (3 CSVs → Supabase)</h3>
@@ -2113,7 +2119,7 @@
                         </div>
                     </div>
 
-                    <!-- Reconciliation Conflicts Table -->
+                    
                     <div class="ops-card">
                         <div class="ops-card-header">
                             <h3><span class="material-symbols-outlined" style="color: #ea580c;">rule</span> Reconciliation Conflicts &amp; Audit Trail</h3>
@@ -2138,15 +2144,15 @@
                             </table>
                         </div>
                     </div>
-                </div> <!-- End pane-role-operations -->
+                </div> 
 
-            </div> <!-- End staff-active-dashboard -->
+            </div> 
 
         </section>
 
-        <!-- ========================================================= -->
-        <!-- MODAL: "WHY IS THIS DIFFERENT?" CONFLICT DETAIL DRAWER    -->
-        <!-- ========================================================= -->
+        
+        
+        
         <div id="modal-conflict-detail" class="modal-backdrop" style="display: none;">
             <div class="modal-dialog ops-modal-lg">
                 <div class="modal-header">
@@ -2157,7 +2163,7 @@
                     <button type="button" class="modal-close-btn" onclick="closeConflictModal()">&times;</button>
                 </div>
                 <div class="modal-body" id="modal-conflict-body" style="padding: 20px;">
-                    <!-- Populated dynamically by openConflictDetail() -->
+                    
                 </div>
                 <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px;">
                     <button type="button" class="btn-primary" onclick="closeConflictModal()">Close Explanation</button>
@@ -2165,9 +2171,9 @@
             </div>
         </div>
 
-        <!-- ========================================================= -->
-        <!-- MODAL: DAILY OPERATIONS REPORT PRINT & EXPORT PREVIEW     -->
-        <!-- ========================================================= -->
+        
+        
+        
         <div id="modal-daily-report" class="modal-backdrop" style="display: none;" onclick="if(event.target === this) closeDailyReportModal()">
             <div class="modal-dialog ops-modal-xl">
                 <div class="modal-header">
@@ -2212,7 +2218,7 @@
                         <span><strong>Regulatory &amp; Research Boundary:</strong> This application is built for educational, academic, and decision-support research. It is not approved as a medical device for autonomous diagnosis.</span>
                     </div>
 
-                    <!-- 2x2 DEVELOPED BY CREDITS SECTION (SEAMLESSLY MERGED IN ABOUT CARD) -->
+                    
                     <div class="developed-by-section">
                         <div class="developed-by-header">
                             <div class="developed-by-title">
@@ -2224,7 +2230,7 @@
                         </div>
 
                         <div class="developer-grid-2x2">
-                            <!-- Column 1, Row 1 -->
+                            
                             <div class="developer-item">
                                 <div class="developer-avatar">UB</div>
                                 <div>
@@ -2233,7 +2239,7 @@
                                 </div>
                             </div>
 
-                            <!-- Column 2, Row 1 -->
+                            
                             <div class="developer-item">
                                 <div class="developer-avatar">KH</div>
                                 <div>
@@ -2242,7 +2248,7 @@
                                 </div>
                             </div>
 
-                            <!-- Column 1, Row 2 -->
+                            
                             <div class="developer-item">
                                 <div class="developer-avatar">AP</div>
                                 <div>
@@ -2251,7 +2257,7 @@
                                 </div>
                             </div>
 
-                            <!-- Column 2, Row 2 -->
+                            
                             <div class="developer-item">
                                 <div class="developer-avatar">SR</div>
                                 <div>
@@ -2266,7 +2272,7 @@
         </section>
     </main>
 
-    <!-- Modal: Register Patient -->
+    
     <div id="patient-modal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(4px); z-index: 200; align-items: center; justify-content: center;">
         <div class="card" style="max-width: 520px; width: 92%; margin: auto; box-shadow: var(--shadow-hover);">
             <div class="card-header">
@@ -2309,7 +2315,7 @@
         </div>
     </div>
 
-    <!-- Modal: Create Report -->
+    
     <div id="report-modal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(4px); z-index: 200; align-items: center; justify-content: center; overflow-y: auto; padding: 20px 0;">
         <div class="card" style="max-width: 720px; width: 92%; margin: auto; box-shadow: var(--shadow-hover);">
             <div class="card-header">
@@ -2351,7 +2357,7 @@
         </div>
     </div>
 
-    <!-- FEATURE 3: Share PIN Modal Overlay -->
+    
     <div id="share-pin-modal-overlay" class="share-pin-modal-overlay" onclick="closeSharePinModal(event)">
         <div class="share-pin-modal-box" onclick="event.stopPropagation()">
             <div class="spm-header">
@@ -2362,7 +2368,7 @@
                 They can use it to securely access this report summary.
             </p>
             <div class="spm-pin-display" id="spm-pin-display">
-                <!-- 6 digit boxes injected by JS -->
+                
             </div>
             <div class="spm-expiry">⏱ PIN expires in <strong>24 hours</strong> from generation</div>
             <div class="spm-actions">
@@ -2374,7 +2380,7 @@
         </div>
     </div>
 
-    <!-- DOCTOR REVIEW MODAL: Review Patient Reported Issue -->
+    
     <div id="doctor-issue-review-modal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
         <div class="card" style="width: 100%; max-width: 620px; max-height: 90vh; overflow-y: auto; background: #ffffff; border-radius: 14px; box-shadow: var(--shadow-hover); border: 2px solid var(--mc-blue); margin: 20px;">
             <div class="card-header" style="border-bottom: 1.5px solid var(--mc-border); padding-bottom: 12px;">
@@ -2423,7 +2429,7 @@
         </div>
     </div>
 
-    <!-- SEND CARE REMINDER MODAL: Send Checkup, Diagnosis, or Daily Care Directives -->
+    
     <div id="send-care-reminder-modal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
         <div class="card" style="width: 100%; max-width: 620px; max-height: 90vh; overflow-y: auto; background: #ffffff; border-radius: 14px; box-shadow: var(--shadow-hover); border: 2px solid var(--mc-blue); margin: 20px;">
             <div class="card-header" style="border-bottom: 1.5px solid var(--mc-border); padding-bottom: 12px;">
@@ -2442,7 +2448,7 @@
                     <div class="form-group">
                         <label for="rem-patient-id">Target Patient</label>
                         <select id="rem-patient-id" class="form-control" required>
-                            <!-- Populated dynamically with registered patients -->
+                            
                         </select>
                     </div>
                     <div class="form-group">
@@ -2488,10 +2494,10 @@
         </div>
     </div>
 
-    <!-- ========================================================= -->
-    <!-- NATIVE MOBILE BOTTOM NAVIGATION BAR                        -->
-    <!-- Clinical glassmorphic bottom bar for one-thumb navigation   -->
-    <!-- ========================================================= -->
+    
+    
+    
+    
     <nav class="mobile-bottom-nav" id="mobile-bottom-bar" aria-label="Mobile Navigation">
         <button type="button" class="mob-nav-btn active" id="mob-tab-home" onclick="switchView('home')" aria-label="Home Dashboard">
             <span class="material-symbols-outlined">dashboard</span>
@@ -2519,9 +2525,9 @@
         </button>
     </nav>
 
-        <!-- ========================================================= -->
-        <!-- MODAL: PATIENT ADMISSION & BED PREFERENCE INTAKE FORM      -->
-        <!-- ========================================================= -->
+        
+        
+        
         <div id="modal-patient-admission" class="modal-backdrop" style="display: none;" onclick="if(event.target === this) closeAdmissionModal()">
             <div class="modal-dialog ops-modal-lg" style="max-width: 680px;">
                 <div class="modal-header">
@@ -2534,7 +2540,7 @@
                 <form onsubmit="handlePatientAdmissionSubmit(event)">
                     <div class="modal-body" style="padding: 20px; display: flex; flex-direction: column; gap: 16px; max-height: 75vh; overflow-y: auto;">
                         
-                        <!-- 1. Patient Demographics -->
+                        
                         <div style="font-weight: 800; font-size: 0.85rem; color: #0284c7; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 4px;">
                             1. Patient Demographics
                         </div>
@@ -2569,7 +2575,7 @@
                             </div>
                         </div>
 
-                        <!-- 2. Health Insurance Information -->
+                        
                         <div style="font-weight: 800; font-size: 0.85rem; color: #0284c7; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 4px; margin-top: 6px;">
                             2. Health Insurance &amp; Coverage
                         </div>
@@ -2618,7 +2624,7 @@
                             </div>
                         </div>
 
-                        <!-- 3. Bed Category Selection & Ward Assignment -->
+                        
                         <div style="font-weight: 800; font-size: 0.85rem; color: #0284c7; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 4px; margin-top: 6px;">
                             3. Preferred Bed Category &amp; Allocation
                         </div>
@@ -2665,9 +2671,9 @@
             </div>
         </div>
 
-        <!-- ========================================================= -->
-        <!-- MODAL: PATIENT REGISTRATION & APPOINTMENT BOOKING (NO BEDS) -->
-        <!-- ========================================================= -->
+        
+        
+        
         <div id="modal-patient-registration" class="modal-backdrop" style="display: none;" onclick="if(event.target === this) closePatientRegistrationModal()">
             <div class="modal-dialog ops-modal-lg" style="max-width: 680px;">
                 <div class="modal-header">
@@ -2680,7 +2686,7 @@
                 <form onsubmit="handlePatientRegistrationSubmit(event)">
                     <div class="modal-body" style="padding: 20px; display: flex; flex-direction: column; gap: 16px; max-height: 75vh; overflow-y: auto;">
                         
-                        <!-- 1. Patient Demographics -->
+                        
                         <div style="font-weight: 800; font-size: 0.85rem; color: #0284c7; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 4px;">
                             1. Patient Demographics &amp; Contact
                         </div>
@@ -2715,7 +2721,7 @@
                             </div>
                         </div>
 
-                        <!-- 2. Doctor Appointment & Clinical Department -->
+                        
                         <div style="font-weight: 800; font-size: 0.85rem; color: #0284c7; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 4px; margin-top: 6px;">
                             2. Department &amp; Doctor Consultation
                         </div>
@@ -2769,7 +2775,7 @@
                             </div>
                         </div>
 
-                        <!-- 3. Insurance (Optional) -->
+                        
                         <div style="font-weight: 800; font-size: 0.85rem; color: #0284c7; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 4px; margin-top: 6px;">
                             3. Insurance &amp; Coverage (Optional)
                         </div>
@@ -2815,9 +2821,9 @@
             </div>
         </div>
 
-        <!-- ========================================================= -->
-        <!-- MODAL: APPOINTMENT CONFIRMATION SLIP POPUP                -->
-        <!-- ========================================================= -->
+        
+        
+        
         <div id="modal-appointment-success" class="modal-backdrop" style="display: none;" onclick="if(event.target === this) closeAppointmentSuccessModal()">
             <div class="modal-dialog ops-modal-lg" style="max-width: 650px;">
                 <div class="modal-header" style="background: #f0fdf4; border-bottom: 1.5px solid #bbf7d0;">
@@ -2848,7 +2854,7 @@
                             </div>
                         </div>
 
-                        <!-- Credentials Box (Patient ID + PIN) -->
+                        
                         <div style="background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 12px; padding: 14px; margin-bottom: 14px; display: flex; justify-content: space-around; align-items: center; text-align: center;">
                             <div>
                                 <div class="apt-field-label" style="color: #1e40af;">Patient ID</div>
@@ -2861,7 +2867,7 @@
                             </div>
                         </div>
 
-                        <!-- Full Detail Grid -->
+                        
                         <div class="apt-detail-grid">
                             <div class="apt-field">
                                 <span class="apt-field-label">Patient Name</span>
@@ -2914,9 +2920,9 @@
             </div>
         </div>
 
-        <!-- ========================================================= -->
-        <!-- MODAL: INPATIENT BILLING & DISCHARGE INVOICE SLIP         -->
-        <!-- ========================================================= -->
+        
+        
+        
         <div id="modal-patient-bill" class="modal-backdrop" style="display: none;" onclick="if(event.target === this) closeInpatientInvoiceModal()">
             <div class="modal-dialog ops-modal-lg" style="max-width: 650px;">
                 <div class="modal-header">
@@ -3004,9 +3010,9 @@
             </div>
         </div>
 
-        <!-- ========================================================= -->
-        <!-- MODAL: ROOM SERVICE TURNOVER & SANITIZATION CHECKLIST     -->
-        <!-- ========================================================= -->
+        
+        
+        
         <div id="modal-room-cleaning" class="modal-backdrop" style="display: none;" onclick="if(event.target === this) closeRoomTurnoverModal()">
             <div class="modal-dialog ops-modal-md" style="max-width: 480px;">
                 <div class="modal-header">
@@ -3048,9 +3054,9 @@
             </div>
         </div>
 
-        <!-- ========================================================= -->
-        <!-- MODAL: LAB RESULT ENTRY & COMPLETION MODAL                -->
-        <!-- ========================================================= -->
+        
+        
+        
         <div id="modal-lab-result" class="modal-backdrop" style="display: none;" onclick="if(event.target === this) closeLabResultModal()">
             <div class="modal-dialog ops-modal-md" style="max-width: 520px;">
                 <div class="modal-header">
@@ -3095,6 +3101,6 @@
             </div>
         </div>
 
-    <script src="app.js?v=20260829_inpatients_fix"></script>
+    <script src="app.js?v=20260830_rbac_strict_v6"></script>
 </body>
 </html>

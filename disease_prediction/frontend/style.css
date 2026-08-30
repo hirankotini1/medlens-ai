@@ -1,10 +1,7 @@
-/* =========================================================
-   MEDLENS AI x MEDICOVER — CLINICAL PRECISION DESIGN SYSTEM
-   Inspired by Stitch Healthcare Platform Design System
-   ========================================================= */
+
 
 :root {
-    /* Stitch Clinical Precision Surface Palette */
+    
     --surface: #f8f9ff;
     --surface-dim: #cbdbf5;
     --surface-bright: #f8f9ff;
@@ -18,7 +15,7 @@
     --outline: #737783;
     --outline-variant: #c3c6d3;
 
-    /* Authoritative Medicover Clinical Brand Palette */
+    
     --primary: #00397e;
     --primary-container: #1a50a0;
     --primary-dark: #002758;
@@ -33,7 +30,7 @@
     --accent: #7ea8ce;
     --accent-surface: #f0f6fc;
 
-    /* Semantic Triage & Physiological Alert Tokens */
+    
     --critical: #ef4444;
     --critical-dark: #ba1a1a;
     --critical-bg: #fef2f2;
@@ -47,7 +44,7 @@
     --routine-border: #a7f3d0;
     --routine-text: #047857;
 
-    /* Core Canvas, Borders & Elevation */
+    
     --bg: #f8f9ff;
     --bg-surface: #ffffff;
     --bg-subtle: #eff4ff;
@@ -70,12 +67,12 @@
     --shadow-hover: 0 8px 24px -4px rgba(11, 28, 48, 0.08), 0 2px 6px -1px rgba(11, 28, 48, 0.04);
     --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
-    /* Dual Typeface Architecture: Geist for Technical Headings & Inter for Body */
+    
     --font-headline: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --font-mono: 'Geist', monospace;
 
-    /* Backward Compatibility Tokens */
+    
     --mc-blue: #1A50A0;
     --mc-blue-dark: #00397e;
     --mc-blue-light: #2563c4;
@@ -128,7 +125,7 @@ h1, h2, h3, h4, h5, h6,
     -webkit-font-smoothing: antialiased;
 }
 
-/* Tonal glassmorphic accents from Stitch */
+
 .glass-card {
     background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(12px);
@@ -136,9 +133,7 @@ h1, h2, h3, h4, h5, h6,
     border: 1px solid rgba(226, 232, 240, 0.8);
 }
 
-/* =========================================================
-   Top Navigation Bar (Stitch Clinical Style)
-   ========================================================= */
+
 .top-navbar {
     display: flex;
     justify-content: space-between;
@@ -207,7 +202,7 @@ h1, h2, h3, h4, h5, h6,
     font-weight: 700;
 }
 
-/* Specific Portal Division Clusters in Navbar */
+
 .portal-cluster {
     display: inline-flex;
     align-items: center;
@@ -272,7 +267,7 @@ h1, h2, h3, h4, h5, h6,
     margin: 0 2px;
 }
 
-/* Prominent Top-Right Admin Login Box (Referencing User Layout) */
+
 .header-right-actions {
     display: flex;
     align-items: center;
@@ -340,7 +335,7 @@ h1, h2, h3, h4, h5, h6,
     box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.5), 0 4px 14px rgba(3, 105, 161, 0.35) !important;
 }
 
-/* Innovative Welcome Patient Hero Container */
+
 .patient-welcome-hero {
     background: linear-gradient(135deg, #ffffff 0%, #f0fdfa 50%, #e0f2fe 100%);
     border: 2px solid #99f6e4;
@@ -404,7 +399,7 @@ h1, h2, h3, h4, h5, h6,
     margin-bottom: 24px;
 }
 
-/* Quick Report Finder Bar in Hero */
+
 .patient-quick-lookup {
     background: #ffffff;
     border: 1px solid #ccfbf1;
@@ -438,7 +433,7 @@ h1, h2, h3, h4, h5, h6,
     box-shadow: 0 0 0 3px rgba(0, 94, 102, 0.15);
 }
 
-/* 2x2 DEVELOPED BY CREDITS SECTION (MERGED IN LIGHT THEME UI) */
+
 .developed-by-section {
     margin-top: 28px;
     padding-top: 22px;
@@ -525,9 +520,7 @@ h1, h2, h3, h4, h5, h6,
     }
 }
 
-/* =========================================================
-   Interactive Blood Biomarker Reference Explorer Widget
-   ========================================================= */
+
 .biomarker-explorer-card {
     background: #ffffff;
     border: 1px solid var(--card-border);
@@ -610,7 +603,7 @@ h1, h2, h3, h4, h5, h6,
     transition: left 0.3s ease;
 }
 
-/* 4-Step Interactive Pathology Journey */
+
 .journey-grid-container {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -656,7 +649,7 @@ h1, h2, h3, h4, h5, h6,
     color: #ffffff;
 }
 
-/* Interactive AI Health Pearl Card */
+
 .ai-pearl-card {
     background: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%);
     color: #ffffff;
@@ -748,7 +741,7 @@ h1, h2, h3, h4, h5, h6,
     flex-wrap: wrap;
 }
 
-/* Division Header Banner on Subpages */
+
 .subpage-division-banner {
     display: flex;
     align-items: center;
@@ -773,9 +766,7 @@ h1, h2, h3, h4, h5, h6,
     color: #4338ca;
 }
 
-/* =========================================================
-   Main Container & Section Views
-   ========================================================= */
+
 .main-container {
     flex: 1;
     max-width: 1200px;
@@ -798,9 +789,7 @@ h1, h2, h3, h4, h5, h6,
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* =========================================================
-   Standard Cards & Containers (Stitch Clinical Style)
-   ========================================================= */
+
 .card {
     background: var(--card-bg);
     border: 1px solid var(--card-border);
@@ -838,7 +827,7 @@ h1, h2, h3, h4, h5, h6,
     font-family: var(--font-headline);
 }
 
-/* Clinical Accented Cards */
+
 .card-accent-teal {
     border-left: 5px solid var(--primary) !important;
 }
@@ -851,9 +840,7 @@ h1, h2, h3, h4, h5, h6,
     border-left: 5px solid var(--routine) !important;
 }
 
-/* =========================================================
-   Buttons & Interactive Elements (Stitch Clinical Style)
-   ========================================================= */
+
 button {
     font-family: inherit;
 }
@@ -936,9 +923,7 @@ button {
     border-color: var(--critical);
 }
 
-/* =========================================================
-   Forms, Inputs & Grid
-   ========================================================= */
+
 .form-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -989,9 +974,7 @@ input:focus, select:focus, textarea:focus {
     background: #ffffff;
 }
 
-/* =========================================================
-   Status Badges & Pills
-   ========================================================= */
+
 .flag-badge {
     display: inline-block;
     padding: 3px 8px;
@@ -1054,9 +1037,7 @@ input:focus, select:focus, textarea:focus {
     border: 1px solid var(--success-border);
 }
 
-/* =========================================================
-   Tables & Data Grid
-   ========================================================= */
+
 .table-responsive {
     overflow-x: auto;
     border-radius: var(--radius-sm);
@@ -1097,9 +1078,7 @@ input:focus, select:focus, textarea:focus {
     background: #f8fafc;
 }
 
-/* =========================================================
-   Clinical Official Report Document Sheet
-   ========================================================= */
+
 .official-report-doc {
     background: #ffffff;
     border: 1px solid var(--card-border);
@@ -1158,10 +1137,7 @@ input:focus, select:focus, textarea:focus {
     margin-top: 3px;
 }
 
-/* =========================================================
-   AI Assessment & Decision Support Card
-   (Styled to match MedVision AI Reference)
-   ========================================================= */
+
 .ml-decision-card {
     background: #ffffff;
     border: 1px solid var(--card-border);
@@ -1236,7 +1212,7 @@ input:focus, select:focus, textarea:focus {
     transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Recommended Follow-up Box */
+
 .recommended-followup-box {
     background: #f0fdfa;
     border: 1px solid #ccfbf1;
@@ -1256,7 +1232,7 @@ input:focus, select:focus, textarea:focus {
     color: #0d9488;
 }
 
-/* Alert / Suspicious Finding Box */
+
 .alert-finding-box {
     background: var(--danger-bg);
     border: 1px solid var(--danger-border);
@@ -1268,7 +1244,7 @@ input:focus, select:focus, textarea:focus {
     font-weight: 600;
 }
 
-/* Informational Disclaimer Banner */
+
 .disclaimer-box {
     background: #f4f8f7;
     border: 1px solid var(--card-border);
@@ -1283,9 +1259,7 @@ input:focus, select:focus, textarea:focus {
     line-height: 1.5;
 }
 
-/* =========================================================
-   Direct ML Sandbox & Microscopy Image Upload
-   ========================================================= */
+
 .sandbox-hero {
     background: #ffffff;
     border: 1px solid var(--card-border);
@@ -1317,7 +1291,7 @@ input:focus, select:focus, textarea:focus {
     margin-bottom: 8px;
 }
 
-/* Floating Checkbox Badge (Like reference) */
+
 .layer-toggle-badge {
     display: inline-flex;
     align-items: center;
@@ -1332,9 +1306,7 @@ input:focus, select:focus, textarea:focus {
     box-shadow: var(--shadow-sm);
 }
 
-/* =========================================================
-   Hero / Landing Section
-   ========================================================= */
+
 .hero-banner {
     background: #ffffff;
     border: 1px solid var(--card-border);
@@ -1401,9 +1373,7 @@ input:focus, select:focus, textarea:focus {
     color: var(--text-muted);
 }
 
-/* =========================================================
-   Footer & Modals
-   ========================================================= */
+
 .app-footer {
     background: #ffffff;
     border-top: 1px solid var(--card-border);
@@ -1426,9 +1396,7 @@ input:focus, select:focus, textarea:focus {
     padding: 20px;
 }
 
-/* =========================================================
-   Print Stylesheet (@media print)
-   ========================================================= */
+
 @media print {
     body {
         background: #ffffff !important;
@@ -1452,9 +1420,7 @@ input:focus, select:focus, textarea:focus {
     }
 }
 
-/* =========================================================
-   AI Health Report Analyzer Styles
-   ========================================================= */
+
 .upload-dropzone {
     border: 2px dashed var(--card-border);
     border-radius: var(--radius);
@@ -1503,7 +1469,7 @@ input:focus, select:focus, textarea:focus {
     box-shadow: 0 0 0 2px rgba(0, 94, 102, 0.15);
 }
 
-/* Extraction Confidence Badges */
+
 .conf-pill {
     display: inline-block;
     padding: 3px 8px;
@@ -1530,7 +1496,7 @@ input:focus, select:focus, textarea:focus {
     border: 1px solid #fecaca;
 }
 
-/* Concordance Meter */
+
 .concordance-meter-container {
     display: flex;
     align-items: center;
@@ -1560,7 +1526,7 @@ input:focus, select:focus, textarea:focus {
     background: linear-gradient(90deg, #64748b, #475569);
 }
 
-/* Progress Step Tracker */
+
 .progress-step-tracker {
     display: flex;
     flex-wrap: wrap;
@@ -1584,7 +1550,7 @@ input:focus, select:focus, textarea:focus {
     border: 1px solid #a7f3d0;
 }
 
-/* Top Screening Signals */
+
 .top-signals-card {
     background: #f8fafc;
     border: 1px solid var(--card-border);
@@ -1609,7 +1575,7 @@ input:focus, select:focus, textarea:focus {
     box-shadow: 0 1px 2px rgba(0,0,0,0.03);
 }
 
-/* Data Quality Audit */
+
 .data-quality-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -1630,9 +1596,7 @@ input:focus, select:focus, textarea:focus {
     margin-top: 4px;
 }
 
-/* =========================================================
-   Symptoms to AI Suggestions & Interactive Tag Cloud
-   ========================================================= */
+
 .symp-tag-group {
     background: #f8fafc;
     border: 1px solid var(--card-border);
@@ -1778,9 +1742,7 @@ input:focus, select:focus, textarea:focus {
     50% { opacity: 0; }
 }
 
-/* =========================================================
-   Patient Report Insights & Layman Tools
-   ========================================================= */
+
 .patient-report-insights-container {
     margin-top: 24px;
     background: #ffffff;
@@ -1894,9 +1856,7 @@ input:focus, select:focus, textarea:focus {
     border-left: 4px solid #22c55e;
 }
 
-/* =========================================================
-   Report Analyzer & Confidence Pills
-   ========================================================= */
+
 .upload-dropzone:hover {
     background: rgba(0, 94, 102, 0.05) !important;
     border-color: #0284c7 !important;
@@ -1930,7 +1890,7 @@ input:focus, select:focus, textarea:focus {
     border: 1px solid #fecaca;
 }
 
-/* Symmetrical Hero AI Action Cards */
+
 .hero-ai-card {
     transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease !important;
 }
@@ -1940,9 +1900,7 @@ input:focus, select:focus, textarea:focus {
     box-shadow: 0 10px 24px rgba(79, 70, 229, 0.14) !important;
 }
 
-/* =========================================================
-   Mobile Responsiveness
-   ========================================================= */
+
 @media (max-width: 900px) {
     .symptoms-layout-grid {
         grid-template-columns: 1fr !important;
@@ -1976,9 +1934,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 
-/* =========================================================
-   FEATURE 1: Doctor Questions Card (Medicover Blue)
-   ========================================================= */
+
 .medicover-questions-card {
     margin-top: 24px;
     background: linear-gradient(135deg, var(--mc-blue-surface) 0%, #f8fbff 100%);
@@ -2073,9 +2029,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 
-/* =========================================================
-   FEATURE 2: Critical Alert Banner
-   ========================================================= */
+
 @keyframes slideDownAlert {
     from { transform: translateY(-110%); opacity: 0; }
     to   { transform: translateY(0);    opacity: 1; }
@@ -2173,9 +2127,7 @@ input:focus, select:focus, textarea:focus {
 .critical-alert-banner .cab-call:hover { transform: scale(1.04); }
 
 
-/* =========================================================
-   FEATURE 3: Share PIN Modal
-   ========================================================= */
+
 .share-pin-modal-overlay {
     display: none;
     position: fixed;
@@ -2286,9 +2238,7 @@ input:focus, select:focus, textarea:focus {
 .spm-close-btn:hover { background: #e2e8f0; }
 
 
-/* =========================================================
-   FEATURE 4: Language Selector Pill
-   ========================================================= */
+
 .lang-selector {
     appearance: none;
     -webkit-appearance: none;
@@ -2322,9 +2272,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 
-/* =========================================================
-   FEATURE 5: Health Timeline Stepper
-   ========================================================= */
+
 .timeline-container {
     position: relative;
     padding: 4px 0;
@@ -2449,7 +2397,7 @@ input:focus, select:focus, textarea:focus {
     margin-bottom: 8px;
 }
 
-/* Admin PIN access card */
+
 .admin-pin-access-card {
     background: linear-gradient(135deg, var(--mc-blue-surface) 0%, #f0f6ff 100%);
     border: 1.5px solid var(--mc-blue-border);
@@ -2517,9 +2465,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 
-/* =========================================================
-   FEATURE 5: Health Timeline Stepper
-   ========================================================= */
+
 .timeline-container {
     position: relative;
     padding: 4px 0;
@@ -2644,7 +2590,7 @@ input:focus, select:focus, textarea:focus {
     margin-bottom: 8px;
 }
 
-/* Admin PIN access card */
+
 .admin-pin-access-card {
     background: linear-gradient(135deg, var(--mc-blue-surface) 0%, #f0f6ff 100%);
     border: 1.5px solid var(--mc-blue-border);
@@ -2710,9 +2656,7 @@ input:focus, select:focus, textarea:focus {
     .timeline-dot { width: 36px; height: 36px; font-size: 0.9rem; }
 }
 
-/* ================================================================
-   FEATURE 1: AI Differential Diagnosis Map Styles
-   ================================================================ */
+
 .diagnosis-map-card {
     background: #ffffff;
     border: 1.5px solid var(--card-border);
@@ -2808,9 +2752,7 @@ input:focus, select:focus, textarea:focus {
     color: #b91c1c;
 }
 
-/* ================================================================
-   FEATURE 2: Missing Test Intelligence Styles
-   ================================================================ */
+
 .missing-tests-card {
     background: linear-gradient(135deg, #ffffff 0%, var(--mc-blue-surface) 100%);
     border: 1.5px solid var(--mc-blue-border);
@@ -2866,9 +2808,7 @@ input:focus, select:focus, textarea:focus {
     box-shadow: 0 6px 16px rgba(26, 80, 160, 0.35);
 }
 
-/* ================================================================
-   FEATURE 3: Hidden Abnormality Detector Styles (Amber Warning)
-   ================================================================ */
+
 .hidden-abnormality-banner {
     background: #fffbeb;
     border: 1.5px solid #fde68a;
@@ -2915,9 +2855,7 @@ input:focus, select:focus, textarea:focus {
     line-height: 1.5;
 }
 
-/* ================================================================
-   FEATURE 5: "What Changed?" Report Comparison Styles
-   ================================================================ */
+
 .report-compare-card {
     background: #ffffff;
     border: 1.5px solid var(--card-border);
@@ -2974,9 +2912,7 @@ input:focus, select:focus, textarea:focus {
     border: 1px solid #e2e8f0;
 }
 
-/* =========================================================
-   CARE REMINDERS & PATIENT REPORTED ISSUES
-   ========================================================= */
+
 .reminder-filter-tabs {
     display: flex;
     gap: 8px;
@@ -3145,7 +3081,7 @@ input:focus, select:focus, textarea:focus {
     font-weight: 700;
 }
 
-/* Triage & Issue Status Badges */
+
 .triage-pill {
     font-size: 0.72rem;
     font-weight: 800;
@@ -3196,12 +3132,10 @@ input:focus, select:focus, textarea:focus {
 }
 
 
-/* =========================================================
-   STITCH HEALTHCARE PLATFORM — EXTRA CLINICAL COMPONENTS
-   ========================================================= */
 
-/* Bento Grid System from Stitch Diagnostic Analyzer */
-.stitch-bento-grid {
+
+
+.medlens-bento-grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: 24px;
@@ -3209,37 +3143,37 @@ input:focus, select:focus, textarea:focus {
 }
 
 @media (min-width: 1024px) {
-    .stitch-bento-grid {
+    .medlens-bento-grid {
         grid-template-columns: 8fr 4fr;
     }
 }
 
-.stitch-bento-main {
+.medlens-bento-main {
     display: flex;
     flex-direction: column;
     gap: 24px;
 }
 
-.stitch-bento-side {
+.medlens-bento-side {
     display: flex;
     flex-direction: column;
     gap: 24px;
 }
 
-/* Stitch Report Comparison Dual Dropzones */
-.stitch-dropzones-grid {
+
+.medlens-dropzones-grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: 16px;
 }
 
 @media (min-width: 768px) {
-    .stitch-dropzones-grid {
+    .medlens-dropzones-grid {
         grid-template-columns: 1fr 1fr;
     }
 }
 
-.stitch-dropzone-box {
+.medlens-dropzone-box {
     border: 2px dashed var(--outline-variant);
     border-radius: var(--radius-lg);
     padding: 24px 18px;
@@ -3253,23 +3187,23 @@ input:focus, select:focus, textarea:focus {
     transition: var(--transition);
 }
 
-.stitch-dropzone-box:hover {
+.medlens-dropzone-box:hover {
     background: var(--surface-container);
     border-color: var(--primary);
 }
 
-.stitch-dropzone-box.active {
+.medlens-dropzone-box.active {
     border-color: var(--primary);
     background: var(--primary-surface);
 }
 
-.stitch-dropzone-box .stitch-icon {
+.medlens-dropzone-box .medlens-icon {
     font-size: 2.2rem;
     color: var(--primary);
     margin-bottom: 8px;
 }
 
-.stitch-dropzone-title {
+.medlens-dropzone-title {
     font-family: var(--font-headline);
     font-size: 0.95rem;
     font-weight: 700;
@@ -3277,19 +3211,19 @@ input:focus, select:focus, textarea:focus {
     margin-bottom: 4px;
 }
 
-.stitch-dropzone-desc {
+.medlens-dropzone-desc {
     font-size: 0.8rem;
     color: var(--text-muted);
 }
 
-/* Stitch Differential Diagnosis Map Cards */
-.stitch-map-container {
+
+.medlens-map-container {
     display: flex;
     flex-direction: column;
     gap: 14px;
 }
 
-.stitch-map-row {
+.medlens-map-row {
     border-radius: var(--radius-lg);
     padding: 16px;
     display: flex;
@@ -3298,17 +3232,17 @@ input:focus, select:focus, textarea:focus {
     transition: var(--transition);
 }
 
-.stitch-map-row.supporting {
+.medlens-map-row.supporting {
     background: #f0fdf4;
     border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
-.stitch-map-row.contradicting {
+.medlens-map-row.contradicting {
     background: #fef2f2;
     border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
-.stitch-map-icon-pill {
+.medlens-map-icon-pill {
     width: 32px;
     height: 32px;
     border-radius: 50%;
@@ -3320,46 +3254,46 @@ input:focus, select:focus, textarea:focus {
     font-size: 0.9rem;
 }
 
-.stitch-map-row.supporting .stitch-map-icon-pill {
+.medlens-map-row.supporting .medlens-map-icon-pill {
     background: #10b981;
     color: #ffffff;
 }
 
-.stitch-map-row.contradicting .stitch-map-icon-pill {
+.medlens-map-row.contradicting .medlens-map-icon-pill {
     background: #ef4444;
     color: #ffffff;
 }
 
-.stitch-map-heading {
+.medlens-map-heading {
     font-family: var(--font-headline);
     font-weight: 700;
     font-size: 0.92rem;
     margin-bottom: 4px;
 }
 
-.stitch-map-row.supporting .stitch-map-heading {
+.medlens-map-row.supporting .medlens-map-heading {
     color: #047857;
 }
 
-.stitch-map-row.contradicting .stitch-map-heading {
+.medlens-map-row.contradicting .medlens-map-heading {
     color: #b91c1c;
 }
 
-.stitch-map-body {
+.medlens-map-body {
     font-size: 0.82rem;
     color: var(--text-muted);
     line-height: 1.45;
 }
 
-/* Stitch Missing Tests Card */
-.stitch-missing-card {
+
+.medlens-missing-card {
     background: #ffffff;
     border: 1px solid var(--outline-variant);
     border-radius: var(--radius-lg);
     padding: 20px;
 }
 
-.stitch-book-btn {
+.medlens-book-btn {
     background: var(--mc-blue);
     color: #ffffff;
     border: 1px solid var(--mc-blue-dark);
@@ -3376,20 +3310,20 @@ input:focus, select:focus, textarea:focus {
     transition: var(--transition);
 }
 
-.stitch-book-btn:hover {
+.medlens-book-btn:hover {
     background: var(--primary-dark);
     box-shadow: 0 4px 14px rgba(0, 57, 126, 0.25);
     transform: translateY(-1px);
 }
 
-/* Stitch Health Timeline Vertical Stepper */
-.stitch-timeline-wrapper {
+
+.medlens-timeline-wrapper {
     position: relative;
     padding-left: 28px;
     margin-top: 18px;
 }
 
-.stitch-timeline-line {
+.medlens-timeline-line {
     position: absolute;
     top: 12px;
     bottom: 12px;
@@ -3399,13 +3333,13 @@ input:focus, select:focus, textarea:focus {
     z-index: 1;
 }
 
-.stitch-timeline-entry {
+.medlens-timeline-entry {
     position: relative;
     margin-bottom: 22px;
     z-index: 2;
 }
 
-.stitch-timeline-node {
+.medlens-timeline-node {
     position: absolute;
     left: -28px;
     top: 4px;
@@ -3422,7 +3356,7 @@ input:focus, select:focus, textarea:focus {
     box-shadow: 0 2px 6px rgba(0, 57, 126, 0.15);
 }
 
-.stitch-timeline-card {
+.medlens-timeline-card {
     background: #ffffff;
     border: 1px solid var(--outline-variant);
     border-radius: var(--radius-lg);
@@ -3431,13 +3365,13 @@ input:focus, select:focus, textarea:focus {
     transition: var(--transition);
 }
 
-.stitch-timeline-card:hover {
+.medlens-timeline-card:hover {
     border-color: var(--mc-accent);
     box-shadow: var(--shadow-hover);
 }
 
-/* Stitch Doctor Console Queue Table */
-.stitch-queue-table-wrapper {
+
+.medlens-queue-table-wrapper {
     background: #ffffff;
     border: 1px solid var(--outline-variant);
     border-radius: var(--radius-lg);
@@ -3445,7 +3379,7 @@ input:focus, select:focus, textarea:focus {
     box-shadow: var(--shadow-sm);
 }
 
-.stitch-queue-table {
+.medlens-queue-table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
@@ -3453,7 +3387,7 @@ input:focus, select:focus, textarea:focus {
     font-size: 0.88rem;
 }
 
-.stitch-queue-table th {
+.medlens-queue-table th {
     background: var(--surface-container-low);
     color: var(--on-surface-variant);
     font-family: var(--font-headline);
@@ -3465,19 +3399,19 @@ input:focus, select:focus, textarea:focus {
     border-bottom: 1px solid var(--outline-variant);
 }
 
-.stitch-queue-table td {
+.medlens-queue-table td {
     padding: 14px 18px;
     border-bottom: 1px solid #f1f5f9;
     color: var(--text-main);
     vertical-align: middle;
 }
 
-.stitch-queue-table tr:hover td {
+.medlens-queue-table tr:hover td {
     background: var(--surface-container-low);
 }
 
-/* Stitch Symptoms AI Chat Canvas */
-.stitch-chat-bubble-ai {
+
+.medlens-chat-bubble-ai {
     background: #ffffff;
     border: 1px solid var(--outline-variant);
     border-radius: 18px 18px 18px 4px;
@@ -3487,7 +3421,7 @@ input:focus, select:focus, textarea:focus {
     line-height: 1.6;
 }
 
-.stitch-chat-bubble-user {
+.medlens-chat-bubble-user {
     background: var(--primary-container);
     color: #ffffff;
     border: 1px solid var(--primary-container);
@@ -3498,17 +3432,14 @@ input:focus, select:focus, textarea:focus {
 }
 
 
-/* =========================================================
-   MEDLENS CLINICAL MOBILE & TABLET RESPONSIVE DESIGN SYSTEM
-   Flawless touch-first responsive layout for phones & tablets
-   ========================================================= */
 
-/* Mobile Bottom Navigation Bar (Hidden by default on Desktop) */
+
+
 .mobile-bottom-nav {
     display: none;
 }
 
-/* Tablet & Smaller Desktops (<= 1024px) */
+
 @media (max-width: 1024px) {
     .workspace-grid {
         grid-template-columns: 1fr !important;
@@ -3525,9 +3456,9 @@ input:focus, select:focus, textarea:focus {
     }
 }
 
-/* Primary Mobile & Tablet Breakpoint (<= 768px - Phones & Phablets) */
+
 @media (max-width: 768px) {
-    /* Safe-area viewport padding for phones with notches/gesture bars */
+    
     body {
         padding-bottom: calc(72px + env(safe-area-inset-bottom));
         overflow-x: hidden;
@@ -3540,7 +3471,7 @@ input:focus, select:focus, textarea:focus {
         overflow-x: hidden;
     }
 
-    /* Top Navigation Bar: Seamless Single-Row Precision Alignment */
+    
     .top-navbar {
         display: flex !important;
         justify-content: space-between !important;
@@ -3600,7 +3531,7 @@ input:focus, select:focus, textarea:focus {
         color: var(--text-dim) !important;
     }
 
-    /* Hide desktop text nav links in top bar on mobile */
+    
     .nav-links {
         display: flex !important;
         align-items: center !important;
@@ -3616,7 +3547,7 @@ input:focus, select:focus, textarea:focus {
         display: none !important;
     }
 
-    /* Right Actions Cluster: Clean Horizontal Single-Row Layout */
+    
     .header-right-actions {
         display: flex !important;
         flex-direction: row !important;
@@ -3692,7 +3623,7 @@ input:focus, select:focus, textarea:focus {
         box-shadow: 0 2px 6px rgba(99, 102, 241, 0.2) !important;
     }
 
-    /* Native Mobile Bottom Navigation Bar */
+    
     .mobile-bottom-nav {
         display: flex !important;
         position: fixed !important;
@@ -3759,7 +3690,7 @@ input:focus, select:focus, textarea:focus {
         transform: scale(1.1) !important;
     }
 
-    /* Hero Section Mobile Optimization */
+    
     .patient-welcome-hero {
         padding: 18px 14px !important;
         border-radius: 16px !important;
@@ -3818,7 +3749,7 @@ input:focus, select:focus, textarea:focus {
         border-radius: 14px !important;
     }
 
-    /* Multi-Column Layouts to 1-Column Stacking */
+    
     .symptoms-layout-grid {
         grid-template-columns: 1fr !important;
         gap: 14px !important;
@@ -3829,7 +3760,7 @@ input:focus, select:focus, textarea:focus {
         gap: 12px !important;
     }
 
-    /* Biomarker Reference Chips: Horizontal Touch Rail */
+    
     .biomarker-explorer-card {
         padding: 16px 14px !important;
         border-radius: 14px !important;
@@ -3862,7 +3793,7 @@ input:focus, select:focus, textarea:focus {
         gap: 14px !important;
     }
 
-    /* Cards & Layout */
+    
     .card {
         padding: 16px 14px !important;
         border-radius: 14px !important;
@@ -3884,7 +3815,7 @@ input:focus, select:focus, textarea:focus {
         gap: 12px !important;
     }
 
-    /* Mobile Form Inputs: 16px prevents iOS Safari auto-zoom */
+    
     input, select, textarea {
         font-size: 16px !important;
         min-height: 44px !important;
@@ -3899,7 +3830,7 @@ input:focus, select:focus, textarea:focus {
         transform: scale(0.97) !important;
     }
 
-    /* Mobile Table Horizontal Scrolling without viewport overflow */
+    
     .table-responsive {
         width: 100% !important;
         overflow-x: auto !important;
@@ -3909,7 +3840,7 @@ input:focus, select:focus, textarea:focus {
         margin-bottom: 12px !important;
     }
 
-    table, .results-table, .stitch-queue-table, .parameters-table {
+    table, .results-table, .medlens-queue-table, .parameters-table {
         min-width: 580px !important;
         font-size: 0.8rem !important;
     }
@@ -3919,7 +3850,7 @@ input:focus, select:focus, textarea:focus {
         white-space: nowrap !important;
     }
 
-    /* Subpage division banners */
+    
     .subpage-division-banner {
         flex-direction: column !important;
         align-items: flex-start !important;
@@ -3928,7 +3859,7 @@ input:focus, select:focus, textarea:focus {
         font-size: 0.82rem !important;
     }
 
-    /* Modals & Dialogs on Mobile */
+    
     .modal-overlay {
         padding: 10px !important;
         align-items: flex-end !important;
@@ -3943,14 +3874,14 @@ input:focus, select:focus, textarea:focus {
         padding: 18px 14px !important;
     }
 
-    /* Symptoms AI Chat on Mobile */
-    .stitch-chat-bubble-ai, .stitch-chat-bubble-user {
+    
+    .medlens-chat-bubble-ai, .medlens-chat-bubble-user {
         max-width: 96% !important;
         padding: 14px 16px !important;
         font-size: 0.86rem !important;
     }
 
-    /* ML Sandbox Tabs Rail */
+    
     #sandbox-nav {
         display: flex !important;
         overflow-x: auto !important;
@@ -3972,7 +3903,7 @@ input:focus, select:focus, textarea:focus {
         font-size: 0.78rem !important;
     }
 
-    /* Disclaimer box */
+    
     .disclaimer-box {
         padding: 12px 14px !important;
         font-size: 0.78rem !important;
@@ -3980,7 +3911,7 @@ input:focus, select:focus, textarea:focus {
     }
 }
 
-/* Compact Phones (<= 480px - iPhone SE, small Galaxy) */
+
 @media (max-width: 480px) {
     .top-navbar {
         padding: 6px 8px !important;
@@ -4036,7 +3967,7 @@ input:focus, select:focus, textarea:focus {
     }
 }
 
-/* Ultra-Compact Phones (<= 380px) */
+
 @media (max-width: 380px) {
     .brand-subtitle {
         display: none !important;
@@ -4065,9 +3996,7 @@ input:focus, select:focus, textarea:focus {
 
 
 
-/* =========================================================
-   HOSPITAL OPERATIONS INTELLIGENCE STYLES
-   ========================================================= */
+
 .nav-btn-highlight {
     background: linear-gradient(135deg, #0284c7, #0369a1) !important;
     color: #ffffff !important;
@@ -4171,7 +4100,7 @@ input:focus, select:focus, textarea:focus {
     cursor: pointer;
 }
 
-/* Subnav bar */
+
 .ops-subnav-bar {
     display: flex;
     gap: 6px;
@@ -4223,7 +4152,7 @@ input:focus, select:focus, textarea:focus {
     color: #b45309;
 }
 
-/* Panels */
+
 .ops-subview-panel {
     display: none;
     animation: fadeIn 0.25s ease;
@@ -4232,7 +4161,7 @@ input:focus, select:focus, textarea:focus {
     display: block;
 }
 
-/* Hero Grid (4 Leadership Cards) */
+
 .ops-hero-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -4297,7 +4226,7 @@ input:focus, select:focus, textarea:focus {
 .ops-icon-red { color: #dc2626; font-size: 24px; }
 .ops-icon-green { color: #16a34a; font-size: 24px; }
 
-/* Grid Layouts */
+
 .ops-two-col-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
@@ -4339,7 +4268,7 @@ input:focus, select:focus, textarea:focus {
     text-decoration: underline;
 }
 
-/* Ward Status List */
+
 .ops-ward-status-list {
     display: flex;
     flex-direction: column;
@@ -4394,7 +4323,7 @@ input:focus, select:focus, textarea:focus {
     color: #64748b;
 }
 
-/* Insights Box */
+
 .ops-insight-box {
     display: flex;
     flex-direction: column;
@@ -4423,7 +4352,7 @@ input:focus, select:focus, textarea:focus {
     line-height: 1.4;
 }
 
-/* Alerts List */
+
 .ops-alerts-list {
     display: flex;
     flex-direction: column;
@@ -4477,7 +4406,7 @@ input:focus, select:focus, textarea:focus {
     border: 1px solid #e2e8f0;
 }
 
-/* Tables */
+
 .ops-table-responsive {
     width: 100%;
     overflow-x: auto;
@@ -4507,7 +4436,7 @@ input:focus, select:focus, textarea:focus {
     background: #f8fafc;
 }
 
-/* Filter bar */
+
 .ops-filter-bar {
     display: flex;
     gap: 12px;
@@ -4530,7 +4459,7 @@ input:focus, select:focus, textarea:focus {
     color: #64748b;
 }
 
-/* Sources Grid */
+
 .ops-sources-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -4568,7 +4497,7 @@ input:focus, select:focus, textarea:focus {
     color: #1e293b;
 }
 
-/* Rules Grid */
+
 .ops-rules-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
@@ -4622,7 +4551,7 @@ input:focus, select:focus, textarea:focus {
     color: #166534;
 }
 
-/* Modals */
+
 .ops-modal-lg {
     max-width: 720px;
     width: 90%;
@@ -4663,7 +4592,7 @@ input:focus, select:focus, textarea:focus {
     margin-top: 14px;
 }
 
-/* Distribution list */
+
 .ops-dist-list {
     display: flex;
     flex-direction: column;
@@ -4679,9 +4608,7 @@ input:focus, select:focus, textarea:focus {
 
 
 
-/* =========================================================
-   HOSPITAL OPERATIONS SIDEBAR + MAIN PANE LAYOUT (NEW)
-   ========================================================= */
+
 
 .ops-split-container {
     display: grid;
@@ -4698,7 +4625,7 @@ input:focus, select:focus, textarea:focus {
     }
 }
 
-/* Left Vertical Sidebar */
+
 .ops-vertical-sidebar {
     background: #ffffff;
     border: 1.5px solid #e2e8f0;
@@ -4842,7 +4769,7 @@ input:focus, select:focus, textarea:focus {
     color: #7e22ce;
 }
 
-/* Right Main Display Pane */
+
 .ops-main-pane {
     min-width: 0;
 }
@@ -4884,9 +4811,7 @@ input:focus, select:focus, textarea:focus {
     border: 1px solid #cbd5e1;
 }
 
-/* =========================================================
-   MODAL DIALOGS & POPUPS (PREMIUM GLASSMORPHIC DESIGN)
-   ========================================================= */
+
 
 .modal-backdrop {
     position: fixed;
@@ -5010,9 +4935,7 @@ input:focus, select:focus, textarea:focus {
     }
 }
 
-/* =========================================================
-   DIGITAL APPOINTMENT SLIP & CONFIRMATION CARD
-   ========================================================= */
+
 
 .appointment-slip-card {
     background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
@@ -5068,9 +4991,7 @@ input:focus, select:focus, textarea:focus {
     color: #0f172a;
 }
 
-/* =========================================================
-   STAFF OPERATIONS HUB & ROLE-BASED ARCHITECTURE
-   ========================================================= */
+
 
 .staff-role-selector-bar {
     background: #ffffff;
@@ -5147,7 +5068,7 @@ input:focus, select:focus, textarea:focus {
     text-transform: uppercase;
 }
 
-/* Role Content Panes */
+
 .staff-role-pane {
     display: none;
     animation: fadeIn 0.2s ease-out;
@@ -5157,7 +5078,7 @@ input:focus, select:focus, textarea:focus {
     display: block;
 }
 
-/* Ward Manager Cards */
+
 .ward-mgr-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -5183,7 +5104,7 @@ input:focus, select:focus, textarea:focus {
     box-shadow: 0 8px 20px rgba(2, 132, 199, 0.08);
 }
 
-/* Room Service Numbered Bed Tiles */
+
 .bed-turnover-matrix {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
@@ -5215,21 +5136,21 @@ input:focus, select:focus, textarea:focus {
     box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
 }
 
-/* 🟢 GREEN: Clean & Sanitized */
+
 .bed-turnover-tile.tile-green {
     background: #f0fdf4;
     border-color: #22c55e;
     color: #15803d;
 }
 
-/* 🟡 YELLOW: Occupied / In-Use */
+
 .bed-turnover-tile.tile-yellow {
     background: #fefce8;
     border-color: #eab308;
     color: #a16207;
 }
 
-/* 🔴 RED: Needs Cleaning */
+
 .bed-turnover-tile.tile-red {
     background: #fef2f2;
     border-color: #ef4444;
@@ -5254,7 +5175,7 @@ input:focus, select:focus, textarea:focus {
 .tile-yellow .tile-bed-tag { background: #fef9c3; color: #854d0e; }
 .tile-red .tile-bed-tag { background: #fee2e2; color: #991b1b; }
 
-/* Billing Invoice Paper Slip */
+
 .invoice-paper-slip {
     background: #ffffff;
     border: 1.5px solid #cbd5e1;
@@ -5285,9 +5206,9 @@ input:focus, select:focus, textarea:focus {
     color: #0f172a;
 }
 
-/* ========================================================= */
-/* STAFF OPERATIONS 4-ROLE STYLING                          */
-/* ========================================================= */
+
+
+
 .staff-role-selector-bar {
     display: flex;
     justify-content: space-between;
@@ -5369,11 +5290,9 @@ input:focus, select:focus, textarea:focus {
     box-shadow: 0 2px 6px rgba(0,0,0,0.02);
 }
 
-/* =========================================================
-   STAFF OPERATIONS — Auth Gate, Session Bar, Role Panes
-   ========================================================= */
 
-/* Auth Gate Card */
+
+
 .staff-auth-gate-card {
     background: #ffffff;
     border: 1.5px solid #e2e8f0;
@@ -5397,7 +5316,7 @@ input:focus, select:focus, textarea:focus {
     box-shadow: 0 4px 12px rgba(2, 132, 199, 0.15);
 }
 
-/* Staff Session Bar */
+
 .staff-role-selector-bar {
     background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
     border: 1.5px solid #e2e8f0;
@@ -5412,7 +5331,7 @@ input:focus, select:focus, textarea:focus {
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
 }
 
-/* Role Switcher Pills */
+
 .staff-role-pills {
     display: flex;
     gap: 6px;
@@ -5446,7 +5365,7 @@ input:focus, select:focus, textarea:focus {
     box-shadow: 0 3px 10px rgba(2, 132, 199, 0.3);
 }
 
-/* Role Panes */
+
 .staff-role-pane {
     display: none;
     animation: fadeInPane 0.3s ease;
@@ -5459,7 +5378,7 @@ input:focus, select:focus, textarea:focus {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Bed Matrix Grid */
+
 .bed-matrix-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
@@ -5467,7 +5386,7 @@ input:focus, select:focus, textarea:focus {
     padding: 4px;
 }
 
-/* Bed Turnover Tiles */
+
 .bed-turnover-tile {
     border-radius: 10px;
     padding: 10px 8px;
@@ -5513,7 +5432,7 @@ input:focus, select:focus, textarea:focus {
     opacity: 0.85;
 }
 
-/* Invoice Paper Slip */
+
 .invoice-paper-slip {
     background: #ffffff;
     border: 1.5px solid #e2e8f0;
@@ -5540,7 +5459,7 @@ input:focus, select:focus, textarea:focus {
     border-bottom: 1px solid #f1f5f9;
 }
 
-/* Ops Source Cards */
+
 .ops-source-card {
     background: #ffffff;
     border: 1.5px solid #e2e8f0;
@@ -5580,7 +5499,7 @@ input:focus, select:focus, textarea:focus {
     font-weight: 700;
 }
 
-/* Ops Data Table */
+
 .ops-table-wrap {
     width: 100%;
     overflow-x: auto;
@@ -5612,7 +5531,7 @@ input:focus, select:focus, textarea:focus {
     background: #f8fafc;
 }
 
-/* Responsive: Staff Operations */
+
 @media (max-width: 768px) {
     .staff-role-selector-bar {
         flex-direction: column;
@@ -5652,7 +5571,7 @@ input:focus, select:focus, textarea:focus {
     }
 }
 
-/* Conflict Detail "Why?" Drawer */
+
 .ops-why-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;

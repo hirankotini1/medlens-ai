@@ -4,17 +4,17 @@ ensuring zero position-only splitting, accurate multi-word name recognition,
 correct unit extraction, and non-corrupted observed values.
 """
 
-import io
-import sys
-import os
+import io 
+import sys 
+import os 
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from disease_prediction.api.file_parser import parse_pdf_report
-from disease_prediction.api.report_extractor import extract_metadata_and_biomarkers, calculate_report_data_quality
-from disease_prediction.api.analyzer_service import extract_report_from_file_bytes
+sys .path .insert (0 ,os .path .abspath (os .path .join (os .path .dirname (__file__ ),"..")))
+from disease_prediction .api .file_parser import parse_pdf_report 
+from disease_prediction .api .report_extractor import extract_metadata_and_biomarkers ,calculate_report_data_quality 
+from disease_prediction .api .analyzer_service import extract_report_from_file_bytes 
 
-def generate_full_synthetic_pdf() -> bytes:
-    stream_content = """
+def generate_full_synthetic_pdf ()->bytes :
+    stream_content ="""
 BT
 /F1 10 Tf
 50 720 Td
@@ -250,8 +250,8 @@ BT
 (24-39) Tj
 ET
 """
-    stream_bytes = stream_content.encode("latin1")
-    pdf_template = f"""%PDF-1.4
+    stream_bytes =stream_content .encode ("latin1")
+    pdf_template =f"""%PDF-1.4
 1 0 obj
 << /Type /Catalog /Pages 2 0 R >>
 endobj
@@ -262,9 +262,9 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
 endobj
 4 0 obj
-<< /Length {len(stream_bytes)} >>
+<< /Length {len (stream_bytes )} >>
 stream
-{stream_content}
+{stream_content }
 endstream
 endobj
 5 0 obj
@@ -277,77 +277,77 @@ xref
 0000000058 00000 n 
 0000000115 00000 n 
 0000000242 00000 n 
-0000000{242 + len(stream_bytes) + 40:03d} 00000 n 
+0000000{242 +len (stream_bytes )+40 :03d} 00000 n 
 trailer
 << /Size 6 /Root 1 0 R >>
 startxref
-{242 + len(stream_bytes) + 120}
+{242 +len (stream_bytes )+120 }
 %%EOF"""
-    return pdf_template.encode("latin1")
+    return pdf_template .encode ("latin1")
 
-def test_pdf_extraction():
-    print("=" * 80)
-    print("      NEXUS PATHOLOGY — PDF EXTRACTION & TABLE RECONSTRUCTION TEST")
-    print("=" * 80)
+def test_pdf_extraction ():
+    print ("="*80 )
+    print ("      NEXUS PATHOLOGY — PDF EXTRACTION & TABLE RECONSTRUCTION TEST")
+    print ("="*80 )
 
-    pdf_bytes = generate_full_synthetic_pdf()
-    res = extract_report_from_file_bytes("synthetic_pathology_report.pdf", pdf_bytes)
+    pdf_bytes =generate_full_synthetic_pdf ()
+    res =extract_report_from_file_bytes ("synthetic_pathology_report.pdf",pdf_bytes )
 
-    meta = res["metadata"]
-    params = res["parameters"]
-    print(f"\n[1] Metadata Extracted:")
-    print(f"    Patient Name: {meta.get('patient_name')}")
-    print(f"    Patient ID:   {meta.get('patient_id')}")
-    print(f"    Age:          {meta.get('age')}")
-    print(f"    Gender:       {meta.get('gender')}")
-    print(f"    Report ID:    {meta.get('report_id')}")
+    meta =res ["metadata"]
+    params =res ["parameters"]
+    print (f"\n[1] Metadata Extracted:")
+    print (f"    Patient Name: {meta .get ('patient_name')}")
+    print (f"    Patient ID:   {meta .get ('patient_id')}")
+    print (f"    Age:          {meta .get ('age')}")
+    print (f"    Gender:       {meta .get ('gender')}")
+    print (f"    Report ID:    {meta .get ('report_id')}")
 
-    print(f"\n[2] Total Biomarkers Extracted: {len(params)}")
-    param_map = {p["parameter"]: p for p in params}
+    print (f"\n[2] Total Biomarkers Extracted: {len (params )}")
+    param_map ={p ["parameter"]:p for p in params }
 
-    # Verify specific critical test cases from user prompt
-    checks = [
-        ("24-Hour Urinary Copper", 35.0, "ug/24h", "10-60"),
-        ("T3", 1.2, "ng/mL", "0.8-2.0"),
-        ("T4", 8.0, "ug/dL", "4.5-12.0"),
-        ("T3 Resin Uptake", 32.0, "%", "24-39"),
-        ("Hemoglobin", 14.8, "g/dL", "13.0-17.0"),
-        ("Ferritin", 1250.0, "ng/mL", "30-400"),
-        ("ALT", 95.0, "U/L", "10-40"),
-        ("AST", 82.0, "U/L", "10-40"),
-        ("Ceruloplasmin", 28.0, "mg/dL", "20-40"),
-        ("Serum Copper", 100.0, "ug/dL", "70-140")
+
+    checks =[
+    ("24-Hour Urinary Copper",35.0 ,"ug/24h","10-60"),
+    ("T3",1.2 ,"ng/mL","0.8-2.0"),
+    ("T4",8.0 ,"ug/dL","4.5-12.0"),
+    ("T3 Resin Uptake",32.0 ,"%","24-39"),
+    ("Hemoglobin",14.8 ,"g/dL","13.0-17.0"),
+    ("Ferritin",1250.0 ,"ng/mL","30-400"),
+    ("ALT",95.0 ,"U/L","10-40"),
+    ("AST",82.0 ,"U/L","10-40"),
+    ("Ceruloplasmin",28.0 ,"mg/dL","20-40"),
+    ("Serum Copper",100.0 ,"ug/dL","70-140")
     ]
 
-    all_passed = True
-    print("\n[3] Key Biomarker Precision Audit:")
-    for name, exp_val, exp_unit, exp_ref in checks:
-        p = param_map.get(name)
-        if not p:
-            print(f"  [FAIL] Missing biomarker: '{name}'")
-            all_passed = False
-            continue
+    all_passed =True 
+    print ("\n[3] Key Biomarker Precision Audit:")
+    for name ,exp_val ,exp_unit ,exp_ref in checks :
+        p =param_map .get (name )
+        if not p :
+            print (f"  [FAIL] Missing biomarker: '{name }'")
+            all_passed =False 
+            continue 
 
-        val_ok = (p["value"] == exp_val)
-        unit_ok = (exp_unit.lower() in p["unit"].lower())
-        ref_ok = (exp_ref in p["reference_range"])
+        val_ok =(p ["value"]==exp_val )
+        unit_ok =(exp_unit .lower ()in p ["unit"].lower ())
+        ref_ok =(exp_ref in p ["reference_range"])
 
-        status_str = "PASS" if (val_ok and unit_ok and ref_ok) else "FAIL"
-        if not (val_ok and unit_ok and ref_ok):
-            all_passed = False
-        print(f"  [{status_str}] {name:<24} | Val: {p['value']} (Exp: {exp_val}) | Unit: '{p['unit']}' (Exp: '{exp_unit}') | Ref: '{p['reference_range']}'")
+        status_str ="PASS"if (val_ok and unit_ok and ref_ok )else "FAIL"
+        if not (val_ok and unit_ok and ref_ok ):
+            all_passed =False 
+        print (f"  [{status_str }] {name :<24} | Val: {p ['value']} (Exp: {exp_val }) | Unit: '{p ['unit']}' (Exp: '{exp_unit }') | Ref: '{p ['reference_range']}'")
 
-    print(f"\n[4] Data Quality Score:")
-    dq = res["data_quality"]
-    print(f"    Biomarkers Detected: {dq['biomarkers_detected']}")
-    print(f"    Extraction Confidence: {dq['extraction_confidence']}")
-    print(f"    Overall Quality: {dq['overall_quality']}")
+    print (f"\n[4] Data Quality Score:")
+    dq =res ["data_quality"]
+    print (f"    Biomarkers Detected: {dq ['biomarkers_detected']}")
+    print (f"    Extraction Confidence: {dq ['extraction_confidence']}")
+    print (f"    Overall Quality: {dq ['overall_quality']}")
 
-    assert len(params) >= 24, f"Expected at least 24 biomarkers from PDF, got {len(params)}"
-    assert all_passed, "One or more biomarker audits failed!"
-    print("\n" + "=" * 80)
-    print("  [SUCCESS] PDF BIOMARKER EXTRACTION PASSED 100%")
-    print("=" * 80)
+    assert len (params )>=24 ,f"Expected at least 24 biomarkers from PDF, got {len (params )}"
+    assert all_passed ,"One or more biomarker audits failed!"
+    print ("\n"+"="*80 )
+    print ("  [SUCCESS] PDF BIOMARKER EXTRACTION PASSED 100%")
+    print ("="*80 )
 
-if __name__ == "__main__":
-    test_pdf_extraction()
+if __name__ =="__main__":
+    test_pdf_extraction ()
