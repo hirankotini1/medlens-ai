@@ -5604,3 +5604,358 @@ input:focus, select:focus, textarea:focus {
     padding: 14px 16px;
 }
 
+/* ==========================================================================
+   MEDLENS AI — MODERN IN-APP NOTIFICATIONS & MODAL POPUP SYSTEM
+   ========================================================================== */
+
+/* Toast Container */
+#medlens-toast-container {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 1000000;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 440px;
+    width: calc(100vw - 36px);
+    pointer-events: none;
+}
+
+/* Toast Card */
+.medlens-toast {
+    position: relative;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 14px;
+    padding: 14px 16px;
+    box-shadow: 0 12px 32px -4px rgba(11, 28, 48, 0.14), 0 4px 12px rgba(11, 28, 48, 0.06);
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-left: 5px solid var(--primary-light);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    pointer-events: auto;
+    overflow: hidden;
+    animation: medlensToastSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    transition: transform 0.25s ease, opacity 0.25s ease, box-shadow 0.25s ease;
+}
+
+.medlens-toast:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 36px -4px rgba(11, 28, 48, 0.18), 0 6px 16px rgba(11, 28, 48, 0.08);
+}
+
+.medlens-toast.toast-hiding {
+    animation: medlensToastSlideOut 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Toast Type Variants */
+.medlens-toast.toast-success {
+    border-left-color: #10b981;
+}
+.medlens-toast.toast-success .medlens-toast-icon-wrapper {
+    background: #ecfdf5;
+    color: #059669;
+}
+
+.medlens-toast.toast-error {
+    border-left-color: #ef4444;
+}
+.medlens-toast.toast-error .medlens-toast-icon-wrapper {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.medlens-toast.toast-warning {
+    border-left-color: #f59e0b;
+}
+.medlens-toast.toast-warning .medlens-toast-icon-wrapper {
+    background: #fffbeb;
+    color: #d97706;
+}
+
+.medlens-toast.toast-info {
+    border-left-color: #2563eb;
+}
+.medlens-toast.toast-info .medlens-toast-icon-wrapper {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+/* Icon & Content */
+.medlens-toast-icon-wrapper {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.medlens-toast-icon-wrapper .material-symbols-outlined {
+    font-size: 20px;
+}
+
+.medlens-toast-body {
+    flex: 1;
+    min-width: 0;
+}
+.medlens-toast-title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 2px;
+    line-height: 1.3;
+}
+.medlens-toast-message {
+    font-size: 0.82rem;
+    color: #475569;
+    line-height: 1.45;
+    word-break: break-word;
+    white-space: pre-line;
+}
+
+.medlens-toast-close {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #94a3b8;
+    padding: 2px 4px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+}
+.medlens-toast-close:hover {
+    color: #1e293b;
+    background: #f1f5f9;
+}
+.medlens-toast-close .material-symbols-outlined {
+    font-size: 18px;
+}
+
+/* Progress bar timer */
+.medlens-toast-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.06);
+}
+.medlens-toast-progress-bar {
+    height: 100%;
+    width: 100%;
+    transform-origin: left;
+    transition: transform linear;
+}
+.toast-success .medlens-toast-progress-bar { background: #10b981; }
+.toast-error .medlens-toast-progress-bar { background: #ef4444; }
+.toast-warning .medlens-toast-progress-bar { background: #f59e0b; }
+.toast-info .medlens-toast-progress-bar { background: #2563eb; }
+
+@keyframes medlensToastSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(40px) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+@keyframes medlensToastSlideOut {
+    from {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(40px) scale(0.92);
+    }
+}
+
+/* ==========================================================================
+   MODAL POPUP DIALOG SYSTEM
+   ========================================================================== */
+
+.medlens-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(11, 28, 48, 0.55);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 1000001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.medlens-modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.medlens-modal-card {
+    background: #ffffff;
+    border-radius: 18px;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 24px 60px -12px rgba(11, 28, 48, 0.25), 0 8px 24px rgba(11, 28, 48, 0.08);
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    padding: 26px 24px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    transform: scale(0.92) translateY(12px);
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.medlens-modal-overlay.active .medlens-modal-card {
+    transform: scale(1) translateY(0);
+}
+
+.medlens-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.medlens-modal-icon-badge {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.medlens-modal-icon-badge .material-symbols-outlined {
+    font-size: 24px;
+}
+
+.medlens-modal-icon-badge.icon-success {
+    background: #ecfdf5;
+    color: #059669;
+}
+.medlens-modal-icon-badge.icon-error {
+    background: #fef2f2;
+    color: #dc2626;
+}
+.medlens-modal-icon-badge.icon-warning {
+    background: #fffbeb;
+    color: #d97706;
+}
+.medlens-modal-icon-badge.icon-info {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.medlens-modal-title {
+    font-size: 1.12rem;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+}
+
+.medlens-modal-body {
+    font-size: 0.92rem;
+    color: #334155;
+    line-height: 1.6;
+    word-break: break-word;
+}
+
+.medlens-modal-body p {
+    margin-bottom: 8px;
+}
+.medlens-modal-body p:last-child {
+    margin-bottom: 0;
+}
+
+.medlens-modal-bullet-list {
+    margin: 8px 0 10px 0;
+    padding-left: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.medlens-modal-bullet-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 0.88rem;
+    color: #334155;
+}
+
+.medlens-modal-bullet-dot {
+    color: var(--primary-light);
+    font-size: 1.1rem;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.medlens-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+    padding-top: 14px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.medlens-modal-btn {
+    padding: 9px 18px;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: all 0.18s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.medlens-modal-btn-cancel {
+    background: #f1f5f9;
+    color: #475569;
+}
+.medlens-modal-btn-cancel:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+.medlens-modal-btn-confirm {
+    background: linear-gradient(135deg, #00397e 0%, #1a50a0 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 57, 126, 0.25);
+}
+.medlens-modal-btn-confirm:hover {
+    background: linear-gradient(135deg, #002b60 0%, #154285 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(0, 57, 126, 0.32);
+}
+
+.medlens-modal-btn-confirm.btn-danger {
+    background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+}
+.medlens-modal-btn-confirm.btn-danger:hover {
+    background: linear-gradient(135deg, #b91c1c 0%, #dc2626 100%);
+}
+

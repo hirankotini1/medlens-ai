@@ -18,6 +18,330 @@ async function safeJson(response) {
     }
 }
 
+/* ==========================================================================
+   MEDLENS AI — IN-APP NOTIFICATION & MODAL POPUP ENGINE
+   ========================================================================== */
+
+function ensureToastContainer() {
+    let container = document.getElementById('medlens-toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'medlens-toast-container';
+        document.body.appendChild(container);
+    }
+    return container;
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function showToast(message, type = 'info', duration = 4000, title = '') {
+    if (!message) return;
+    const container = ensureToastContainer();
+
+    // Deduce type from message if default info
+    let finalType = type;
+    const msgStr = String(message);
+    if (finalType === 'info') {
+        if (msgStr.includes('✓') || msgStr.includes('✅') || /success|saved|verified|completed|dispatched/i.test(msgStr)) {
+            finalType = 'success';
+        } else if (msgStr.includes('⚠️') || /warn|exceed|notice/i.test(msgStr)) {
+            finalType = 'warning';
+        } else if (/error|fail|invalid|offline|not found/i.test(msgStr)) {
+            finalType = 'error';
+        }
+    }
+
+    const icons = {
+        success: 'check_circle',
+        error: 'error',
+        warning: 'warning',
+        info: 'info'
+    };
+    const iconName = icons[finalType] || 'info';
+
+    // Clean display message (remove leading emojis for a clean modern look)
+    let displayMsg = msgStr.replace(/^[✓✅⚠️ℹ️❌]\s*/, '').trim();
+
+    // Determine title if not given
+    let displayTitle = title;
+    if (!displayTitle) {
+        if (finalType === 'success') displayTitle = 'Success';
+        else if (finalType === 'error') displayTitle = 'Notice';
+        else if (finalType === 'warning') displayTitle = 'Attention';
+        else displayTitle = 'Information';
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `medlens-toast toast-${finalType}`;
+    toast.innerHTML = `
+        <div class="medlens-toast-icon-wrapper">
+            <span class="material-symbols-outlined">${iconName}</span>
+        </div>
+        <div class="medlens-toast-body">
+            <div class="medlens-toast-title">${escapeHtml(displayTitle)}</div>
+            <div class="medlens-toast-message">${escapeHtml(displayMsg)}</div>
+        </div>
+        <button class="medlens-toast-close" title="Dismiss" aria-label="Dismiss notification">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+        <div class="medlens-toast-progress">
+            <div class="medlens-toast-progress-bar"></div>
+        </div>
+    `;
+
+    container.appendChild(toast);
+
+    const progressBar = toast.querySelector('.medlens-toast-progress-bar');
+    const closeBtn = toast.querySelector('.medlens-toast-close');
+
+    let startTime = Date.now();
+    let remainingTime = duration;
+    let timer = null;
+    let isPaused = false;
+
+    const startTimer = (ms) => {
+        if (progressBar) {
+            progressBar.style.transition = `transform ${ms}ms linear`;
+            progressBar.style.transform = 'scaleX(0)';
+        }
+        timer = setTimeout(() => dismissToast(), ms);
+    };
+
+    const dismissToast = () => {
+        if (timer) clearTimeout(timer);
+        toast.classList.add('toast-hiding');
+        setTimeout(() => {
+            if (toast.parentElement) toast.parentElement.removeChild(toast);
+        }, 300);
+    };
+
+    closeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dismissToast();
+    });
+
+    toast.addEventListener('mouseenter', () => {
+        isPaused = true;
+        if (timer) clearTimeout(timer);
+        const elapsed = Date.now() - startTime;
+        remainingTime = Math.max(500, remainingTime - elapsed);
+        if (progressBar) {
+            const computedTransform = window.getComputedStyle(progressBar).transform;
+            progressBar.style.transition = 'none';
+            progressBar.style.transform = computedTransform;
+        }
+    });
+
+    toast.addEventListener('mouseleave', () => {
+        if (isPaused) {
+            isPaused = false;
+            startTime = Date.now();
+            startTimer(remainingTime);
+        }
+    });
+
+    startTimer(duration);
+    return toast;
+}
+
+window.showNotification = showToast;
+window.showToast = showToast;
+
+function ensureModalOverlay() {
+    let overlay = document.getElementById('medlens-modal-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'medlens-modal-overlay';
+        overlay.className = 'medlens-modal-overlay';
+        document.body.appendChild(overlay);
+    }
+    return overlay;
+}
+
+function formatModalBodyHtml(msg) {
+    if (!msg) return '';
+    const lines = String(msg).split('\n');
+    let html = '';
+    let inList = false;
+
+    lines.forEach(rawLine => {
+        const line = rawLine.trim();
+        if (!line) {
+            if (inList) { html += '</ul>'; inList = false; }
+            return;
+        }
+
+        if (line.startsWith('•') || line.startsWith('- ') || line.startsWith('* ')) {
+            if (!inList) {
+                html += '<ul class="medlens-modal-bullet-list">';
+                inList = true;
+            }
+            const bulletText = line.replace(/^[•\-\*]\s*/, '');
+            html += `<li class="medlens-modal-bullet-item"><span class="medlens-modal-bullet-dot">•</span><span>${escapeHtml(bulletText)}</span></li>`;
+        } else {
+            if (inList) {
+                html += '</ul>';
+                inList = false;
+            }
+            html += `<p>${escapeHtml(line)}</p>`;
+        }
+    });
+
+    if (inList) html += '</ul>';
+    return html;
+}
+
+function showCustomModal({
+    title = '',
+    message = '',
+    type = 'info',
+    confirmText = 'OK',
+    cancelText = 'Cancel',
+    showCancel = false,
+    isDanger = false
+} = {}) {
+    return new Promise((resolve) => {
+        const overlay = ensureModalOverlay();
+        const msgStr = String(message || '');
+
+        let finalType = type;
+        if (!finalType || finalType === 'info') {
+            if (msgStr.includes('✓') || msgStr.includes('✅') || /success|saved|verified|completed|dispatched/i.test(msgStr)) {
+                finalType = 'success';
+            } else if (msgStr.includes('⚠️') || /warn|offline|attention|delete|reset|discharge/i.test(msgStr) || showCancel) {
+                finalType = isDanger ? 'error' : 'warning';
+            } else if (/error|fail|invalid/i.test(msgStr)) {
+                finalType = 'error';
+            }
+        }
+
+        const icons = {
+            success: 'check_circle',
+            error: 'error',
+            warning: 'warning',
+            info: 'info'
+        };
+        const iconName = icons[finalType] || 'info';
+
+        let finalTitle = title;
+        if (!finalTitle) {
+            if (showCancel) finalTitle = 'Confirmation Required';
+            else if (finalType === 'success') finalTitle = 'Action Successful';
+            else if (finalType === 'error') finalTitle = 'System Notice';
+            else if (finalType === 'warning') finalTitle = 'Important Notice';
+            else finalTitle = 'Information';
+        }
+
+        overlay.innerHTML = `
+            <div class="medlens-modal-card" role="dialog" aria-modal="true">
+                <div class="medlens-modal-header">
+                    <div class="medlens-modal-icon-badge icon-${finalType}">
+                        <span class="material-symbols-outlined">${iconName}</span>
+                    </div>
+                    <div class="medlens-modal-title">${escapeHtml(finalTitle)}</div>
+                </div>
+                <div class="medlens-modal-body">
+                    ${formatModalBodyHtml(msgStr)}
+                </div>
+                <div class="medlens-modal-actions">
+                    ${showCancel ? `<button type="button" class="medlens-modal-btn medlens-modal-btn-cancel" id="medlens-modal-cancel-btn">${escapeHtml(cancelText)}</button>` : ''}
+                    <button type="button" class="medlens-modal-btn medlens-modal-btn-confirm ${isDanger ? 'btn-danger' : ''}" id="medlens-modal-confirm-btn">${escapeHtml(confirmText)}</button>
+                </div>
+            </div>
+        `;
+
+        overlay.classList.add('active');
+
+        const confirmBtn = document.getElementById('medlens-modal-confirm-btn');
+        const cancelBtn = document.getElementById('medlens-modal-cancel-btn');
+
+        let isClosed = false;
+        const cleanup = (result) => {
+            if (isClosed) return;
+            isClosed = true;
+            overlay.classList.remove('active');
+            document.removeEventListener('keydown', keyHandler);
+            overlay.removeEventListener('click', overlayClickHandler);
+            setTimeout(() => {
+                overlay.innerHTML = '';
+            }, 250);
+            resolve(result);
+        };
+
+        const keyHandler = (e) => {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                cleanup(false);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                cleanup(true);
+            }
+        };
+
+        const overlayClickHandler = (e) => {
+            if (e.target === overlay && !showCancel) {
+                cleanup(true);
+            }
+        };
+
+        if (confirmBtn) confirmBtn.onclick = () => cleanup(true);
+        if (cancelBtn) cancelBtn.onclick = () => cleanup(false);
+
+        document.addEventListener('keydown', keyHandler);
+        overlay.addEventListener('click', overlayClickHandler);
+
+        if (confirmBtn) confirmBtn.focus();
+    });
+}
+
+function showModalAlert(message, title = '', type = null) {
+    return showCustomModal({
+        title,
+        message,
+        type,
+        confirmText: 'Understood',
+        showCancel: false
+    });
+}
+
+function showModalConfirm(message, title = '', options = {}) {
+    const isDanger = /delete|remove|clear|discharge|reset/i.test(message);
+    return showCustomModal({
+        title: title || 'Confirmation Required',
+        message,
+        type: isDanger ? 'warning' : 'info',
+        confirmText: options.confirmText || (isDanger ? 'Proceed' : 'Confirm'),
+        cancelText: options.cancelText || 'Cancel',
+        showCancel: true,
+        isDanger: isDanger
+    });
+}
+
+window.showModalAlert = showModalAlert;
+window.showModalConfirm = showModalConfirm;
+window.showCustomModal = showCustomModal;
+
+// Safe Global Browser Alert Interceptor
+window.alert = function(msg) {
+    const str = String(msg ?? '');
+    const hasMultipleLines = str.includes('\n');
+    const isLong = str.length > 90;
+    const isCritical = str.includes('Offline') || str.includes('Booking') || str.includes('PIN') || str.includes('Care Directive') || str.includes('Official Issue');
+
+    if (hasMultipleLines || isLong || isCritical) {
+        showModalAlert(str);
+    } else {
+        showToast(str);
+    }
+};
 
 let currentAuth = {
     role: null, 
@@ -1746,7 +2070,7 @@ function adminTriggerML(reportId) {
 }
 
 async function adminDeleteReport(reportId) {
-    if (!confirm(`Are you sure you want to delete report ${reportId}?`)) return;
+    if (!await showModalConfirm(`Are you sure you want to delete report ${reportId}?`)) return;
     try {
         const res = await fetch(apiUrl(`/api/reports/${reportId}`), {
             method: 'DELETE',
@@ -1765,7 +2089,7 @@ async function adminDeleteReport(reportId) {
 }
 
 async function adminResetDemoData() {
-    if (!confirm("Reset database to the 4 canonical demo records (removes all test and duplicate reports)?")) return;
+    if (!await showModalConfirm("Reset database to the 4 canonical demo records (removes all test and duplicate reports)?")) return;
     try {
         const res = await fetch(apiUrl('/api/admin/reset-demo-data'), {
             method: 'POST',
@@ -1781,7 +2105,7 @@ async function adminResetDemoData() {
 }
 
 async function adminClearAllReports() {
-    if (!confirm("Are you sure you want to delete ALL laboratory reports?")) return;
+    if (!await showModalConfirm("Are you sure you want to delete ALL laboratory reports?")) return;
     try {
         const res = await fetch(apiUrl('/api/admin/reports'), {
             method: 'DELETE',
@@ -6314,7 +6638,7 @@ async function handlePatientAdmissionSubmit(event) {
 }
 
 async function dischargeAdmittedPatient(admissionId) {
-    if (!confirm(`Are you sure you want to discharge patient admission ${admissionId}?\n\nThis will mark the patient as Discharged and release their bed to Available in Supabase.`)) {
+    if (!await showModalConfirm(`Are you sure you want to discharge patient admission ${admissionId}?\n\nThis will mark the patient as Discharged and release their bed to Available in Supabase.`)) {
         return;
     }
     try {
@@ -7171,7 +7495,7 @@ async function loadSupabaseAdmissions() {
 }
 
 async function dischargeInpatient(admissionId, patientName, bedId, bedTier, patientId, admissionDate) {
-    if (!confirm(`Confirm discharge for "${patientName}" (Bed: ${bedId})?\nThis will free the bed and open billing.`)) {
+    if (!await showModalConfirm(`Confirm discharge for "${patientName}" (Bed: ${bedId})?\nThis will free the bed and open billing.`)) {
         return;
     }
 
@@ -7883,7 +8207,7 @@ async function markBillAsPaid() {
     const netPayable = lastGeneratedBill?.netPayable || 0;
     const billId = lastGeneratedBill?.billId || '';
 
-    if (!confirm(`Mark bill as PAID for "${patientName}"?\nNet Payable: ₹${netPayable.toLocaleString()}\n\nThis will:\n• Mark the invoice as PAID\n• Free the bed for new admissions\n• Remove patient from Doctor Dashboard`)) {
+    if (!await showModalConfirm(`Mark bill as PAID for "${patientName}"?\nNet Payable: ₹${netPayable.toLocaleString()}\n\nThis will:\n• Mark the invoice as PAID\n• Free the bed for new admissions\n• Remove patient from Doctor Dashboard`)) {
         return;
     }
 
