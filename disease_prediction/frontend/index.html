@@ -607,10 +607,77 @@
                                     <th>Instructions</th>
                                     <th>Due Date</th>
                                     <th>Status</th>
+                                    <th>📱 SMS Alert</th>
                                 </tr>
                             </thead>
                             <tbody id="admin-reminders-table-body"></tbody>
                         </table>
+
+                        <!-- Android SIM SMS Gateway Monitor & Outbox Console -->
+                        <div class="gateway-monitor-card" id="sms-gateway-monitor-card" style="margin-top: 24px;">
+                            <div class="gateway-monitor-header">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span style="font-size: 1.3rem;">📱</span>
+                                    <div>
+                                        <h4 style="margin: 0; font-size: 0.95rem; color: #0f172a;">Android SIM SMS Patient Alert Gateway</h4>
+                                        <div style="font-size: 0.74rem; color: var(--text-muted);">Hardware SIM alert dispatch via paired Android phone (Zero third-party API costs)</div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                    <span id="gateway-status-pill" class="gateway-status-pill offline">
+                                        <span class="gateway-dot offline" id="gateway-status-dot"></span>
+                                        <span id="gateway-status-text">Gateway Offline</span>
+                                    </span>
+                                    <button type="button" class="btn-secondary" style="font-size: 0.76rem; padding: 4px 10px;" onclick="checkGatewayStatus(true)">
+                                        🔄 Ping Gateway
+                                    </button>
+                                    <button type="button" class="btn-primary" style="font-size: 0.76rem; padding: 4px 12px; background: #0284c7;" onclick="openTestSmsModal()">
+                                        ✉️ Send Direct Test SMS
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="sms-stats-row">
+                                <div class="sms-stat-box">
+                                    <div class="sms-stat-val" id="sms-stat-today">0 / 100</div>
+                                    <div class="sms-stat-lbl">Today's SIM Quota</div>
+                                </div>
+                                <div class="sms-stat-box">
+                                    <div class="sms-stat-val" id="sms-stat-queued" style="color: #d97706;">0</div>
+                                    <div class="sms-stat-lbl">Queued Messages</div>
+                                </div>
+                                <div class="sms-stat-box">
+                                    <div class="sms-stat-val" id="sms-stat-sent" style="color: #16a34a;">0</div>
+                                    <div class="sms-stat-lbl">Total Delivered</div>
+                                </div>
+                                <div class="sms-stat-box">
+                                    <div class="sms-stat-val" id="sms-stat-device" style="font-size: 0.88rem; color: #475569;">No Device Connected</div>
+                                    <div class="sms-stat-lbl">Paired SIM Gateway</div>
+                                </div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <span style="font-size: 0.82rem; font-weight: 700; color: #334155;">Recent SIM Outbox Dispatch Queue</span>
+                                <button type="button" class="btn-secondary" style="font-size: 0.74rem; padding: 3px 8px;" onclick="loadSmsHistoryTable()">
+                                    🔄 Refresh Outbox
+                                </button>
+                            </div>
+                            <div class="table-responsive" style="max-height: 240px; overflow-y: auto;">
+                                <table class="results-table" style="font-size: 0.78rem;">
+                                    <thead>
+                                        <tr>
+                                            <th>Time</th>
+                                            <th>Patient</th>
+                                            <th>Masked Phone</th>
+                                            <th>Message Text</th>
+                                            <th>Status</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="sms-outbox-table-body">
+                                        <tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 12px;">Click 'Refresh Outbox' to view recent SIM dispatches.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
 
                     
@@ -2485,48 +2552,149 @@
                 <div class="form-grid" style="margin-bottom: 12px;">
                     <div class="form-group">
                         <label for="rem-patient-id">Target Patient</label>
-                        <select id="rem-patient-id" class="form-control" required>
+                        <select id="rem-patient-id" class="form-control" required onchange="updateSmsPreview()">
                             
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="rem-type">Category</label>
-                        <select id="rem-type" class="form-control" required>
-                            <option value="daily_care">💊 Daily Care &amp; Medication</option>
-                            <option value="diagnosis">🩺 Diagnosis &amp; Lab Follow-Up</option>
-                            <option value="checkup">🏥 Scheduled Health Checkup</option>
+                        <select id="rem-type" class="form-control" required onchange="handleReminderTypeChange()">
+                            <option value="medication_reminder">💊 Medication Reminder</option>
+                            <option value="appointment_reminder">📅 Doctor Appointment</option>
+                            <option value="lab_reminder">🧪 Lab Test Reminder</option>
+                            <option value="report_ready">📋 Diagnostic Report Ready</option>
+                            <option value="followup_reminder">🩺 Clinical Follow-up</option>
+                            <option value="health_checkup">🏥 Scheduled Health Checkup</option>
+                            <option value="vaccination_reminder">💉 Vaccination Alert</option>
+                            <option value="daily_care" selected>💧 Daily Care Regimen</option>
+                            <option value="diagnosis">🩺 Diagnosis Directive</option>
+                            <option value="checkup">🏥 Routine Checkup</option>
+                            <option value="prescription_instruction">📜 Prescription Instructions</option>
+                            <option value="custom">✉️ Custom Alert Directive</option>
                         </select>
                     </div>
                 </div>
+
+                <!-- Collapsible Medication Administration Fields -->
+                <div id="medication-fields-section" class="medication-fields-section" style="display: none;">
+                    <div class="medication-fields-title">
+                        <span>💊</span> Medication Administration Details
+                    </div>
+                    <div class="form-grid" style="margin-bottom: 8px;">
+                        <div class="form-group">
+                            <label for="rem-med-name" style="font-size: 0.78rem;">Medication Name</label>
+                            <input type="text" id="rem-med-name" class="form-control" placeholder="e.g., Metformin" oninput="updateSmsPreview()">
+                        </div>
+                        <div class="form-group">
+                            <label for="rem-dosage" style="font-size: 0.78rem;">Dosage</label>
+                            <input type="text" id="rem-dosage" class="form-control" placeholder="e.g., 500mg" oninput="updateSmsPreview()">
+                        </div>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="rem-dose-unit" style="font-size: 0.78rem;">Dose Unit</label>
+                            <select id="rem-dose-unit" class="form-control" onchange="updateSmsPreview()">
+                                <option value="tablet">tablet(s)</option>
+                                <option value="capsule">capsule(s)</option>
+                                <option value="ml">ml (liquid/syrup)</option>
+                                <option value="drops">drops</option>
+                                <option value="puff">puff(s)</option>
+                                <option value="sachet">sachet</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="rem-admin-time" style="font-size: 0.78rem;">Timing / Meal</label>
+                            <input type="text" id="rem-admin-time" class="form-control" placeholder="e.g., After Breakfast, 8:00 AM" oninput="updateSmsPreview()">
+                        </div>
+                        <div class="form-group">
+                            <label for="rem-duration" style="font-size: 0.78rem;">Course Duration</label>
+                            <input type="text" id="rem-duration" class="form-control" placeholder="e.g., 7 days" oninput="updateSmsPreview()">
+                        </div>
+                    </div>
+                </div>
+
                 <div class="form-group" style="margin-bottom: 12px;">
                     <label for="rem-title">Directive Title / Headline</label>
-                    <input type="text" id="rem-title" class="form-control" placeholder="e.g., Hydration &amp; Blood Pressure Monitoring" required>
+                    <input type="text" id="rem-title" class="form-control" placeholder="e.g., Hydration & Blood Pressure Monitoring" required oninput="updateSmsPreview()">
                 </div>
                 <div class="form-group" style="margin-bottom: 12px;">
                     <label for="rem-message">Clinical Instructions &amp; Actionable Guidelines</label>
-                    <textarea id="rem-message" class="form-control" rows="3" placeholder="Provide step-by-step care instructions or diagnostic preparations..." required></textarea>
+                    <textarea id="rem-message" class="form-control" rows="3" placeholder="Provide step-by-step care instructions or diagnostic preparations..." required oninput="updateSmsPreview()"></textarea>
                 </div>
-                <div class="form-grid" style="margin-bottom: 16px;">
+                <div class="form-grid" style="margin-bottom: 14px;">
                     <div class="form-group">
                         <label for="rem-due-date">Target Due / Execution Date</label>
-                        <input type="date" id="rem-due-date" class="form-control">
+                        <input type="date" id="rem-due-date" class="form-control" onchange="updateSmsPreview()">
                     </div>
                     <div class="form-group">
                         <label for="rem-frequency">Frequency</label>
-                        <select id="rem-frequency" class="form-control">
+                        <select id="rem-frequency" class="form-control" onchange="updateSmsPreview()">
                             <option value="once">One-Time Directive</option>
                             <option value="daily">Daily Regimen</option>
                             <option value="weekly">Weekly Routine</option>
                         </select>
                     </div>
                 </div>
+
+                <!-- Delivery Channels Selection -->
+                <div class="notification-channel-section">
+                    <span style="font-size: 0.8rem; font-weight: 700; color: #475569;">Delivery Channels:</span>
+                    <label class="channel-checkbox-label">
+                        <input type="checkbox" id="rem-notify-portal" checked disabled>
+                        <span>🏥 Patient Portal</span>
+                    </label>
+                    <label class="channel-checkbox-label">
+                        <input type="checkbox" id="rem-notify-sms" checked onchange="toggleSmsChannel()">
+                        <span>📱 SIM-Based Patient SMS Alert</span>
+                    </label>
+                </div>
+
+                <!-- Live SMS Preview Card -->
+                <div id="rem-sms-preview-box" class="sms-preview-box">
+                    <div class="sms-preview-header">
+                        <span>📱 SIM SMS Live Preview</span>
+                        <span><span id="rem-sms-char-count">0</span> / 320 chars</span>
+                    </div>
+                    <div id="rem-sms-preview-text" class="sms-preview-text">Type reminder details to see live SMS preview...</div>
+                </div>
+
                 <div class="form-group" style="margin-bottom: 16px;">
                     <label for="rem-sent-by">Issued By</label>
-                    <input type="text" id="rem-sent-by" class="form-control" value="Dr. Rajesh Varma (Medicover Vizag Clinical Desk)">
+                    <input type="text" id="rem-sent-by" class="form-control" value="Dr. Rajesh Varma (Medicover Vizag Clinical Desk)" oninput="updateSmsPreview()">
                 </div>
                 <div style="display: flex; justify-content: flex-end; gap: 10px;">
                     <button type="button" class="btn-secondary" onclick="closeSendCareReminderModal()">Cancel</button>
-                    <button type="submit" class="btn-primary" style="background: var(--mc-blue);">Dispatch to Patient Portal</button>
+                    <button type="submit" class="btn-primary" style="background: var(--mc-blue);" id="btn-dispatch-reminder">Dispatch Directive &amp; SMS</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Direct Test SMS Modal -->
+    <div id="test-sms-modal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+        <div class="card" style="width: 100%; max-width: 480px; background: #ffffff; border-radius: 14px; box-shadow: var(--shadow-hover); border: 2px solid #0284c7; margin: 20px;">
+            <div class="card-header" style="border-bottom: 1.5px solid var(--mc-border); padding-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 1.3rem;">📱</span>
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.05rem; color: #0284c7;">Dispatch Direct Test SMS</h3>
+                        <span style="font-size: 0.74rem; color: var(--text-muted);">Queues message to Android SIM Gateway for instant dispatch</span>
+                    </div>
+                </div>
+                <button type="button" class="btn-secondary" style="padding: 4px 10px; font-size: 0.8rem;" onclick="closeTestSmsModal()">✕</button>
+            </div>
+            <form id="form-test-sms" onsubmit="submitTestSms(event)" style="padding-top: 14px;">
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label for="test-sms-phone">Recipient Mobile Number (Indian +91)</label>
+                    <input type="tel" id="test-sms-phone" class="form-control" placeholder="+91 9876543210 or 9876543210" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label for="test-sms-message">SMS Message Content</label>
+                    <textarea id="test-sms-message" class="form-control" rows="3" placeholder="MedLens AI: Test patient alert notification via Android SIM Gateway." required maxlength="320"></textarea>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
+                    <button type="button" class="btn-secondary" onclick="closeTestSmsModal()">Cancel</button>
+                    <button type="submit" class="btn-primary" style="background: #0284c7;">Queue for SIM Dispatch</button>
                 </div>
             </form>
         </div>

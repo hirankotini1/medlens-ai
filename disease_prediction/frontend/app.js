@@ -5215,9 +5215,18 @@ function renderPatientReminders() {
     }
 
     const typeIcons = {
-        'daily_care': '💊 Daily Care',
-        'diagnosis': '🩺 Diagnosis Follow-Up',
-        'checkup': '🏥 Health Checkup'
+        'medication_reminder': '💊 Medication Reminder',
+        'appointment_reminder': '📅 Appointment',
+        'lab_reminder': '🧪 Lab Test',
+        'report_ready': '📋 Report Ready',
+        'followup_reminder': '🩺 Follow-up',
+        'health_checkup': '🏥 Health Checkup',
+        'vaccination_reminder': '💉 Vaccination Alert',
+        'daily_care': '💧 Daily Care',
+        'diagnosis': '🩺 Diagnosis Directive',
+        'checkup': '🏥 Health Checkup',
+        'prescription_instruction': '📜 Prescription Instructions',
+        'custom': '✉️ Direct Care Alert'
     };
 
     const html = `
@@ -5227,12 +5236,24 @@ function renderPatientReminders() {
                 const createdDate = r.created_at ? new Date(r.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '';
                 const dueDateStr = r.due_date ? `Due: ${r.due_date}` : 'Ongoing Daily';
 
+                let smsBadge = '';
+                if (r.sms_status === 'sent') {
+                    smsBadge = `<span class="sms-status-badge sent" title="Delivered to patient mobile via Android SIM Gateway">📱 SMS Sent</span>`;
+                } else if (r.sms_status === 'queued') {
+                    smsBadge = `<span class="sms-status-badge queued" title="Queued for Android SIM Gateway dispatch">📱 SMS Queued</span>`;
+                } else if (r.sms_status === 'processing') {
+                    smsBadge = `<span class="sms-status-badge processing" title="Android SIM Gateway sending SMS...">📱 SMS Sending...</span>`;
+                } else if (r.sms_status === 'failed') {
+                    smsBadge = `<span class="sms-status-badge failed" title="SMS delivery failed via SIM">📱 SMS Failed</span>`;
+                }
+
                 return `
                     <div class="care-reminder-item type-${r.reminder_type} ${isDone ? 'completed' : ''}" id="rem-item-${r.id}">
                         <div class="reminder-content">
                             <div class="reminder-header-row">
                                 <span class="reminder-badge ${r.reminder_type}">${typeIcons[r.reminder_type] || r.reminder_type}</span>
                                 <span class="reminder-freq-tag">${r.frequency ? r.frequency.toUpperCase() : 'ONCE'}</span>
+                                ${smsBadge}
                                 ${isDone ? '<span class="reminder-done-badge">✓ Completed</span>' : ''}
                             </div>
                             <h4 class="reminder-title">${escapeHtml(r.title)}</h4>
@@ -5443,19 +5464,41 @@ async function loadAdminReminders() {
         window._adminReminders = allRem;
 
         if (allRem.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:30px; color:#64748b;">No dispatched care reminders found.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:30px; color:#64748b;">No dispatched care reminders found.</td></tr>`;
+            checkGatewayStatus();
+            loadSmsHistoryTable();
             return;
         }
 
         const typeLabels = {
-            'daily_care': '💊 Daily Care',
+            'medication_reminder': '💊 Medication',
+            'appointment_reminder': '📅 Appointment',
+            'lab_reminder': '🧪 Lab Test',
+            'report_ready': '📋 Report Ready',
+            'followup_reminder': '🩺 Follow-up',
+            'health_checkup': '🏥 Health Checkup',
+            'vaccination_reminder': '💉 Vaccination',
+            'daily_care': '💧 Daily Care',
             'diagnosis': '🩺 Diagnosis',
-            'checkup': '🏥 Checkup'
+            'checkup': '🏥 Checkup',
+            'prescription_instruction': '📜 Prescription',
+            'custom': '✉️ Directive'
         };
 
         tbody.innerHTML = allRem.map(r => {
             const dateStr = r.created_at ? new Date(r.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '—';
             const isDone = r.status === 'completed';
+
+            let smsCol = '<span class="sms-status-badge none">—</span>';
+            if (r.sms_status === 'sent') {
+                smsCol = '<span class="sms-status-badge sent" title="Delivered via SIM">📱 Sent</span>';
+            } else if (r.sms_status === 'queued') {
+                smsCol = '<span class="sms-status-badge queued" title="Queued for Android SIM dispatch">📱 Queued</span>';
+            } else if (r.sms_status === 'processing') {
+                smsCol = '<span class="sms-status-badge processing" title="Sending...">📱 Sending...</span>';
+            } else if (r.sms_status === 'failed') {
+                smsCol = '<span class="sms-status-badge failed" title="Failed to deliver via SIM">📱 Failed</span>';
+            }
 
             return `
                 <tr>
@@ -5466,11 +5509,15 @@ async function loadAdminReminders() {
                     <td style="max-width:260px; font-size:0.8rem; color:#475569;">${escapeHtml(r.message)}</td>
                     <td style="white-space:nowrap; font-size:0.78rem;">${r.due_date || 'Ongoing'}</td>
                     <td>${isDone ? '<span class="reminder-done-badge">✓ Completed</span>' : '<span style="color:#047857; font-weight:700; font-size:0.78rem;">Active</span>'}</td>
+                    <td>${smsCol}</td>
                 </tr>
             `;
         }).join('');
+
+        checkGatewayStatus();
+        loadSmsHistoryTable();
     } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px; color:#ef4444;">Error: ${err.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:20px; color:#ef4444;">Error: ${err.message}</td></tr>`;
     }
 }
 
@@ -5545,11 +5592,82 @@ function openSendCareReminderModal(patientId, issueId) {
     }
 
     document.getElementById('rem-issue-id').value = issueId || '';
+
+    // Reset medication fields
+    if (document.getElementById('medication-fields-section')) {
+        document.getElementById('medication-fields-section').style.display = 'none';
+    }
+    if (document.getElementById('rem-med-name')) document.getElementById('rem-med-name').value = '';
+    if (document.getElementById('rem-dosage')) document.getElementById('rem-dosage').value = '';
+    if (document.getElementById('rem-admin-time')) document.getElementById('rem-admin-time').value = '';
+    if (document.getElementById('rem-duration')) document.getElementById('rem-duration').value = '';
+    if (document.getElementById('rem-type')) document.getElementById('rem-type').value = 'daily_care';
+
+    updateSmsPreview();
     document.getElementById('send-care-reminder-modal').style.display = 'flex';
 }
 
 function closeSendCareReminderModal() {
     document.getElementById('send-care-reminder-modal').style.display = 'none';
+}
+
+function handleReminderTypeChange() {
+    const remType = document.getElementById('rem-type').value;
+    const medSec = document.getElementById('medication-fields-section');
+    if (medSec) {
+        medSec.style.display = (remType === 'medication_reminder') ? 'block' : 'none';
+    }
+    updateSmsPreview();
+}
+
+function toggleSmsChannel() {
+    const sendSms = document.getElementById('rem-notify-sms').checked;
+    const previewBox = document.getElementById('rem-sms-preview-box');
+    if (previewBox) {
+        previewBox.style.display = sendSms ? 'block' : 'none';
+    }
+    const btn = document.getElementById('btn-dispatch-reminder');
+    if (btn) {
+        btn.textContent = sendSms ? 'Dispatch Directive & SMS' : 'Dispatch to Patient Portal';
+    }
+}
+
+function updateSmsPreview() {
+    const patientSelect = document.getElementById('rem-patient-id');
+    const patientName = patientSelect && patientSelect.selectedIndex >= 0 ?
+        patientSelect.options[patientSelect.selectedIndex].text.split('(')[0].trim() : 'Patient';
+
+    const remType = document.getElementById('rem-type') ? document.getElementById('rem-type').value : 'daily_care';
+    const title = (document.getElementById('rem-title') ? document.getElementById('rem-title').value.trim() : '') || 'Health Alert';
+    const msg = (document.getElementById('rem-message') ? document.getElementById('rem-message').value.trim() : '') || 'Please follow your physician instructions.';
+    const medName = document.getElementById('rem-med-name') ? document.getElementById('rem-med-name').value.trim() : '';
+    const dosage = document.getElementById('rem-dosage') ? document.getElementById('rem-dosage').value.trim() : '';
+    const adminTime = document.getElementById('rem-admin-time') ? document.getElementById('rem-admin-time').value.trim() : '';
+    const dueDate = document.getElementById('rem-due-date') ? document.getElementById('rem-due-date').value : '';
+
+    let preview = `MedLens Alert for ${patientName}:\n`;
+    if (remType === 'medication_reminder' && medName) {
+        preview += `Take ${medName}${dosage ? ' ' + dosage : ''}${adminTime ? ' (' + adminTime + ')' : ''}. `;
+    } else {
+        preview += `${title}: `;
+    }
+    preview += `${msg}`;
+    if (dueDate) {
+        preview += ` Due: ${dueDate}.`;
+    }
+    preview += `\n- Dr. Medicover. Emergency: 108`;
+
+    if (preview.length > 320) {
+        preview = preview.substring(0, 317) + '...';
+    }
+
+    const previewEl = document.getElementById('rem-sms-preview-text');
+    const countEl = document.getElementById('rem-sms-char-count');
+    if (previewEl) previewEl.textContent = preview;
+    if (countEl) {
+        countEl.textContent = preview.length;
+        countEl.style.color = preview.length > 300 ? '#ef4444' : '#64748b';
+    }
 }
 
 async function submitCareReminder(e) {
@@ -5563,29 +5681,56 @@ async function submitCareReminder(e) {
     const sentBy = document.getElementById('rem-sent-by').value.trim();
     const issueId = document.getElementById('rem-issue-id').value || null;
 
+    const sendSms = document.getElementById('rem-notify-sms') ? document.getElementById('rem-notify-sms').checked : true;
+    const medName = document.getElementById('rem-med-name') ? document.getElementById('rem-med-name').value.trim() : '';
+    const dosage = document.getElementById('rem-dosage') ? document.getElementById('rem-dosage').value.trim() : '';
+    const doseUnit = document.getElementById('rem-dose-unit') ? document.getElementById('rem-dose-unit').value : 'tablet';
+    const adminTime = document.getElementById('rem-admin-time') ? document.getElementById('rem-admin-time').value.trim() : '';
+    const duration = document.getElementById('rem-duration') ? document.getElementById('rem-duration').value.trim() : '';
+
     try {
         const headers = { 'Content-Type': 'application/json' };
         if (currentAuth.token) headers['Authorization'] = `Bearer ${currentAuth.token}`;
 
+        const payload = {
+            patient_id: patientId,
+            reminder_type: reminderType,
+            title: title,
+            message: message,
+            due_date: dueDate,
+            frequency: frequency,
+            sent_by: sentBy,
+            issue_id: issueId,
+            send_sms: sendSms,
+            notification_channel: sendSms ? 'portal,sms' : 'portal',
+            medication_name: medName || null,
+            dosage: dosage || null,
+            dose_unit: doseUnit || null,
+            administration_time: adminTime || null,
+            duration: duration || null
+        };
+
         const res = await fetch(apiUrl('/api/reminders'), {
             method: 'POST',
             headers: headers,
-            body: JSON.stringify({
-                patient_id: patientId,
-                reminder_type: reminderType,
-                title: title,
-                message: message,
-                due_date: dueDate,
-                frequency: frequency,
-                sent_by: sentBy,
-                issue_id: issueId
-            })
+            body: JSON.stringify(payload)
         });
 
-        if (!res.ok) throw new Error("Failed to dispatch care reminder.");
+        if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            throw new Error(errData.detail || "Failed to dispatch care reminder.");
+        }
 
+        const data = await safeJson(res);
         closeSendCareReminderModal();
-        alert(`✅ Care Directive Dispatched!\n\nDispatched to ${patientId}: "${title}". It will now appear on the patient's portal with checkup and daily care alerts.`);
+
+        let alertMsg = `✅ Care Directive Dispatched!\n\nDispatched to ${patientId}: "${title}".`;
+        if (data && data.sms_queued) {
+            alertMsg += `\n\n📱 SIM SMS Alert queued to Android Gateway for ${data.recipient_phone || 'patient mobile'}.\nStatus: ${data.sms_status || 'queued'}`;
+        } else if (data && data.sms_error) {
+            alertMsg += `\n\n⚠️ SMS notice: ${data.sms_error}`;
+        }
+        alert(alertMsg);
 
         const remCont = document.getElementById('adm-reminders-container');
         if (remCont && remCont.style.display !== 'none') {
@@ -5593,6 +5738,163 @@ async function submitCareReminder(e) {
         }
     } catch (err) {
         alert("Error sending reminder: " + err.message);
+    }
+}
+
+// ---------------------------------------------------------
+// SMS Gateway Management & Monitoring Functions
+// ---------------------------------------------------------
+
+async function checkGatewayStatus(showFeedback = false) {
+    try {
+        const res = await fetch(apiUrl('/api/sms-gateway/status'), {
+            headers: { 'X-Admin-Token': 'medlens-sms-gateway-secret-2026' }
+        });
+        if (!res.ok) throw new Error("Could not check gateway status");
+        const data = await safeJson(res);
+
+        const pill = document.getElementById('gateway-status-pill');
+        const dot = document.getElementById('gateway-status-dot');
+        const text = document.getElementById('gateway-status-text');
+        const todayStat = document.getElementById('sms-stat-today');
+        const queuedStat = document.getElementById('sms-stat-queued');
+        const sentStat = document.getElementById('sms-stat-sent');
+        const deviceStat = document.getElementById('sms-stat-device');
+
+        const isOnline = data.gateway_status === 'online';
+        if (pill) {
+            pill.className = `gateway-status-pill ${isOnline ? 'online' : 'offline'}`;
+        }
+        if (dot) {
+            dot.className = `gateway-dot ${isOnline ? 'online' : 'offline'}`;
+        }
+        if (text) {
+            text.textContent = isOnline ? 'Gateway Online' : 'Gateway Offline';
+        }
+
+        if (todayStat) todayStat.textContent = `${data.today_sms_count || 0} / ${data.daily_limit || 100}`;
+        if (queuedStat) queuedStat.textContent = data.queued_messages || 0;
+        if (sentStat) sentStat.textContent = data.sent_messages || 0;
+        if (deviceStat) {
+            deviceStat.textContent = isOnline ? (data.device_name || 'Paired Phone') : 'No Phone Paired';
+        }
+
+        if (showFeedback) {
+            alert(isOnline ?
+                `✅ Android SIM Gateway is ONLINE!\n\nDevice: ${data.device_name}\nLast ping: ${data.last_seen || 'Just now'}\nToday sent: ${data.today_sms_count}/${data.daily_limit}` :
+                `⚠️ Android SIM Gateway is currently OFFLINE.\n\nStart the MedLens SMS Gateway app on your Android phone and connect to this server.`);
+        }
+    } catch (err) {
+        console.warn("Gateway check error:", err);
+    }
+}
+
+async function loadSmsHistoryTable() {
+    const tbody = document.getElementById('sms-outbox-table-body');
+    if (!tbody) return;
+
+    try {
+        const res = await fetch(apiUrl('/api/sms-gateway/history?limit=25'), {
+            headers: { 'X-Admin-Token': 'medlens-sms-gateway-secret-2026' }
+        });
+        if (!res.ok) throw new Error("Failed to load SMS history");
+        const data = await safeJson(res);
+        const messages = data.messages || [];
+
+        if (messages.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 14px;">No SMS messages dispatched yet.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = messages.map(m => {
+            const timeStr = m.created_at ? new Date(m.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '—';
+            let statusBadge = `<span class="sms-status-badge ${m.status}">${m.status.toUpperCase()}</span>`;
+            let actionBtn = '—';
+            if (m.status === 'failed') {
+                actionBtn = `<button type="button" class="btn-secondary" style="padding: 2px 6px; font-size: 0.7rem;" onclick="retrySmsMessage(${m.id})">Retry</button>`;
+            } else if (m.status === 'queued') {
+                actionBtn = `<button type="button" class="btn-secondary" style="padding: 2px 6px; font-size: 0.7rem; color: #ef4444;" onclick="cancelSmsMessage(${m.id})">Cancel</button>`;
+            }
+
+            return `
+                <tr>
+                    <td style="white-space: nowrap;">${timeStr}</td>
+                    <td><strong>${m.patient_id || 'Direct'}</strong></td>
+                    <td style="font-family: monospace;">${m.phone_number}</td>
+                    <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(m.message)}">${escapeHtml(m.message)}</td>
+                    <td>${statusBadge}</td>
+                    <td>${actionBtn}</td>
+                </tr>
+            `;
+        }).join('');
+    } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ef4444; padding: 10px;">Error loading outbox: ${err.message}</td></tr>`;
+    }
+}
+
+async function retrySmsMessage(smsId) {
+    try {
+        const res = await fetch(apiUrl(`/api/sms-gateway/${smsId}/retry`), {
+            method: 'POST',
+            headers: { 'X-Admin-Token': 'medlens-sms-gateway-secret-2026' }
+        });
+        if (!res.ok) throw new Error("Retry failed");
+        alert("SMS requeued for dispatch!");
+        loadSmsHistoryTable();
+        checkGatewayStatus();
+    } catch (err) {
+        alert("Error: " + err.message);
+    }
+}
+
+async function cancelSmsMessage(smsId) {
+    try {
+        const res = await fetch(apiUrl(`/api/sms-gateway/${smsId}/cancel`), {
+            method: 'POST',
+            headers: { 'X-Admin-Token': 'medlens-sms-gateway-secret-2026' }
+        });
+        if (!res.ok) throw new Error("Cancel failed");
+        loadSmsHistoryTable();
+        checkGatewayStatus();
+    } catch (err) {
+        alert("Error: " + err.message);
+    }
+}
+
+function openTestSmsModal() {
+    const modal = document.getElementById('test-sms-modal');
+    if (modal) modal.style.display = 'flex';
+}
+
+function closeTestSmsModal() {
+    const modal = document.getElementById('test-sms-modal');
+    if (modal) modal.style.display = 'none';
+}
+
+async function submitTestSms(e) {
+    e.preventDefault();
+    const phone = document.getElementById('test-sms-phone').value.trim();
+    const message = document.getElementById('test-sms-message').value.trim();
+
+    try {
+        const res = await fetch(apiUrl('/api/sms-gateway/test'), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Admin-Token': 'medlens-sms-gateway-secret-2026'
+            },
+            body: JSON.stringify({ phone_number: phone, message: message })
+        });
+
+        const data = await safeJson(res);
+        if (!res.ok) throw new Error(data.detail || "Failed to dispatch test SMS");
+
+        closeTestSmsModal();
+        alert(`✅ Test SMS queued!\n\nSMS ID: ${data.sms_id}\nRecipient: ${data.phone_number}\nStatus: ${data.status}\n\nThe connected Android phone will claim this and send via SIM.`);
+        loadSmsHistoryTable();
+        checkGatewayStatus();
+    } catch (err) {
+        alert("Error queuing test SMS: " + err.message);
     }
 }
 

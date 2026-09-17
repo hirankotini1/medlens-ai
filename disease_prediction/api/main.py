@@ -37,6 +37,8 @@ try :
     from disease_prediction .api import analyzer_service 
     from disease_prediction .api .operations_router import router as operations_router 
     from disease_prediction .api .case_taking_router import router as case_taking_router
+    from disease_prediction .api .sms_gateway import router as sms_gateway_router
+    from disease_prediction .api .sms_gateway import normalize_phone ,build_sms_text
 except ImportError :
     try :
         import train_malaria 
@@ -45,6 +47,8 @@ except ImportError :
         import analyzer_service 
         from operations_router import router as operations_router 
         from case_taking_router import router as case_taking_router
+        from sms_gateway import router as sms_gateway_router
+        from sms_gateway import normalize_phone ,build_sms_text
     except ImportError :
         from training import train_malaria 
         from training .train_malaria import MalariaFeatureExtractor 
@@ -52,6 +56,8 @@ except ImportError :
         from api import analyzer_service 
         from api .operations_router import router as operations_router 
         from api .case_taking_router import router as case_taking_router
+        from api .sms_gateway import router as sms_gateway_router
+        from api .sms_gateway import normalize_phone ,build_sms_text
 
 sys .modules ['train_malaria']=train_malaria 
 
@@ -131,6 +137,7 @@ allow_headers =["*"],
 
 app .include_router (operations_router )
 app .include_router (case_taking_router )
+app .include_router (sms_gateway_router )
 
 MODELS_DIR =os .path .abspath (os .path .join (os .path .dirname (__file__ ),'..','models'))
 FRONTEND_DIR =os .path .abspath (os .path .join (os .path .dirname (__file__ ),'..','frontend'))
@@ -1343,6 +1350,16 @@ class CreateReminderRequest (BaseModel ):
     frequency :Optional [str ]="once"
     sent_by :Optional [str ]="Dr. Medicover Clinical Desk"
     issue_id :Optional [str ]=None 
+    # ── SMS fields (all optional for backward compatibility) ──────────────────
+    notification_channel :Optional [str ]="portal"  # 'portal','sms','portal_sms'
+    send_sms :Optional [bool ]=False 
+    scheduled_time :Optional [str ]=None 
+    medication_name :Optional [str ]=None 
+    dosage :Optional [str ]=None 
+    dose_unit :Optional [str ]=None 
+    administration_time :Optional [str ]=None 
+    duration :Optional [str ]=None 
+    instructions :Optional [str ]=None 
 
 
 @app .post ("/api/issues/report",tags =["Patient Reported Issues"])
@@ -1402,7 +1419,11 @@ def send_care_reminder (
 body :CreateReminderRequest ,
 auth :Dict [str ,Any ]=Depends (require_authenticated_user )
 ):
-    """Doctor dispatches a health checkup, diagnosis follow-up, or daily care reminder to a patient."""
+    """Doctor dispatches a health checkup, diagnosis follow-up, or daily care reminder to a patient.
+    Optionally queues an SMS via the Android SIM gateway when send_sms=True or
+    notification_channel includes 'sms'. Fully backward-compatible — all existing
+    clients that omit the new SMS fields continue to work unchanged.
+    """
     if auth .get ("role")!="admin":
         raise HTTPException (status_code =403 ,detail ="Only clinical staff can create patient care reminders.")
 
@@ -1416,7 +1437,54 @@ auth :Dict [str ,Any ]=Depends (require_authenticated_user )
     sent_by =body .sent_by or "Dr. Medicover Clinical Desk",
     issue_id =body .issue_id 
     )
-    return {"status":"success","message":"Care reminder dispatched to patient.","reminder":created }
+
+    # ── SMS Queuing (optional, non-breaking) ──────────────────────────────────
+    sms_result = None
+    wants_sms = body .send_sms or (body .notification_channel and 'sms' in body .notification_channel .lower ())
+    if wants_sms :
+        try :
+            # Look up patient phone number
+            conn = db .get_db_connection ()
+            cursor = conn .cursor ()
+            cursor .execute ("SELECT name, contact FROM patients WHERE patient_id = ?",(body .patient_id ,))
+            pat = cursor .fetchone ()
+            conn .close ()
+
+            if not pat or not pat ['contact']:
+                sms_result = {"sms_queued":False ,"sms_error":"No phone number registered for this patient."}
+            else :
+                phone = normalize_phone (pat ['contact'])
+                if not phone :
+                    sms_result = {"sms_queued":False ,"sms_error":f"Invalid phone number: {pat ['contact']}"}
+                else :
+                    sms_text = build_sms_text (
+                    patient_name =pat ['name'],
+                    message_type =body .reminder_type ,
+                    custom_message =body .message ,
+                    medication_name =body .medication_name or "",
+                    dosage =body .dosage or "",
+                    dose_unit =body .dose_unit or "",
+                    administration_time =body .administration_time or "",
+                    due_date =body .due_date or "",
+                    doctor_name =body .sent_by or "",
+                    )
+                    entry = db .create_sms_outbox_entry (
+                    patient_id =body .patient_id ,
+                    phone_number =phone ,
+                    message =sms_text ,
+                    message_type =body .reminder_type ,
+                    reminder_id =created ['id'],
+                    scheduled_at =body .scheduled_time ,
+                    )
+                    sms_result = {"sms_queued":True ,"sms_id":entry ['id'],"sms_status":"queued"}
+        except Exception as sms_ex :
+            print (f"[SMS-QUEUE-ERR] Failed to queue SMS: {sms_ex }")
+            sms_result = {"sms_queued":False ,"sms_error":str (sms_ex )}
+
+    response = {"status":"success","message":"Care reminder dispatched to patient.","reminder":created }
+    if sms_result :
+        response .update (sms_result )
+    return response 
 
 
 @app .get ("/api/reminders/{patient_id}",tags =["Doctor Care Reminders"])

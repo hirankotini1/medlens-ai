@@ -46,11 +46,14 @@ def verify_secret (secret :str ,stored_hash :str )->bool :
 
 
 
-def get_db_connection ():
-    conn =sqlite3 .connect (DB_PATH )
-    conn .row_factory =sqlite3 .Row 
-
-    conn .execute ("PRAGMA foreign_keys = ON")
+def get_db_connection():
+    conn = sqlite3.connect(DB_PATH, timeout=30.0)
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys = ON")
+    try:
+        conn.execute("PRAGMA journal_mode = WAL")
+    except Exception:
+        pass
     return conn 
 
 def init_db ():
@@ -319,6 +322,43 @@ def init_db ():
         FOREIGN KEY (case_id) REFERENCES clinical_cases (case_id) ON DELETE CASCADE
     );
     """)
+
+    # ── SMS Gateway Tables (safe migration — CREATE IF NOT EXISTS) ──────────────
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS gateway_devices (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        device_id TEXT UNIQUE NOT NULL,
+        device_name TEXT NOT NULL,
+        auth_token_hash TEXT NOT NULL,
+        status TEXT DEFAULT 'active',
+        last_seen_at TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+    );
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS sms_outbox (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        patient_id TEXT,
+        phone_number TEXT NOT NULL,
+        message TEXT NOT NULL,
+        message_type TEXT NOT NULL DEFAULT 'custom',
+        reminder_id TEXT,
+        status TEXT NOT NULL DEFAULT 'queued',
+        priority INTEGER DEFAULT 5,
+        scheduled_at TEXT,
+        attempt_count INTEGER DEFAULT 0,
+        last_attempt_at TEXT,
+        sent_at TEXT,
+        failed_at TEXT,
+        failure_reason TEXT,
+        gateway_device_id TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+    );
+    """)
+    # ── End SMS Gateway Tables ──────────────────────────────────────────────────
 
     cursor .execute ("PRAGMA table_info(patients)")
     cols =[r ['name']for r in cursor .fetchall ()]
@@ -1383,16 +1423,24 @@ def get_patient_reminders (patient_id :str ,status :Optional [str ]=None )->List
     cursor =conn .cursor ()
     _ensure_issues_and_reminders_tables (cursor )
 
-    query ="SELECT * FROM patient_care_reminders WHERE patient_id = ?"
-    params =[patient_id ]
-    if status :
-        query +=" AND status = ?"
-        params .append (status )
+    query = """
+        SELECT r.*, s.id AS sms_id, s.status AS sms_status, s.sent_at AS sms_sent_at
+        FROM patient_care_reminders r
+        LEFT JOIN (
+            SELECT reminder_id, MAX(id) as max_id FROM sms_outbox WHERE reminder_id IS NOT NULL GROUP BY reminder_id
+        ) latest_sms ON r.id = latest_sms.reminder_id
+        LEFT JOIN sms_outbox s ON s.id = latest_sms.max_id
+        WHERE r.patient_id = ?
+    """
+    params = [patient_id]
+    if status:
+        query += " AND r.status = ?"
+        params.append(status)
 
-    query +=" ORDER BY created_at DESC"
-    cursor .execute (query ,tuple (params ))
-    rows =[dict (r )for r in cursor .fetchall ()]
-    conn .close ()
+    query += " ORDER BY r.created_at DESC"
+    cursor.execute(query, tuple(params))
+    rows = [dict(r) for r in cursor.fetchall()]
+    conn.close()
     return rows 
 
 
@@ -1818,3 +1866,314 @@ def doctor_review_case(
  
 
 
+# ==============================================================================
+# SMS GATEWAY DATABASE HELPERS
+# ==============================================================================
+
+def register_gateway_device(
+    device_id: str,
+    device_name: str,
+    raw_token: str
+) -> Dict[str, Any]:
+    """Registers or updates an Android SMS gateway device."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    now_iso = datetime.now().isoformat()
+    token_hash = hash_secret(raw_token)
+
+    cursor.execute("SELECT id FROM gateway_devices WHERE device_id = ?", (device_id,))
+    existing = cursor.fetchone()
+    if existing:
+        cursor.execute("""
+        UPDATE gateway_devices SET device_name = ?, auth_token_hash = ?, status = 'active',
+        last_seen_at = ?, updated_at = ? WHERE device_id = ?
+        """, (device_name, token_hash, now_iso, now_iso, device_id))
+    else:
+        cursor.execute("""
+        INSERT INTO gateway_devices (device_id, device_name, auth_token_hash, status, last_seen_at, created_at, updated_at)
+        VALUES (?, ?, ?, 'active', ?, ?, ?)
+        """, (device_id, device_name, token_hash, now_iso, now_iso, now_iso))
+
+    conn.commit()
+    conn.close()
+    return {"device_id": device_id, "device_name": device_name, "status": "active", "registered_at": now_iso}
+
+
+def get_gateway_device_by_token(raw_token: str) -> Optional[Dict[str, Any]]:
+    """Looks up a gateway device by verifying a raw token against stored hashes."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM gateway_devices WHERE status = 'active'")
+    rows = cursor.fetchall()
+    conn.close()
+    for row in rows:
+        d = dict(row)
+        if verify_secret(raw_token, d["auth_token_hash"]):
+            return d
+    return None
+
+
+def touch_gateway_device(device_id: str) -> None:
+    """Updates last_seen_at for heartbeat tracking."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    now_iso = datetime.now().isoformat()
+    cursor.execute(
+        "UPDATE gateway_devices SET last_seen_at = ?, updated_at = ? WHERE device_id = ?",
+        (now_iso, now_iso, device_id)
+    )
+    conn.commit()
+    conn.close()
+
+
+def create_sms_outbox_entry(
+    patient_id: str,
+    phone_number: str,
+    message: str,
+    message_type: str = "custom",
+    reminder_id: Optional[str] = None,
+    scheduled_at: Optional[str] = None,
+    priority: int = 5
+) -> Dict[str, Any]:
+    """Creates a new SMS entry in the outbox queue with status=queued."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    now_iso = datetime.now().isoformat()
+
+    cursor.execute("""
+    INSERT INTO sms_outbox (
+        patient_id, phone_number, message, message_type, reminder_id,
+        status, priority, scheduled_at, attempt_count,
+        created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, 'queued', ?, ?, 0, ?, ?)
+    """, (patient_id, phone_number, message, message_type, reminder_id,
+          priority, scheduled_at, now_iso, now_iso))
+
+    sms_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+    print(f"[SMS-QUEUE] Queued SMS id={sms_id} to ***{phone_number[-4:]} type={message_type}")
+    return {"id": sms_id, "patient_id": patient_id, "message_type": message_type,
+            "status": "queued", "created_at": now_iso}
+
+
+def get_sms_queue(limit: int = 10) -> List[Dict[str, Any]]:
+    """Returns pending queued SMS messages ready to be sent.
+    Also recovers stale 'processing' entries older than 5 minutes back to 'queued'."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    now_iso = datetime.now().isoformat()
+
+    # Recover stale processing entries (> 5 min) back to queued
+    cursor.execute("""
+    UPDATE sms_outbox SET status = 'queued', gateway_device_id = NULL, updated_at = ?
+    WHERE status = 'processing'
+    AND last_attempt_at < datetime('now', '-5 minutes')
+    AND attempt_count < 3
+    """, (now_iso,))
+
+    # Mark permanently failed (3+ attempts)
+    cursor.execute("""
+    UPDATE sms_outbox SET status = 'failed', failure_reason = 'Max retries exceeded', updated_at = ?
+    WHERE status = 'queued' AND attempt_count >= 3
+    """, (now_iso,))
+
+    cursor.execute("""
+    SELECT * FROM sms_outbox
+    WHERE status = 'queued'
+    AND (scheduled_at IS NULL OR scheduled_at <= ?)
+    ORDER BY priority ASC, created_at ASC
+    LIMIT ?
+    """, (now_iso, limit))
+
+    rows = [dict(r) for r in cursor.fetchall()]
+    conn.commit()
+    conn.close()
+    return rows
+
+
+def claim_sms_message(sms_id: int, device_id: str) -> Optional[Dict[str, Any]]:
+    """Gateway claims a message for sending. Prevents duplicate sends."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    now_iso = datetime.now().isoformat()
+
+    # Only claim if still queued (atomic check)
+    cursor.execute("""
+    UPDATE sms_outbox
+    SET status = 'processing', gateway_device_id = ?, last_attempt_at = ?,
+        attempt_count = attempt_count + 1, updated_at = ?
+    WHERE id = ? AND status = 'queued'
+    """, (device_id, now_iso, now_iso, sms_id))
+
+    if cursor.rowcount == 0:
+        conn.close()
+        return None  # Already claimed or not queued
+
+    conn.commit()
+    cursor.execute("SELECT * FROM sms_outbox WHERE id = ?", (sms_id,))
+    row = cursor.fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+
+def update_sms_status(
+    sms_id: int,
+    device_id: str,
+    status: str,  # 'sent' or 'failed'
+    failure_reason: Optional[str] = None
+) -> Optional[Dict[str, Any]]:
+    """Gateway reports final SMS delivery status."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    now_iso = datetime.now().isoformat()
+
+    if status == "sent":
+        cursor.execute("""
+        UPDATE sms_outbox SET status = 'sent', sent_at = ?, updated_at = ?
+        WHERE id = ? AND gateway_device_id = ? AND status = 'processing'
+        """, (now_iso, now_iso, sms_id, device_id))
+        print(f"[SMS-SENT] SMS id={sms_id} marked SENT by device={device_id}")
+    elif status == "failed":
+        cursor.execute("""
+        UPDATE sms_outbox
+        SET status = 'failed', failed_at = ?, failure_reason = ?,
+            updated_at = ?
+        WHERE id = ? AND gateway_device_id = ? AND status = 'processing'
+        """, (now_iso, failure_reason or "Gateway reported failure", now_iso, sms_id, device_id))
+        print(f"[SMS-FAIL] SMS id={sms_id} FAILED reason={failure_reason}")
+    else:
+        conn.close()
+        return None
+
+    if cursor.rowcount == 0:
+        conn.close()
+        return None  # Not owned by this device or already finalized
+
+    conn.commit()
+    cursor.execute("SELECT * FROM sms_outbox WHERE id = ?", (sms_id,))
+    row = cursor.fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+
+def retry_sms_message(sms_id: int) -> Optional[Dict[str, Any]]:
+    """Resets a failed SMS back to queued for retry."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    now_iso = datetime.now().isoformat()
+
+    cursor.execute("""
+    UPDATE sms_outbox
+    SET status = 'queued', failure_reason = NULL, failed_at = NULL,
+        gateway_device_id = NULL, updated_at = ?
+    WHERE id = ? AND status = 'failed'
+    """, (now_iso, sms_id))
+
+    if cursor.rowcount == 0:
+        conn.close()
+        return None
+
+    conn.commit()
+    cursor.execute("SELECT * FROM sms_outbox WHERE id = ?", (sms_id,))
+    row = cursor.fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+
+def cancel_sms_message(sms_id: int) -> Optional[Dict[str, Any]]:
+    """Cancels a queued SMS."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    now_iso = datetime.now().isoformat()
+
+    cursor.execute("""
+    UPDATE sms_outbox SET status = 'cancelled', updated_at = ?
+    WHERE id = ? AND status IN ('queued')
+    """, (now_iso, sms_id))
+
+    if cursor.rowcount == 0:
+        conn.close()
+        return None
+
+    conn.commit()
+    cursor.execute("SELECT * FROM sms_outbox WHERE id = ?", (sms_id,))
+    row = cursor.fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+
+def get_sms_history(
+    patient_id: Optional[str] = None,
+    status: Optional[str] = None,
+    limit: int = 50
+) -> List[Dict[str, Any]]:
+    """Returns SMS history with patient name joined."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    query = """
+    SELECT s.*, p.name as patient_name
+    FROM sms_outbox s
+    LEFT JOIN patients p ON s.patient_id = p.patient_id
+    WHERE 1=1
+    """
+    params: List[Any] = []
+    if patient_id:
+        query += " AND s.patient_id = ?"
+        params.append(patient_id)
+    if status:
+        query += " AND s.status = ?"
+        params.append(status)
+    query += " ORDER BY s.id DESC LIMIT ?"
+    params.append(limit)
+
+    cursor.execute(query, tuple(params))
+    rows = [dict(r) for r in cursor.fetchall()]
+    conn.close()
+    # Mask phone numbers in returned data: show last 4 digits only
+    for r in rows:
+        ph = r.get("phone_number", "")
+        if ph and len(ph) > 4:
+            r["phone_number_masked"] = "*" * (len(ph) - 4) + ph[-4:]
+    return rows
+
+
+def get_sms_daily_count(device_id: Optional[str] = None) -> Dict[str, int]:
+    """Returns today's SMS count (sent + processing)."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    today = datetime.now().strftime("%Y-%m-%d")
+
+    query = """
+    SELECT COUNT(*) as total FROM sms_outbox
+    WHERE status IN ('sent', 'processing')
+    AND date(created_at) = ?
+    """
+    params: List[Any] = [today]
+    if device_id:
+        query += " AND gateway_device_id = ?"
+        params.append(device_id)
+
+    cursor.execute(query, tuple(params))
+    total = cursor.fetchone()["total"]
+
+    cursor.execute("""
+    SELECT COUNT(*) as sent_count FROM sms_outbox
+    WHERE status = 'sent' AND date(created_at) = ?
+    """, (today,))
+    sent = cursor.fetchone()["sent_count"]
+
+    cursor.execute("""
+    SELECT COUNT(*) as failed_count FROM sms_outbox
+    WHERE status = 'failed' AND date(created_at) = ?
+    """, (today,))
+    failed = cursor.fetchone()["failed_count"]
+
+    cursor.execute("""
+    SELECT COUNT(*) as queued_count FROM sms_outbox WHERE status = 'queued'
+    """)
+    queued = cursor.fetchone()["queued_count"]
+
+    conn.close()
+    return {"today_total": total, "sent": sent, "failed": failed, "queued": queued}

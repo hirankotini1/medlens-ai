@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">MedLens SMS Gateway</string>
+    <string name="title_dashboard">MedLens SIM Gateway Dashboard</string>
+    <string name="title_settings">Gateway Configuration</string>
+</resources>
