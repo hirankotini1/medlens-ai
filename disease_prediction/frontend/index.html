@@ -39,6 +39,9 @@
             <button type="button" class="nav-btn" id="tab-patient" onclick="switchView('patient')">
                 <span class="material-symbols-outlined">description</span> Patient Portal
             </button>
+            <button type="button" class="nav-btn" id="tab-case-taking" onclick="launchClinicalCaseTaking()">
+                <span class="material-symbols-outlined">clinical_notes</span> Case Taking
+            </button>
             <button type="button" class="nav-btn" id="tab-analyzer" onclick="switchView('analyzer')">
                 <span class="material-symbols-outlined">analytics</span> AI Analyzer
             </button>
@@ -335,6 +338,25 @@
                 </div>
 
 
+                <div class="card" style="background: linear-gradient(135deg, #f0f9ff, #e0f2fe); border: 2px solid #38bdf8; margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span class="material-symbols-outlined" style="font-size: 36px; color: #0284c7; background: #ffffff; padding: 8px; border-radius: 12px; box-shadow: 0 2px 8px rgba(2,132,199,0.15);">clinical_notes</span>
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <span style="font-size: 0.72rem; font-weight: 800; text-transform: uppercase; background: #0284c7; color: white; padding: 2px 8px; border-radius: 999px;">SIH Case-Taking</span>
+                                    <span style="font-size: 0.72rem; color: #0369a1; font-weight: 700;">Pre-Consultation Intake</span>
+                                </div>
+                                <h3 style="margin: 4px 0 2px 0; font-size: 1.15rem; color: #0c4a6e;">Record Your Complete Medical History (Voice &amp; Text)</h3>
+                                <p style="margin: 0; font-size: 0.82rem; color: #475569;">Prepare a physician-ready clinical case sheet with voice input, medical documents, and adaptive questions before your doctor consultation.</p>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-primary" style="background: linear-gradient(135deg, #0284c7, #0369a1); font-weight: 800; padding: 10px 20px; font-size: 0.88rem; box-shadow: 0 4px 12px rgba(2,132,199,0.3);" onclick="launchClinicalCaseTaking()">
+                            <span class="material-symbols-outlined" style="font-size: 18px;">mic</span> Start Case Taking →
+                        </button>
+                    </div>
+                </div>
+
                 
                 <div class="card">
                     <div class="card-header">
@@ -499,6 +521,9 @@
                             <button type="button" class="btn-secondary" id="btn-adm-tab-reminders" onclick="switchAdminSubtab('reminders')">
                                 🔔 Care Directives &amp; Reminders
                             </button>
+                            <button type="button" class="btn-secondary" id="btn-adm-tab-cases" onclick="switchAdminSubtab('cases')" style="border-color: #0284c7; color: #0284c7; font-weight: 700;">
+                                📋 Clinical Cases (SIH)
+                            </button>
                         </div>
                     </div>
 
@@ -586,6 +611,19 @@
                             </thead>
                             <tbody id="admin-reminders-table-body"></tbody>
                         </table>
+                    </div>
+
+                    
+                    <div id="adm-cases-container" class="table-responsive" style="display: none;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                            <div style="font-size: 0.85rem; color: var(--text-muted);">
+                                Pre-consultation patient clinical histories recorded via natural conversation, voice, and medical documents.
+                            </div>
+                            <button type="button" class="btn-secondary" style="font-size: 0.8rem; padding: 4px 10px;" onclick="loadDoctorClinicalCases()">
+                                🔄 Refresh Cases
+                            </button>
+                        </div>
+                        <div id="doctor-case-list" style="display: flex; flex-direction: column; gap: 12px;"></div>
                     </div>
                 </div>
 
@@ -2494,6 +2532,234 @@
         </div>
     </div>
 
+
+    <!-- ======================================================================
+         SIH PATIENT CASE-TAKING SOFTWARE VIEW
+         ====================================================================== -->
+    <section id="view-case-taking" class="section-view">
+        <div class="subpage-division-banner" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: #ffffff; border: none;">
+            <span style="display: flex; align-items: center; gap: 8px;">
+                <span class="material-symbols-outlined" style="font-size: 20px;">clinical_notes</span> 
+                <strong>PATIENT CLINICAL CASE-TAKING SYSTEM</strong> &bull; SIH Pre-Consultation History Engine
+            </span>
+            <span id="case-patient-badge" style="font-size: 0.74rem; background: rgba(255,255,255,0.2); padding: 2px 10px; border-radius: 999px; color: #ffffff; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+                <span class="material-symbols-outlined" style="font-size: 14px;">person</span> Patient Active
+            </span>
+        </div>
+
+        <!-- STEP 1: CONSENT & MOCK ABHA / INTAKE -->
+        <div id="case-step-consent" class="card" style="max-width: 780px; margin: 20px auto; padding: 28px;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <span class="material-symbols-outlined" style="font-size: 36px; color: #0284c7; background: #e0f2fe; padding: 10px; border-radius: 12px;">lock_person</span>
+                <div>
+                    <h2 style="font-size: 1.35rem; color: #0f172a; margin: 0;">Informed Consent &amp; Case Setup</h2>
+                    <div style="font-size: 0.82rem; color: #64748b;">SIH Standard Clinical History Protocol</div>
+                </div>
+            </div>
+
+            <!-- ABHA / ABDM Ready Section -->
+            <div class="case-abha-card" style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span class="material-symbols-outlined" style="color: #0284c7;">badge</span>
+                        <strong style="font-size: 0.9rem; color: #1e293b;">ABHA / ABDM Profile (Integration Ready)</strong>
+                        <span style="font-size: 0.7rem; background: #e2e8f0; color: #475569; padding: 2px 6px; border-radius: 4px; font-weight: 700;">DEMO / MOCK ABHA</span>
+                    </div>
+                    <button type="button" class="btn-secondary" style="font-size: 0.76rem; padding: 4px 10px;" onclick="generateMockAbhaNumber()">
+                        <span>⚡</span> Generate Mock ABHA
+                    </button>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div>
+                        <label style="font-size: 0.78rem; font-weight: 700; color: #475569;">ABHA Number</label>
+                        <input type="text" id="case-abha-input" class="search-input" placeholder="e.g. 91-1234-5678-9012" value="91-4589-2041-8832 (Demo ABHA)">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.78rem; font-weight: 700; color: #475569;">ABHA Address</label>
+                        <input type="text" id="case-abha-address" class="search-input" placeholder="e.g. patient.4589@abdm" value="patient.medicover@abdm">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Consent Box -->
+            <div style="background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+                <div style="font-size: 0.86rem; font-weight: 800; color: #166534; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">verified_user</span> Patient Data Processing &amp; Medical Intake Disclosure
+                </div>
+                <p style="font-size: 0.8rem; color: #14532d; line-height: 1.5; margin: 0 0 10px 0;">
+                    By continuing, you voluntarily consent to recording your medical symptoms, pre-existing health conditions, medications, and attached diagnostic files. This structured history will be summarized for review and verification by attending clinical staff and physicians. All inputs are securely encrypted and kept confidential.
+                </p>
+                <label style="display: flex; align-items: center; gap: 8px; font-size: 0.84rem; font-weight: 700; color: #166534; cursor: pointer;">
+                    <input type="checkbox" id="case-consent-checkbox" checked style="width: 18px; height: 18px; accent-color: #16a34a;">
+                    I understand and give informed consent to record my clinical history.
+                </label>
+            </div>
+
+            <!-- Initial Chief Complaint -->
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label style="font-size: 0.84rem; font-weight: 700; color: #1e293b;">Primary Reason for Consultation / Chief Complaint *</label>
+                <textarea id="case-initial-complaint" class="search-input" rows="3" placeholder="Briefly describe what symptoms you are experiencing today (e.g., severe chest discomfort, high fever with chills, persistent abdominal pain)..."></textarea>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn-secondary" onclick="switchView('patient')">Cancel</button>
+                <button type="button" class="btn-primary" style="background: linear-gradient(135deg, #0284c7, #0369a1); font-weight: 800; padding: 10px 24px;" onclick="handleCaseConsentSubmit(event)">
+                    <span>✓</span> Agree &amp; Start Guided History →
+                </button>
+            </div>
+        </div>
+
+        <!-- STEP 2: GUIDED 10-SECTION WIZARD -->
+        <div id="case-step-wizard" style="display: none; max-width: 860px; margin: 20px auto;">
+            <!-- Progress Header -->
+            <div class="card" style="padding: 16px 20px; margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.84rem;">
+                    <span id="case-progress-label" style="font-weight: 700; color: #0284c7;">Section 1 of 10</span>
+                    <span style="font-size: 0.76rem; color: #64748b;">Step-by-Step Guided Clinical Intake</span>
+                </div>
+                <div style="background: #e2e8f0; height: 8px; border-radius: 999px; overflow: hidden;">
+                    <div id="case-progress-bar" style="background: linear-gradient(90deg, #0284c7, #38bdf8); height: 100%; width: 10%; transition: width 0.3s ease;"></div>
+                </div>
+            </div>
+
+            <!-- Main Wizard Card -->
+            <div class="card" style="padding: 24px;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                    <span class="material-symbols-outlined" id="case-section-icon" style="font-size: 26px; color: #0284c7;">chat_bubble</span>
+                    <h2 id="case-section-title" style="font-size: 1.25rem; margin: 0; color: #0f172a;">Chief Complaint</h2>
+                </div>
+                <p id="case-section-desc" style="font-size: 0.82rem; color: #64748b; margin: 0 0 16px 0;">Primary symptom or reason for medical consultation.</p>
+
+                <!-- Voice Input Section -->
+                <div class="case-voice-bar" style="background: #f8fafc; border: 1.5px dashed #38bdf8; border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <button type="button" id="case-mic-btn" class="case-mic-button" onclick="toggleVoiceRecording()" title="Click to start/stop speaking">
+                            <span class="material-symbols-outlined" style="font-size: 24px;">mic</span>
+                        </button>
+                        <span id="case-mic-status" style="font-size: 0.84rem; color: #334155; font-weight: 600;">Click microphone to record with your voice</span>
+                    </div>
+                    <span style="font-size: 0.74rem; color: #64748b; background: #ffffff; padding: 3px 8px; border-radius: 6px; border: 1px solid #e2e8f0;">🎙️ Speech-to-Text &bull; Instant Text Edit</span>
+                </div>
+
+                <!-- Main Textarea Input -->
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <textarea id="case-section-input" class="search-input" rows="4" placeholder="Speak or type your clinical details here..."></textarea>
+                </div>
+
+                <!-- Quick Symptom / Answer Chips -->
+                <div style="margin-bottom: 16px;">
+                    <div style="font-size: 0.74rem; font-weight: 700; color: #475569; text-transform: uppercase; margin-bottom: 6px;">Quick Presets &amp; Options (Click to add):</div>
+                    <div id="case-section-chips" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+                </div>
+
+                <!-- Adaptive Question Box (Appears when applicable) -->
+                <div id="case-adaptive-container" style="display: none; margin-bottom: 16px;"></div>
+
+                <!-- Document Attachment Sub-Panel -->
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 16px; margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
+                        <div style="font-size: 0.8rem; font-weight: 700; color: #334155; display: flex; align-items: center; gap: 6px;">
+                            <span class="material-symbols-outlined" style="font-size: 16px; color: #0284c7;">attach_file</span> Attach Medical Reports or Prescriptions
+                        </div>
+                        <label class="btn-secondary" style="font-size: 0.74rem; padding: 3px 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                            <span class="material-symbols-outlined" style="font-size: 14px;">upload_file</span> Upload PDF / Photo
+                            <input type="file" accept=".pdf,.png,.jpg,.jpeg,.txt" style="display: none;" onchange="handleCaseFileUpload(event)">
+                        </label>
+                    </div>
+                    <div id="case-attached-badges" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px;"></div>
+                    <div id="case-doc-attach-list" style="display: flex; flex-direction: column; gap: 6px;"></div>
+                </div>
+
+                <!-- Optional AYUSH Profile Accordion -->
+                <details class="case-ayush-accordion" style="background: #fdfbf7; border: 1.5px solid #fde68a; border-radius: 10px; padding: 10px 14px; margin-bottom: 20px;">
+                    <summary style="font-size: 0.84rem; font-weight: 700; color: #92400e; cursor: pointer;">
+                        🌿 Optional: AYUSH Constitutional History (Prakriti &amp; Lifestyle)
+                    </summary>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; font-size: 0.8rem;">
+                        <div class="form-group">
+                            <label>Prakriti (Constitutional Type)</label>
+                            <select id="ayush-prakriti-select" class="search-input" style="font-size: 0.8rem;">
+                                <option value="">-- Optional / None --</option>
+                                <option value="Vata Dominant (Lean, active, dry skin)">Vata Dominant</option>
+                                <option value="Pitta Dominant (Medium build, warm, sharp digestion)">Pitta Dominant</option>
+                                <option value="Kapha Dominant (Solid build, calm, slow digestion)">Kapha Dominant</option>
+                                <option value="Vata-Pitta">Vata-Pitta</option>
+                                <option value="Pitta-Kapha">Pitta-Kapha</option>
+                                <option value="Tridoshic (Balanced)">Tridoshic (Balanced)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Agni &amp; Ahara Shakti (Digestion)</label>
+                            <select id="ayush-agni-select" class="search-input" style="font-size: 0.8rem;">
+                                <option value="">-- Optional / None --</option>
+                                <option value="Sama Agni (Balanced appetite)">Sama Agni (Balanced)</option>
+                                <option value="Tikshna Agni (Intense hunger, hyperacidity)">Tikshna Agni (Hyperacidic)</option>
+                                <option value="Manda Agni (Sluggish digestion)">Manda Agni (Sluggish)</option>
+                                <option value="Visham Agni (Irregular)">Visham Agni (Irregular)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Vyayama Shakti (Physical Stamina)</label>
+                            <select id="ayush-vyayama-select" class="search-input" style="font-size: 0.8rem;">
+                                <option value="">-- Optional / None --</option>
+                                <option value="Uttama (High stamina)">Uttama (High)</option>
+                                <option value="Madhyama (Moderate stamina)">Madhyama (Moderate)</option>
+                                <option value="Avara (Easily fatigued)">Avara (Low)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Sattva (Stress Tolerance)</label>
+                            <select id="ayush-sattva-select" class="search-input" style="font-size: 0.8rem;">
+                                <option value="">-- Optional / None --</option>
+                                <option value="Pravara (High resilience)">Pravara (High)</option>
+                                <option value="Madhyama (Moderate resilience)">Madhyama (Moderate)</option>
+                                <option value="Avara (High anxiety)">Avara (Low)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top: 8px;">
+                        <label style="font-size: 0.78rem; font-weight: 700; color: #475569;">Ahara &amp; Vihara (Dietary habits &amp; daily lifestyle patterns)</label>
+                        <input type="text" id="ayush-lifestyle-input" class="search-input" placeholder="e.g., Irregular meal timings, spicy food intake, late night sleep..." style="font-size: 0.8rem;">
+                    </div>
+                </details>
+
+                <!-- Navigation Controls -->
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px solid #e2e8f0;">
+                    <button type="button" class="btn-secondary" onclick="navigatePreviousSection()">
+                        ← Previous Section
+                    </button>
+                    <div style="display: flex; gap: 8px;">
+                        <button type="button" class="btn-secondary" onclick="saveCurrentSectionAndNext()" style="color: #64748b;">
+                            Skip Section
+                        </button>
+                        <button type="button" class="btn-primary" style="background: linear-gradient(135deg, #0284c7, #0369a1); font-weight: 800; padding: 8px 20px;" onclick="saveCurrentSectionAndNext()">
+                            Save &amp; Next →
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 3: PHYSICIAN-READY SUMMARY & SUBMISSION -->
+        <div id="case-step-summary" style="display: none; max-width: 900px; margin: 20px auto;">
+            <div id="case-summary-content"></div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding: 16px 20px; background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0;">
+                <button type="button" class="btn-secondary" onclick="document.getElementById('case-step-summary').style.display='none'; document.getElementById('case-step-wizard').style.display='block'; renderCurrentSection();">
+                    ← Edit My History
+                </button>
+                <div style="display: flex; gap: 10px;">
+                    <button type="button" class="btn-secondary" onclick="window.print()">
+                        <span class="material-symbols-outlined" style="font-size: 16px;">print</span> Print Summary Sheet
+                    </button>
+                    <button type="button" class="btn-primary" style="background: linear-gradient(135deg, #16a34a, #15803d); font-weight: 800; padding: 10px 24px;" onclick="finishCaseTaking()">
+                        <span class="material-symbols-outlined">check_circle</span> Submit to Doctor Console &bull; Complete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
     
     
     
@@ -3098,9 +3364,31 @@
                         </button>
                     </div>
                 </form>
+        <!-- ======================================================================
+             DOCTOR CLINICAL CASE REVIEW MODAL
+             ====================================================================== -->
+        <div id="modal-doctor-case-review" class="modal-backdrop" style="display: none;" onclick="if(event.target === this) closeDoctorCaseReviewModal()">
+            <div class="modal-dialog ops-modal-lg" style="max-width: 720px;">
+                <div class="modal-header">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="material-symbols-outlined" style="color: #0284c7; font-size: 24px;">clinical_notes</span>
+                        <h2 style="font-size: 1.2rem; margin: 0; color: #0f172a;">Doctor Clinical Case Review &amp; Sign-off</h2>
+                    </div>
+                    <button type="button" class="modal-close-btn" onclick="closeDoctorCaseReviewModal()">&times;</button>
+                </div>
+                <div class="modal-body" style="padding: 20px; max-height: 75vh; overflow-y: auto;">
+                    <div id="doc-case-review-body"></div>
+                </div>
+                <div class="modal-footer" style="display: flex; justify-content: space-between; padding: 12px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0;">
+                    <button type="button" class="btn-secondary" onclick="closeDoctorCaseReviewModal()">Cancel</button>
+                    <button type="button" class="btn-primary" style="background: linear-gradient(135deg, #16a34a, #15803d); font-weight: 800;" onclick="submitDoctorCaseSignoff()">
+                        <span class="material-symbols-outlined">verified</span> Confirm Case Sheet &amp; Sign Off
+                    </button>
+                </div>
             </div>
         </div>
 
     <script src="app.js?v=20260830_rbac_strict_v6"></script>
+    <script src="case_taking.js?v=20260904_sih_v1"></script>
 </body>
 </html>

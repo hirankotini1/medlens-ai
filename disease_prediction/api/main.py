@@ -36,6 +36,7 @@ try :
     from disease_prediction .api import database as db 
     from disease_prediction .api import analyzer_service 
     from disease_prediction .api .operations_router import router as operations_router 
+    from disease_prediction .api .case_taking_router import router as case_taking_router
 except ImportError :
     try :
         import train_malaria 
@@ -43,12 +44,14 @@ except ImportError :
         import database as db 
         import analyzer_service 
         from operations_router import router as operations_router 
+        from case_taking_router import router as case_taking_router
     except ImportError :
         from training import train_malaria 
         from training .train_malaria import MalariaFeatureExtractor 
         from api import database as db 
         from api import analyzer_service 
         from api .operations_router import router as operations_router 
+        from api .case_taking_router import router as case_taking_router
 
 sys .modules ['train_malaria']=train_malaria 
 
@@ -127,6 +130,7 @@ allow_headers =["*"],
 )
 
 app .include_router (operations_router )
+app .include_router (case_taking_router )
 
 MODELS_DIR =os .path .abspath (os .path .join (os .path .dirname (__file__ ),'..','models'))
 FRONTEND_DIR =os .path .abspath (os .path .join (os .path .dirname (__file__ ),'..','frontend'))
@@ -159,8 +163,19 @@ def get_model (disease_key :str ):
             status_code =status .HTTP_503_SERVICE_UNAVAILABLE ,
             detail =f"Model for {disease_key } is unavailable at {model_path }."
             )
-        loaded_models [disease_key ]=joblib .load (model_path )
-    return loaded_models [disease_key ]
+        model_obj = joblib.load(model_path)
+        if hasattr(model_obj, "named_steps"):
+            for step_name, step_obj in model_obj.named_steps.items():
+                if hasattr(step_obj, "__class__") and "LogisticRegression" in step_obj.__class__.__name__:
+                    if not hasattr(step_obj, "multi_class"):
+                        step_obj.multi_class = "auto"
+        elif isinstance(model_obj, dict) and "pipeline" in model_obj and hasattr(model_obj["pipeline"], "named_steps"):
+            for step_name, step_obj in model_obj["pipeline"].named_steps.items():
+                if hasattr(step_obj, "__class__") and "LogisticRegression" in step_obj.__class__.__name__:
+                    if not hasattr(step_obj, "multi_class"):
+                        step_obj.multi_class = "auto"
+        loaded_models[disease_key] = model_obj
+    return loaded_models[disease_key]
 
 
 

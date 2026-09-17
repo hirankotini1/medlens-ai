@@ -23,24 +23,43 @@ MODELS_DIR =Path (__file__ ).resolve ().parent .parent /"models"
 _LOADED_MODELS :Dict [str ,Any ]={}
 
 
-def load_pipeline (name :str )->Optional [Any ]:
+def _patch_unpickled_model(obj: Any) -> Any:
+    """Ensures cross-version scikit-learn attribute compatibility on unpickled models."""
+    if obj is None:
+        return obj
+    target = obj
+    if isinstance(obj, dict) and "pipeline" in obj:
+        target = obj["pipeline"]
+    if hasattr(target, "named_steps"):
+        for step_name, step_obj in target.named_steps.items():
+            if hasattr(step_obj, "__class__") and "LogisticRegression" in step_obj.__class__.__name__:
+                if not hasattr(step_obj, "multi_class"):
+                    step_obj.multi_class = "auto"
+    elif hasattr(target, "__class__") and "LogisticRegression" in target.__class__.__name__:
+        if not hasattr(target, "multi_class"):
+            target.multi_class = "auto"
+    return obj
+
+
+def load_pipeline(name: str) -> Optional[Any]:
     """Lazy loads a validated production model pipeline from disk."""
-    if name in _LOADED_MODELS :
-        return _LOADED_MODELS [name ]
+    if name in _LOADED_MODELS:
+        return _LOADED_MODELS[name]
 
-    model_path =MODELS_DIR /f"{name }_pipeline.joblib"
-    if not model_path .exists ():
-        return None 
+    model_path = MODELS_DIR / f"{name}_pipeline.joblib"
+    if not model_path.exists():
+        return None
 
-    try :
-        loaded =joblib .load (model_path )
-        if isinstance (loaded ,dict )and "pipeline"in loaded :
-            _LOADED_MODELS [name ]=loaded ["pipeline"]
-        else :
-            _LOADED_MODELS [name ]=loaded 
-        return _LOADED_MODELS [name ]
-    except Exception as e :
-        print (f"Error loading model pipeline {name }: {e }")
+    try:
+        loaded = joblib.load(model_path)
+        loaded = _patch_unpickled_model(loaded)
+        if isinstance(loaded, dict) and "pipeline" in loaded:
+            _LOADED_MODELS[name] = _patch_unpickled_model(loaded["pipeline"])
+        else:
+            _LOADED_MODELS[name] = loaded
+        return _LOADED_MODELS[name]
+    except Exception as e:
+        print(f"Error loading model pipeline {name}: {e}")
         return None 
 
 

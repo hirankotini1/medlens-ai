@@ -257,7 +257,68 @@ def init_db ():
     );
     """)
 
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS clinical_cases (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        case_id TEXT UNIQUE NOT NULL,
+        patient_id TEXT NOT NULL,
+        abha_id TEXT,
+        status TEXT DEFAULT 'in_progress',
+        triage_urgency TEXT DEFAULT 'routine',
+        red_flags_json TEXT DEFAULT '[]',
+        chief_complaint TEXT DEFAULT '',
+        ayush_data_json TEXT DEFAULT '{}',
+        summary_json TEXT DEFAULT '{}',
+        doctor_id TEXT,
+        doctor_notes TEXT DEFAULT '',
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        confirmed_at TEXT,
+        FOREIGN KEY (patient_id) REFERENCES patients (patient_id) ON DELETE CASCADE
+    );
+    """)
 
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS case_history_records (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        case_id TEXT NOT NULL,
+        section_id TEXT NOT NULL,
+        section_title TEXT NOT NULL,
+        raw_input TEXT DEFAULT '',
+        structured_data_json TEXT DEFAULT '{}',
+        input_mode TEXT DEFAULT 'text',
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        FOREIGN KEY (case_id) REFERENCES clinical_cases (case_id) ON DELETE CASCADE
+    );
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS case_documents (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        case_id TEXT NOT NULL,
+        document_id TEXT UNIQUE NOT NULL,
+        report_id TEXT,
+        document_type TEXT DEFAULT 'lab_report',
+        filename TEXT NOT NULL,
+        extracted_data_json TEXT DEFAULT '{}',
+        created_at TEXT NOT NULL,
+        FOREIGN KEY (case_id) REFERENCES clinical_cases (case_id) ON DELETE CASCADE
+    );
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS case_consents (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        case_id TEXT NOT NULL,
+        patient_id TEXT NOT NULL,
+        consent_version TEXT DEFAULT '1.0',
+        consent_given INTEGER DEFAULT 1,
+        consent_text TEXT NOT NULL,
+        timestamp TEXT NOT NULL,
+        FOREIGN KEY (case_id) REFERENCES clinical_cases (case_id) ON DELETE CASCADE
+    );
+    """)
 
     cursor .execute ("PRAGMA table_info(patients)")
     cols =[r ['name']for r in cursor .fetchall ()]
@@ -865,21 +926,24 @@ def delete_all_reports ()->int :
 
 def reset_to_clean_seed ():
     """Resets database to the 4 canonical demo patients and 4 canonical reports."""
-    conn =get_db_connection ()
-    cursor =conn .cursor ()
-    cursor .execute ("DELETE FROM ml_predictions")
-    cursor .execute ("DELETE FROM lab_reports")
-    cursor .execute ("DELETE FROM report_analyses")
-    cursor .execute ("DELETE FROM patients")
-    cursor .execute ("DELETE FROM users")
-
-    try :
-        cursor .execute ("DELETE FROM shared_sessions")
-    except Exception :
-        pass 
-    conn .commit ()
-    seed_demo_data (conn )
-    conn .close ()
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("PRAGMA foreign_keys = OFF")
+    tables_to_clear = [
+        "case_history_records", "case_documents", "case_consents", "clinical_cases",
+        "patient_care_reminders", "patient_reported_issues", "patient_appointments",
+        "shared_sessions_v2", "shared_sessions", "report_analyses", "ml_predictions",
+        "lab_reports", "patients", "users"
+    ]
+    for tbl in tables_to_clear:
+        try:
+            cursor.execute(f"DELETE FROM {tbl}")
+        except Exception:
+            pass
+    cursor.execute("PRAGMA foreign_keys = ON")
+    conn.commit()
+    seed_demo_data(conn)
+    conn.close()
 
 
 
@@ -1502,5 +1566,255 @@ def get_patient_appointment (appointment_id :str )->Optional [Dict [str ,Any ]]:
     row =cursor .fetchone ()
     conn .close ()
     return dict (row )if row else None 
+
+
+# ==============================================================================
+# SIH CLINICAL CASE-TAKING DATABASE HELPERS
+# ==============================================================================
+
+def create_clinical_case(
+    patient_id: str,
+    chief_complaint: str = "",
+    abha_id: Optional[str] = None,
+    consent_text: str = "Standard SIH Clinical Case Taking Consent"
+) -> Dict[str, Any]:
+    """Initializes a new Clinical Case taking session with consent."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    now_iso = datetime.now().isoformat()
+    case_id = f"CASE-{datetime.now().strftime('%Y%m%d')}-{secrets.token_hex(3).upper()}"
+
+    cursor.execute("""
+    INSERT INTO clinical_cases (
+        case_id, patient_id, abha_id, status, triage_urgency,
+        red_flags_json, chief_complaint, ayush_data_json, summary_json,
+        doctor_notes, created_at, updated_at
+    ) VALUES (?, ?, ?, 'in_progress', 'routine', '[]', ?, '{}', '{}', '', ?, ?)
+    """, (case_id, patient_id, abha_id or "", chief_complaint, now_iso, now_iso))
+
+    cursor.execute("""
+    INSERT INTO case_consents (
+        case_id, patient_id, consent_version, consent_given, consent_text, timestamp
+    ) VALUES (?, ?, '1.0', 1, ?, ?)
+    """, (case_id, patient_id, consent_text, now_iso))
+
+    conn.commit()
+    cursor.execute("SELECT * FROM clinical_cases WHERE case_id = ?", (case_id,))
+    row = dict(cursor.fetchone())
+    conn.close()
+    return row
+
+def get_clinical_case(case_id: str) -> Optional[Dict[str, Any]]:
+    """Retrieves full case details including sections, documents, and consent."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM clinical_cases WHERE case_id = ?", (case_id,))
+    case_row = cursor.fetchone()
+    if not case_row:
+        conn.close()
+        return None
+
+    res = dict(case_row)
+    try:
+        res["red_flags"] = json.loads(res.get("red_flags_json") or "[]")
+    except Exception:
+        res["red_flags"] = []
+    try:
+        res["ayush_data"] = json.loads(res.get("ayush_data_json") or "{}")
+    except Exception:
+        res["ayush_data"] = {}
+    try:
+        res["summary"] = json.loads(res.get("summary_json") or "{}")
+    except Exception:
+        res["summary"] = {}
+
+    cursor.execute("SELECT * FROM case_history_records WHERE case_id = ? ORDER BY id ASC", (case_id,))
+    sections = []
+    for r in cursor.fetchall():
+        s = dict(r)
+        try:
+            s["structured_data"] = json.loads(s.get("structured_data_json") or "{}")
+        except Exception:
+            s["structured_data"] = {}
+        sections.append(s)
+    res["sections"] = sections
+
+    cursor.execute("SELECT * FROM case_documents WHERE case_id = ? ORDER BY id ASC", (case_id,))
+    docs = []
+    for r in cursor.fetchall():
+        d = dict(r)
+        try:
+            d["extracted_data"] = json.loads(d.get("extracted_data_json") or "{}")
+        except Exception:
+            d["extracted_data"] = {}
+        docs.append(d)
+    res["documents"] = docs
+
+    cursor.execute("SELECT * FROM patients WHERE patient_id = ?", (res["patient_id"],))
+    p_row = cursor.fetchone()
+    if p_row:
+        p_dict = dict(p_row)
+        res["patient_name"] = p_dict.get("name", "")
+        res["patient_age"] = p_dict.get("age", 0)
+        res["patient_gender"] = p_dict.get("gender", "")
+        res["patient_contact"] = p_dict.get("contact", "")
+
+    conn.close()
+    return res
+
+def list_patient_clinical_cases(patient_id: str) -> List[Dict[str, Any]]:
+    """Lists all clinical cases for a given patient."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM clinical_cases WHERE patient_id = ? ORDER BY id DESC", (patient_id,))
+    rows = [dict(r) for r in cursor.fetchall()]
+    conn.close()
+    for r in rows:
+        try:
+            r["red_flags"] = json.loads(r.get("red_flags_json") or "[]")
+            r["summary"] = json.loads(r.get("summary_json") or "{}")
+        except Exception:
+            pass
+    return rows
+
+def list_all_clinical_cases(limit: int = 50) -> List[Dict[str, Any]]:
+    """Lists recent clinical cases across all patients for doctor console review."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+    SELECT c.*, p.name as patient_name, p.age as patient_age, p.gender as patient_gender
+    FROM clinical_cases c
+    LEFT JOIN patients p ON c.patient_id = p.patient_id
+    ORDER BY c.id DESC LIMIT ?
+    """, (limit,))
+    rows = [dict(r) for r in cursor.fetchall()]
+    conn.close()
+    for r in rows:
+        try:
+            r["red_flags"] = json.loads(r.get("red_flags_json") or "[]")
+            r["summary"] = json.loads(r.get("summary_json") or "{}")
+        except Exception:
+            pass
+    return rows
+
+def save_case_section(
+    case_id: str,
+    section_id: str,
+    section_title: str,
+    raw_input: str,
+    structured_data: Dict[str, Any],
+    input_mode: str = "text"
+) -> Dict[str, Any]:
+    """Saves or updates a structured history section for an active case."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    now_iso = datetime.now().isoformat()
+
+    cursor.execute("""
+    SELECT id FROM case_history_records WHERE case_id = ? AND section_id = ?
+    """, (case_id, section_id))
+    existing = cursor.fetchone()
+
+    struct_json = json.dumps(structured_data)
+    if existing:
+        cursor.execute("""
+        UPDATE case_history_records
+        SET section_title = ?, raw_input = ?, structured_data_json = ?, input_mode = ?, updated_at = ?
+        WHERE case_id = ? AND section_id = ?
+        """, (section_title, raw_input, struct_json, input_mode, now_iso, case_id, section_id))
+    else:
+        cursor.execute("""
+        INSERT INTO case_history_records (
+            case_id, section_id, section_title, raw_input, structured_data_json, input_mode, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (case_id, section_id, section_title, raw_input, struct_json, input_mode, now_iso, now_iso))
+
+    cursor.execute("UPDATE clinical_cases SET updated_at = ? WHERE case_id = ?", (now_iso, case_id))
+    conn.commit()
+    conn.close()
+    return {"status": "saved", "case_id": case_id, "section_id": section_id}
+
+def save_case_document(
+    case_id: str,
+    report_id: Optional[str],
+    document_type: str,
+    filename: str,
+    extracted_data: Dict[str, Any]
+) -> Dict[str, Any]:
+    """Associates an extracted lab report or medical document with the clinical case."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    now_iso = datetime.now().isoformat()
+    doc_id = f"DOC-{secrets.token_hex(4).upper()}"
+
+    cursor.execute("""
+    INSERT INTO case_documents (
+        case_id, document_id, report_id, document_type, filename, extracted_data_json, created_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (case_id, doc_id, report_id or "", document_type, filename, json.dumps(extracted_data), now_iso))
+
+    cursor.execute("UPDATE clinical_cases SET updated_at = ? WHERE case_id = ?", (now_iso, case_id))
+    conn.commit()
+    conn.close()
+    return {"status": "attached", "document_id": doc_id, "case_id": case_id}
+
+def update_case_summary_and_triage(
+    case_id: str,
+    summary_data: Dict[str, Any],
+    triage_urgency: str,
+    red_flags: List[str],
+    ayush_data: Optional[Dict[str, Any]] = None,
+    chief_complaint: Optional[str] = None
+) -> Dict[str, Any]:
+    """Updates the physician-ready structured summary, triage alerts, and AYUSH profile."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    now_iso = datetime.now().isoformat()
+
+    updates = ["summary_json = ?", "triage_urgency = ?", "red_flags_json = ?", "status = 'submitted'", "updated_at = ?"]
+    params = [json.dumps(summary_data), triage_urgency, json.dumps(red_flags), now_iso]
+
+    if ayush_data is not None:
+        updates.append("ayush_data_json = ?")
+        params.append(json.dumps(ayush_data))
+    if chief_complaint is not None:
+        updates.append("chief_complaint = ?")
+        params.append(chief_complaint)
+
+    params.append(case_id)
+    cursor.execute(f"UPDATE clinical_cases SET {', '.join(updates)} WHERE case_id = ?", params)
+    conn.commit()
+    conn.close()
+    return {"status": "submitted", "case_id": case_id, "triage_urgency": triage_urgency}
+
+def doctor_review_case(
+    case_id: str,
+    doctor_id: str,
+    doctor_notes: str,
+    updated_summary: Optional[Dict[str, Any]] = None,
+    status: str = "confirmed"
+) -> Dict[str, Any]:
+    """Allows doctor to review, edit, confirm, and append clinical notes to the case sheet."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    now_iso = datetime.now().isoformat()
+
+    if updated_summary:
+        cursor.execute("""
+        UPDATE clinical_cases
+        SET doctor_id = ?, doctor_notes = ?, summary_json = ?, status = ?, confirmed_at = ?, updated_at = ?
+        WHERE case_id = ?
+        """, (doctor_id, doctor_notes, json.dumps(updated_summary), status, now_iso, now_iso, case_id))
+    else:
+        cursor.execute("""
+        UPDATE clinical_cases
+        SET doctor_id = ?, doctor_notes = ?, status = ?, confirmed_at = ?, updated_at = ?
+        WHERE case_id = ?
+        """, (doctor_id, doctor_notes, status, now_iso, now_iso, case_id))
+
+    conn.commit()
+    conn.close()
+    return {"status": "reviewed", "case_id": case_id, "confirmed_at": now_iso}
+ 
 
 

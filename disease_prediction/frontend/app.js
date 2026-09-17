@@ -1966,7 +1966,7 @@ function handleAdminLogout() {
 }
 
 function switchAdminSubtab(subtab) {
-    const tabs = ['reports', 'patients', 'issues', 'reminders'];
+    const tabs = ['reports', 'patients', 'issues', 'reminders', 'cases'];
     tabs.forEach(t => {
         const btn = document.getElementById(`btn-adm-tab-${t}`);
         const cont = document.getElementById(`adm-${t}-container`);
@@ -1983,6 +1983,10 @@ function switchAdminSubtab(subtab) {
         loadAdminReportedIssues();
     } else if (subtab === 'reminders') {
         loadAdminReminders();
+    } else if (subtab === 'cases') {
+        if (typeof loadDoctorClinicalCases === 'function') {
+            loadDoctorClinicalCases();
+        }
     }
 }
 
