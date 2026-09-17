@@ -365,18 +365,6 @@ def report_sms_status(
     }
 
 
-@router.post(
-    "/test",
-    summary="Send a test SMS (admin only)"
-)
-def send_test_sms(
-    body: TestSmsRequest,
-    x_admin_token: Optional[str] = Header(None)
-):
-    """
-    Admin queues a test SMS to verify the gateway is working end-to-end.
-    Requires X-Admin-Token header matching admin password.
-    """
 def get_admin_secret() -> str:
     return os.getenv("SMS_GATEWAY_TOKEN_SECRET") or os.getenv("ADMIN_GATEWAY_TOKEN") or "medlens-sms-gateway-secret-2026"
 
