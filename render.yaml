@@ -42,6 +42,12 @@ services:
         value: whatsapp:+14155238886
       - key: PATHOLOGY_SECRET_KEY
         generateValue: true
+      - key: ADMIN_GATEWAY_TOKEN
+        value: medlens-sms-gateway-secret-2026
+      - key: SMS_GATEWAY_ENABLED
+        value: "true"
+      - key: SMS_DAILY_LIMIT
+        value: "100"
       - key: RENDER_EXTERNAL_URL
         fromService:
           type: web

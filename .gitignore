@@ -22,3 +22,10 @@ tunnel_info.json
 tunnel_url.txt
 live_webhook_url.txt
 *.zip
+
+# Android build outputs
+.gradle/
+**/build/
+local.properties
+*.apk
+.idea/
