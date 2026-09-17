@@ -5786,6 +5786,9 @@ async function checkGatewayStatus(showFeedback = false) {
         }
     } catch (err) {
         console.warn("Gateway check error:", err);
+        if (showFeedback) {
+            alert(`⚠️ Gateway Status Notice: ${err.message}\n\nPlease check server connection or reload page.`);
+        }
     }
 }
 
@@ -5863,7 +5866,32 @@ async function cancelSmsMessage(smsId) {
 
 function openTestSmsModal() {
     const modal = document.getElementById('test-sms-modal');
-    if (modal) modal.style.display = 'flex';
+    if (modal) {
+        modal.style.display = 'flex';
+        return;
+    }
+    // Reliable instant fallback if modal markup hasn't loaded yet
+    const phone = prompt("Enter recipient mobile number (e.g. 9876543210 or +919876543210):");
+    if (!phone) return;
+    const msg = prompt("Enter message to send via SIM:", "MEDLENS AI Test: Hello from your hospital SIM gateway!");
+    if (!msg) return;
+
+    fetch(apiUrl('/api/sms-gateway/test'), {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Admin-Token': 'medlens-sms-gateway-secret-2026'
+        },
+        body: JSON.stringify({ phone_number: phone, message: msg })
+    })
+    .then(async r => {
+        const d = await safeJson(r);
+        if (!r.ok) throw new Error(d.detail || "Failed to dispatch test SMS");
+        alert(`✅ Test SMS queued!\n\nSMS ID: ${d.sms_id}\nRecipient: ${d.phone_number}\nStatus: ${d.status}\n\nThe connected Android phone will claim this and send via SIM.`);
+        loadSmsHistoryTable();
+        checkGatewayStatus();
+    })
+    .catch(e => alert("Error: " + e.message));
 }
 
 function closeTestSmsModal() {
