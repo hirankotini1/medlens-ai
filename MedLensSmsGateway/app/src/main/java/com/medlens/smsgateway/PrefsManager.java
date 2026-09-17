@@ -24,7 +24,7 @@ public class PrefsManager {
     }
 
     public String getBaseUrl() {
-        return prefs.getString(KEY_BASE_URL, "http://192.168.1.13:8000");
+        return prefs.getString(KEY_BASE_URL, "https://medlens-ai-v3ru.onrender.com");
     }
 
     public void setBaseUrl(String url) {
