@@ -24,7 +24,7 @@ public class PrefsManager {
     }
 
     public String getBaseUrl() {
-        return prefs.getString(KEY_BASE_URL, "http://10.0.2.2:8000");
+        return prefs.getString(KEY_BASE_URL, "http://192.168.1.13:8000");
     }
 
     public void setBaseUrl(String url) {

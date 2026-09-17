@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ServiceInfo;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
@@ -48,7 +49,19 @@ public class GatewayService extends Service implements SmsDispatcher.SmsResultCa
         pollHandler = new Handler(Looper.getMainLooper());
 
         createNotificationChannel();
-        startForeground(NOTIFICATION_ID, buildNotification("Service initialized. Standby for queue dispatch..."));
+        try {
+            Notification notification = buildNotification("Service initialized. Standby for queue dispatch...");
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC);
+            } else {
+                startForeground(NOTIFICATION_ID, notification);
+            }
+        } catch (Throwable t) {
+            Log.e(TAG, "Foreground start fallback: " + t.getMessage());
+            try {
+                startForeground(NOTIFICATION_ID, buildNotification("MedLens SMS Gateway Active"));
+            } catch (Throwable ignored) {}
+        }
         Log.i(TAG, "MedLens SMS Gateway service created.");
     }
 

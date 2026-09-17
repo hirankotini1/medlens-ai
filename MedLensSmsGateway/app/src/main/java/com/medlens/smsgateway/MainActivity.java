@@ -113,15 +113,23 @@ public class MainActivity extends AppCompatActivity {
 
         Intent serviceIntent = new Intent(this, GatewayService.class);
         if (newState) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(serviceIntent);
-            } else {
-                startService(serviceIntent);
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(serviceIntent);
+                } else {
+                    startService(serviceIntent);
+                }
+                appendLog("Gateway service started.");
+            } catch (Throwable t) {
+                prefs.setServiceEnabled(false);
+                appendLog("Error starting service: " + t.getMessage());
+                Toast.makeText(this, "Could not start service: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
-            appendLog("Gateway service started.");
         } else {
-            stopService(serviceIntent);
-            appendLog("Gateway service stopped.");
+            try {
+                stopService(serviceIntent);
+                appendLog("Gateway service stopped.");
+            } catch (Throwable ignored) {}
         }
 
         updateUiState();
