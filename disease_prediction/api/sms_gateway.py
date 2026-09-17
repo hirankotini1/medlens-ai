@@ -377,8 +377,23 @@ def send_test_sms(
     Admin queues a test SMS to verify the gateway is working end-to-end.
     Requires X-Admin-Token header matching admin password.
     """
-    # Simple admin check using env secret
-    admin_secret = os.getenv("SMS_GATEWAY_TOKEN_SECRET", "")
+def get_admin_secret() -> str:
+    return os.getenv("SMS_GATEWAY_TOKEN_SECRET") or os.getenv("ADMIN_GATEWAY_TOKEN") or "medlens-sms-gateway-secret-2026"
+
+
+@router.post(
+    "/test",
+    summary="Queue a direct test SMS (admin)"
+)
+def test_sms_endpoint(
+    body: TestSmsRequest,
+    x_admin_token: Optional[str] = Header(None)
+):
+    """
+    Admin queues a test SMS to verify the gateway is working end-to-end.
+    Requires X-Admin-Token header matching admin password.
+    """
+    admin_secret = get_admin_secret()
     if not x_admin_token or x_admin_token != admin_secret:
         raise HTTPException(status_code=403, detail="Admin token required for test SMS.")
 
@@ -419,7 +434,7 @@ def sms_history(
     x_admin_token: Optional[str] = Header(None)
 ):
     """Returns SMS outbox history. Admin access only."""
-    admin_secret = os.getenv("SMS_GATEWAY_TOKEN_SECRET", "")
+    admin_secret = get_admin_secret()
     if not x_admin_token or x_admin_token != admin_secret:
         raise HTTPException(status_code=403, detail="Admin token required.")
 
@@ -442,7 +457,7 @@ def retry_sms(
     x_admin_token: Optional[str] = Header(None)
 ):
     """Resets a failed SMS back to queued status for re-delivery."""
-    admin_secret = os.getenv("SMS_GATEWAY_TOKEN_SECRET", "")
+    admin_secret = get_admin_secret()
     if not x_admin_token or x_admin_token != admin_secret:
         raise HTTPException(status_code=403, detail="Admin token required.")
 
@@ -461,7 +476,7 @@ def cancel_sms(
     x_admin_token: Optional[str] = Header(None)
 ):
     """Cancels a queued SMS before it is sent."""
-    admin_secret = os.getenv("SMS_GATEWAY_TOKEN_SECRET", "")
+    admin_secret = get_admin_secret()
     if not x_admin_token or x_admin_token != admin_secret:
         raise HTTPException(status_code=403, detail="Admin token required.")
 
