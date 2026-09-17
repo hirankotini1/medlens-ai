@@ -141,8 +141,11 @@ def require_gateway_auth(
     x_gateway_token: Optional[str] = Header(None),
     x_admin_token: Optional[str] = Header(None),
 ) -> Dict[str, Any]:
+    """Verifies the gateway token from X-Gateway-Token header or admin token from X-Admin-Token."""
     expected_secret = os.getenv("SMS_GATEWAY_TOKEN_SECRET") or os.getenv("ADMIN_GATEWAY_TOKEN") or "medlens-sms-gateway-secret-2026"
-    if x_admin_token and expected_secret and x_admin_token == expected_secret:
+    
+    # 1. Master admin / pairing secret check (accepted as either X-Admin-Token or X-Gateway-Token)
+    if (x_admin_token and x_admin_token == expected_secret) or (x_gateway_token and x_gateway_token == expected_secret):
         conn = db.get_db_connection()
         cur = conn.cursor()
         cur.execute("SELECT * FROM gateway_devices ORDER BY last_seen_at DESC LIMIT 1")
@@ -150,21 +153,44 @@ def require_gateway_auth(
         conn.close()
         if row:
             return dict(row)
-        return {"device_id": "admin-console", "device_name": "Web Console", "status": "active"}
+        return {"device_id": "master-gateway", "device_name": "Paired Android Phone", "status": "active"}
 
     if not x_gateway_token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Gateway token required. Include X-Gateway-Token or X-Admin-Token header."
         )
+
+    # 2. Lookup registered device token
     device = db.get_gateway_device_by_token(x_gateway_token)
-    if not device:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Invalid or expired gateway token."
-        )
-    db.touch_gateway_device(device["device_id"])
-    return device
+    if device:
+        db.touch_gateway_device(device["device_id"])
+        return device
+
+    # 3. Resilient Fallback: If container restarted or device connected with existing token, auto-adopt
+    conn = db.get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT COUNT(*) as count FROM gateway_devices")
+    cnt = cur.fetchone()["count"]
+    if cnt == 0:
+        now_iso = datetime.now().isoformat()
+        token_hash = db.hash_secret(x_gateway_token)
+        cur.execute("""
+            INSERT INTO gateway_devices (device_id, device_name, auth_token_hash, status, last_seen_at, created_at, updated_at)
+            VALUES (?, ?, ?, 'active', ?, ?, ?)
+        """, ("android-phone", "samsung SM-S711B", token_hash, now_iso, now_iso, now_iso))
+        conn.commit()
+        cur.execute("SELECT * FROM gateway_devices WHERE device_id = 'android-phone'")
+        dev = dict(cur.fetchone())
+        conn.close()
+        print(f"[SMS-GW] Auto-adopted connecting gateway device: {dev['device_id']}")
+        return dev
+    conn.close()
+
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Invalid or expired gateway token. Please re-pair in Settings."
+    )
 
 
 # ── Request/Response Models ─────────────────────────────────────────────────────
