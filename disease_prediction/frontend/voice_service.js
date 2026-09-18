@@ -470,7 +470,9 @@ async function _transcribeAudioWithServer(wavBlob, languageCode) {
 }
 
 /* ============================================================================
-   SPEECH-TO-TEXT — DUAL ENGINE (Browser Web Speech API + Server Fallback)
+   SPEECH-TO-TEXT — Clean Browser Web Speech API Implementation
+   Uses continuous=false for predictable single-delivery behavior.
+   All session state lives inside the closure — no global race conditions.
    ============================================================================ */
 let _currentOnFinal = null;
 let _currentOnInterim = null;
@@ -479,41 +481,27 @@ let _currentOnEnd = null;
 let _currentOnStatus = null;
 let _currentOnVolume = null;
 let _currentLanguageCode = 'en-IN';
-let _accumulatedFinalText = '';
-let _latestLiveTranscript = '';
-let _recognitionSilenceTimer = null;
-let _finalDelivered = false;  // Guard: prevents onFinal from firing more than once per session
+let _voiceActiveRecognition = null;
 
 /**
- * Detects whether browser supports STT natively.
- */
-function detectBrowserSTTSupport() {
-    if (window.SpeechRecognition) return 'full';
-    if (window.webkitSpeechRecognition) return 'webkit';
-    return 'server'; // Supported via server-side Google Speech STT
-}
-
-/**
- * Starts dual-engine voice recognition.
- * Prioritizes native browser Web Speech API (Chrome/Edge/Safari/Android) for instant zero-latency recognition.
- * Falls back to audio recorder + server transcribe only when SpeechRecognition is not available.
+ * Starts voice recognition.
+ * Uses browser Web Speech API with continuous=false for clean, single-delivery behavior.
+ * Falls back to server transcription if Web Speech API is unavailable (Firefox).
  */
 async function voiceStartListening(languageCode, onInterim, onFinal, onError, onEnd, onStatus, onVolume) {
-    if (_voiceIsListening) {
+    // Stop any previous session cleanly
+    if (_voiceIsListening || _voiceActiveRecognition) {
         await voiceStopListening();
     }
 
     languageCode = languageCode || _voiceCurrentLanguage || 'en-IN';
     _currentLanguageCode = languageCode;
-    _currentOnInterim = onInterim;
     _currentOnFinal = onFinal;
+    _currentOnInterim = onInterim;
     _currentOnError = onError;
     _currentOnEnd = onEnd;
     _currentOnStatus = onStatus;
     _currentOnVolume = onVolume;
-    _accumulatedFinalText = '';
-    _latestLiveTranscript = '';
-    _finalDelivered = false;   // Reset guard for new session
     _voiceIsListening = true;
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -524,147 +512,123 @@ async function voiceStartListening(languageCode, onInterim, onFinal, onError, on
             const langConfig = voiceGetLanguageByCode(languageCode);
             const sttCode = langConfig ? langConfig.sttLang : 'en-IN';
 
-            recognition.continuous = true;
+            // continuous=false: fires exactly ONE onend after one utterance.
+            // This is the key to preventing duplicate text — no complex multi-onend handling needed.
+            recognition.continuous = false;
             recognition.interimResults = true;
             recognition.maxAlternatives = 1;
             recognition.lang = sttCode;
 
-            const resetAutoStopTimer = () => {
-                if (_recognitionSilenceTimer) clearTimeout(_recognitionSilenceTimer);
-                _recognitionSilenceTimer = setTimeout(() => {
-                    if (_voiceIsListening && (_latestLiveTranscript || _accumulatedFinalText)) {
-                        console.info('[VoiceService] Auto-finalizing after pause in speech...');
-                        voiceStopListening();
-                    }
-                }, 2200);
+            // All session state lives HERE inside the closure — no global pollution.
+            let _sessionTranscript = '';
+            let _delivered = false;   // Ensures onFinal fires exactly once
+            let _silenceTimer = null;
+
+            const _clearSilenceTimer = () => {
+                if (_silenceTimer) { clearTimeout(_silenceTimer); _silenceTimer = null; }
             };
 
             recognition.onstart = () => {
-                _voiceIsListening = true;
-                if (_currentOnStatus) _currentOnStatus('listening', '🔴 Listening... Speak clearly into your mic');
+                if (onStatus) onStatus('listening', '🔴 Listening... Speak clearly into your mic');
             };
 
             recognition.onresult = (event) => {
-                // IMPORTANT: Loop ALL results from i=0 (not event.resultIndex) and SET (not +=)
-                // _accumulatedFinalText to avoid duplicates when Chrome resets resultIndex.
-                let finalText = '';
-                let interim = '';
+                // Build the complete transcript from scratch each time (never +=)
+                let transcript = '';
                 for (let i = 0; i < event.results.length; i++) {
-                    const res = event.results[i];
-                    if (res.isFinal) {
-                        finalText += (res[0].transcript || '') + ' ';
-                    } else {
-                        interim += (res[0].transcript || '');
-                    }
+                    transcript += event.results[i][0].transcript;
                 }
-                _accumulatedFinalText = finalText;
-                _latestLiveTranscript = (finalText + interim).trim();
-                if (_latestLiveTranscript) {
-                    if (_currentOnInterim) _currentOnInterim(_latestLiveTranscript);
-                    resetAutoStopTimer();
+                _sessionTranscript = transcript.trim();
+                if (_sessionTranscript && onInterim) {
+                    onInterim(_sessionTranscript);
                 }
+                // Auto-stop after 2s of silence so text gets delivered
+                _clearSilenceTimer();
+                _silenceTimer = setTimeout(() => {
+                    if (_voiceIsListening) recognition.stop();
+                }, 2000);
             };
 
             recognition.onerror = (event) => {
-                console.warn('[VoiceService] Browser STT notice:', event.error);
+                _clearSilenceTimer();
+                if (event.error === 'no-speech') return; // Ignore — onend handles delivery
                 if (event.error === 'not-allowed') {
-                    if (_currentOnError) _currentOnError('not-allowed', 'Microphone permission denied. Please click the lock or microphone icon in your browser address bar and select "Allow".');
-                    voiceStopListening();
-                } else if (event.error === 'no-speech') {
-                    // benign interim event - do not abort
+                    _delivered = true;
+                    _voiceIsListening = false;
+                    _voiceActiveRecognition = null;
+                    if (onError) onError('not-allowed', 'Microphone permission denied. Tap the lock icon in your browser address bar and select "Allow".');
+                    if (onEnd) onEnd();
                 } else if (event.error === 'audio-capture') {
-                    if (_currentOnError) _currentOnError('audio-capture', 'No microphone detected or audio input is busy.');
-                    voiceStopListening();
+                    _delivered = true;
+                    _voiceIsListening = false;
+                    _voiceActiveRecognition = null;
+                    if (onError) onError('audio-capture', 'No microphone found or it is in use by another app.');
+                    if (onEnd) onEnd();
                 }
             };
 
+            // onend fires ONCE when recognition stops (either naturally or via .stop())
+            // This is the single, guaranteed delivery point.
             recognition.onend = () => {
-                if (_recognitionSilenceTimer) {
-                    clearTimeout(_recognitionSilenceTimer);
-                    _recognitionSilenceTimer = null;
+                _clearSilenceTimer();
+                _voiceIsListening = false;
+                _voiceActiveRecognition = null;
+
+                if (_delivered) return; // Already delivered (e.g. from onerror)
+                _delivered = true;
+
+                const text = _sessionTranscript.trim();
+                if (text) {
+                    if (onStatus) onStatus('done', `✅ Captured: "${text}"`);
+                    if (onFinal) onFinal(text, 0.95);
+                } else {
+                    if (onStatus) onStatus('idle', '⚠️ No speech heard. Tap mic and speak, or type below.');
+                    if (onError) onError('no_speech', 'No speech was captured. Please speak clearly into the microphone.');
                 }
-                // If browser recognition ended while still marked listening, cleanly finalize!
-                if (_voiceIsListening) {
-                    voiceStopListening();
-                }
+                if (onEnd) onEnd();
             };
 
             recognition.start();
             _voiceActiveRecognition = recognition;
+            if (onStatus) onStatus('listening', '🔴 Listening... Speak clearly into your mic');
             return true;
         } catch (e) {
-            console.warn('[VoiceService] Browser SpeechRecognition start error, attempting audio recorder fallback:', e);
+            console.warn('[VoiceService] Browser SpeechRecognition unavailable, falling back to server:', e);
         }
     }
 
-    // Fallback for browsers without native SpeechRecognition (e.g. Firefox desktop)
-    if (_currentOnStatus) _currentOnStatus('listening', '🔴 Recording audio for server transcription...');
+    // Fallback: server-side transcription (Firefox desktop, older browsers)
+    if (onStatus) onStatus('listening', '🔴 Recording audio for server transcription...');
     await _startAudioRecording();
     return true;
 }
 
 /**
- * Stops voice listening and converts audio to text.
+ * Stops voice listening. The recognition.onend callback handles the actual text delivery.
  */
 async function voiceStopListening() {
-    if (!_voiceIsListening) return;
     _voiceIsListening = false;
-
-    if (_recognitionSilenceTimer) {
-        clearTimeout(_recognitionSilenceTimer);
-        _recognitionSilenceTimer = null;
-    }
-
-    // Stop browser recognition
     if (_voiceActiveRecognition) {
         try {
-            _voiceActiveRecognition.onresult = null;
-            _voiceActiveRecognition.onerror = null;
-            _voiceActiveRecognition.onend = null;
-            _voiceActiveRecognition.stop();
+            _voiceActiveRecognition.stop(); // Triggers onend → text delivered there
         } catch (e) {}
-        _voiceActiveRecognition = null;
-    }
-
-    if (_currentOnStatus) _currentOnStatus('converting', '⏳ Converting voice to text...');
-
-    // PRIORITY 1: Deliver whatever text was captured by the browser engine!
-    // _finalDelivered guard ensures onFinal is called EXACTLY ONCE per session even if
-    // voiceStopListening is called multiple times (race between auto-stop timer and onend).
-    if (!_finalDelivered) {
-        const capturedText = (_latestLiveTranscript || _accumulatedFinalText || '').trim();
-        if (capturedText && capturedText.length > 0) {
-            _finalDelivered = true;
-            _latestLiveTranscript = '';
-            _accumulatedFinalText = '';
-            if (_currentOnStatus) _currentOnStatus('done', `✅ Voice converted: "${capturedText}"`);
-            if (_currentOnFinal) _currentOnFinal(capturedText, 0.95);
-            if (_currentOnEnd) _currentOnEnd();
-            return;
-        }
-
-        // PRIORITY 2: If browser engine didn't capture text (Firefox fallback), check audio blob
+        // Don't null _voiceActiveRecognition here — onend does it
+    } else {
+        // Server fallback path: build wav and transcribe
         const wavBlob = _stopAudioRecording();
         if (wavBlob && wavBlob.size >= 1000) {
+            if (_currentOnStatus) _currentOnStatus('converting', '⏳ Transcribing...');
             const result = await _transcribeAudioWithServer(wavBlob, _currentLanguageCode);
             if (result.transcript && result.transcript.trim()) {
                 const tr = result.transcript.trim();
-                _finalDelivered = true;
-                _latestLiveTranscript = '';
-                _accumulatedFinalText = '';
                 if (_currentOnStatus) _currentOnStatus('done', `✅ Voice converted: "${tr}"`);
                 if (_currentOnFinal) _currentOnFinal(tr, 0.92);
                 if (_currentOnEnd) _currentOnEnd();
                 return;
             }
         }
-
-        // Genuine silence — nothing heard
-        _finalDelivered = true;
-        _latestLiveTranscript = '';
-        _accumulatedFinalText = '';
-        if (_currentOnStatus) _currentOnStatus('idle', '⚠️ No speech detected. Tap microphone and speak clearly, or type below.');
-        if (_currentOnError) _currentOnError('no_speech', 'No clear speech detected. Please speak closer to your microphone or type your answer.');
+        if (_currentOnStatus) _currentOnStatus('idle', '⚠️ No speech detected.');
+        if (_currentOnError) _currentOnError('no_speech', 'No speech detected. Please try again.');
         if (_currentOnEnd) _currentOnEnd();
     }
 }

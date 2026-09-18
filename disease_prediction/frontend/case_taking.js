@@ -433,6 +433,8 @@ async function startVoiceRecording() {
 
     if (!textarea) return;
 
+    // Save whatever text is already in the textarea BEFORE recording.
+    // New speech will be APPENDED to this so user doesn't lose existing typed text.
     _caseVoiceBaseText = textarea.value.trim();
     isRecordingVoice = true;
 
@@ -453,53 +455,49 @@ async function startVoiceRecording() {
 
     await voiceStartListening(
         targetLangCode,
-        // onInterim: display live transcription as the patient speaks
+        // onInterim: show live words in textarea (replaces each time)
         (interimText) => {
             if (textarea) {
                 textarea.value = _caseVoiceBaseText ? `${_caseVoiceBaseText} ${interimText}` : interimText;
             }
         },
-        // onFinal: write final converted text into textarea
+        // onFinal: commit the final recognized text
         (finalText) => {
             if (textarea && finalText) {
-                // Replace textarea content completely (base + new speech or just new speech)
                 textarea.value = _caseVoiceBaseText ? `${_caseVoiceBaseText} ${finalText}` : finalText;
-                // Update base so next recording appends correctly
-                _caseVoiceBaseText = textarea.value.trim();
                 if (typeof showToast === 'function') {
-                    showToast(`✓ Voice converted: "${finalText}"`, 'success');
+                    showToast(`✓ Voice: "${finalText}"`, 'success');
                 }
             }
-            // Do NOT call stopVoiceRecording() here - voiceService already calls onEnd which handles cleanup
+            // voiceService calls onEnd next which resets UI — don't call stopVoiceRecording() here
         },
-        // onError: handle microphone permission or recognition notices
+        // onError: handle errors
         (errorType, errorMsg) => {
-            console.warn('[CaseTaking] STT Notice:', errorType, errorMsg);
+            console.warn('[CaseTaking] STT:', errorType, errorMsg);
             if (errorType === 'not-allowed') {
                 if (typeof showModalAlert === 'function') {
-                    showModalAlert('Microphone permission was blocked. Please click the lock / microphone icon in your browser address bar and select "Allow".', 'Microphone Access Required');
+                    showModalAlert('Microphone permission was blocked. Click the lock icon in the address bar and select "Allow".', 'Microphone Access Required');
                 }
             }
-            stopVoiceRecording();
         },
-        // onEnd: reset recording UI state
+        // onEnd: reset UI after recording finishes
         () => {
             isRecordingVoice = false;
             if (micBtn) micBtn.classList.remove('recording-pulse');
             if (micStatus) micStatus.innerText = 'Click microphone to record with your voice';
         },
-        // onStatus: show status updates
+        // onStatus: show status messages
         (statusState, statusMsg) => {
             if (micStatus && isRecordingVoice) {
                 micStatus.innerHTML = `<span class="rec-dot"></span> ${statusMsg}`;
             }
         },
-        // onVolume: live volume indicator meter
+        // onVolume: live volume indicator
         (rms) => {
             if (micStatus && isRecordingVoice) {
                 const level = Math.min(8, Math.max(1, Math.round(rms * 90)));
                 const bars = ' ▂▃▄▅▆▇█'.slice(0, level);
-                micStatus.innerHTML = `<span class="rec-dot"></span> Listening... <span style="color:#0284c7;font-family:monospace;font-weight:700;">${bars}</span> (auto-stops on pause)`;
+                micStatus.innerHTML = `<span class="rec-dot"></span> Listening... <span style="color:#0284c7;font-family:monospace;font-weight:700;">${bars}</span>`;
             }
         }
     );
