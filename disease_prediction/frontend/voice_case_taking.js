@@ -37,8 +37,8 @@ const VOICE_CLINICAL_QUESTIONS = [
             'gu-IN': "આজ તમે હૉસ્પિટલ કેમ આવ્યા? તમારી મુખ્ય સમસ્યા શું છે?",
             'or-IN': "ଆଜି ଆପଣ ହାସ୍ପାତାଲ ଆସିବାର ମୁଖ୍ୟ କାରଣ କ'ଣ? ଆପଣଙ୍କ ମୁଖ୍ୟ ଅସୁବିଧା କ'ଣ?",
         },
-        quickPicks: ['Fever / बुखार / జ్వరం', 'Pain / दर्द / నొప్పి', 'Weakness / कमज़ोरी', 'Breathlessness', 'Cough', 'Vomiting / उल्टी', 'Other / अन्य'],
-        redFlags: ['chest pain', 'can not breathe', 'breathing', 'unconscious', 'stroke', 'paralysis', 'bleeding', 'सांस', 'छाती में दर्द', 'పడిపోయాను'],
+        quickPicks: ['Fever / ଜ୍ୱର', 'Pain / ଯନ୍ତ୍ରଣା', 'Weakness / ଦୁର୍ବଳତା', 'Breathlessness / ଶ୍ୱାସକଷ୍ଟ', 'Cough / କାଶ', 'Vomiting / ବାନ୍ତି', 'Other / ଅନ୍ୟାନ୍ୟ'],
+        redFlags: ['chest pain', 'can not breathe', 'breathing', 'unconscious', 'stroke', 'paralysis', 'bleeding', 'सांस', 'छाती में दर्द', 'పడిపోయాను', 'ଛାତିରେ ଯନ୍ତ୍ରଣା', 'ନିଶ୍ୱାସ'],
     },
     /* 1: History of Present Illness */
     {
@@ -55,9 +55,10 @@ const VOICE_CLINICAL_QUESTIONS = [
             'bn-IN': "এই সমস্যা কখন থেকে হচ্ছে? কতদিন, সপ্তাহ বা মাস ধরে?",
             'mr-IN': "ही समस्या केव्हापासून आहे? किती दिवस, आठवडे किंवा महिने?",
             'gu-IN': "આ સમસ્યા ક્યારથી છે? કેટલા દિવસ, અઠવાડિયા કે મહિના?",
+            'or-IN': "ଏହି ସମସ୍ୟା କେବେଠାରୁ ଆରମ୍ଭ ହୋଇଛି? କେତେ ଦିନ, ସପ୍ତାହ ବା ମାସ ହେବ ଆପଣଙ୍କୁ ଏହି ଅସୁବିଧା ହେଉଛି?",
         },
-        quickPicks: ['Today / आज', '2-3 days / 2-3 दिन', '1 week', '2 weeks', '1 month', 'Several months', 'More than a year'],
-        redFlags: ['sudden', 'suddenly', 'अचानक'],
+        quickPicks: ['Today / ଆଜି', '2-3 days / ୨-୩ ଦିନ', '1 week / ୧ ସପ୍ତାହ', '2 weeks / ୨ ସପ୍ତାହ', '1 month / ୧ ମାସ', 'Several months', 'More than a year'],
+        redFlags: ['sudden', 'suddenly', 'अचानक', 'ହଠାତ୍'],
     },
     /* 2: Severity */
     {
@@ -68,9 +69,10 @@ const VOICE_CLINICAL_QUESTIONS = [
             'en-IN': "On a scale from 1 to 10, how severe is your problem right now? 1 means very mild, 10 means the worst you can imagine.",
             'hi-IN': "1 से 10 के पैमाने पर, आपकी तकलीफ अभी कितनी तेज है? 1 मतलब बहुत हल्की, 10 मतलब सबसे ज्यादा।",
             'te-IN': "1 నుండి 10 స్కేల్‌లో, మీ సమస్య ఇప్పుడు ఎంత తీవ్రంగా ఉంది?",
+            'or-IN': "୧ ରୁ ୧୦ ମଧ୍ୟରେ, ଆପଣଙ୍କ ଯନ୍ତ୍ରଣା ବା କଷ୍ଟ ଏବେ କେତେ ତୀବ୍ର? ୧ ମାନେ ଖୁବ୍ ସାମାନ୍ୟ ଏବଂ ୧୦ ମାନେ ଅସହ୍ୟ ଯନ୍ତ୍ରଣା।",
         },
-        quickPicks: ['1-2 (Very mild)', '3-4 (Mild)', '5-6 (Moderate)', '7-8 (Severe)', '9-10 (Very severe)'],
-        redFlags: ['10', 'worst', 'unbearable', 'terrible', 'cannot bear'],
+        quickPicks: ['1-2 (Very mild / ସାମାନ୍ୟ)', '3-4 (Mild / ମଧ୍ୟମ)', '5-6 (Moderate)', '7-8 (Severe / ତୀବ୍ର)', '9-10 (Very severe / ଅସହ୍ୟ)'],
+        redFlags: ['10', 'worst', 'unbearable', 'terrible', 'cannot bear', 'ଅସହ୍ୟ'],
     },
     /* 3: Associated Symptoms */
     {
@@ -81,9 +83,10 @@ const VOICE_CLINICAL_QUESTIONS = [
             'en-IN': "Do you have any other symptoms along with your main complaint? For example: fever, vomiting, headache, dizziness, shortness of breath?",
             'hi-IN': "क्या आपको मुख्य तकलीफ के साथ और भी कोई लक्षण हैं? जैसे बुखार, उल्टी, सिरदर्द, चक्कर, सांस फूलना?",
             'te-IN': "మీ ప్రధాన సమస్యతో పాటు మరే లక్షణాలు ఉన్నాయా? ఉదా: జ్వరం, వాంతులు, తలనొప్పి?",
+            'or-IN': "ଆପଣଙ୍କ ମୁଖ୍ୟ ସମସ୍ୟା ସହିତ ଆଉ କୌଣସି ଲକ୍ଷଣ ଅଛି କି? ଯେପରିକି ଜ୍ୱର, ବାନ୍ତି, ମୁଣ୍ଡବିନ୍ଧା, ମୁଣ୍ଡ ବୁଲାଇବା କିମ୍ବା ନିଶ୍ୱାସ ନେବାରେ କଷ୍ଟ?",
         },
-        quickPicks: ['Fever', 'Vomiting', 'Headache', 'Dizziness', 'Breathlessness', 'Sweating', 'No other symptoms'],
-        redFlags: ['breathless', 'cannot breathe', 'chest pain', 'blood', 'black stool', 'fainting', 'collapse'],
+        quickPicks: ['Fever / ଜ୍ୱର', 'Vomiting / ବାନ୍ତି', 'Headache / ମୁଣ୍ଡବିନ୍ଧା', 'Dizziness / ଚକ୍କର', 'Breathlessness / ଶ୍ୱାସକଷ୍ଟ', 'Sweating / ଝାଳ', 'No other symptoms'],
+        redFlags: ['breathless', 'cannot breathe', 'chest pain', 'blood', 'black stool', 'fainting', 'collapse', 'ଅଚେତ', 'ରକ୍ତ'],
     },
     /* 4: Past Medical History */
     {
@@ -94,8 +97,9 @@ const VOICE_CLINICAL_QUESTIONS = [
             'en-IN': "Have you had any major illnesses before? Do you have diabetes, blood pressure, heart disease, asthma, or any other chronic condition?",
             'hi-IN': "क्या आपको पहले कोई बड़ी बीमारी हुई है? जैसे मधुमेह, बीपी, हृदय रोग, अस्थमा?",
             'te-IN': "మీకు ముందు ఏదైనా పెద్ద వ్యాధి వచ్చిందా? డయాబెటిస్, బిపి, గుండె జబ్బు?",
+            'or-IN': "ଆପଣଙ୍କର ପୂର୍ବରୁ କୌଣସି ବଡ଼ ରୋଗ ହୋଇଛି କି? ମଧୁମେହ (ଡାଇବେଟିସ୍), ରକ୍ତଚାପ (ବିପି), ହୃଦରୋଗ, ଶ୍ୱାସ କିମ୍ବା ଅନ୍ୟ କୌଣସି ପୁରୁଣା ରୋଗ ଅଛି କି?",
         },
-        quickPicks: ['Diabetes / मधुमेह', 'Hypertension / बीपी', 'Heart Disease', 'Asthma / TB', 'Thyroid', 'None / नहीं', 'Not sure'],
+        quickPicks: ['Diabetes / ମଧୁମେହ', 'Hypertension / ବିପି', 'Heart Disease / ହୃଦରୋଗ', 'Asthma / ଶ୍ୱାସ', 'Thyroid', 'None / ନାହିଁ', 'Not sure'],
         redFlags: ['heart attack', 'stroke', 'cancer', 'fits', 'seizure', 'epilepsy'],
     },
     /* 5: Medications */
@@ -107,8 +111,9 @@ const VOICE_CLINICAL_QUESTIONS = [
             'en-IN': "Are you currently taking any medicines? If yes, please tell me their names. Are you allergic to any medicines?",
             'hi-IN': "क्या आप अभी कोई दवाई ले रहे हैं? कोई दवाई से एलर्जी है?",
             'te-IN': "మీరు ప్రస్తుతం ఏదైనా మందులు తీసుకుంటున్నారా? ఏదైనా మందులకు అలెర్జీ ఉందా?",
+            'or-IN': "ଆପଣ ବର୍ତ୍ତମାନ କୌଣସି ଔଷଧ ଖାଉଛନ୍ତି କି? କୌଣସି ଔଷଧରୁ ଆପଣଙ୍କୁ ଆଲର୍ଜି କିମ୍ବା ପାର୍ଶ୍ୱ ପ୍ରତିକ୍ରିୟା ଅଛି କି?",
         },
-        quickPicks: ['No medicines / नहीं', 'Diabetes medicines', 'BP medicines', 'Pain killers', 'Antibiotics', 'I will tell doctor', 'Allergic to Penicillin'],
+        quickPicks: ['No medicines / କୌଣସି ଔଷଧ ନାହିଁ', 'Diabetes medicines', 'BP medicines', 'Pain killers', 'Antibiotics', 'I will tell doctor', 'Allergic to Penicillin'],
         redFlags: ['penicillin allergy', 'sulfa allergy', 'anaphylaxis', 'severe allergy'],
     },
     /* 6: Family History */
@@ -120,8 +125,9 @@ const VOICE_CLINICAL_QUESTIONS = [
             'en-IN': "Does anyone in your family — parents, brothers, sisters — have diabetes, heart disease, cancer, or any hereditary condition?",
             'hi-IN': "क्या आपके परिवार में — माता-पिता, भाई-बहन — को मधुमेह, हृदय रोग, कैंसर या कोई वंशानुगत बीमारी है?",
             'te-IN': "మీ కుటుంబంలో — తల్లిదండ్రులు, అన్నదమ్ములు, అక్కచెల్లెళ్ళు — డయాబెటిస్, గుండె జబ్బు, క్యాన్సర్ ఉందా?",
+            'or-IN': "ଆପଣଙ୍କ ପରିବାରରେ କାହାର ମଧୁମେହ, ଉଚ୍ଚ ରକ୍ତଚାପ, ହୃଦରୋଗ କିମ୍ବା କର୍କଟ (କ୍ୟାନସର) ଭଳି ବଂଶଗତ ରୋଗ ଅଛି କି?",
         },
-        quickPicks: ['No family history', 'Diabetes in family', 'BP in family', 'Heart disease', 'Cancer', 'Not sure'],
+        quickPicks: ['No family history / କିଛି ନାହିଁ', 'Diabetes in family', 'BP in family', 'Heart disease', 'Cancer', 'Not sure'],
         redFlags: [],
     },
     /* 7: Social History */
@@ -133,8 +139,9 @@ const VOICE_CLINICAL_QUESTIONS = [
             'en-IN': "Do you smoke cigarettes or use tobacco? Do you drink alcohol? What work do you do?",
             'hi-IN': "क्या आप सिगरेट पीते हैं या तंबाकू खाते हैं? शराब पीते हैं? आप क्या काम करते हैं?",
             'te-IN': "మీరు సిగరెట్లు తాగుతారా లేదా పొగాకు వాడతారా? మద్యం తాగుతారా?",
+            'or-IN': "ଆପଣ ଧୂମପାନ କରନ୍ତି କିମ୍ବା ଗୁଟଖା/ତମାଖୁ ଖାଆନ୍ତି କି? ମଦ୍ୟପାନ କରନ୍ତି କି? ଆପଣ କି କାମ କରନ୍ତି?",
         },
-        quickPicks: ['Non-smoker / नहीं', 'Smoker (tobacco)', 'Alcohol user', 'Farmer / Farmer', 'Labor work', 'Office work', 'Student'],
+        quickPicks: ['Non-smoker / ନାହିଁ', 'Smoker (tobacco) / ତମାଖୁ', 'Alcohol user / ମଦ୍ୟପାନ', 'Farmer / କୃଷକ', 'Labor work / ଶ୍ରମିକ', 'Office work', 'Student'],
         redFlags: ['heavy alcohol', 'injecting drug', 'drug addict'],
     },
     /* 8: Review of Systems */
@@ -146,9 +153,10 @@ const VOICE_CLINICAL_QUESTIONS = [
             'en-IN': "Have you noticed any changes in your weight recently? Any loss of appetite? Any sleep problems? Any changes in passing urine or stool?",
             'hi-IN': "क्या हाल ही में आपका वजन कम हुआ है? भूख कम लगती है? नींद की कोई समस्या? पेशाब या मल में कोई बदलाव?",
             'te-IN': "ఇటీవల బరువు తగ్గిందా? ఆకలి తక్కువైందా? నిద్ర సమస్యలు? మూత్రం లేదా మలంలో మార్పులు?",
+            'or-IN': "ନିକଟରେ ଆପଣଙ୍କ ଓଜନ କମିଛି କି? ଭୋକ କମିବା, ନିଦ ନହେବା କିମ୍ବା ପରିସ୍ରା/ଝାଡ଼ାରେ କୌଣସି ପରିବର୍ତ୍ତନ ହୋଇଛି କି?",
         },
-        quickPicks: ['Weight loss', 'Loss of appetite', 'Difficulty sleeping', 'Frequent urination', 'Blood in urine', 'Constipation', 'None of above'],
-        redFlags: ['blood in urine', 'black stool', 'weight loss sudden', 'blood in vomit'],
+        quickPicks: ['Weight loss / ଓଜନ ହ୍ରାସ', 'Loss of appetite / ଭୋକ ନହେବା', 'Difficulty sleeping / ନିଦ୍ରାହୀନତା', 'Frequent urination', 'Blood in urine', 'Constipation', 'None of above'],
+        redFlags: ['blood in urine', 'black stool', 'weight loss sudden', 'blood in vomit', 'ରକ୍ତ'],
     },
     /* 9: Final */
     {
@@ -159,10 +167,11 @@ const VOICE_CLINICAL_QUESTIONS = [
             'en-IN': "Is there anything else you would like to tell the doctor? Any other concerns or symptoms I haven't asked about?",
             'hi-IN': "क्या आप डॉक्टर को और कुछ बताना चाहते हैं? कोई अन्य चिंता या लक्षण?",
             'te-IN': "డాక్టర్‌కు మరేమైనా చెప్పాలనుకుంటున్నారా? వేరే ఏదైనా లక్షణాలు ఉన్నాయా?",
+            'or-IN': "ଆପଣ ଡାକ୍ତରବାବୁଙ୍କୁ ଆଉ କିଛି ଜଣାଇବାକୁ ଚାହାଁନ୍ତି କି? ଆଉ କୌଣସି ସମସ୍ୟା ଯାହା ମୁଁ ପଚାରିନାହିଁ?",
         },
-        quickPicks: ['Nothing more to add', 'I want to ask something', 'I have test reports'],
+        quickPicks: ['Nothing more to add / ଆଉ କିଛି ନାହିଁ', 'I want to ask something', 'I have test reports'],
         redFlags: [],
-    },
+    }
 ];
 
 /* ============================================================================
@@ -174,165 +183,275 @@ const ADAPTIVE_FOLLOWUPS = {
     chest: [
         {
             key: 'chest_location', section: 'History of Present Illness', sectionIndex: 2,
-            text: { 'en-IN': 'Where exactly in the chest is the pain — left side, center, or right side? Does it spread to your arm, shoulder, or jaw?', 'hi-IN': 'सीने में दर्द कहाँ है — बाईं तरफ, बीच में, या दाईं तरफ? क्या यह हाथ, कंधे या जबड़े में फैलता है?', 'te-IN': 'గుండె నొప్పి ఎక్కడ ఉంది — ఎడమ వైపు, మధ్యలో లేదా కుడి వైపు? చేయి లేదా భుజానికి వ్యాపిస్తుందా?' },
-            quickPicks: ['Center / Centre', 'Left side / बाईं', 'Right side', 'Radiates to arm', 'Radiates to jaw', 'All over chest'],
-            redFlags: ['left side', 'radiates to arm', 'jaw', 'shoulder'],
+            text: {
+                'en-IN': 'Where exactly in the chest is the pain — left side, center, or right side? Does it spread to your arm, shoulder, or jaw?',
+                'hi-IN': 'सीने में दर्द कहाँ है — बाईं तरफ, बीच में, या दाईं तरफ? क्या यह हाथ, कंधे या जबड़े में फैलता है?',
+                'te-IN': 'గుండె నొప్పి ఎక్కడ ఉంది — ఎడమ వైపు, మధ్యలో లేదా కుడి వైపు? చేయి లేదా భుజానికి వ్యాపిస్తుందా?',
+                'or-IN': 'ଛାତିରେ ଯନ୍ତ୍ରଣା ଠିକ୍ କେଉଁଠି ହେଉଛି — ବାମ ପାଖ, ମଝିରେ ନା ଡାହାଣ ପାଖ? ଏହି ଯନ୍ତ୍ରଣା ହାତ, କାନ୍ଧ କିମ୍ବା ହନୁହାଡ଼କୁ ଯାଉଛି କି?'
+            },
+            quickPicks: ['Center / Centre', 'Left side / ବାମ ପାଖ', 'Right side / ଡାହାଣ ପାଖ', 'Radiates to arm', 'Radiates to jaw', 'All over chest'],
+            redFlags: ['left side', 'radiates to arm', 'jaw', 'shoulder', 'ବାମ ପାଖ'],
         },
         {
             key: 'chest_exertion', section: 'History of Present Illness', sectionIndex: 2,
-            text: { 'en-IN': 'Does the chest pain increase on physical activity like walking or climbing stairs? Does it get better with rest?', 'hi-IN': 'क्या सीने का दर्द चलने या सीढ़ी चढ़ने पर बढ़ता है? आराम से ठीक होता है?', 'te-IN': 'నడిచినప్పుడు లేదా మెట్లు ఎక్కినప్పుడు నొప్పి పెరుగుతుందా? విశ్రాంతితో తగ్గుతుందా?' },
+            text: {
+                'en-IN': 'Does the chest pain increase on physical activity like walking or climbing stairs? Does it get better with rest?',
+                'hi-IN': 'क्या सीने का दर्द चलने या सीढ़ी चढ़ने पर बढ़ता है? आराम से ठीक होता है?',
+                'te-IN': 'నడిచినప్పుడు లేదా మెట్లు ఎక్కినప్పుడు నొప్పి పెరుగుతుందా? విశ్రాంతితో తగ్గుతుందా?',
+                'or-IN': 'ଚାଲିବା କିମ୍ବା ସିଡ଼ି ଚଢ଼ିବା ସମୟରେ ଛାତି ଯନ୍ତ୍ରଣା ବଢ଼ୁଛି କି? ବିଶ୍ରାମ ନେଲେ କଷ୍ଟ କମିଯାଉଛି କି?'
+            },
             quickPicks: ['Increases on exertion', 'Better with rest', 'No change with activity', 'Only at rest', 'Also at rest'],
             redFlags: ['increases on exertion', 'only at rest'],
         },
         {
             key: 'chest_sweating', section: 'History of Present Illness', sectionIndex: 2,
-            text: { 'en-IN': 'Are you sweating heavily? Do you feel like you are going to faint? Do you feel nauseous or did you vomit?', 'hi-IN': 'क्या आपको बहुत पसीना आ रहा है? बेहोशी जैसा लग रहा है? मतली या उल्टी?', 'te-IN': 'చాలా చెమట వస్తుందా? మూర్ఛ అవుతున్నట్లు అనిపిస్తుందా? వాంతులు?' },
-            quickPicks: ['Heavy sweating / पसीना', 'Nausea / मतली', 'Vomiting', 'Feeling faint', 'None of these'],
-            redFlags: ['heavy sweating', 'feeling faint', 'vomiting'],
+            text: {
+                'en-IN': 'Are you sweating heavily? Do you feel like you are going to faint? Do you feel nauseous or did you vomit?',
+                'hi-IN': 'क्या आपको बहुत पसीना आ रहा है? बेहोशी जैसा लग रहा है? मतली या उल्टी?',
+                'te-IN': 'చాలా చెమట వస్తుందా? మూర్ఛ అవుతున్నట్లు అనిపిస్తుందా? వాంతులు?',
+                'or-IN': 'ଆପଣଙ୍କୁ ପ୍ରବଳ ଝାଳ ବୋହୁଛି କି? ଅଚେତ ହୋଇଯିବା ପରି ଲାଗୁଛି କି? ବାନ୍ତି ଲାଗୁଛି କିମ୍ବା ବାନ୍ତି ହୋଇଛି କି?'
+            },
+            quickPicks: ['Heavy sweating / ପ୍ରବଳ ଝାଳ', 'Nausea / ବାନ୍ତି ଭାବ', 'Vomiting / ବାନ୍ତି', 'Feeling faint / ଅଚେତ ଭାବ', 'None of these'],
+            redFlags: ['heavy sweating', 'feeling faint', 'vomiting', 'ଅଚେତ'],
         },
     ],
     fever: [
         {
             key: 'fever_temperature', section: 'History of Present Illness', sectionIndex: 2,
-            text: { 'en-IN': 'How high was the fever? Did you check your temperature? Did you have chills or shivering with the fever?', 'hi-IN': 'बुखार कितना था? तापमान लिया? क्या ठंड लगी या कंपकंपी आई?', 'te-IN': 'జ్వరం ఎంత ఉంది? ఉష్ణోగ్రత కొలిచారా? వణుకు వచ్చిందా?' },
-            quickPicks: ['Low grade (99-100°F)', 'Moderate (101-102°F)', 'High (103°F+)', 'Chills & shivering', 'Not measured'],
+            text: {
+                'en-IN': 'How high was the fever? Did you check your temperature? Did you have chills or shivering with the fever?',
+                'hi-IN': 'बुखार कितना था? तापमान लिया? क्या ठंड लगी या कंपकंपी आई?',
+                'te-IN': 'జ్వరం ఎంత ఉంది? ఉష్ణోగ్రత కొలిచారా? వణుకు వచ్చిందా?',
+                'or-IN': 'ଜ୍ୱର କେତେ ଡିଗ୍ରୀ ଥିଲା? ଆପଣ ଥର୍ମାମିଟରରେ ତାପମାତ୍ରା ମାପିଛନ୍ତି କି? ଜ୍ୱର ସହିତ ଥଣ୍ଡା ଲାଗି କମ୍ପ ଆସୁଛି କି?'
+            },
+            quickPicks: ['Low grade (99-100°F)', 'Moderate (101-102°F)', 'High (103°F+)', 'Chills & shivering / ଥଣ୍ଡା ଓ କମ୍ପ', 'Not measured'],
             redFlags: ['103', '104', '105', 'very high fever'],
         },
         {
             key: 'fever_rash', section: 'History of Present Illness', sectionIndex: 2,
-            text: { 'en-IN': 'Do you have any rash or skin changes? Is the fever continuous or does it come and go? Do you have body pain?', 'hi-IN': 'क्या कोई रैश या त्वचा में बदलाव है? बुखार लगातार है या आता-जाता है? बदन दर्द है?', 'te-IN': 'దద్దుర్లు ఉన్నాయా? జ్వరం నిరంతరం ఉంటుందా లేదా వస్తూ పోతుందా? శరీర నొప్పి?' },
-            quickPicks: ['Rash / दाने', 'Body pain', 'Continuous fever', 'Intermittent fever', 'Night sweats', 'No rash'],
+            text: {
+                'en-IN': 'Do you have any rash or skin changes? Is the fever continuous or does it come and go? Do you have body pain?',
+                'hi-IN': 'क्या कोई रैश या त्वचा में बदलाव है? बुखार लगातार है या आता-जाता है? बदन दर्द है?',
+                'te-IN': 'దద్దుర్లు ఉన్నాయా? జ్వరం నిరంతరం ఉంటుందా లేదా వస్తూ పోతుందా? శరీర నొప్పి?',
+                'or-IN': 'ଚର୍ମରେ କୌଣସି ଲାଲ ଦାଗ ବା ଫୁଳା ଅଛି କି? ଜ୍ୱର କ୍ରମାଗତ ରହୁଛି ନା ଆସୁଛି ଯାଉଛି? ଦେହ-ହାତ ଘୋଳାବିନ୍ଧା ହେଉଛି କି?'
+            },
+            quickPicks: ['Rash / ଲାଲ ଦାଗ', 'Body pain / ଦେହ ଘୋଳାବିନ୍ଧା', 'Continuous fever', 'Intermittent fever', 'Night sweats', 'No rash'],
             redFlags: ['rash', 'continuous high fever', 'night sweats'],
         },
     ],
     stomach: [
         {
             key: 'stomach_location', section: 'History of Present Illness', sectionIndex: 2,
-            text: { 'en-IN': 'Where exactly is the stomach pain — upper abdomen, lower abdomen, around the navel, or all over? Is it related to eating food?', 'hi-IN': 'पेट दर्द कहाँ है — ऊपर, नीचे, नाभि के आसपास या पूरे पेट में? खाने से संबंधित?', 'te-IN': 'పొట్ట నొప్పి ఎక్కడ ఉంది — పైన, కింద, బొడ్డు దగ్గర? తినడంతో సంబంధం ఉందా?' },
-            quickPicks: ['Upper abdomen', 'Lower abdomen', 'Around navel', 'All over', 'After eating', 'Before eating'],
+            text: {
+                'en-IN': 'Where exactly is the stomach pain — upper abdomen, lower abdomen, around the navel, or all over? Is it related to eating food?',
+                'hi-IN': 'पेट दर्द कहाँ है — ऊपर, नीचे, नाभि के आसपास या पूरे पेट में? खाने से संबंधित?',
+                'te-IN': 'పొట్ట నొప్పి ఎక్కడ ఉంది — పైన, కింద, బొడ్డు దగ్గర? తినడంతో సంబంధం ఉందా?',
+                'or-IN': 'ପେଟ ଯନ୍ତ୍ରଣା ଠିକ୍ କେଉଁଠାରେ ହେଉଛି — ଉପର ପେଟ, ତଳ ପେଟ, ନାଭି ଚାରିପାଖେ ନା ପୂରା ପେଟରେ? ଖାଦ୍ୟ ଖାଇବା ସହିତ ସମ୍ପର୍କ ଅଛି କି?'
+            },
+            quickPicks: ['Upper abdomen / ଉପର ପେଟ', 'Lower abdomen / ତଳ ପେଟ', 'Around navel / ନାଭି ପାଖ', 'All over / ପୂରା ପେଟ', 'After eating', 'Before eating'],
             redFlags: ['upper right abdomen', 'severe', 'cannot eat'],
         },
         {
             key: 'stomach_bowel', section: 'History of Present Illness', sectionIndex: 2,
-            text: { 'en-IN': 'Any vomiting? Loose stools or constipation? Is there any blood in the stool or vomiting?', 'hi-IN': 'उल्टी है? दस्त या कब्ज? मल या उल्टी में खून?', 'te-IN': 'వాంతులు ఉన్నాయా? విరేచనాలు లేదా మలబద్ధకం? మలంలో లేదా వాంతిలో రక్తం?' },
-            quickPicks: ['Vomiting', 'Loose stools / दस्त', 'Constipation', 'Blood in stool', 'Blood in vomit', 'None'],
-            redFlags: ['blood in stool', 'blood in vomit', 'black stool'],
+            text: {
+                'en-IN': 'Any vomiting? Loose stools or constipation? Is there any blood in the stool or vomiting?',
+                'hi-IN': 'उल्टी है? दस्त या कब्ज? मल या उल्टी में खून?',
+                'te-IN': 'వాంతులు ఉన్నాయా? విరేచనాలు లేదా మలబద్ధకం? మలంలో లేదా వాంతిలో రక్తం?',
+                'or-IN': 'ବାନ୍ତି ହେଉଛି କି? ପତଳା ଝାଡ଼ା କିମ୍ବା କୋଷ୍ଠକାଠିନ୍ୟ ଅଛି କି? ଝାଡ଼ା କିମ୍ବା ବାନ୍ତିରେ ରକ୍ତ ପଡୁଛି କି?'
+            },
+            quickPicks: ['Vomiting / ବାନ୍ତି', 'Loose stools / ପତଳା ଝାଡ଼ା', 'Constipation / କୋଷ୍ଠକାଠିନ୍ୟ', 'Blood in stool / ରକ୍ତ ଝାଡ଼ା', 'Blood in vomit', 'None'],
+            redFlags: ['blood in stool', 'blood in vomit', 'black stool', 'ରକ୍ତ'],
         },
     ],
     headache: [
         {
             key: 'headache_location', section: 'History of Present Illness', sectionIndex: 2,
-            text: { 'en-IN': 'Where is the headache — front, back, sides, or all over? Is it throbbing/pulsating or a constant pressure?', 'hi-IN': 'सिरदर्द कहाँ है — आगे, पीछे, किनारे या पूरे सिर में? धड़कन जैसा दर्द या दबाव?', 'te-IN': 'తలనొప్పి ఎక్కడ ఉంది — ముందు, వెనక, పక్కలు? దబదబ కొట్టుకుంటుందా లేదా నొప్పి స్థిరంగా ఉంటుందా?' },
-            quickPicks: ['Front / Forehead', 'Back of head', 'One side (migraine)', 'All over', 'Throbbing', 'Constant pressure'],
+            text: {
+                'en-IN': 'Where is the headache — front, back, sides, or all over? Is it throbbing/pulsating or a constant pressure?',
+                'hi-IN': 'सिरदर्द कहाँ है — आगे, पीछे, किनारे या पूरे सिर में? धड़कन जैसा दर्द या दबाव?',
+                'te-IN': 'తలనొప్పి ఎక్కడ ఉంది — ముందు, వెనక, పక్కలు? దబదబ కొట్టుకుంటుందా లేదా నొప్పి స్థిరంగా ఉంటుందా?',
+                'or-IN': 'ମୁଣ୍ଡବିନ୍ଧା କେଉଁଠି ହେଉଛି — ଆଗ କପାଳ, ପଛପଟ, ଗୋଟିଏ ପାଖ ନା ସମଗ୍ର ମୁଣ୍ଡରେ? ଏହା ଧପ୍-ଧପ୍ ମାରୁଛି ନା ଚାପ ପରି ଲାଗୁଛି?'
+            },
+            quickPicks: ['Front / Forehead / କପାଳ', 'Back of head / ପଛପଟ', 'One side (migraine)', 'All over / ସମଗ୍ର ମୁଣ୍ଡ', 'Throbbing', 'Constant pressure'],
             redFlags: ['worst headache', 'thunderclap', 'sudden severe'],
         },
         {
             key: 'headache_vision', section: 'History of Present Illness', sectionIndex: 2,
-            text: { 'en-IN': 'Do you have blurred vision, sensitivity to light or sound? Any nausea or vomiting with the headache?', 'hi-IN': 'क्या आँखें धुंधली हैं, रोशनी या आवाज़ से दिक्कत है? सिरदर्द के साथ मतली?', 'te-IN': 'దృష్టి మసకగా ఉందా? కాంతికి లేదా శబ్దానికి ఇబ్బందిగా ఉందా? వాంతి?' },
-            quickPicks: ['Blurred vision', 'Light sensitivity', 'Sound sensitivity', 'Nausea', 'Vomiting', 'None of these'],
+            text: {
+                'en-IN': 'Do you have blurred vision, sensitivity to light or sound? Any nausea or vomiting with the headache?',
+                'hi-IN': 'क्या आँखें धुंधली हैं, रोशनी या आवाज़ से दिक्कत है? सिरदर्द के साथ मतली?',
+                'te-IN': 'దృష్టి మసకగా ఉందా? కాంతికి లేదా శబ్దానికి ఇబ్బందిగా ఉందా? వాంతి?',
+                'or-IN': 'ଆଖି ଝାପ୍ସା ଦେଖାଯାଉଛି କି, ଆଲୋକ କିମ୍ବା ଶବ୍ଦରେ ଅସହ୍ୟ ଲାଗୁଛି କି? ମୁଣ୍ଡବିନ୍ଧା ସହିତ ବାନ୍ତି ଭାବ ହେଉଛି କି?'
+            },
+            quickPicks: ['Blurred vision / ଝାପ୍ସା ଦୃଷ୍ଟି', 'Light sensitivity', 'Sound sensitivity', 'Nausea', 'Vomiting', 'None of these'],
             redFlags: ['blurred vision', 'sudden vision loss'],
         },
     ],
     breathlessness: [
         {
             key: 'breath_onset', section: 'History of Present Illness', sectionIndex: 2,
-            text: { 'en-IN': 'Did the breathlessness start suddenly or gradually? Is it worse when lying flat? Do you have to use extra pillows to sleep?', 'hi-IN': 'सांस फूलना अचानक आया या धीरे-धीरे? लेटने पर बढ़ता है? सोने के लिए ज़्यादा तकिए लगते हैं?', 'te-IN': 'శ్వాస తక్కువ అవడం అకస్మాత్తుగా మొదలైందా లేదా క్రమంగా? పడుకున్నప్పుడు పెరుగుతుందా?' },
-            quickPicks: ['Sudden onset', 'Gradual onset', 'Worse lying flat', 'Extra pillows needed', 'Only on exertion', 'At rest also'],
-            redFlags: ['sudden', 'at rest', 'cannot lie flat'],
+            text: {
+                'en-IN': 'Did the breathlessness start suddenly or gradually? Is it worse when lying flat? Do you have to use extra pillows to sleep?',
+                'hi-IN': 'सांस फूलना अचानक आया या धीरे-धीरे? लेटने पर बढ़ता है? सोने के लिए ज़्यादा तकिए लगते हैं?',
+                'te-IN': 'శ్వాస తక్కువ అవడం అకస్మాత్తుగా మొదలైందా లేదా క్రమంగా? పడుకున్నప్పుడు పెరుగుతుందా?',
+                'or-IN': 'ନିଶ୍ୱାସ ନେବାରେ କଷ୍ଟ ହଠାତ୍ ଆରମ୍ଭ ହେଲା ନା ଧୀରେ ଧୀରେ ବଢ଼ିଲା? ସିଧା ଶୋଇଲେ କଷ୍ଟ ବଢ଼ିଯାଉଛି କି? ଶୋଇବା ପାଇଁ ଅଧିକ ତକିଆ ଦରକାର ହେଉଛି କି?'
+            },
+            quickPicks: ['Sudden onset / ହଠାତ୍', 'Gradual onset / ଧୀରେ ଧୀରେ', 'Worse lying flat', 'Extra pillows needed', 'Only on exertion', 'At rest also'],
+            redFlags: ['sudden', 'at rest', 'cannot lie flat', 'ହଠାତ୍'],
         },
     ],
     cough: [
         {
             key: 'cough_nature', section: 'History of Present Illness', sectionIndex: 2,
-            text: { 'en-IN': 'Is your cough dry, or does it bring up phlegm or mucus? If there is phlegm, what color is it (yellow, green, or blood-streaked)?', 'hi-IN': 'क्या खांसी सूखी है या बलगम वाली? यदि बलगम है, तो उसका रंग क्या है (पीला, हरा या खून जैसा)?', 'te-IN': 'మీ దగ్గు పొడి దగ్గా లేదా కఫం వస్తుందా? కఫం రంగు ఏమిటి?' },
-            quickPicks: ['Dry cough / सूखी', 'Phlegm (clear)', 'Phlegm (yellow/green)', 'Blood streaks in cough', 'Night cough'],
-            redFlags: ['blood streaks', 'blood in cough', 'hemoptysis'],
+            text: {
+                'en-IN': 'Is your cough dry, or does it bring up phlegm or mucus? If there is phlegm, what color is it (yellow, green, or blood-streaked)?',
+                'hi-IN': 'क्या खांसी सूखी है या बलगम वाली? यदि बलगम है, तो उसका रंग क्या है (पीला, हरा या खून जैसा)?',
+                'te-IN': 'మీ దగ్గు పొడి దగ్గా లేదా కఫం వస్తుందా? కఫం రంగు ఏమిటి?',
+                'or-IN': "କାଶ ଶୁଖିଲା ହେଉଛି ନା କଫ ବାହାରୁଛି? ଯଦି କଫ ବାହାରୁଛି, ତେବେ ତାର ରଙ୍ଗ କ'ଣ (ହଳଦିଆ, ସବୁଜ ନା ରକ୍ତ ମିଶା)?"
+            },
+            quickPicks: ['Dry cough / ଶୁଖିଲା କାଶ', 'Phlegm (clear) / ଧଳା କଫ', 'Phlegm (yellow/green)', 'Blood streaks in cough', 'Night cough'],
+            redFlags: ['blood streaks', 'blood in cough', 'hemoptysis', 'ରକ୍ତ'],
         },
         {
             key: 'cough_triggers', section: 'History of Present Illness', sectionIndex: 2,
-            text: { 'en-IN': 'Does the cough get worse at night or when lying down? Have you noticed any wheezing, whistling sound, or chest tightness?', 'hi-IN': 'क्या रात में या लेटने पर खांसी बढ़ जाती है? क्या सीने में घरघराहट या सीटी की आवाज आती है?', 'te-IN': 'రాత్రి లేదా పడుకున్నప్పుడు దగ్గు ఎక్కువవుతుందా? పిల్లికూతలు లేదా ఛాతీ బిగుతుగా ఉందా?' },
-            quickPicks: ['Worse at night', 'Wheezing sound / सीटी', 'Chest tightness', 'With cold air', 'No wheezing'],
+            text: {
+                'en-IN': 'Does the cough get worse at night or when lying down? Have you noticed any wheezing, whistling sound, or chest tightness?',
+                'hi-IN': 'क्या रात में या लेटने पर खांसी बढ़ जाती है? क्या सीने में घरघराहट या सीटी की आवाज आती है?',
+                'te-IN': 'రాత్రి లేదా పడుకున్నప్పుడు దగ్గు ఎక్కువవుతుందా? పిల్లికూతలు లేదా ఛాతీ బిగుతుగా ఉందా?',
+                'or-IN': 'ରାତିରେ କିମ୍ବା ଶୋଇବା ବେଳେ କାଶ ବଢ଼ିଯାଉଛି କି? ଛାତିରୁ ଶିଁ-ଶିଁ ଶବ୍ଦ ଆସୁଛି କିମ୍ବା ଛାତି ଜାବୁଡ଼ି ଧରିଲା ପରି ଲାଗୁଛି କି?'
+            },
+            quickPicks: ['Worse at night / ରାତିରେ ଅଧିକ', 'Wheezing sound / ଶିଁ-ଶିଁ ଶବ୍ଦ', 'Chest tightness / ଛାତି ଜାବୁଡ଼ିବା', 'With cold air', 'No wheezing'],
             redFlags: ['severe wheezing', 'cannot breathe with cough'],
         },
     ],
     throat: [
         {
             key: 'throat_swallow', section: 'History of Present Illness', sectionIndex: 2,
-            text: { 'en-IN': 'Is it painful to swallow food or water? Do you feel swelling in your neck glands, or has your voice become hoarse?', 'hi-IN': 'क्या खाना या पानी निगलने में दर्द होता है? गले में सूजन है या आवाज़ बैठ गई है?', 'te-IN': 'ఆహారం లేదా నీరు మింగడానికి నొప్పిగా ఉందా? గొంతులో వాపు ఉందా లేదా స్వరం మారిందా?' },
-            quickPicks: ['Pain on swallowing', 'Difficulty swallowing liquids', 'Hoarse voice / आवाज़ बैठना', 'Neck swelling', 'Mild irritation'],
+            text: {
+                'en-IN': 'Is it painful to swallow food or water? Do you feel swelling in your neck glands, or has your voice become hoarse?',
+                'hi-IN': 'क्या खाना या पानी निगलने में दर्द होता है? गले में सूजन है या आवाज़ बैठ गई है?',
+                'te-IN': 'ఆహారం లేదా నీరు మింగడానికి నొప్పిగా ఉందా? గొంతులో వాపు ఉందా లేదా స్వరం మారిందా?',
+                'or-IN': 'ଖାଦ୍ୟ ବା ପାଣି ଢୋକିବା ବେଳେ ଗଳାରେ କଷ୍ଟ ହେଉଛି କି? ବେକରେ ଗଣ୍ଠି ଫୁଲିଛି କିମ୍ବା ସ୍ୱର ବସିଯାଇଛି କି?'
+            },
+            quickPicks: ['Pain on swallowing / ଢୋକିବାରେ କଷ୍ଟ', 'Difficulty swallowing liquids', 'Hoarse voice / ସ୍ୱର ବସିବା', 'Neck swelling / ବେକ ଫୁଲା', 'Mild irritation'],
             redFlags: ['cannot swallow saliva', 'stridor', 'severe swelling'],
         },
     ],
     joint_ortho: [
         {
             key: 'joint_stiffness', section: 'History of Present Illness', sectionIndex: 2,
-            text: { 'en-IN': 'Which joints are paining? Do you experience morning stiffness lasting more than 30 minutes? Any visible swelling, warmth, or redness?', 'hi-IN': 'किन जोड़ों में दर्द है? क्या सुबह 30 मिनट से अधिक अकड़न रहती है? सूजन या लालिमा है?', 'te-IN': 'ఏ కీళ్లలో నొప్పి ఉంది? ఉదయం లేవగానే కీళ్ళు బిగుసుకుపోతున్నాయా? వాపు లేదా ఎరుపు ఉందా?' },
-            quickPicks: ['Knees / घुटने', 'Hands/Fingers', 'Morning stiffness > 30m', 'Joint swelling', 'Shoulder/Elbow', 'No swelling'],
+            text: {
+                'en-IN': 'Which joints are paining? Do you experience morning stiffness lasting more than 30 minutes? Any visible swelling, warmth, or redness?',
+                'hi-IN': 'किन जोड़ों में दर्द है? क्या सुबह 30 मिनट से अधिक अकड़न रहती है? सूजन या लालिमा है?',
+                'te-IN': 'ఏ కీళ్లలో నొప్పి ఉంది? ఉదయం లేవగానే కీళ్ళు బిగుసుకుపోతున్నాయా? వాపు లేదా ఎరుపు ఉందా?',
+                'or-IN': 'କେଉଁ ଗଣ୍ଠିରେ ଯନ୍ତ୍ରଣା ହେଉଛି? ସକାଳେ ଉଠିବା ପରେ ଅଧ ଘଣ୍ଟାରୁ ଅଧିକ ସମୟ ଗଣ୍ଠି ଜକଡ଼ି ହୋଇ ରହୁଛି କି? କୌଣସି ଫୁଲା ବା ଲାଲ୍ ଦାଗ ଅଛି କି?'
+            },
+            quickPicks: ['Knees / ଆଣ୍ଠୁ', 'Hands/Fingers / ହାତ ଆଙ୍ଗୁଠି', 'Morning stiffness > 30m', 'Joint swelling / ଗଣ୍ଠି ଫୁଲା', 'Shoulder/Elbow', 'No swelling'],
             redFlags: ['cannot bear weight', 'hot red swollen joint'],
         },
         {
             key: 'joint_mobility', section: 'History of Present Illness', sectionIndex: 2,
-            text: { 'en-IN': 'Does the pain worsen when walking or climbing stairs? Have you had any recent injury, twist, or fall?', 'hi-IN': 'क्या चलने या सीढ़ियां चढ़ने पर दर्द बढ़ जाता है? क्या हाल ही में कोई चोट लगी या गिरे थे?', 'te-IN': 'నడుస్తున్నప్పుడు లేదా మెట్లు ఎక్కుతున్నప్పుడు నొప్పి పెరుగుతుందా? దెబ్బ లేదా పడటం జరిగిందా?' },
-            quickPicks: ['Worse climbing stairs', 'Worse with walking', 'Recent fall or twist', 'Pain at rest also', 'Locking sensation'],
+            text: {
+                'en-IN': 'Does the pain worsen when walking or climbing stairs? Have you had any recent injury, twist, or fall?',
+                'hi-IN': 'क्या चलने या सीढ़ियां चढ़ने पर दर्द बढ़ जाता है? क्या हाल ही में कोई चोट लगी या गिरे थे?',
+                'te-IN': 'నడుస్తున్నప్పుడు లేదా మెట్లు ఎక్కుతున్నప్పుడు నొప్పి పెరుగుతుందా? దెబ్బ లేదా పడటం జరిగిందా?',
+                'or-IN': 'ଚାଲିବା କିମ୍ବା ସିଡ଼ି ଚଢ଼ିବା ବେଳେ ଯନ୍ତ୍ରଣା ବଢ଼ିଯାଉଛି କି? ନିକଟରେ କୌଣସି ଆଘାତ ଲାଗିଛି, ମୋଡ଼ି ହୋଇଛି ବା ତଳେ ପଡ଼ିଯାଇଥିଲେ କି?'
+            },
+            quickPicks: ['Worse climbing stairs', 'Worse with walking / ଚାଲିବାରେ କଷ୍ଟ', 'Recent fall or twist', 'Pain at rest also', 'Locking sensation'],
             redFlags: ['joint deformity', 'sudden inability to walk'],
         },
     ],
     back_pain: [
         {
             key: 'back_radiation', section: 'History of Present Illness', sectionIndex: 2,
-            text: { 'en-IN': 'Does the back pain shoot down your hips, thighs, or feet? Do you feel any numbness, tingling, or weakness in your legs?', 'hi-IN': 'क्या कमर का दर्द नीचे कूल्हे, जांघ या पैरों में जाता है? क्या पैरों में सुन्नपन या कमजोरी है?', 'te-IN': 'నడుము నొప్పి తొడలు లేదా కాళ్ళ వరకు లాగుతుందా? కాళ్ళలో తిమ్మిరి లేదా బలహీనత ఉందా?' },
-            quickPicks: ['Radiates down leg (Sciatica)', 'Numbness/Tingling in toes', 'Lower back only', 'Worse bending forward', 'Muscle spasm'],
+            text: {
+                'en-IN': 'Does the back pain shoot down your hips, thighs, or feet? Do you feel any numbness, tingling, or weakness in your legs?',
+                'hi-IN': 'क्या कमर का दर्द नीचे कूल्हे, जांघ या पैरों में जाता है? क्या पैरों में सुन्नपन या कमजोरी है?',
+                'te-IN': 'నడుము నొప్పి తొడలు లేదా కాళ్ళ వరకు లాగుతుందా? కాళ్ళలో తిమ్మిరి లేదా బలహీనత ఉందా?',
+                'or-IN': 'ଅଣ୍ଟା ବା ପିଠି ଯନ୍ତ୍ରଣା ତଳକୁ ଅର୍ଥାତ୍ ନିତମ୍ବ, ଜଙ୍ଘ କିମ୍ବା ପାଦ ପର୍ଯ୍ୟନ୍ତ ବିନ୍ଧୁଛି କି? ଗୋଡ଼ରେ ଝିମ୍-ଝିମ୍ ବା ଦୁର୍ବଳତା ଲାଗୁଛି କି?'
+            },
+            quickPicks: ['Radiates down leg (Sciatica)', 'Numbness/Tingling in toes / ଝିମ୍-ଝିମ୍', 'Lower back only / କେବଳ ଅଣ୍ଟା', 'Worse bending forward', 'Muscle spasm'],
             redFlags: ['loss of bladder control', 'loss of bowel control', 'saddle numbness', 'leg paralysis'],
         },
     ],
     vomiting_diarrhea: [
         {
             key: 'vomit_frequency', section: 'History of Present Illness', sectionIndex: 2,
-            text: { 'en-IN': 'How many times have you vomited or passed loose stools in the past 24 hours? Are you able to keep water or oral rehydration down?', 'hi-IN': 'पिछले 24 घंटों में कितनी बार उल्टी या दस्त हुए हैं? क्या पानी या ORS पेट में रुक रहा है?', 'te-IN': 'గత 24 గంటల్లో ఎన్నిసార్లు వాంతులు లేదా విరేచనాలు అయ్యాయి? నీరు త్రాగగలుగుతున్నారా?' },
-            quickPicks: ['1-3 times', '4-6 times', 'More than 6 times', 'Cannot keep fluids down', 'Urine is very dark/scanty'],
-            redFlags: ['cannot keep any fluid', 'no urine passed', 'blood in vomit'],
+            text: {
+                'en-IN': 'How many times have you vomited or passed loose stools in the past 24 hours? Are you able to keep water or oral rehydration down?',
+                'hi-IN': 'पिछले 24 घंटों में कितनी बार उल्टी या दस्त हुए हैं? क्या पानी या ORS पेट में रुक रहा है?',
+                'te-IN': 'గత 24 గంటల్లో ఎన్నిసార్లు వాంతులు లేదా విరేచనాలు అయ్యాయి? నీరు త్రాగగలుగుతున్నారా?',
+                'or-IN': 'ଗତ ୨୪ ଘଣ୍ଟା ମଧ୍ୟରେ କେତେ ଥର ବାନ୍ତି ବା ପତଳା ଝାଡ଼ା ହୋଇଛି? ଆପଣ ପାଣି କିମ୍ବା ଓଆରଏସ୍ (ORS) ପେଟରେ ରଖିପାରୁଛନ୍ତି କି?'
+            },
+            quickPicks: ['1-3 times / ୧-୩ ଥର', '4-6 times / ୪-୬ ଥର', 'More than 6 times / ୬ ରୁ ଅଧିକ', 'Cannot keep fluids down', 'Urine is very dark/scanty'],
+            redFlags: ['cannot keep any fluid', 'no urine passed', 'blood in vomit', 'ରକ୍ତ'],
         },
     ],
     skin_allergy: [
         {
             key: 'skin_spread', section: 'History of Present Illness', sectionIndex: 2,
-            text: { 'en-IN': 'Where did the rash start and is it spreading? Is there severe itching, burning, or peeling? Any swelling of your lips or face?', 'hi-IN': 'रैश कहाँ शुरू हुआ और क्या यह फैल रहा है? क्या बहुत खुजली या जलन है? क्या होंठ या चेहरे पर सूजन है?', 'te-IN': 'దద్దుర్లు ఎక్కడ మొదలయ్యాయి? తీవ్రమైన దురద లేదా మంట ఉందా? పెదవులు లేదా ముఖంలో వాపు ఉందా?' },
-            quickPicks: ['Severe itching / खुजली', 'Spreading rapidly', 'Lip / Eye swelling', 'Hives / Welts', 'Recent new food/drug'],
+            text: {
+                'en-IN': 'Where did the rash start and is it spreading? Is there severe itching, burning, or peeling? Any swelling of your lips or face?',
+                'hi-IN': 'रैश कहाँ शुरू हुआ और क्या यह फैल रहा है? क्या बहुत खुजली या जलन है? क्या होंठ या चेहरे पर सूजन है?',
+                'te-IN': 'దద్దుర్లు ఎక్కడ మొదలయ్యాయి? తీవ్రమైన దురద లేదా మంట ఉందా? పెదవులు లేదా ముఖంలో వాపు ఉందా?',
+                'or-IN': 'ଚର୍ମ କୁଣ୍ଡିଆ ବା ଲାଲ୍ ଦାଗ କେଉଁଠାରୁ ଆରମ୍ଭ ହେଲା ଏବଂ ଏହା ଶରୀରରେ ବ୍ୟାପୁଛି କି? ପ୍ରବଳ କୁଣ୍ଡାଇ ହେବା କିମ୍ବା ପୋଡ଼ିବା ଭଳି ଲାଗୁଛି କି? ଓଠ ବା ମୁହଁ ଫୁଲିଛି କି?'
+            },
+            quickPicks: ['Severe itching / ପ୍ରବଳ କୁଣ୍ଡିଆ', 'Spreading rapidly / ଶୀଘ୍ର ବ୍ୟାପିବା', 'Lip / Eye swelling / ମୁହଁ ଫୁଲା', 'Hives / Welts', 'Recent new food/drug'],
             redFlags: ['lip swelling', 'tongue swelling', 'throat closing', 'difficulty breathing'],
         },
     ],
     diabetes_metabolic: [
         {
             key: 'diabetes_symptoms', section: 'History of Present Illness', sectionIndex: 2,
-            text: { 'en-IN': 'Have you noticed excessive thirst, frequent urination at night, or sudden weight loss? Any tingling or burning sensation in your feet?', 'hi-IN': 'क्या बहुत प्यास लगती है, रात में बार-बार पेशाब जाना पड़ता है? क्या पैरों में जलन या सुन्नपन है?', 'te-IN': 'విపరీతమైన దాహం, రాత్రిపూట తరచుగా మూత్రవిసర్జన ఉందా? పాదాలలో తిమ్మిరి లేదా మంట ఉందా?' },
-            quickPicks: ['Excessive thirst / प्यास', 'Frequent night urination', 'Feet tingling/burning', 'Non-healing wound', 'High sugar on tests'],
+            text: {
+                'en-IN': 'Have you noticed excessive thirst, frequent urination at night, or sudden weight loss? Any tingling or burning sensation in your feet?',
+                'hi-IN': 'क्या बहुत प्यास लगती है, रात में बार-बार पेशाब जाना पड़ता है? क्या पैरों में जलन या सुन्नपन है?',
+                'te-IN': 'విపరీతమైన దాహం, రాత్రిపూట తరచుగా మూత్రవిసర్జన ఉందా? పాదాలలో తిమ్మిరి లేదా మంట ఉందా?',
+                'or-IN': 'ଆପଣଙ୍କୁ ଅତ୍ୟଧିକ ଶୋଷ ଲାଗୁଛି କି, ରାତିରେ ବାରମ୍ବାର ପରିସ୍ରା ଲାଗୁଛି କିମ୍ବା ହଠାତ୍ ଓଜନ କମିଛି କି? ଗୋଡ଼ ତଳିପାଆ ପୋଡ଼ିବା ବା ଝିମ୍-ଝିମ୍ ଲାଗୁଛି କି?'
+            },
+            quickPicks: ['Excessive thirst / ଅତ୍ୟଧିକ ଶୋଷ', 'Frequent night urination', 'Feet tingling/burning', 'Non-healing wound', 'High sugar on tests'],
             redFlags: ['non healing foot ulcer', 'fruity breath', 'confusion'],
         },
     ],
     hypertension_cardio: [
         {
             key: 'htn_symptoms', section: 'History of Present Illness', sectionIndex: 2,
-            text: { 'en-IN': 'Do you have high blood pressure? Have you experienced pounding in your ears, heaviness in the back of your head, or nosebleeds?', 'hi-IN': 'क्या आपको बीपी की समस्या है? सिर के पिछले हिस्से में भारीपन, कानों में धड़कन या चक्कर आते हैं?', 'te-IN': 'మీకు అధిక రక్తపోటు (BP) ఉందా? తల వెనుక భాగంలో బరువుగా లేదా కళ్ళు తిరుగుతున్నాయా?' },
-            quickPicks: ['Known high BP', 'Occipital headache', 'Palpitations', 'Dizziness', 'BP not measured recently'],
+            text: {
+                'en-IN': 'Do you have high blood pressure? Have you experienced pounding in your ears, heaviness in the back of your head, or nosebleeds?',
+                'hi-IN': 'क्या आपको बीपी की समस्या है? सिर के पिछले हिस्से में भारीपन, कानों में धड़कन या चक्कर आते हैं?',
+                'te-IN': 'మీకు అధిక రక్తపోటు (BP) ఉందా? తల వెనుక భాగంలో బరువుగా లేదా కళ్ళు తిరుగుతున్నాయా?',
+                'or-IN': 'ଆପଣଙ୍କର ଉଚ୍ଚ ରକ୍ତଚାପ (ହାଇ ବିପି) ସମସ୍ୟା ଅଛି କି? ମୁଣ୍ଡ ପଛପଟ ଭାରୀ ଲାଗିବା, କାନରେ ଧପ୍-ଧପ୍ ଶବ୍ଦ କିମ୍ବା ନାକରୁ ରକ୍ତ ପଡ଼ିବା ଅନୁଭବ ହୋଇଛି କି?'
+            },
+            quickPicks: ['Known high BP / ହାଇ ବିପି', 'Occipital headache', 'Palpitations / ଛାତି ଧଡ଼ଧଡ଼', 'Dizziness / ଚକ୍କର', 'BP not measured recently'],
             redFlags: ['BP over 180', 'chest pain with high BP', 'blurred vision with high BP'],
         },
     ],
     urinary: [
         {
             key: 'urinary_burning', section: 'History of Present Illness', sectionIndex: 2,
-            text: { 'en-IN': 'Do you feel burning or severe pain while passing urine? Have you noticed any pink or red blood in your urine, or lower back pain?', 'hi-IN': 'क्या पेशाब करते समय जलन या तेज़ दर्द होता है? क्या पेशाब में खून दिखा या पीठ के निचले हिस्से में दर्द है?', 'te-IN': 'మూత్ర విసర్జన సమయంలో మంట లేదా నొప్పి ఉందా? మూత్రంలో రక్తం కనిపించిందా?' },
-            quickPicks: ['Burning sensation / जलन', 'Frequent urgency', 'Blood in urine / पेशाब में खून', 'Lower back/side pain', 'Fever with chills'],
-            redFlags: ['blood in urine', 'cannot pass urine at all', 'high fever with flank pain'],
+            text: {
+                'en-IN': 'Do you feel burning or severe pain while passing urine? Have you noticed any pink or red blood in your urine, or lower back pain?',
+                'hi-IN': 'क्या पेशाब करते समय जलन या तेज़ दर्द होता है? क्या पेशाब में खून दिखा या पीठ के निचले हिस्से में दर्द है?',
+                'te-IN': 'మూత్ర విసర్జన సమయంలో మంట లేదా నొప్పి ఉందా? మూత్రంలో రక్తం కనిపించిందా?',
+                'or-IN': 'ପରିସ୍ରା କରିବା ସମୟରେ ପୋଡ଼ାଜଳା କିମ୍ବା ପ୍ରବଳ ଯନ୍ତ୍ରଣା ହେଉଛି କି? ପରିସ୍ରାରେ ଲାଲ୍ ରକ୍ତ ଦେଖାଯାଇଛି କିମ୍ବା କଟିପିଠି ବିନ୍ଧୁଛି କି?'
+            },
+            quickPicks: ['Burning sensation / ପୋଡ଼ାଜଳା', 'Frequent urgency', 'Blood in urine / ପରିସ୍ରାରେ ରକ୍ତ', 'Lower back/side pain', 'Fever with chills'],
+            redFlags: ['blood in urine', 'cannot pass urine at all', 'high fever with flank pain', 'ରକ୍ତ'],
         },
     ],
     dizziness_vertigo: [
         {
             key: 'dizziness_type', section: 'History of Present Illness', sectionIndex: 2,
-            text: { 'en-IN': 'Does the room feel like it is spinning around you (vertigo), or do you feel faint and lightheaded? Does turning your head make it worse?', 'hi-IN': 'क्या कमरा घूमता हुआ महसूस होता है (चक्कर), या बेहोशी जैसा लगता है? क्या सिर घुमाने पर बढ़ता है?', 'te-IN': 'గది చుట్టూ తిరుగుతున్నట్లు అనిపిస్తుందా లేదా మూర్ఛ వచ్చేలా ఉందా? తల తిప్పినప్పుడు ఎక్కువవుతుందా?' },
-            quickPicks: ['Room spinning (Vertigo)', 'Lightheaded / Faint', 'Worse turning head', 'Ringing in ears (Tinnitus)', 'Nausea with dizziness'],
-            redFlags: ['sudden weakness in face/arm', 'slurred speech', 'double vision'],
+            text: {
+                'en-IN': 'Does the room feel like it is spinning around you (vertigo), or do you feel faint and lightheaded? Does turning your head make it worse?',
+                'hi-IN': 'क्या कमरा घूमता हुआ महसूस होता है (चक्कर), या बेहोशी जैसा लगता है? क्या सिर घुमाने पर बढ़ता है?',
+                'te-IN': 'గది చుట్టూ తిరుగుతున్నట్లు అనిపిస్తుందా లేదా మూర్ఛ వచ్చేలా ఉందా? తల తిప్పినప్పుడు ఎక్కువవుతుందా?',
+                'or-IN': 'ଚାରିପାଖର ଘର ବା ଜିନିଷ ଘୂରିବା ପରି (ଚକ୍କର) ଲାଗୁଛି କି, ନା ମୁଣ୍ଡ ହାଲୁକା ହୋଇ ଅଚେତ ହେବା ପରି ଲାଗୁଛି? ମୁଣ୍ଡ ବୁଲାଇଲେ ଏହା ବଢ଼ୁଛି କି?'
+            },
+            quickPicks: ['Room spinning (Vertigo) / ଚକ୍କର', 'Lightheaded / Faint / ଅଚେତ ଭାବ', 'Worse turning head', 'Ringing in ears (Tinnitus)', 'Nausea with dizziness'],
+            redFlags: ['sudden weakness in face/arm', 'slurred speech', 'double vision', 'ଅଚେତ'],
         },
-    ],
+    ]
 };
 
 /* Helper: Dynamically builds a contextual follow-up question for unexpected clinical symptoms */
@@ -381,6 +500,7 @@ const AYUSH_QUESTIONS = [
             'en-IN': 'What is your usual body nature (Prakriti)? Are you generally: Lean & active (Vata), Medium build & warm (Pitta), or Heavy & calm (Kapha)?',
             'hi-IN': 'आपकी सामान्य शारीरिक प्रकृति क्या है? क्या आप सामान्यतः पतले और सक्रिय (वात), मध्यम गर्म (पित्त), या भारी और शांत (कफ) हैं?',
             'te-IN': 'మీ సాధారణ శారీర స్వభావం (ప్రకృతి) ఏమిటి?',
+            'or-IN': 'ଆପଣଙ୍କ ଶରୀରର ପ୍ରକୃତି ସାଧାରଣତଃ କିପରି? ଆପଣ ପତଳା ଏବଂ ଚଞ୍ଚଳ (ବାତ), ମଧ୍ୟମ ଓ ଉଷ୍ମ (ପିତ୍ତ), ନା ସ୍ଥୂଳ ଓ ଶାନ୍ତ (କଫ)?'
         },
         quickPicks: ['Vata (Lean, active, dry skin)', 'Pitta (Medium, warm, sharp)', 'Kapha (Heavy, slow, calm)', 'Mixed / Not sure'],
         redFlags: [],
@@ -391,8 +511,9 @@ const AYUSH_QUESTIONS = [
             'en-IN': 'What is your usual diet? Do you eat regularly? Do you prefer hot or cold food? Any recent change in diet or routine?',
             'hi-IN': 'आपका सामान्य आहार क्या है? नियमित खाना खाते हैं? गर्म या ठंडा खाना पसंद करते हैं?',
             'te-IN': 'మీ సాధారణ ఆహారం ఏమిటి? నియమితంగా తింటారా? వేడి లేదా చల్లని ఆహారం ఇష్టమా?',
+            'or-IN': 'ଆପଣଙ୍କର ଦୈନନ୍ଦିନ ଖାଦ୍ୟାଭ୍ୟାସ କିପରି? ଆପଣ ନିୟମିତ ଖାଆନ୍ତି କି? ଗରମ ଖାଦ୍ୟ ପସନ୍ଦ କରନ୍ତି ନା ଥଣ୍ଡା ଖାଦ୍ୟ?'
         },
-        quickPicks: ['Vegetarian / शाकाहारी', 'Non-vegetarian', 'Irregular meals', 'Prefers hot food', 'Prefers cold food', 'Fasting habits'],
+        quickPicks: ['Vegetarian / ନିରାମିଷ', 'Non-vegetarian / ଆମିଷ', 'Irregular meals', 'Prefers hot food', 'Prefers cold food', 'Fasting habits'],
         redFlags: [],
     },
     {
@@ -401,6 +522,7 @@ const AYUSH_QUESTIONS = [
             'en-IN': 'How much physical activity can you do? Do you exercise regularly? How is your strength and endurance?',
             'hi-IN': 'आप कितना शारीरिक काम कर सकते हैं? नियमित व्यायाम करते हैं? शक्ति कैसी है?',
             'te-IN': 'మీరు ఎంత శారీరక పని చేయగలరు? నిత్యం వ్యాయామం చేస్తారా?',
+            'or-IN': 'ଆପଣ କେତେ ପରିମାଣରେ ଶାରୀରିକ ପରିଶ୍ରମ କରିପାରନ୍ତି? ନିୟମିତ ବ୍ୟାୟାମ କରନ୍ତି କି? ଆପଣଙ୍କ ଶକ୍ତି ଓ ଧୈର୍ଯ୍ୟ କିପରି ଅଛି?'
         },
         quickPicks: ['High exercise tolerance', 'Moderate', 'Low (gets tired easily)', 'No exercise', 'Sedentary work'],
         redFlags: [],
@@ -411,10 +533,11 @@ const AYUSH_QUESTIONS = [
             'en-IN': 'Are there any foods, climates, or environments you cannot tolerate? For example, certain foods that cause problems, or sensitivity to heat/cold?',
             'hi-IN': 'क्या कोई खाना, मौसम या वातावरण है जो आप सहन नहीं कर सकते? गर्मी या ठंड से एलर्जी?',
             'te-IN': 'ఏదైనా ఆహారం, వాతావరణం లేదా పరిసరాలు సహించలేరా?',
+            'or-IN': 'ଏପରି କୌଣସି ଖାଦ୍ୟ, ଜଳବାୟୁ ବା ପରିବେଶ ଅଛି କି ଯାହା ଆପଣ ସହ୍ୟ କରିପାରନ୍ତି ନାହିଁ? ଯେପରିକି ଗରମ କିମ୍ବା ଥଣ୍ଡାରୁ କଷ୍ଟ ହେବା?'
         },
         quickPicks: ['Heat intolerant', 'Cold intolerant', 'Specific food allergy', 'No issues', 'Seasonal problems'],
         redFlags: [],
-    },
+    }
 ];
 
 /* ============================================================================
@@ -880,21 +1003,21 @@ function _voiceEvaluateFollowUps(answerText, questionKey) {
     let matchedKeyword = '';
 
     const domainChecks = [
-        { domain: 'chest', keywords: ['chest', 'heart', 'cardiac', 'angina', 'छाती', 'गुण्डे', 'గుండె', 'நெஞ்சு'], label: 'Chest / Heart symptoms' },
-        { domain: 'fever', keywords: ['fever', 'temperature', 'chills', 'shivering', 'बुखार', 'ज्वరం', 'காய்ச்சல்', 'pyrexia'], label: 'Fever / High temperature' },
-        { domain: 'stomach', keywords: ['stomach', 'abdomen', 'belly', 'gastric', 'acidity', 'पेट', 'పొట్ట', 'വയറു', 'loose motion'], label: 'Stomach / Abdominal issue' },
-        { domain: 'headache', keywords: ['headache', 'head ache', 'migraine', 'सिरदर्द', 'తలనొప్పి', 'தலைவலி'], label: 'Headache / Migraine' },
-        { domain: 'breathlessness', keywords: ['breath', 'breathing', 'dyspnea', 'wheez', 'asthma', 'सांस', 'శ్వాస'], label: 'Breathing difficulty' },
-        { domain: 'cough', keywords: ['cough', 'khansi', 'phlegm', 'sputum', 'mucus', 'खांसी', 'దగ్గు', 'இருமல்'], label: 'Cough & Sputum' },
-        { domain: 'throat', keywords: ['throat', 'sore throat', 'tonsil', 'swallow', 'गला', 'గొంతు', 'தொண்டை'], label: 'Throat discomfort' },
-        { domain: 'joint_ortho', keywords: ['joint', 'knee', 'knee pain', 'arthritis', 'swelling', 'घुटने', 'నొప్పులు', 'மூட்டு'], label: 'Joint / Knee pain' },
-        { domain: 'back_pain', keywords: ['back pain', 'lower back', 'spine', 'कमर', 'నడుము', 'முதுகு'], label: 'Back & Spine pain' },
-        { domain: 'vomiting_diarrhea', keywords: ['vomit', 'nausea', 'diarrhea', 'motion', 'उल्टी', 'వాంతి', 'வாந்தி'], label: 'Nausea & Vomiting' },
-        { domain: 'skin_allergy', keywords: ['rash', 'itch', 'skin', 'allergy', 'hives', 'खुजली', 'దద్దుర్లు', 'அரிப்பு'], label: 'Skin rash / Allergy' },
-        { domain: 'diabetes_metabolic', keywords: ['sugar', 'diabetes', 'diabetic', 'मधुमेह', 'షుగర్'], label: 'Diabetes / Blood sugar' },
-        { domain: 'hypertension_cardio', keywords: ['bp', 'blood pressure', 'hypertension', 'बीपी'], label: 'Blood pressure' },
-        { domain: 'urinary', keywords: ['urine', 'urination', 'burning', 'bladder', 'पेशाब', 'మూత్రం'], label: 'Urinary symptoms' },
-        { domain: 'dizziness_vertigo', keywords: ['dizzy', 'dizziness', 'spinning', 'vertigo', 'faint', 'चक्कर', 'కళ్ళు తిరగడం'], label: 'Dizziness & Balance' },
+        { domain: 'chest', keywords: ['chest', 'heart', 'cardiac', 'angina', 'छाती', 'गुण्डे', 'గుండె', 'நெஞ்சு', 'ଛାତି', 'ହୃଦ', 'କଲିଜା'], label: 'Chest / Heart symptoms' },
+        { domain: 'fever', keywords: ['fever', 'temperature', 'chills', 'shivering', 'बुखार', 'ज्वर', 'காய்ச்சல்', 'pyrexia', 'ଜ୍ୱର', 'ତାପମାତ୍ରା', 'ଥଣ୍ଡା'], label: 'Fever / High temperature' },
+        { domain: 'stomach', keywords: ['stomach', 'abdomen', 'belly', 'gastric', 'acidity', 'पेट', 'పొట్ట', 'വയറു', 'loose motion', 'ପେଟ', 'ପେଟବିନ୍ଧା', 'ଝାଡ଼ା'], label: 'Stomach / Abdominal issue' },
+        { domain: 'headache', keywords: ['headache', 'head ache', 'migraine', 'सिरदर्द', 'తలనొప్పి', 'தலைவலி', 'ମୁଣ୍ଡବିନ୍ଧା', 'ମୁଣ୍ଡ'], label: 'Headache / Migraine' },
+        { domain: 'breathlessness', keywords: ['breath', 'breathing', 'dyspnea', 'wheez', 'asthma', 'सांस', 'శ్వాస', 'ଶ୍ୱାସ', 'ନିଶ୍ୱାସ', 'ହାଲିଆ'], label: 'Breathing difficulty' },
+        { domain: 'cough', keywords: ['cough', 'khansi', 'phlegm', 'sputum', 'mucus', 'खांसी', 'దగ్గు', 'இருமல்', 'କାଶ', 'କଫ', 'ଖଙ୍କାର'], label: 'Cough & Sputum' },
+        { domain: 'throat', keywords: ['throat', 'sore throat', 'tonsil', 'swallow', 'गला', 'గొంతు', 'தொண்டை', 'ଗଳା', 'ତଣ୍ଟି'], label: 'Throat discomfort' },
+        { domain: 'joint_ortho', keywords: ['joint', 'knee', 'knee pain', 'arthritis', 'swelling', 'घुटने', 'నొప్పులు', 'மூட்டு', 'ଗଣ୍ଠି', 'ଆଣ୍ଠୁ', 'ହାଡ଼'], label: 'Joint / Knee pain' },
+        { domain: 'back_pain', keywords: ['back pain', 'lower back', 'spine', 'कमर', 'నడుము', 'முதுகு', 'ଅଣ୍ଟା', 'ପିଠି'], label: 'Back & Spine pain' },
+        { domain: 'vomiting_diarrhea', keywords: ['vomit', 'nausea', 'diarrhea', 'motion', 'उल्टी', 'వాంతి', 'வாந்தி', 'ବାନ୍ତି', 'ପତଳା ଝାଡ଼ା'], label: 'Nausea & Vomiting' },
+        { domain: 'skin_allergy', keywords: ['rash', 'itch', 'skin', 'allergy', 'hives', 'खुजली', 'దద్దుర్లు', 'அரிப்பு', 'କୁଣ୍ଡିଆ', 'ଫୋଟକା', 'ଚର୍ମ'], label: 'Skin rash / Allergy' },
+        { domain: 'diabetes_metabolic', keywords: ['sugar', 'diabetes', 'diabetic', 'मधुमेह', 'షుగర్', 'ମଧୁମେହ', 'ଡାଇବେଟିସ୍', 'ଶୁଗାର'], label: 'Diabetes / Blood sugar' },
+        { domain: 'hypertension_cardio', keywords: ['bp', 'blood pressure', 'hypertension', 'बीपी', 'ରକ୍ତଚାପ', 'ବିପି'], label: 'Blood pressure' },
+        { domain: 'urinary', keywords: ['urine', 'urination', 'burning', 'bladder', 'पेशाब', 'మూత్రం', 'ପରିସ୍ରା', 'ପୋଡ଼ାଜଳା'], label: 'Urinary symptoms' },
+        { domain: 'dizziness_vertigo', keywords: ['dizzy', 'dizziness', 'spinning', 'vertigo', 'faint', 'चक्कर', 'కళ్ళు తిరగడం', 'ଚକ୍କର', 'ମୁଣ୍ଡ ବୁଲାଇବା'], label: 'Dizziness & Balance' }
     ];
 
     if (!_voiceSession.injectedFollowUpKeys) _voiceSession.injectedFollowUpKeys = new Set();
@@ -1013,12 +1136,12 @@ function _voiceLoadQuestion(index) {
     // Clear previous transcript
     _voiceResetTranscriptUI();
 
-    // Auto-play question if enabled
+    // Auto-play question if enabled (instant snappy playback)
     const autoPlay = document.getElementById('voice-autoplay-toggle');
     if (!autoPlay || autoPlay.checked) {
         setTimeout(() => {
             if (typeof speakText === 'function') speakText(questionText, lang);
-        }, 500);
+        }, 80);
     }
 
     // Show/hide back button
@@ -1255,10 +1378,10 @@ function voiceConfirmAnswer() {
         } catch (e) {}
     }
 
-    // Move to next question
+    // Move to next question (fast transition)
     setTimeout(() => {
         _voiceLoadQuestion(_voiceSession.currentQuestionIndex + 1);
-    }, 300);
+    }, 60);
 }
 
 function voiceConfirmTextInput() {
@@ -1378,6 +1501,8 @@ const RED_FLAG_TERMS = [
     'छाती में दर्द', 'सांस नहीं', 'बेहोश', 'खून की उल्टी',
     // Telugu
     'గుండె నొప్పి', 'శ్వాస తీసుకోలేను', 'మూర్ఛ',
+    // Odia
+    'ଛାତିରେ ଯନ୍ତ୍ରଣା', 'ନିଶ୍ୱାସ ନେଇପାରୁନି', 'ଅଚେତ', 'ବାନ୍ତିରେ ରକ୍ତ', 'ଝାଡ଼ାରେ ରକ୍ତ', 'ପକ୍ଷାଘାତ', 'ଅସହ୍ୟ ଯନ୍ତ୍ରଣା'
 ];
 
 function _voiceCheckRedFlags(text) {
@@ -1453,11 +1578,12 @@ async function _voiceComplete() {
         'en-IN': 'Thank you. Your complete medical history has been prepared for the doctor.',
         'hi-IN': 'धन्यवाद। आपकी संपूर्ण केस हिस्ट्री डॉक्टर के लिए तैयार कर ली गई है।',
         'te-IN': 'ధన్యవాదాలు. మీ సంపూర్ణ వైద్య చరిత్ర డాక్టర్ కోసం సిద్ధం చేయబడింది.',
+        'or-IN': 'ଧନ୍ୟବାଦ। ଡାକ୍ତରବାବୁଙ୍କ ପାଇଁ ଆପଣଙ୍କର ସମ୍ପୂର୍ଣ୍ଣ ରୋଗ ଇତିହାସ ସଫଳତାର ସହ ପ୍ରସ୍ତୁତ ହୋଇଯାଇଛି।',
     }[lang] || 'Thank you. Your clinical history has been recorded.';
 
     setTimeout(() => {
         if (typeof speakText === 'function') speakText(completionMsg, lang);
-    }, 400);
+    }, 100);
 
     _voiceShowStep('summary');
 }

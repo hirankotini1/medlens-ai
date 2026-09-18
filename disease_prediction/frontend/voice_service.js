@@ -47,7 +47,7 @@ const VOICE_LANGUAGES = [
    INTERNAL STATE
    ============================================================================ */
 let _voiceCurrentLanguage = 'en-IN';
-let _voiceSpeechSpeed = 1.0;
+let _voiceSpeechSpeed = 1.08; // Fast, snappy clinical delivery
 let _voiceAutoPlay = true;
 let _voiceActiveSpeech = null;       // Active SpeechSynthesisUtterance
 let _voiceActiveRecognition = null;  // Active SpeechRecognition
@@ -184,9 +184,19 @@ function _selectBestVoice(targetLang) {
     const langCode = targetLang.toLowerCase();
     const baseLang = langCode.split('-')[0];
 
-    // 1. Exact locale match (e.g., hi-IN)
+    // 1. Exact locale match (e.g., hi-IN, or-IN, ory-IN)
     let match = voices.find(v => v.lang.toLowerCase() === langCode);
     if (match) return match;
+
+    // Dedicated match for Odia / Oriya by dialect code or voice name
+    if (baseLang === 'or' || langCode.startsWith('or')) {
+        match = voices.find(v => {
+            const name = (v.name || '').toLowerCase();
+            const lang = (v.lang || '').toLowerCase();
+            return name.includes('odia') || name.includes('oriya') || lang.includes('ory') || lang.startsWith('or');
+        });
+        if (match) return match;
+    }
 
     // 2. Base language match (e.g., hi)
     match = voices.find(v => v.lang.toLowerCase().startsWith(baseLang));
