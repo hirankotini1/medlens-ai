@@ -3860,6 +3860,11 @@
                                 <div class="voice-ai-label" style="margin:0;">MEDLENS AI is asking:</div>
                                 <span class="voice-section-badge" id="voice-section-badge" style="font-size: 0.72rem; font-weight: 800; text-transform: uppercase; background: #e0f2fe; color: #0369a1; padding: 2px 10px; border-radius: 999px;">Chief Complaint</span>
                             </div>
+                            <!-- Dynamic AI Follow-up Indicator -->
+                            <div id="voice-followup-badge" class="voice-followup-alert-chip" style="display:none; margin-bottom: 10px; background: linear-gradient(135deg, #f5f3ff, #ede9fe); border: 1.5px solid #c4b5fd; border-radius: 10px; padding: 6px 12px; font-size: 0.82rem; color: #6d28d9; align-items: center; gap: 8px;">
+                                <span class="material-symbols-outlined" style="font-size: 18px; color: #7c3aed;">auto_awesome</span>
+                                <span id="voice-followup-text"><strong>AI Follow-Up:</strong> Specifically linked to your answer</span>
+                            </div>
                             <div class="voice-ai-question" id="voice-ai-question">Loading question...</div>
                             <div class="voice-ai-controls">
                                 <button type="button" class="voice-ctrl-btn" onclick="voiceReplayQuestion()" title="Play question again" aria-label="Replay question">
@@ -4020,29 +4025,11 @@
                     </div>
 
                     <!-- Digital Case Sheet Card -->
-                    <div class="voice-summary-card" id="voice-case-sheet-container" style="background:#ffffff; border:1.5px solid #bbf7d0; border-radius:16px; padding:24px; box-shadow:0 4px 16px rgba(5,150,105,0.08);">
-                        <!-- Case Sheet Header -->
-                        <div style="border-bottom: 2px dashed #cbd5e1; padding-bottom: 16px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
-                            <div>
-                                <div style="display: flex; align-items: center; gap: 6px;">
-                                    <span style="font-size: 0.72rem; font-weight: 800; background: #059669; color: white; padding: 2px 8px; border-radius: 999px;">MEDLENS AI &bull; EHR</span>
-                                    <span id="voice-case-triage-badge" style="font-size: 0.72rem; font-weight: 800; background: #dcfce7; color: #15803d; border: 1px solid #86efac; padding: 2px 8px; border-radius: 999px;">🟢 ROUTINE INTAKE</span>
-                                </div>
-                                <h3 style="margin: 6px 0 2px 0; font-size: 1.25rem; color: #0f172a; font-weight: 800;">Digital Patient Case Sheet</h3>
-                                <div id="voice-summary-patient-meta" style="font-size: 0.82rem; color: #475569; font-weight: 600;">Patient: Active Record &bull; ABHA: 91-4589-2041-8832</div>
-                            </div>
-                            <div style="text-align: right;">
-                                <div id="voice-summary-case-id" style="font-size: 0.8rem; font-family: monospace; color: #64748b; font-weight: 700;"></div>
-                                <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 2px;">SIH PS 26047 Pre-Consultation</div>
-                            </div>
-                        </div>
-
-                        <div class="voice-summary-notice" style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:10px 14px; font-size:0.82rem; color:#1e40af; display:flex; align-items:center; gap:8px; margin-bottom:16px;">
-                            <span class="material-symbols-outlined" style="font-size:18px;">verified</span>
-                            <span><strong>Physician Verification Required:</strong> Attending doctor reviews, verifies, and signs off this preliminary history during consultation.</span>
-                        </div>
-
-                        <!-- Structured Highlights -->
+                    <div id="voice-case-sheet-container" style="margin-bottom: 24px;">
+                        <span id="voice-case-triage-badge" style="display:none;"></span>
+                        <span id="voice-summary-patient-meta" style="display:none;"></span>
+                        <span id="voice-summary-case-id" style="display:none;"></span>
+                        <!-- Structured Highlights (Executive Hospital EHR Case Sheet) -->
                         <div id="voice-summary-highlights"></div>
                     </div>
 
