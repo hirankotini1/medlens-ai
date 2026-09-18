@@ -481,7 +481,13 @@ let _currentOnEnd = null;
 let _currentOnStatus = null;
 let _currentOnVolume = null;
 let _currentLanguageCode = 'en-IN';
-let _voiceActiveRecognition = null;
+// Note: _voiceActiveRecognition is declared in INTERNAL STATE above (line 53)
+
+function detectBrowserSTTSupport() {
+    if (window.SpeechRecognition) return 'full';
+    if (window.webkitSpeechRecognition) return 'webkit';
+    return 'server';
+}
 
 /**
  * Starts voice recognition.
