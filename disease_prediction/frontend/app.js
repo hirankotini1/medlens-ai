@@ -553,7 +553,7 @@ function switchView(viewName) {
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    if (viewName === 'voice-case-taking') {
+    if (viewName === 'voice-case-taking' || viewName === 'case-taking') {
         if (typeof launchVoiceCaseTaking === 'function') {
             launchVoiceCaseTaking();
         }

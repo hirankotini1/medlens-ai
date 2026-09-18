@@ -7860,3 +7860,61 @@ input:focus, select:focus, textarea:focus {
     .voice-action-btn { width: 100%; justify-content: center; }
 }
 
+/* SECTION BADGES & AYUSH ENHANCEMENTS */
+.voice-section-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    background: #e0f2fe;
+    color: #0369a1;
+    padding: 3px 10px;
+    border-radius: 999px;
+    border: 1px solid #bae6fd;
+}
+
+.voice-section-badge.ayush-badge {
+    background: #fefce8;
+    color: #854d0e;
+    border-color: #fde047;
+}
+
+.voice-ayush-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.voice-small-btn.ayush-active {
+    background: #fef3c7 !important;
+    color: #92400e !important;
+    border-color: #fcd34d !important;
+    font-weight: 800;
+}
+
+/* PRINTABLE DIGITAL CASE SHEET STYLING */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #voice-case-sheet-container, #voice-case-sheet-container * {
+        visibility: visible;
+    }
+    #voice-case-sheet-container {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 20px;
+        box-shadow: none !important;
+        border: 1px solid #000 !important;
+    }
+    .top-navbar, .nav-links, .voice-interview-header, .voice-continue-btn {
+        display: none !important;
+    }
+}
+
+

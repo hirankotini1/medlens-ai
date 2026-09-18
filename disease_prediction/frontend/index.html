@@ -39,11 +39,8 @@
             <button type="button" class="nav-btn" id="tab-patient" onclick="switchView('patient')">
                 <span class="material-symbols-outlined">description</span> Patient Portal
             </button>
-            <button type="button" class="nav-btn" id="tab-case-taking" onclick="launchClinicalCaseTaking()">
-                <span class="material-symbols-outlined">clinical_notes</span> Case Taking
-            </button>
-            <button type="button" class="nav-btn" id="tab-voice-case-taking" onclick="launchVoiceCaseTaking()" title="Multilingual Voice Patient Case Taking — SIH PS 26047" style="background: linear-gradient(135deg, rgba(0,57,126,0.08), rgba(16,185,129,0.08)); border: 1px solid rgba(16,185,129,0.3);">
-                <span class="material-symbols-outlined" style="color: #059669;">mic</span> <span style="color: #059669; font-weight: 700;">Voice</span> Case Taking
+            <button type="button" class="nav-btn" id="tab-voice-case-taking" onclick="launchVoiceCaseTaking()" title="AI Patient Case Taking (Voice + Touch + OCR) — SIH PS 26047" style="background: linear-gradient(135deg, rgba(0,57,126,0.08), rgba(16,185,129,0.08)); border: 1px solid rgba(16,185,129,0.3);">
+                <span class="material-symbols-outlined" style="color: #059669;">clinical_notes</span> <span style="color: #059669; font-weight: 700;">AI Case Taking</span>
             </button>
             <button type="button" class="nav-btn" id="tab-analyzer" onclick="switchView('analyzer')">
                 <span class="material-symbols-outlined">analytics</span> AI Analyzer
@@ -374,8 +371,8 @@
                                 <p style="margin: 0; font-size: 0.82rem; color: #475569;">Prepare a physician-ready clinical case sheet with voice input, medical documents, and adaptive questions before your doctor consultation.</p>
                             </div>
                         </div>
-                        <button type="button" class="btn-primary" style="background: linear-gradient(135deg, #0284c7, #0369a1); font-weight: 800; padding: 10px 20px; font-size: 0.88rem; box-shadow: 0 4px 12px rgba(2,132,199,0.3);" onclick="launchClinicalCaseTaking()">
-                            <span class="material-symbols-outlined" style="font-size: 18px;">mic</span> Start Case Taking →
+                        <button type="button" class="btn-primary" style="background: linear-gradient(135deg, #059669, #047857); font-weight: 800; padding: 10px 20px; font-size: 0.88rem; box-shadow: 0 4px 12px rgba(5,150,105,0.3);" onclick="launchVoiceCaseTaking()">
+                            <span class="material-symbols-outlined" style="font-size: 18px;">mic</span> Start AI Case Taking →
                         </button>
                     </div>
                 </div>
@@ -3678,27 +3675,85 @@
                     </div>
                 </div>
 
-                <!-- ── STEP 1: VOICE CONSENT ────────────────────────────────── -->
+                <!-- ── STEP 1: PATIENT SETUP, ABHA & CONSENT ──────────────── -->
                 <div id="voice-step-consent" class="voice-step-panel" style="display:none;">
                     <div class="voice-step-header">
                         <div class="voice-step-badge">
                             <span class="material-symbols-outlined">security</span> Step 2 of 4
                         </div>
-                        <h2 class="voice-step-title">Voice Consent</h2>
-                        <p class="voice-step-subtitle">Please listen to or read the information below before we begin.</p>
+                        <h2 class="voice-step-title">Patient Setup &amp; Clinical Consent</h2>
+                        <p class="voice-step-subtitle">ABDM / ABHA integration and pre-consultation intake consent.</p>
+                    </div>
+
+                    <!-- Active Patient Selection Card -->
+                    <div class="case-patient-card" style="background: #f0f9ff; border: 1.5px solid #7dd3fc; border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+                            <label for="voice-patient-select" style="font-size: 0.88rem; font-weight: 800; color: #0369a1; display: flex; align-items: center; gap: 8px; margin: 0;">
+                                <span class="material-symbols-outlined" style="font-size: 20px; color: #0284c7;">person_search</span>
+                                Patient Record Selection
+                            </label>
+                            <span id="voice-patient-status-pill" style="font-size: 0.72rem; background: #e0f2fe; color: #0369a1; padding: 3px 10px; border-radius: 999px; font-weight: 700; border: 1px solid #bae6fd;">Live Sync</span>
+                        </div>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <select id="voice-patient-select" class="search-input" style="flex: 1; font-size: 0.88rem; font-weight: 600; padding: 9px 12px; background: #ffffff; border: 1.5px solid #93c5fd; border-radius: 8px;" onchange="onVoicePatientSelectChange(this.value)">
+                                <option value="">Loading registered patients...</option>
+                            </select>
+                            <button type="button" class="btn-secondary" style="font-size: 0.78rem; padding: 8px 14px; white-space: nowrap; border-radius: 8px;" onclick="populateVoicePatientSelector(true)" title="Refresh patient list">
+                                <span class="material-symbols-outlined" style="font-size: 15px; vertical-align: middle;">sync</span> Reload
+                            </button>
+                        </div>
+                        <div id="voice-selected-patient-meta" style="margin-top: 8px; font-size: 0.78rem; color: #0369a1; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                            <span class="material-symbols-outlined" style="font-size: 15px;">check_circle</span> Active Record Selected
+                        </div>
+                    </div>
+
+                    <!-- ABHA / ABDM Profile Card -->
+                    <div class="case-abha-card" style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;">
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <span class="material-symbols-outlined" style="color: #0284c7;">badge</span>
+                                <strong style="font-size: 0.9rem; color: #1e293b;">ABHA / ABDM ID (Ayushman Bharat Digital Mission)</strong>
+                                <span style="font-size: 0.7rem; background: #e2e8f0; color: #475569; padding: 2px 6px; border-radius: 4px; font-weight: 700;">ABDM READY</span>
+                            </div>
+                            <button type="button" class="btn-secondary" style="font-size: 0.76rem; padding: 4px 10px;" onclick="generateMockVoiceAbha()">
+                                <span>⚡</span> Generate Mock ABHA
+                            </button>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                            <div>
+                                <label style="font-size: 0.78rem; font-weight: 700; color: #475569;">ABHA Number</label>
+                                <input type="text" id="voice-abha-input" class="search-input" placeholder="e.g. 91-1234-5678-9012" value="91-4589-2041-8832 (Demo ABHA)">
+                            </div>
+                            <div>
+                                <label style="font-size: 0.78rem; font-weight: 700; color: #475569;">ABHA Address</label>
+                                <input type="text" id="voice-abha-address" class="search-input" placeholder="e.g. patient.4589@abdm" value="patient.medicover@abdm">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AYUSH Evaluation Mode Toggle Option -->
+                    <div style="background: #fefce8; border: 1.5px solid #fde047; border-radius: 12px; padding: 14px 16px; margin-bottom: 16px;">
+                        <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; margin: 0; user-select: none;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span style="font-size: 24px;">🌿</span>
+                                <div>
+                                    <strong style="font-size: 0.9rem; color: #854d0e; display: block;">Include AYUSH Evaluation (Ayurveda / Siddha / Unani)</strong>
+                                    <span style="font-size: 0.78rem; color: #a16207;">Adds Prakriti (body constitution), dietary habits, and lifestyle assessment questions.</span>
+                                </div>
+                            </div>
+                            <input type="checkbox" id="voice-ayush-setup-checkbox" onchange="voiceToggleAyushMode()" style="width: 20px; height: 20px; accent-color: #ca8a04; cursor: pointer;">
+                        </label>
                     </div>
 
                     <div class="voice-consent-card">
                         <div class="voice-consent-icon">🔒</div>
                         <div class="voice-consent-body">
                             <p class="voice-consent-text">
-                                <strong>MEDLENS AI</strong> will listen to your answers to prepare your medical history for the doctor.
-                                Your voice will be converted to text. <strong>No audio recordings are stored</strong> — only your text answers.
-                                Your privacy is protected.
+                                <strong>MEDLENS AI</strong> collects your medical symptoms, duration, past illnesses, medications, and allergies to prepare a pre-consultation case sheet for the doctor.
+                                Your voice will be securely transcribed. <strong>No audio recordings are stored</strong> — only your clinical answers.
                             </p>
                             <p class="voice-consent-text" style="margin-top:10px; color:#64748b; font-size:0.85rem;">
-                                This system collects medical history only. It does NOT diagnose conditions.
-                                A physician will review all information.
+                                This system prepares clinical history drafts. It does NOT replace physician clinical diagnosis. Attending physicians verify all information.
                             </p>
                         </div>
                     </div>
@@ -3711,7 +3766,7 @@
 
                     <div style="margin-top:24px; display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
                         <button type="button" class="voice-agree-btn" onclick="voiceProceedToSession()">
-                            <span class="material-symbols-outlined">check_circle</span> I Agree — Start Voice Session
+                            <span class="material-symbols-outlined">check_circle</span> I Agree — Start Voice &amp; Touch Session
                         </button>
                         <button type="button" class="voice-touchonly-btn" onclick="voiceProceedToSession(true)">
                             <span class="material-symbols-outlined">touch_app</span> Continue with Touch / Text Only
@@ -3763,8 +3818,12 @@
                             <span class="material-symbols-outlined" style="color:#059669;">mic</span>
                             <strong>MEDLENS AI</strong> — Patient Case Taking
                         </div>
-                        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                             <div class="voice-lang-badge" id="voice-session-lang-display">🇬🇧 English</div>
+                            <span id="voice-ayush-badge" class="voice-ayush-badge" style="display:none; font-size:0.75rem; font-weight:800; padding:4px 10px; border-radius:999px; background:#fef3c7; color:#92400e; border:1px solid #fcd34d;">🌿 AYUSH</span>
+                            <button type="button" class="voice-small-btn" id="voice-ayush-toggle-btn" onclick="voiceToggleAyushMode()" title="Toggle AYUSH Assessment">
+                                🌿 AYUSH Mode
+                            </button>
                             <button type="button" class="voice-small-btn" onclick="showVoiceSettings()" title="Voice Settings">
                                 <span class="material-symbols-outlined" style="font-size:16px;">settings</span> Settings
                             </button>
@@ -3797,7 +3856,10 @@
                             <span class="material-symbols-outlined">smart_toy</span>
                         </div>
                         <div class="voice-ai-bubble-content">
-                            <div class="voice-ai-label">MEDLENS AI is asking:</div>
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
+                                <div class="voice-ai-label" style="margin:0;">MEDLENS AI is asking:</div>
+                                <span class="voice-section-badge" id="voice-section-badge" style="font-size: 0.72rem; font-weight: 800; text-transform: uppercase; background: #e0f2fe; color: #0369a1; padding: 2px 10px; border-radius: 999px;">Chief Complaint</span>
+                            </div>
                             <div class="voice-ai-question" id="voice-ai-question">Loading question...</div>
                             <div class="voice-ai-controls">
                                 <button type="button" class="voice-ctrl-btn" onclick="voiceReplayQuestion()" title="Play question again" aria-label="Replay question">
@@ -3923,39 +3985,77 @@
                     </div>
                 </div>
 
-                <!-- ── STEP 5: CASE SUMMARY (VOICE VERSION) ──────────────────── -->
+                <!-- ── STEP 5: DOCUMENT SCANNER & DIGITAL CASE SHEET ───────── -->
                 <div id="voice-step-summary" class="voice-step-panel" style="display:none;">
                     <div class="voice-step-header">
                         <div class="voice-step-badge" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff;">
-                            <span class="material-symbols-outlined">check_circle</span> Complete!
+                            <span class="material-symbols-outlined">check_circle</span> Case History Ready
                         </div>
-                        <h2 class="voice-step-title">Your Information Has Been Recorded</h2>
+                        <h2 class="voice-step-title">Pre-Consultation Digital Case Sheet</h2>
                         <p class="voice-step-subtitle">
-                            Thank you. Your medical history has been sent to the doctor for review.
+                            Review your medical information, attach old prescriptions or lab reports, and send to the attending physician.
                         </p>
                     </div>
 
-                    <div class="voice-summary-card">
-                        <div style="text-align:center; padding:20px;">
-                            <div style="font-size:64px; margin-bottom:12px;">✅</div>
-                            <div style="font-size:1.1rem; font-weight:700; color:#059669;">Information Submitted Successfully</div>
-                            <div id="voice-summary-case-id" style="font-size:0.82rem; color:#94a3b8; margin-top:8px;"></div>
+                    <!-- Medical Document Scanner & OCR Upload (PS 26047 Requirement) -->
+                    <div class="card" style="background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 14px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span class="material-symbols-outlined" style="font-size: 24px; color: #0284c7;">document_scanner</span>
+                                <strong style="font-size: 0.95rem; color: #0f172a;">Scan / Attach Old Reports &amp; Prescriptions</strong>
+                                <span style="font-size: 0.72rem; background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 999px; font-weight: 700;">OCR ENABLED</span>
+                            </div>
                         </div>
-
-                        <div class="voice-summary-notice">
-                            <span class="material-symbols-outlined">info</span>
-                            <span><strong>AI-generated history draft. Physician verification required.</strong> A doctor will review and confirm your case history before it is used clinically.</span>
+                        <p style="font-size: 0.82rem; color: #64748b; margin: 0 0 14px 0;">
+                            Upload images or PDFs of past doctor prescriptions, discharge summaries, or laboratory tests. The system extracts medicine names and parameters for the doctor's timeline.
+                        </p>
+                        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                            <label class="btn-secondary" style="font-size: 0.82rem; padding: 8px 16px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; border-radius: 8px; border: 1.5px solid #94a3b8;">
+                                <span class="material-symbols-outlined" style="font-size: 16px;">upload_file</span> Choose Document / Photo
+                                <input type="file" id="voice-doc-upload-input" accept="image/*,.pdf" style="display: none;" onchange="handleVoiceFileUpload(event)">
+                            </label>
+                            <span id="voice-upload-status" style="font-size: 0.8rem; color: #059669; font-weight: 600;"></span>
                         </div>
-
-                        <div id="voice-summary-highlights" style="margin-top:16px;"></div>
+                        <div id="voice-attached-docs-list" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;"></div>
                     </div>
 
-                    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:24px;">
-                        <button type="button" class="voice-continue-btn" onclick="voiceStartNewSession()" style="background:linear-gradient(135deg,#059669,#10b981);">
-                            <span class="material-symbols-outlined">refresh</span> New Patient Session
+                    <!-- Digital Case Sheet Card -->
+                    <div class="voice-summary-card" id="voice-case-sheet-container" style="background:#ffffff; border:1.5px solid #bbf7d0; border-radius:16px; padding:24px; box-shadow:0 4px 16px rgba(5,150,105,0.08);">
+                        <!-- Case Sheet Header -->
+                        <div style="border-bottom: 2px dashed #cbd5e1; padding-bottom: 16px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <span style="font-size: 0.72rem; font-weight: 800; background: #059669; color: white; padding: 2px 8px; border-radius: 999px;">MEDLENS AI &bull; EHR</span>
+                                    <span id="voice-case-triage-badge" style="font-size: 0.72rem; font-weight: 800; background: #dcfce7; color: #15803d; border: 1px solid #86efac; padding: 2px 8px; border-radius: 999px;">🟢 ROUTINE INTAKE</span>
+                                </div>
+                                <h3 style="margin: 6px 0 2px 0; font-size: 1.25rem; color: #0f172a; font-weight: 800;">Digital Patient Case Sheet</h3>
+                                <div id="voice-summary-patient-meta" style="font-size: 0.82rem; color: #475569; font-weight: 600;">Patient: Active Record &bull; ABHA: 91-4589-2041-8832</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div id="voice-summary-case-id" style="font-size: 0.8rem; font-family: monospace; color: #64748b; font-weight: 700;"></div>
+                                <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 2px;">SIH PS 26047 Pre-Consultation</div>
+                            </div>
+                        </div>
+
+                        <div class="voice-summary-notice" style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:10px 14px; font-size:0.82rem; color:#1e40af; display:flex; align-items:center; gap:8px; margin-bottom:16px;">
+                            <span class="material-symbols-outlined" style="font-size:18px;">verified</span>
+                            <span><strong>Physician Verification Required:</strong> Attending doctor reviews, verifies, and signs off this preliminary history during consultation.</span>
+                        </div>
+
+                        <!-- Structured Highlights -->
+                        <div id="voice-summary-highlights"></div>
+                    </div>
+
+                    <!-- Action Row -->
+                    <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:24px;">
+                        <button type="button" class="voice-continue-btn" onclick="printVoiceCaseSheet()" style="background:#ffffff; color:#0f172a; border:1.5px solid #cbd5e1; box-shadow:0 2px 6px rgba(0,0,0,0.06);">
+                            <span class="material-symbols-outlined">print</span> Print Case Sheet
                         </button>
-                        <button type="button" class="voice-continue-btn" onclick="switchView('admin')" style="background:linear-gradient(135deg,#0284c7,#0369a1);">
-                            <span class="material-symbols-outlined">stethoscope</span> Doctor Review
+                        <button type="button" class="voice-continue-btn" onclick="switchView('admin')" style="background:linear-gradient(135deg,#0284c7,#0369a1); box-shadow:0 4px 14px rgba(2,132,199,0.3);">
+                            <span class="material-symbols-outlined">stethoscope</span> Doctor Console Handoff
+                        </button>
+                        <button type="button" class="voice-continue-btn" onclick="voiceStartNewSession()" style="background:linear-gradient(135deg,#059669,#10b981);">
+                            <span class="material-symbols-outlined">refresh</span> New Intake
                         </button>
                     </div>
                 </div>

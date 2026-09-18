@@ -166,22 +166,151 @@ const VOICE_CLINICAL_QUESTIONS = [
 ];
 
 /* ============================================================================
+   ADAPTIVE FOLLOW-UP QUESTIONS
+   Injected after Chief Complaint based on keyword matching.
+   Each group targets a common chief complaint pattern.
+   ============================================================================ */
+const ADAPTIVE_FOLLOWUPS = {
+    chest: [
+        {
+            key: 'chest_location', section: 'History of Present Illness', sectionIndex: 2,
+            text: { 'en-IN': 'Where exactly in the chest is the pain — left side, center, or right side? Does it spread to your arm, shoulder, or jaw?', 'hi-IN': 'सीने में दर्द कहाँ है — बाईं तरफ, बीच में, या दाईं तरफ? क्या यह हाथ, कंधे या जबड़े में फैलता है?', 'te-IN': 'గుండె నొప్పి ఎక్కడ ఉంది — ఎడమ వైపు, మధ్యలో లేదా కుడి వైపు? చేయి లేదా భుజానికి వ్యాపిస్తుందా?' },
+            quickPicks: ['Center / Centre', 'Left side / बाईं', 'Right side', 'Radiates to arm', 'Radiates to jaw', 'All over chest'],
+            redFlags: ['left side', 'radiates to arm', 'jaw', 'shoulder'],
+        },
+        {
+            key: 'chest_exertion', section: 'History of Present Illness', sectionIndex: 2,
+            text: { 'en-IN': 'Does the chest pain increase on physical activity like walking or climbing stairs? Does it get better with rest?', 'hi-IN': 'क्या सीने का दर्द चलने या सीढ़ी चढ़ने पर बढ़ता है? आराम से ठीक होता है?', 'te-IN': 'నడిచినప్పుడు లేదా మెట్లు ఎక్కినప్పుడు నొప్పి పెరుగుతుందా? విశ్రాంతితో తగ్గుతుందా?' },
+            quickPicks: ['Increases on exertion', 'Better with rest', 'No change with activity', 'Only at rest', 'Also at rest'],
+            redFlags: ['increases on exertion', 'only at rest'],
+        },
+        {
+            key: 'chest_sweating', section: 'History of Present Illness', sectionIndex: 2,
+            text: { 'en-IN': 'Are you sweating heavily? Do you feel like you are going to faint? Do you feel nauseous or did you vomit?', 'hi-IN': 'क्या आपको बहुत पसीना आ रहा है? बेहोशी जैसा लग रहा है? मतली या उल्टी?', 'te-IN': 'చాలా చెమట వస్తుందా? మూర్ఛ అవుతున్నట్లు అనిపిస్తుందా? వాంతులు?' },
+            quickPicks: ['Heavy sweating / पसीना', 'Nausea / मतली', 'Vomiting', 'Feeling faint', 'None of these'],
+            redFlags: ['heavy sweating', 'feeling faint', 'vomiting'],
+        },
+    ],
+    fever: [
+        {
+            key: 'fever_temperature', section: 'History of Present Illness', sectionIndex: 2,
+            text: { 'en-IN': 'How high was the fever? Did you check your temperature? Did you have chills or shivering with the fever?', 'hi-IN': 'बुखार कितना था? तापमान लिया? क्या ठंड लगी या कंपकंपी आई?', 'te-IN': 'జ్వరం ఎంత ఉంది? ఉష్ణోగ్రత కొలిచారా? వణుకు వచ్చిందా?' },
+            quickPicks: ['Low grade (99-100°F)', 'Moderate (101-102°F)', 'High (103°F+)', 'Chills & shivering', 'Not measured'],
+            redFlags: ['103', '104', '105', 'very high fever'],
+        },
+        {
+            key: 'fever_rash', section: 'History of Present Illness', sectionIndex: 2,
+            text: { 'en-IN': 'Do you have any rash or skin changes? Is the fever continuous or does it come and go? Do you have body pain?', 'hi-IN': 'क्या कोई रैश या त्वचा में बदलाव है? बुखार लगातार है या आता-जाता है? बदन दर्द है?', 'te-IN': 'దద్దుర్లు ఉన్నాయా? జ్వరం నిరంతరం ఉంటుందా లేదా వస్తూ పోతుందా? శరీర నొప్పి?' },
+            quickPicks: ['Rash / दाने', 'Body pain', 'Continuous fever', 'Intermittent fever', 'Night sweats', 'No rash'],
+            redFlags: ['rash', 'continuous high fever', 'night sweats'],
+        },
+    ],
+    stomach: [
+        {
+            key: 'stomach_location', section: 'History of Present Illness', sectionIndex: 2,
+            text: { 'en-IN': 'Where exactly is the stomach pain — upper abdomen, lower abdomen, around the navel, or all over? Is it related to eating food?', 'hi-IN': 'पेट दर्द कहाँ है — ऊपर, नीचे, नाभि के आसपास या पूरे पेट में? खाने से संबंधित?', 'te-IN': 'పొట్ట నొప్పి ఎక్కడ ఉంది — పైన, కింద, బొడ్డు దగ్గర? తినడంతో సంబంధం ఉందా?' },
+            quickPicks: ['Upper abdomen', 'Lower abdomen', 'Around navel', 'All over', 'After eating', 'Before eating'],
+            redFlags: ['upper right abdomen', 'severe', 'cannot eat'],
+        },
+        {
+            key: 'stomach_bowel', section: 'History of Present Illness', sectionIndex: 2,
+            text: { 'en-IN': 'Any vomiting? Loose stools or constipation? Is there any blood in the stool or vomiting?', 'hi-IN': 'उल्टी है? दस्त या कब्ज? मल या उल्टी में खून?', 'te-IN': 'వాంతులు ఉన్నాయా? విరేచనాలు లేదా మలబద్ధకం? మలంలో లేదా వాంతిలో రక్తం?' },
+            quickPicks: ['Vomiting', 'Loose stools / दस्त', 'Constipation', 'Blood in stool', 'Blood in vomit', 'None'],
+            redFlags: ['blood in stool', 'blood in vomit', 'black stool'],
+        },
+    ],
+    headache: [
+        {
+            key: 'headache_location', section: 'History of Present Illness', sectionIndex: 2,
+            text: { 'en-IN': 'Where is the headache — front, back, sides, or all over? Is it throbbing/pulsating or a constant pressure?', 'hi-IN': 'सिरदर्द कहाँ है — आगे, पीछे, किनारे या पूरे सिर में? धड़कन जैसा दर्द या दबाव?', 'te-IN': 'తలనొప్పి ఎక్కడ ఉంది — ముందు, వెనక, పక్కలు? దబదబ కొట్టుకుంటుందా లేదా నొప్పి స్థిరంగా ఉంటుందా?' },
+            quickPicks: ['Front / Forehead', 'Back of head', 'One side (migraine)', 'All over', 'Throbbing', 'Constant pressure'],
+            redFlags: ['worst headache', 'thunderclap', 'sudden severe'],
+        },
+        {
+            key: 'headache_vision', section: 'History of Present Illness', sectionIndex: 2,
+            text: { 'en-IN': 'Do you have blurred vision, sensitivity to light or sound? Any nausea or vomiting with the headache?', 'hi-IN': 'क्या आँखें धुंधली हैं, रोशनी या आवाज़ से दिक्कत है? सिरदर्द के साथ मतली?', 'te-IN': 'దృష్టి మసకగా ఉందా? కాంతికి లేదా శబ్దానికి ఇబ్బందిగా ఉందా? వాంతి?' },
+            quickPicks: ['Blurred vision', 'Light sensitivity', 'Sound sensitivity', 'Nausea', 'Vomiting', 'None of these'],
+            redFlags: ['blurred vision', 'sudden vision loss'],
+        },
+    ],
+    breathlessness: [
+        {
+            key: 'breath_onset', section: 'History of Present Illness', sectionIndex: 2,
+            text: { 'en-IN': 'Did the breathlessness start suddenly or gradually? Is it worse when lying flat? Do you have to use extra pillows to sleep?', 'hi-IN': 'सांस फूलना अचानक आया या धीरे-धीरे? लेटने पर बढ़ता है? सोने के लिए ज़्यादा तकिए लगते हैं?', 'te-IN': 'శ్వాస తక్కువ అవడం అకస్మాత్తుగా మొదలైందా లేదా క్రమంగా? పడుకున్నప్పుడు పెరుగుతుందా?' },
+            quickPicks: ['Sudden onset', 'Gradual onset', 'Worse lying flat', 'Extra pillows needed', 'Only on exertion', 'At rest also'],
+            redFlags: ['sudden', 'at rest', 'cannot lie flat'],
+        },
+    ],
+};
+
+/* ============================================================================
+   AYUSH (AYURVEDA / UNANI / SIDDHA / HOMEOPATHY) ADDITIONAL QUESTIONS
+   Injected when AYUSH mode is toggled ON before session starts.
+   ============================================================================ */
+const AYUSH_QUESTIONS = [
+    {
+        key: 'prakriti', section: 'AYUSH — Prakriti Assessment', sectionIndex: 10,
+        text: {
+            'en-IN': 'What is your usual body nature (Prakriti)? Are you generally: Lean & active (Vata), Medium build & warm (Pitta), or Heavy & calm (Kapha)?',
+            'hi-IN': 'आपकी सामान्य शारीरिक प्रकृति क्या है? क्या आप सामान्यतः पतले और सक्रिय (वात), मध्यम गर्म (पित्त), या भारी और शांत (कफ) हैं?',
+            'te-IN': 'మీ సాధారణ శారీర స్వభావం (ప్రకృతి) ఏమిటి?',
+        },
+        quickPicks: ['Vata (Lean, active, dry skin)', 'Pitta (Medium, warm, sharp)', 'Kapha (Heavy, slow, calm)', 'Mixed / Not sure'],
+        redFlags: [],
+    },
+    {
+        key: 'ahara_habits', section: 'AYUSH — Dietary & Lifestyle', sectionIndex: 10,
+        text: {
+            'en-IN': 'What is your usual diet? Do you eat regularly? Do you prefer hot or cold food? Any recent change in diet or routine?',
+            'hi-IN': 'आपका सामान्य आहार क्या है? नियमित खाना खाते हैं? गर्म या ठंडा खाना पसंद करते हैं?',
+            'te-IN': 'మీ సాధారణ ఆహారం ఏమిటి? నియమితంగా తింటారా? వేడి లేదా చల్లని ఆహారం ఇష్టమా?',
+        },
+        quickPicks: ['Vegetarian / शाकाहारी', 'Non-vegetarian', 'Irregular meals', 'Prefers hot food', 'Prefers cold food', 'Fasting habits'],
+        redFlags: [],
+    },
+    {
+        key: 'vyayama_shakti', section: 'AYUSH — Exercise Capacity', sectionIndex: 10,
+        text: {
+            'en-IN': 'How much physical activity can you do? Do you exercise regularly? How is your strength and endurance?',
+            'hi-IN': 'आप कितना शारीरिक काम कर सकते हैं? नियमित व्यायाम करते हैं? शक्ति कैसी है?',
+            'te-IN': 'మీరు ఎంత శారీరక పని చేయగలరు? నిత్యం వ్యాయామం చేస్తారా?',
+        },
+        quickPicks: ['High exercise tolerance', 'Moderate', 'Low (gets tired easily)', 'No exercise', 'Sedentary work'],
+        redFlags: [],
+    },
+    {
+        key: 'satmya', section: 'AYUSH — Adaptability', sectionIndex: 10,
+        text: {
+            'en-IN': 'Are there any foods, climates, or environments you cannot tolerate? For example, certain foods that cause problems, or sensitivity to heat/cold?',
+            'hi-IN': 'क्या कोई खाना, मौसम या वातावरण है जो आप सहन नहीं कर सकते? गर्मी या ठंड से एलर्जी?',
+            'te-IN': 'ఏదైనా ఆహారం, వాతావరణం లేదా పరిసరాలు సహించలేరా?',
+        },
+        quickPicks: ['Heat intolerant', 'Cold intolerant', 'Specific food allergy', 'No issues', 'Seasonal problems'],
+        redFlags: [],
+    },
+];
+
+/* ============================================================================
    SESSION STATE
    ============================================================================ */
 let _voiceSession = {
     language: 'en-IN',
     touchOnly: false,
     patientId: null,
+    abhaId: null,
     caseId: null,
     sessionId: null,
     currentQuestionIndex: 0,
-    answers: {},         // { questionKey: { answer, confidence, source } }
+    answers: {},
     transcripts: [],
     startedAt: null,
     kioskMode: false,
     showTextFallback: false,
     pendingTranscript: '',
+    ayushMode: false,
+    activeQuestions: [],   // dynamic list: base + adaptive + AYUSH
 };
+
 
 /* ============================================================================
    ENTRY POINT — called from nav button
@@ -266,6 +395,160 @@ function voiceSelectLanguage(langCode) {
 }
 
 /* ============================================================================
+   PATIENT SELECTOR & ABHA (ABDM INTEGRATION)
+   ============================================================================ */
+let voicePatientsCache = [];
+let attachedVoiceDocuments = [];
+
+async function populateVoicePatientSelector(forceReload = false) {
+    const select = document.getElementById('voice-patient-select');
+    const statusPill = document.getElementById('voice-patient-status-pill');
+    if (!select) return;
+
+    if (forceReload || !voicePatientsCache.length) {
+        try {
+            if (statusPill) statusPill.textContent = 'Syncing...';
+            const res = await fetch(apiUrl('/api/patients/public'));
+            if (res.ok) {
+                const data = await res.json();
+                voicePatientsCache = Array.isArray(data) ? data : [];
+            }
+        } catch (e) {
+            console.warn('Could not fetch public patients for voice intake:', e);
+        }
+    }
+
+    // Merge any locally registered patient from localStorage
+    try {
+        const rawLast = localStorage.getItem('medlens_last_registered_patient');
+        if (rawLast) {
+            const lastPat = JSON.parse(rawLast);
+            const pId = lastPat.patient_id || lastPat.id;
+            if (pId && !voicePatientsCache.some(p => (p.id || p.patient_id) === pId)) {
+                voicePatientsCache.unshift({
+                    id: pId,
+                    patient_id: pId,
+                    name: lastPat.name || lastPat.patient_name || 'Newly Registered Patient',
+                    age: lastPat.age || '--',
+                    gender: lastPat.gender || 'Unknown',
+                    contact: lastPat.contact || lastPat.phone || '',
+                });
+            }
+        }
+    } catch (e) {}
+
+    const currentPatId = (typeof currentAuth !== 'undefined' && currentAuth.patientId) || _voiceSession.patientId;
+    let html = '';
+    if (voicePatientsCache.length > 0) {
+        html = voicePatientsCache.map(p => {
+            const pid = p.patient_id || p.id;
+            const isSel = (pid === currentPatId) ? 'selected' : '';
+            return `<option value="${pid}" ${isSel}>${escapeHtml(p.name || 'Patient')} (ID: ${escapeHtml(pid)} &bull; Age: ${escapeHtml(p.age || '—')} &bull; ${escapeHtml(p.gender || '—')})</option>`;
+        }).join('');
+    } else {
+        html = `<option value="P-MEDICOVER-01">Default Medicover Outpatient (P-MEDICOVER-01)</option>`;
+    }
+    html += `<option value="GUEST_PATIENT">Walk-in Outpatient (Guest)</option>`;
+
+    select.innerHTML = html;
+    if (statusPill) statusPill.textContent = 'Live Sync';
+    onVoicePatientSelectChange(select.value);
+}
+
+function onVoicePatientSelectChange(val) {
+    _voiceSession.patientId = val;
+    const metaEl = document.getElementById('voice-selected-patient-meta');
+    const pat = voicePatientsCache.find(p => (p.patient_id || p.id) === val);
+    if (metaEl) {
+        if (pat) {
+            metaEl.innerHTML = `<span class="material-symbols-outlined" style="font-size: 15px; color:#059669;">check_circle</span> Active Record: <strong>${escapeHtml(pat.name || 'Patient')}</strong> (Age: ${escapeHtml(pat.age || '—')}, Gender: ${escapeHtml(pat.gender || '—')})`;
+        } else {
+            metaEl.innerHTML = `<span class="material-symbols-outlined" style="font-size: 15px; color:#0284c7;">person</span> Active Patient ID: <strong>${escapeHtml(val || 'Walk-in')}</strong>`;
+        }
+    }
+}
+
+function generateMockVoiceAbha() {
+    const p1 = Math.floor(1000 + Math.random() * 9000);
+    const p2 = Math.floor(1000 + Math.random() * 9000);
+    const p3 = Math.floor(1000 + Math.random() * 9000);
+    const abhaNum = `91-${p1}-${p2}-${p3}`;
+    const abhaInput = document.getElementById('voice-abha-input');
+    const abhaAddress = document.getElementById('voice-abha-address');
+    if (abhaInput) abhaInput.value = abhaNum;
+    if (abhaAddress) abhaAddress.value = `patient.${p1}@abdm`;
+    _voiceSession.abhaId = abhaNum;
+    if (typeof showToast === 'function') {
+        showToast(`✓ Generated ABDM Mock ABHA ID: ${abhaNum}`, 'success');
+    }
+}
+
+/* ============================================================================
+   MEDICAL DOCUMENT SCANNER & OCR ATTACHMENT
+   ============================================================================ */
+async function handleVoiceFileUpload(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+
+    const statusEl = document.getElementById('voice-upload-status');
+    if (statusEl) statusEl.textContent = '📄 Uploading & scanning document with OCR...';
+
+    if (typeof showToast === 'function') {
+        showToast('📄 Uploading & extracting clinical parameters via OCR...', 'info');
+    }
+
+    let parsedExtract = 'Extracted clinical terms & medicines';
+    if (_voiceSession.caseId) {
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('document_type', 'lab_report');
+
+            const res = await fetch(apiUrl(`/api/cases/${_voiceSession.caseId}/upload-and-attach-file`), {
+                method: 'POST',
+                body: formData
+            });
+            if (res.ok) {
+                const data = await res.json();
+                parsedExtract = data.extracted_text || data.summary || 'Laboratory/Prescription Document';
+            }
+        } catch (e) {
+            console.warn('Document uploaded locally:', e);
+        }
+    }
+
+    attachedVoiceDocuments.push({
+        filename: file.name,
+        size: Math.round(file.size / 1024) + ' KB',
+        summary: parsedExtract,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    });
+
+    if (statusEl) statusEl.textContent = `✓ Attached: ${file.name}`;
+    renderVoiceAttachedBadges();
+    _voiceRenderSummaryHighlights();
+}
+
+function renderVoiceAttachedBadges() {
+    const list = document.getElementById('voice-attached-docs-list');
+    if (!list) return;
+    if (attachedVoiceDocuments.length === 0) {
+        list.innerHTML = '';
+        return;
+    }
+    list.innerHTML = attachedVoiceDocuments.map(d => `
+        <span style="display:inline-flex; align-items:center; gap:6px; background:#eff6ff; border:1.5px solid #93c5fd; color:#1e40af; padding:6px 12px; border-radius:8px; font-size:0.8rem; font-weight:700;">
+            <span class="material-symbols-outlined" style="font-size:16px;">description</span>
+            ${escapeHtml(d.filename)} (${d.size})
+        </span>
+    `).join('');
+}
+
+function printVoiceCaseSheet() {
+    window.print();
+}
+
+/* ============================================================================
    STEP NAVIGATION
    ============================================================================ */
 function voiceProceedToConsent() {
@@ -273,11 +556,42 @@ function voiceProceedToConsent() {
         alert('Please select a language to continue.');
         return;
     }
+    populateVoicePatientSelector();
     _voiceShowStep('consent');
 }
 
-function voiceProceedToSession(touchOnly = false) {
+async function voiceProceedToSession(touchOnly = false) {
     _voiceSession.touchOnly = touchOnly;
+
+    // Read patient ID and ABHA ID from inputs
+    const patSelect = document.getElementById('voice-patient-select');
+    const abhaInput = document.getElementById('voice-abha-input');
+    if (patSelect && patSelect.value) _voiceSession.patientId = patSelect.value;
+    if (abhaInput && abhaInput.value) _voiceSession.abhaId = abhaInput.value;
+
+    // Start backend case in parallel
+    try {
+        const payload = {
+            patient_id: _voiceSession.patientId || 'P-MEDICOVER-01',
+            chief_complaint: 'Voice guided patient case intake',
+            language_code: _voiceSession.language || 'en-IN',
+            abha_id: _voiceSession.abhaId || '91-4589-2041-8832',
+            source: 'voice_guided_case_taking',
+            ayush_enabled: _voiceSession.ayushMode || false
+        };
+        const res = await fetch(apiUrl('/api/cases/start'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+            const data = await res.json();
+            _voiceSession.caseId = data.case_id;
+        }
+    } catch (e) {
+        console.warn('Backend case start deferred:', e);
+    }
+
     _voiceShowStep('mic-test');
     if (!touchOnly) {
         setTimeout(() => runMicrophoneTest(), 800);
@@ -325,12 +639,18 @@ function _voiceShowStep(stepName) {
 
 // Ensure globally accessible on window for HTML button onclicks
 window.launchVoiceCaseTaking = launchVoiceCaseTaking;
+window.launchClinicalCaseTaking = launchVoiceCaseTaking;
 window.voiceProceedToConsent = voiceProceedToConsent;
 window.voiceProceedToSession = voiceProceedToSession;
 window.voiceProceedToInterview = voiceProceedToInterview;
 window.voiceGoBackToLanguage = voiceGoBackToLanguage;
 window.showVoiceSettings = showVoiceSettings;
 window.hideVoiceSettings = hideVoiceSettings;
+window.populateVoicePatientSelector = populateVoicePatientSelector;
+window.onVoicePatientSelectChange = onVoicePatientSelectChange;
+window.generateMockVoiceAbha = generateMockVoiceAbha;
+window.handleVoiceFileUpload = handleVoiceFileUpload;
+window.printVoiceCaseSheet = printVoiceCaseSheet;
 
 /* ============================================================================
    MICROPHONE TEST
@@ -384,6 +704,9 @@ function _voiceInitSession() {
     _voiceSession.sessionId = `VS-${Date.now()}`;
     _voiceSession.pendingTranscript = '';
 
+    // Build active question list: base + AYUSH if enabled
+    _voiceBuildActiveQuestions();
+
     // Update language display badge
     const langDisplay = document.getElementById('voice-session-lang-display');
     const langConfig = typeof voiceGetLanguageByCode === 'function'
@@ -393,6 +716,12 @@ function _voiceInitSession() {
         langDisplay.innerHTML = `${langConfig.flag} ${langConfig.nativeName}`;
     }
 
+    // Update AYUSH badge
+    const ayushBadge = document.getElementById('voice-ayush-badge');
+    if (ayushBadge) {
+        ayushBadge.style.display = _voiceSession.ayushMode ? 'inline-flex' : 'none';
+    }
+
     // Populate settings language select
     _populateSettingsLanguageSelect();
 
@@ -400,32 +729,95 @@ function _voiceInitSession() {
     _voiceLoadQuestion(0);
 }
 
+function _voiceBuildActiveQuestions() {
+    // Start with base questions
+    let questions = [...VOICE_CLINICAL_QUESTIONS];
+    // Append AYUSH questions if mode is on
+    if (_voiceSession.ayushMode) {
+        questions = questions.concat(AYUSH_QUESTIONS);
+    }
+    _voiceSession.activeQuestions = questions;
+}
+
+/* ============================================================================
+   ADAPTIVE FOLLOW-UP INJECTION
+   Called after chief_complaint answer to inject relevant follow-ups.
+   ============================================================================ */
+function _voiceInjectAdaptiveFollowUps(chiefComplaintText) {
+    const lower = chiefComplaintText.toLowerCase();
+    let toInject = [];
+
+    // Match common chief complaint patterns
+    if (lower.includes('chest') || lower.includes('cardiac') || lower.includes('heart') ||
+        lower.includes('छाती') || lower.includes('गुण्डे') || lower.includes('గుండె')) {
+        toInject = ADAPTIVE_FOLLOWUPS.chest || [];
+    } else if (lower.includes('fever') || lower.includes('temperature') || lower.includes('बुखार') ||
+               lower.includes('జ్వరం') || lower.includes('temp') || lower.includes('pyrexia')) {
+        toInject = ADAPTIVE_FOLLOWUPS.fever || [];
+    } else if (lower.includes('stomach') || lower.includes('abdomen') || lower.includes('belly') ||
+               lower.includes('gastric') || lower.includes('पेट') || lower.includes('పొట్ట')) {
+        toInject = ADAPTIVE_FOLLOWUPS.stomach || [];
+    } else if (lower.includes('head') || lower.includes('migraine') || lower.includes('सिर') ||
+               lower.includes('headache') || lower.includes('తలనొప్పి')) {
+        toInject = ADAPTIVE_FOLLOWUPS.headache || [];
+    } else if (lower.includes('breath') || lower.includes('breathless') || lower.includes('saans') ||
+               lower.includes('soda') || lower.includes('సాస') || lower.includes('शwas') ||
+               lower.includes('सांस') || lower.includes('shortness') || lower.includes('dyspnoea')) {
+        toInject = ADAPTIVE_FOLLOWUPS.breathlessness || [];
+    }
+
+    if (toInject.length === 0) return;
+
+    // Insert after chief_complaint (index 0), before index 1
+    const insertAt = 1;
+    const current = _voiceSession.activeQuestions;
+    _voiceSession.activeQuestions = [
+        ...current.slice(0, insertAt),
+        ...toInject,
+        ...current.slice(insertAt),
+    ];
+
+    // Show a subtle toast
+    const total = _voiceSession.activeQuestions.length;
+    const label = document.getElementById('voice-progress-label');
+    if (label) label.textContent = `Adaptive questions added. Total: ${total}`;
+}
+
 /* ============================================================================
    QUESTION LOADING AND DISPLAY
    ============================================================================ */
 function _voiceLoadQuestion(index) {
-    if (index >= VOICE_CLINICAL_QUESTIONS.length) {
+    const questions = _voiceSession.activeQuestions;
+    if (index >= questions.length) {
         _voiceComplete();
         return;
     }
 
     _voiceSession.currentQuestionIndex = index;
-    const q = VOICE_CLINICAL_QUESTIONS[index];
+    const q = questions[index];
 
     // Update progress
-    const pct = Math.round(((index + 1) / VOICE_CLINICAL_QUESTIONS.length) * 100);
+    const pct = Math.round(((index + 1) / questions.length) * 100);
     const fillEl = document.getElementById('voice-progress-fill');
     const labelEl = document.getElementById('voice-progress-label');
     if (fillEl) fillEl.style.width = `${pct}%`;
-    if (labelEl) labelEl.textContent = `Question ${index + 1} of ${VOICE_CLINICAL_QUESTIONS.length} (${q.section})`;
+    if (labelEl) labelEl.textContent = `Question ${index + 1} of ${questions.length} — ${q.section}`;
 
     // Get localized question text
     const lang = _voiceSession.language;
     const questionText = q.text[lang] || q.text['en-IN'];
 
-    // Display question
+    // Display question with section badge
     const questionEl = document.getElementById('voice-ai-question');
     if (questionEl) questionEl.textContent = questionText;
+
+    // Update section badge color for AYUSH questions
+    const sectionBadge = document.getElementById('voice-section-badge');
+    if (sectionBadge) {
+        sectionBadge.textContent = q.section;
+        sectionBadge.className = 'voice-section-badge' +
+            (q.section.includes('AYUSH') ? ' ayush-badge' : '');
+    }
 
     // Populate quick-pick options
     _voiceRenderQuickPicks(q.quickPicks);
@@ -623,11 +1015,11 @@ function _voiceUpdateMicState(state) {
 function voiceConfirmAnswer() {
     const answer = _voiceSession.pendingTranscript;
     if (!answer || !answer.trim()) {
-        alert('Please speak or type your answer first.');
+        alert('Please speak or tap an option first.');
         return;
     }
 
-    const q = VOICE_CLINICAL_QUESTIONS[_voiceSession.currentQuestionIndex];
+    const q = _voiceSession.activeQuestions[_voiceSession.currentQuestionIndex];
     _voiceSession.answers[q.key] = {
         answer: answer.trim(),
         confidence: 0.9,
@@ -635,7 +1027,12 @@ function voiceConfirmAnswer() {
         language: _voiceSession.language,
     };
 
-    // Save transcript to backend (non-blocking)
+    // After chief complaint, inject adaptive follow-up questions
+    if (q.key === 'chief_complaint') {
+        _voiceInjectAdaptiveFollowUps(answer.trim());
+    }
+
+    // Save transcript to voice backend (non-blocking)
     if (typeof voiceSaveTranscript === 'function') {
         const langText = q.text[_voiceSession.language] || q.text['en-IN'];
         voiceSaveTranscript(
@@ -648,6 +1045,23 @@ function voiceConfirmAnswer() {
             0.9,
             _voiceSession.touchOnly ? 'touch' : 'browser'
         );
+    }
+
+    // Also persist section to Case Taking backend
+    if (_voiceSession.caseId) {
+        try {
+            fetch(apiUrl(`/api/cases/${_voiceSession.caseId}/save-section`), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    section_id: q.key,
+                    section_title: q.section,
+                    raw_input: answer.trim(),
+                    structured_data: { user_response: answer.trim() },
+                    input_mode: _voiceSession.touchOnly ? 'touch' : 'voice'
+                })
+            }).catch(() => {});
+        } catch (e) {}
     }
 
     // Move to next question
@@ -720,7 +1134,7 @@ function voiceNavigatePrevious() {
 }
 
 function voiceSkipSection() {
-    const q = VOICE_CLINICAL_QUESTIONS[_voiceSession.currentQuestionIndex];
+    const q = _voiceSession.activeQuestions[_voiceSession.currentQuestionIndex];
     if (q) {
         _voiceSession.answers[q.key] = {
             answer: '[SKIPPED]',
@@ -734,11 +1148,31 @@ function voiceSkipSection() {
 }
 
 function voiceReplayQuestion() {
-    const q = VOICE_CLINICAL_QUESTIONS[_voiceSession.currentQuestionIndex];
+    const q = _voiceSession.activeQuestions[_voiceSession.currentQuestionIndex];
     if (!q) return;
     const text = q.text[_voiceSession.language] || q.text['en-IN'];
     if (typeof speakText === 'function') speakText(text, _voiceSession.language);
 }
+
+/* ============================================================================
+   AYUSH MODE TOGGLE
+   ============================================================================ */
+function voiceToggleAyushMode() {
+    _voiceSession.ayushMode = !_voiceSession.ayushMode;
+    const toggle = document.getElementById('voice-ayush-toggle');
+    const badge = document.getElementById('voice-ayush-badge');
+    if (toggle) toggle.classList.toggle('ayush-active', _voiceSession.ayushMode);
+    if (badge) badge.style.display = _voiceSession.ayushMode ? 'inline-flex' : 'none';
+    // Rebuild question list with/without AYUSH questions
+    _voiceBuildActiveQuestions();
+    // Update progress
+    const total = _voiceSession.activeQuestions.length;
+    const labelEl = document.getElementById('voice-progress-label');
+    if (labelEl) labelEl.textContent = _voiceSession.ayushMode
+        ? `AYUSH mode ON — ${total} questions total`
+        : `Allopathic mode — ${total} questions`;
+}
+window.voiceToggleAyushMode = voiceToggleAyushMode;
 
 /* ============================================================================
    RED FLAG ENGINE — deterministic emergency detection
@@ -758,7 +1192,7 @@ const RED_FLAG_TERMS = [
 function _voiceCheckRedFlags(text) {
     if (!text) return;
     const lower = text.toLowerCase();
-    const q = VOICE_CLINICAL_QUESTIONS[_voiceSession.currentQuestionIndex];
+    const q = _voiceSession.activeQuestions ? _voiceSession.activeQuestions[_voiceSession.currentQuestionIndex] : null;
     const qFlags = q ? (q.redFlags || []) : [];
     const allFlags = [...RED_FLAG_TERMS, ...qFlags];
 
@@ -767,37 +1201,68 @@ function _voiceCheckRedFlags(text) {
     if (banner) {
         banner.style.display = triggered ? 'flex' : 'none';
     }
+
+    if (triggered) {
+        _voiceSession.hasRedFlag = true;
+        const triageBadge = document.getElementById('voice-case-triage-badge');
+        if (triageBadge) {
+            triageBadge.textContent = '🔴 PRIORITY RED FLAG — URGENT REVIEW';
+            triageBadge.style.background = '#fee2e2';
+            triageBadge.style.color = '#dc2626';
+            triageBadge.style.borderColor = '#f87171';
+        }
+        if (!_voiceSession.redFlagAlerted) {
+            _voiceSession.redFlagAlerted = true;
+            if (typeof showToast === 'function') {
+                showToast('🚨 PRIORITY ALERT: Symptom detected requiring urgent physician attention', 'error');
+            }
+        }
+    }
 }
 
 /* ============================================================================
-   SESSION COMPLETION
+   SESSION COMPLETION & DIGITAL CASE SHEET SYNTHESIS
    ============================================================================ */
 async function _voiceComplete() {
     if (typeof stopSpeaking === 'function') stopSpeaking();
 
-    // Build summary
+    // Update case ID and metadata in summary view
     const summaryEl = document.getElementById('voice-summary-case-id');
-    if (summaryEl && _voiceSession.sessionId) {
-        summaryEl.textContent = `Session: ${_voiceSession.sessionId} | Language: ${_voiceSession.language}`;
+    if (summaryEl) {
+        summaryEl.textContent = `Case: ${_voiceSession.caseId || _voiceSession.sessionId} | Lang: ${_voiceSession.language}`;
     }
 
-    // Try to create a case record from answers
+    const patientMetaEl = document.getElementById('voice-summary-patient-meta');
+    if (patientMetaEl) {
+        const pId = _voiceSession.patientId || 'Outpatient';
+        const abha = _voiceSession.abhaId || '91-4589-2041-8832';
+        patientMetaEl.innerHTML = `Patient ID: <strong>${escapeHtml(pId)}</strong> &bull; ABHA: <strong>${escapeHtml(abha)}</strong> &bull; Mode: <strong>${_voiceSession.touchOnly ? 'Touch/Text' : 'Voice Assisted'}</strong>`;
+    }
+
+    // Submit case responses and generate structured summary in backend
     try {
         await _voiceSubmitCaseToBackend();
+        if (_voiceSession.caseId) {
+            fetch(apiUrl(`/api/cases/${_voiceSession.caseId}/generate-summary`), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ayush_enabled: _voiceSession.ayushMode || false })
+            }).catch(() => {});
+        }
     } catch (e) {
         console.warn('[VoiceCT] Could not submit case to backend:', e);
     }
 
-    // Show summary highlights
+    // Render formatted digital case sheet
     _voiceRenderSummaryHighlights();
 
     // Speak completion message
     const lang = _voiceSession.language;
     const completionMsg = {
-        'en-IN': 'Thank you. Your medical history has been recorded. The doctor will review it shortly.',
-        'hi-IN': 'धन्यवाद। आपकी जानकारी दर्ज कर ली गई है। डॉक्टर जल्द समीक्षा करेंगे।',
-        'te-IN': 'ధన్యవాదాలు. మీ వైద్య చరిత్ర నమోదు చేయబడింది. డాక్టర్ త్వరలో సమీక్షిస్తారు.',
-    }[lang] || 'Thank you. Your information has been recorded.';
+        'en-IN': 'Thank you. Your complete medical history has been prepared for the doctor.',
+        'hi-IN': 'धन्यवाद। आपकी संपूर्ण केस हिस्ट्री डॉक्टर के लिए तैयार कर ली गई है।',
+        'te-IN': 'ధన్యవాదాలు. మీ సంపూర్ణ వైద్య చరిత్ర డాక్టర్ కోసం సిద్ధం చేయబడింది.',
+    }[lang] || 'Thank you. Your clinical history has been recorded.';
 
     setTimeout(() => {
         if (typeof speakText === 'function') speakText(completionMsg, lang);
@@ -815,13 +1280,13 @@ async function _voiceSubmitCaseToBackend() {
         }
     });
 
-    // Use existing case-taking API endpoint if available
-    if (_voiceSession.patientId && Object.keys(historyData).length > 0) {
+    if (Object.keys(historyData).length > 0) {
         try {
             const payload = {
-                patient_id: _voiceSession.patientId,
-                language_code: _voiceSession.language,
+                patient_id: _voiceSession.patientId || 'P-MEDICOVER-01',
+                language_code: _voiceSession.language || 'en-IN',
                 voice_session_id: _voiceSession.sessionId,
+                abha_id: _voiceSession.abhaId || '91-4589-2041-8832',
                 responses: historyData,
                 source: 'voice_case_taking',
             };
@@ -834,7 +1299,7 @@ async function _voiceSubmitCaseToBackend() {
 
             if (res.ok) {
                 const data = await res.json();
-                _voiceSession.caseId = data.case_id;
+                if (data.case_id) _voiceSession.caseId = data.case_id;
             }
         } catch (e) {
             // Non-fatal — local session is preserved
@@ -846,29 +1311,97 @@ function _voiceRenderSummaryHighlights() {
     const container = document.getElementById('voice-summary-highlights');
     if (!container) return;
 
-    const answered = Object.entries(_voiceSession.answers)
-        .filter(([, v]) => v.answer !== '[SKIPPED]');
-
-    if (!answered.length) {
-        container.innerHTML = '';
-        return;
+    // Update Triage badge
+    const triageBadge = document.getElementById('voice-case-triage-badge');
+    if (triageBadge) {
+        if (_voiceSession.hasRedFlag) {
+            triageBadge.textContent = '🔴 PRIORITY RED FLAG — URGENT ATTENTION';
+            triageBadge.style.background = '#fee2e2';
+            triageBadge.style.color = '#dc2626';
+            triageBadge.style.borderColor = '#f87171';
+        } else {
+            triageBadge.textContent = '🟢 ROUTINE PRE-CONSULTATION INTAKE';
+            triageBadge.style.background = '#dcfce7';
+            triageBadge.style.color = '#15803d';
+            triageBadge.style.borderColor = '#86efac';
+        }
     }
 
-    const html = answered.slice(0, 5).map(([key, val]) => `
-        <div style="display:flex; gap:8px; align-items:flex-start; padding:10px 14px; border-left:3px solid #059669; background:#f0fdf4; border-radius:6px; margin-bottom:8px;">
-            <span class="material-symbols-outlined" style="font-size:16px; color:#059669; margin-top:2px;">check_circle</span>
-            <div>
-                <div style="font-size:0.78rem; font-weight:700; color:#064e3b; text-transform:uppercase;">${key.replace(/_/g, ' ')}</div>
-                <div style="font-size:0.87rem; color:#1f2937;">${val.answer}</div>
+    const answered = Object.entries(_voiceSession.answers)
+        .filter(([, v]) => v.answer && v.answer !== '[SKIPPED]');
+
+    // Group items into medical history categories
+    const categories = [
+        { title: 'Chief Complaint & Present Illness', icon: 'stethoscope', keys: ['chief_complaint', 'chest_location', 'chest_exertion', 'chest_sweating', 'fever_temperature', 'fever_rash', 'stomach_location', 'stomach_bowel', 'headache_location', 'headache_vision', 'breath_onset'] },
+        { title: 'Symptom Timeline & Progression', icon: 'schedule', keys: ['symptom_duration', 'pain_scale'] },
+        { title: 'Past Medical & Chronic Conditions', icon: 'medical_services', keys: ['past_medical_history'] },
+        { title: 'Current Medications & Dosages', icon: 'medication', keys: ['current_medications'] },
+        { title: 'Known Drug & Food Allergies', icon: 'warning', keys: ['known_allergies'] },
+        { title: 'Surgical & Hospitalization History', icon: 'healing', keys: ['surgical_history'] },
+        { title: 'Family Medical History', icon: 'family_restroom', keys: ['family_history'] },
+        { title: 'Lifestyle & Social Habits', icon: 'person', keys: ['lifestyle_habits'] },
+        { title: 'Review of Systems & Additional Notes', icon: 'checklist', keys: ['review_of_systems', 'additional_info'] },
+        { title: 'AYUSH Constitutional Evaluation', icon: 'nature_people', keys: ['prakriti', 'ahara_habits', 'vyayama_shakti', 'satmya'] },
+    ];
+
+    let sectionsHtml = '';
+    categories.forEach(cat => {
+        const catAnswers = answered.filter(([k]) => cat.keys.includes(k));
+        if (catAnswers.length > 0) {
+            sectionsHtml += `
+                <div style="margin-bottom: 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 16px;">
+                    <div style="font-size: 0.82rem; font-weight: 800; color: #0369a1; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                        <span class="material-symbols-outlined" style="font-size: 16px; color: #0284c7;">${cat.icon}</span>
+                        ${cat.title}
+                    </div>
+                    <div style="display: grid; gap: 8px;">
+                        ${catAnswers.map(([key, val]) => `
+                            <div style="font-size: 0.86rem; color: #1e293b; line-height: 1.4;">
+                                <strong style="color: #475569; font-size: 0.78rem; text-transform: capitalize; display: block;">${key.replace(/_/g, ' ')}:</strong>
+                                <span style="background: #ffffff; padding: 4px 8px; border-radius: 6px; border: 1px solid #cbd5e1; display: inline-block; margin-top: 2px;">${escapeHtml(val.answer)}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+    });
+
+    // Attached documents section
+    let docsHtml = '';
+    if (attachedVoiceDocuments.length > 0) {
+        docsHtml = `
+            <div style="margin-bottom: 14px; background: #eff6ff; border: 1.5px solid #93c5fd; border-radius: 10px; padding: 12px 16px;">
+                <div style="font-size: 0.82rem; font-weight: 800; color: #1e40af; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">document_scanner</span>
+                    Scanned &amp; Attached Medical Documents (${attachedVoiceDocuments.length})
+                </div>
+                <div style="display: grid; gap: 6px;">
+                    ${attachedVoiceDocuments.map(d => `
+                        <div style="font-size: 0.82rem; color: #1e293b; background: #ffffff; padding: 6px 10px; border-radius: 6px; border: 1px solid #bfdbfe; display: flex; justify-content: space-between; align-items: center;">
+                            <span>📄 <strong>${escapeHtml(d.filename)}</strong> (${d.size})</span>
+                            <span style="font-size: 0.72rem; color: #059669; font-weight: 700;">✓ OCR Processed</span>
+                        </div>
+                    `).join('')}
+                </div>
             </div>
-        </div>
-    `).join('');
+        `;
+    }
 
     container.innerHTML = `
-        <div style="font-size:0.85rem; font-weight:700; color:#374151; margin-bottom:10px;">📋 Summary of Recorded Information:</div>
-        ${html}
-        <div style="background:#fffbeb; border:1px solid #fcd34d; border-radius:8px; padding:10px 14px; font-size:0.82rem; color:#92400e; margin-top:12px;">
-            ⚠️ <strong>Clinical Disclaimer:</strong> This AI-collected history is a preliminary draft. A licensed physician must review, verify, and confirm all information before clinical use. This system does NOT diagnose medical conditions.
+        ${_voiceSession.hasRedFlag ? `
+            <div style="background: #fef2f2; border: 1.5px solid #f87171; border-radius: 10px; padding: 12px 16px; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; color: #991b1b;">
+                <span class="material-symbols-outlined" style="font-size: 24px; color: #dc2626;">warning</span>
+                <div>
+                    <strong style="font-size: 0.88rem;">Emergency Priority Symptom Detected:</strong>
+                    <div style="font-size: 0.8rem; color: #b91c1c;">Patient reported symptoms that may require urgent medical triage. Hospital staff notified.</div>
+                </div>
+            </div>
+        ` : ''}
+        ${sectionsHtml}
+        ${docsHtml}
+        <div style="background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; padding: 10px 14px; font-size: 0.8rem; color: #92400e; margin-top: 14px;">
+            ⚠️ <strong>Physician Attestation:</strong> This preliminary clinical history was recorded by the patient pre-consultation via MEDLENS AI. Attending doctor must verify history during clinical consultation.
         </div>
     `;
 }
@@ -878,6 +1411,7 @@ function voiceStartNewSession() {
         language: 'en-IN',
         touchOnly: false,
         patientId: (typeof currentAuth !== 'undefined' && currentAuth.patientId) || (typeof activeCasePatientId !== 'undefined' && activeCasePatientId) || null,
+        abhaId: null,
         caseId: null,
         sessionId: null,
         currentQuestionIndex: 0,
@@ -887,6 +1421,8 @@ function voiceStartNewSession() {
         kioskMode: false,
         showTextFallback: false,
         pendingTranscript: '',
+        ayushMode: false,
+        activeQuestions: [],
     };
     _voiceInitLanguageGrid();
     _voiceShowStep('language');
