@@ -199,10 +199,17 @@ function launchVoiceCaseTaking() {
     if (viewEl) viewEl.classList.add('active');
     if (tabEl) tabEl.classList.add('active');
 
-    // Sync from existing auth
-    if (typeof currentAuth !== 'undefined' && currentAuth.patientId) {
-        _voiceSession.patientId = currentAuth.patientId;
+    // Sync from existing auth or recently registered patient
+    let vPatId = (typeof currentAuth !== 'undefined' && currentAuth.patientId) || (typeof activeCasePatientId !== 'undefined' && activeCasePatientId) || null;
+    if (!vPatId) {
+        try {
+            const lastSaved = JSON.parse(localStorage.getItem('medlens_last_registered_patient') || 'null');
+            if (lastSaved && (lastSaved.patient_id || lastSaved.id)) {
+                vPatId = lastSaved.patient_id || lastSaved.id;
+            }
+        } catch (e) {}
     }
+    _voiceSession.patientId = vPatId;
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
@@ -863,7 +870,7 @@ function voiceStartNewSession() {
     _voiceSession = {
         language: 'en-IN',
         touchOnly: false,
-        patientId: typeof currentAuth !== 'undefined' ? currentAuth.patientId : null,
+        patientId: (typeof currentAuth !== 'undefined' && currentAuth.patientId) || (typeof activeCasePatientId !== 'undefined' && activeCasePatientId) || null,
         caseId: null,
         sessionId: null,
         currentQuestionIndex: 0,

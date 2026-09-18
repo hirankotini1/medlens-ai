@@ -483,16 +483,50 @@ function renderPatientPortalQuickButtons(patients) {
     const container = document.getElementById('patient-quick-login-grid');
     if (!container) return;
     if (!patients || patients.length === 0) {
-        container.innerHTML = `<div style="font-size: 0.8rem; color: #94a3b8; padding: 6px;">No registered patients found. Register via Lab Staff portal.</div>`;
+        container.innerHTML = `<div style="font-size: 0.8rem; color: #94a3b8; padding: 6px;">No registered patients found. Register via button above.</div>`;
         return;
     }
-    // Limit suggestions strictly to latest 2 entries only
-    const latestTwo = patients.slice(0, 2);
-    container.innerHTML = latestTwo.map(p => `
-        <button type="button" class="btn-secondary" style="font-size: 0.8rem; padding: 8px 12px; text-align: left; border: 1.5px solid #bae6fd; background: #f8fafc; border-radius: 8px; cursor: pointer; transition: all 0.2s ease;" onclick="fillPatientCreds('${p.patient_id}', '${p.pin_hint}')">
-            <span style="font-weight: 800; color: #0284c7;">${p.patient_id}</span> &bull; <span>${p.name} (${p.gender}, ${p.age}Y)</span>
+
+    // Merge any locally registered patient to guarantee it always shows up first
+    let list = [...patients];
+    try {
+        const saved = localStorage.getItem('medlens_last_registered_patient');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            if (parsed && parsed.patient_id) {
+                const existingIdx = list.findIndex(p => p.patient_id === parsed.patient_id);
+                const localItem = {
+                    patient_id: parsed.patient_id,
+                    name: parsed.full_name || parsed.name || 'Registered Patient',
+                    age: parsed.age || 30,
+                    gender: parsed.gender || 'Other',
+                    pin_hint: parsed.access_pin || `PIN-${parsed.patient_id.split('-').pop()}`,
+                    is_local_new: true
+                };
+                if (existingIdx >= 0) {
+                    list.splice(existingIdx, 1);
+                }
+                list.unshift(localItem);
+            }
+        }
+    } catch (e) {}
+
+    // Show up to 8 recent patients with prominent quick-login cards
+    const displayList = list.slice(0, 8);
+    container.innerHTML = displayList.map(p => {
+        const isNew = p.is_local_new || (p.created_at && (new Date() - new Date(p.created_at) < 86400000 * 3));
+        const safeName = (typeof escapeHtml === 'function') ? escapeHtml(p.name) : p.name;
+        return `
+        <button type="button" class="btn-secondary" style="font-size: 0.82rem; padding: 10px 14px; text-align: left; border: 1.5px solid ${isNew ? '#059669' : '#bae6fd'}; background: ${isNew ? '#f0fdf4' : '#f8fafc'}; border-radius: 10px; cursor: pointer; transition: all 0.2s ease; display: flex; flex-direction: column; gap: 3px; box-shadow: ${isNew ? '0 2px 8px rgba(5,150,105,0.15)' : 'none'};" onclick="fillPatientCreds('${p.patient_id}', '${p.pin_hint}')">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <span style="font-weight: 800; color: ${isNew ? '#059669' : '#0284c7'}; font-size: 0.88rem;">${p.patient_id}</span>
+                ${isNew ? '<span style="font-size: 0.65rem; background: #10b981; color: white; padding: 2px 7px; border-radius: 999px; font-weight: 800; letter-spacing: 0.04em;">NEW</span>' : ''}
+            </div>
+            <div style="color: #1e293b; font-weight: 700; font-size: 0.85rem;">${safeName} <span style="font-weight: 500; color: #64748b; font-size: 0.76rem;">(${p.gender}, ${p.age}Y)</span></div>
+            <div style="font-size: 0.74rem; color: #475569; margin-top: 2px;">Receipt PIN: <strong style="color: #0284c7; font-size: 0.8rem;">${p.pin_hint}</strong></div>
         </button>
-    `).join('');
+        `;
+    }).join('');
 }
 
 
@@ -7227,6 +7261,20 @@ async function handlePatientRegistrationSubmit(event) {
         const assignedPin = data.pin || data.access_pin || data.appointment?.access_pin || `PIN-${assignedPatId ? assignedPatId.split('-').pop() : '1001'}`;
         const aptId = data.appointment_id || data.appointment?.appointment_id || `APT-${Date.now().toString().slice(-6)}`;
 
+        lastRegisteredAppointment = {
+            patient_id: assignedPatId,
+            access_pin: assignedPin,
+            appointment_id: aptId,
+            full_name: fullName,
+            name: fullName,
+            age: age,
+            gender: gender
+        };
+
+        try {
+            localStorage.setItem('medlens_last_registered_patient', JSON.stringify(lastRegisteredAppointment));
+        } catch (e) {}
+
         // Populate Success Slip
         const slipAptId = document.getElementById('slip-apt-id');
         if (slipAptId) slipAptId.textContent = aptId;
@@ -7280,22 +7328,27 @@ function printAppointmentSlip() {
 
 function goToPatientPortalWithCredentials() {
     if (!lastRegisteredAppointment) {
-        switchView('patient');
-        closeAppointmentSuccessModal();
-        return;
+        try {
+            const saved = localStorage.getItem('medlens_last_registered_patient');
+            if (saved) lastRegisteredAppointment = JSON.parse(saved);
+        } catch (e) {}
     }
 
     closeAppointmentSuccessModal();
     switchView('patient');
 
-    const idInput = document.getElementById('patient-id-input');
-    const pinInput = document.getElementById('patient-pin-input');
-    if (idInput && pinInput) {
-        idInput.value = lastRegisteredAppointment.patient_id;
-        pinInput.value = lastRegisteredAppointment.access_pin;
-        setTimeout(() => {
-            handlePatientLogin();
-        }, 300);
+    if (lastRegisteredAppointment && lastRegisteredAppointment.patient_id) {
+        const idInput = document.getElementById('patient-id-input');
+        const pinInput = document.getElementById('patient-pin-input');
+        if (idInput && pinInput) {
+            idInput.value = lastRegisteredAppointment.patient_id;
+            pinInput.value = lastRegisteredAppointment.access_pin || '';
+            setTimeout(() => {
+                if (typeof handlePatientLogin === 'function') {
+                    handlePatientLogin();
+                }
+            }, 350);
+        }
     }
 }
 

@@ -11,7 +11,13 @@ Requires no paid API keys.
 import io
 import logging
 from typing import Optional
-import speech_recognition as sr
+
+try:
+    import speech_recognition as sr
+    SR_AVAILABLE = True
+except ImportError:
+    sr = None
+    SR_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
 
@@ -46,18 +52,25 @@ class GoogleSTTProvider:
     PROVIDER_NAME = "Server-side Speech Recognition (Multilingual)"
 
     def __init__(self):
-        self.recognizer = sr.Recognizer()
-        self.recognizer.energy_threshold = 300
-        self.recognizer.dynamic_energy_threshold = True
+        if SR_AVAILABLE and sr is not None:
+            try:
+                self.recognizer = sr.Recognizer()
+                self.recognizer.energy_threshold = 300
+                self.recognizer.dynamic_energy_threshold = True
+            except Exception as e:
+                logger.warning(f"[GoogleSTT] Failed initializing speech_recognition: {e}")
+                self.recognizer = None
+        else:
+            self.recognizer = None
 
     def is_available(self, language_code: str) -> bool:
-        return True
+        return bool(SR_AVAILABLE and (self.recognizer is not None))
 
     def transcribe(self, audio_bytes: bytes, language_code: str = "en-IN") -> str:
         """
         Transcribes WAV audio bytes into text in the specified language.
         """
-        if not audio_bytes or len(audio_bytes) < 100:
+        if not self.is_available(language_code) or not audio_bytes or len(audio_bytes) < 100:
             return ""
 
         target_lang = FALLBACK_MAP.get(language_code, language_code)

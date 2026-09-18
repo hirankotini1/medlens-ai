@@ -59,16 +59,130 @@ function generateMockAbhaNumber() {
 // ==============================================================================
 // 3. CASE TAKING LAUNCH & CONSENT SCREEN
 // ==============================================================================
+let casePatientsCache = [];
+
+async function populateCaseTakingPatientSelector(forceReload = false) {
+    const select = document.getElementById('case-patient-select');
+    const statusPill = document.getElementById('case-patient-status-pill');
+    const metaEl = document.getElementById('case-selected-patient-meta');
+    if (!select) return;
+
+    if (forceReload || !casePatientsCache.length) {
+        try {
+            if (statusPill) statusPill.textContent = 'Syncing...';
+            const res = await fetch(apiUrl('/api/patients/public'));
+            if (res.ok) {
+                const data = await res.json();
+                casePatientsCache = Array.isArray(data) ? data : [];
+            }
+        } catch (e) {
+            console.warn('Could not fetch public patients for case-taking selector:', e);
+        }
+    }
+
+    // Merge any locally registered patient from localStorage at the top
+    try {
+        const rawLast = localStorage.getItem('medlens_last_registered_patient');
+        if (rawLast) {
+            const lastPat = JSON.parse(rawLast);
+            const pId = lastPat.patient_id || lastPat.id;
+            if (pId && !casePatientsCache.some(p => (p.id || p.patient_id) === pId)) {
+                casePatientsCache.unshift({
+                    id: pId,
+                    patient_id: pId,
+                    name: lastPat.name || lastPat.patient_name || 'Newly Registered Patient',
+                    age: lastPat.age || '--',
+                    gender: lastPat.gender || 'Unknown',
+                    contact: lastPat.contact || lastPat.phone || '',
+                    access_pin: lastPat.access_pin || lastPat.pin || ''
+                });
+            }
+        }
+    } catch (e) {}
+
+    // Fallback if empty
+    if (!casePatientsCache.length) {
+        casePatientsCache = [
+            { id: 'PAT-1001', patient_id: 'PAT-1001', name: 'Priya Sharma', age: 28, gender: 'Female' },
+            { id: 'PAT-1002', patient_id: 'PAT-1002', name: 'Rahul Verma', age: 34, gender: 'Male' }
+        ];
+    }
+
+    select.innerHTML = '';
+    casePatientsCache.forEach((pat, idx) => {
+        const pid = pat.id || pat.patient_id;
+        const opt = document.createElement('option');
+        opt.value = pid;
+        const ageStr = pat.age ? ` • ${pat.age}y` : '';
+        const genStr = pat.gender ? ` • ${pat.gender}` : '';
+        const isNewBadge = idx === 0 ? ' [LATEST]' : '';
+        opt.textContent = `${pid}: ${pat.name || 'Patient'}${ageStr}${genStr}${isNewBadge}`;
+        select.appendChild(opt);
+    });
+
+    if (statusPill) statusPill.textContent = `${casePatientsCache.length} Patients`;
+
+    // Pick active patient: prioritize activeCasePatientId, then currentAuth, then first option
+    let targetId = activeCasePatientId || (currentAuth && currentAuth.patientId);
+    if (!targetId || !casePatientsCache.some(p => (p.id || p.patient_id) === targetId)) {
+        targetId = casePatientsCache[0]?.id || casePatientsCache[0]?.patient_id || 'PAT-1001';
+    }
+
+    select.value = targetId;
+    onCasePatientSelectChange(targetId);
+}
+
+function onCasePatientSelectChange(selectedId) {
+    if (!selectedId) return;
+    activeCasePatientId = selectedId;
+    
+    const matched = casePatientsCache.find(p => (p.id || p.patient_id) === selectedId);
+    const patName = matched ? matched.name : ((currentAuth && currentAuth.patientName) || 'Patient Active');
+    
+    // Update badge in header
+    const badge = document.getElementById('case-patient-badge');
+    if (badge) {
+        badge.innerHTML = `<span class="material-symbols-outlined" style="font-size: 16px;">person</span> <strong>${escapeHtml(selectedId)}</strong> (${escapeHtml(patName)})`;
+    }
+
+    // Update meta display
+    const metaEl = document.getElementById('case-selected-patient-meta');
+    if (metaEl && matched) {
+        const pinInfo = matched.access_pin ? ` &bull; PIN: <code>${escapeHtml(matched.access_pin)}</code>` : '';
+        const phoneInfo = matched.contact ? ` &bull; Phone: ${escapeHtml(matched.contact)}` : '';
+        metaEl.innerHTML = `<span class="material-symbols-outlined" style="font-size: 15px; color: #16a34a;">verified</span> Selected: <strong>${escapeHtml(matched.name)}</strong> (${escapeHtml(selectedId)})${pinInfo}${phoneInfo}`;
+    }
+
+    // Auto update ABHA address if mock
+    const abhaAddress = document.getElementById('case-abha-address');
+    if (abhaAddress && matched) {
+        const cleanName = (matched.name || 'patient').toLowerCase().replace(/[^a-z0-9]/g, '');
+        abhaAddress.value = `${cleanName}.${selectedId.toLowerCase().replace(/[^a-z0-9]/g, '')}@abdm`;
+    }
+}
+
 function launchClinicalCaseTaking(patientId = null) {
-    activeCasePatientId = patientId || (currentAuth && currentAuth.patientId) || 'PAT-1001';
+    let resolvedId = patientId || (currentAuth && currentAuth.patientId);
+    if (!resolvedId) {
+        try {
+            const lastSaved = JSON.parse(localStorage.getItem('medlens_last_registered_patient') || 'null');
+            if (lastSaved && (lastSaved.patient_id || lastSaved.id)) {
+                resolvedId = lastSaved.patient_id || lastSaved.id;
+            }
+        } catch (e) {}
+    }
+    activeCasePatientId = resolvedId || null;
     switchView('case-taking');
     
     // Auto-fill patient badge
     const badge = document.getElementById('case-patient-badge');
     if (badge) {
-        const pName = (currentAuth && currentAuth.patientName) || 'Patient Self-Recording';
-        badge.innerHTML = `<span class="material-symbols-outlined" style="font-size: 16px;">person</span> <strong>${activeCasePatientId}</strong> (${escapeHtml(pName)})`;
+        const pName = (currentAuth && currentAuth.patientName) || 'Patient Active';
+        badge.innerHTML = `<span class="material-symbols-outlined" style="font-size: 16px;">person</span> <strong>${escapeHtml(activeCasePatientId || 'Loading...')}</strong> (${escapeHtml(pName)})`;
     }
+
+    // Populate patient selector dropdown in consent screen
+    populateCaseTakingPatientSelector();
 
     // Reset wizard to Step 1 (Consent & Intake)
     document.getElementById('case-step-consent').style.display = 'block';

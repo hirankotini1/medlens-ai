@@ -703,13 +703,57 @@ def authenticate_patient (patient_id :str ,access_pin :str )->Optional [Dict [st
 
 
 
+def generate_next_patient_id(conn=None) -> Tuple[str, str]:
+    """Generates a guaranteed non-colliding patient ID (MCH-0005xxx) and default PIN."""
+    close_conn = False
+    if conn is None:
+        conn = get_db_connection()
+        close_conn = True
+    cursor = conn.cursor()
+    cursor.execute("SELECT patient_id FROM patients")
+    existing_pids = [r['patient_id'] for r in cursor.fetchall()]
+    max_num = 5000  # Starts above all Supabase demo records (1001-1350)
+    for pid in existing_pids:
+        digits = ''.join(c for c in str(pid) if c.isdigit())
+        if digits:
+            max_num = max(max_num, int(digits))
+    
+    try:
+        cursor.execute("SELECT patient_id FROM patient_appointments")
+        for r in cursor.fetchall():
+            digits = ''.join(c for c in str(r['patient_id']) if c.isdigit())
+            if digits:
+                max_num = max(max_num, int(digits))
+    except Exception:
+        pass
+
+    new_pat_num = max_num + 1
+    patient_id = f"MCH-{new_pat_num:07d}"
+    pin = f"PIN-{new_pat_num}"
+    if close_conn:
+        conn.close()
+    return patient_id, pin
+
 def get_all_patients ()->List [Dict [str ,Any ]]:
     conn =get_db_connection ()
     cursor =conn .cursor ()
-    cursor .execute ("SELECT id, patient_id, name, age, gender, contact, email, created_at FROM patients ORDER BY id DESC")
+    cursor .execute ("SELECT id, patient_id, name, age, gender, contact, email, created_at FROM patients ORDER BY created_at DESC, id DESC")
     rows =[dict (row )for row in cursor .fetchall ()]
     conn .close ()
     return rows 
+
+def get_all_patients_public ()->List [Dict [str ,Any ]]:
+    """Returns all patients from SQLite ordered newest first with normalized fields."""
+    conn =get_db_connection ()
+    cursor =conn .cursor ()
+    cursor .execute ("""
+    SELECT id, patient_id, name, age, gender, contact as phone, email, created_at, 'Registered' as status
+    FROM patients
+    ORDER BY created_at DESC, id DESC
+    """)
+    rows =[dict (r )for r in cursor .fetchall ()]
+    conn .close ()
+    return rows
 
 def get_patient_by_id (patient_id :str )->Optional [Dict [str ,Any ]]:
     conn =get_db_connection ()
@@ -728,13 +772,13 @@ def create_patient (data :Dict [str ,Any ])->Dict [str ,Any ]:
 
     patient_id =data .get ('patient_id')
     if not patient_id :
-        cursor .execute ("SELECT MAX(id) as max_id FROM patients")
-        max_id =(cursor .fetchone ()['max_id']or 1000 )+1 
-        patient_id =f"MCH-{max_id:07d}"
+        patient_id, default_pin = generate_next_patient_id(conn)
+    else:
+        digits = ''.join(c for c in str(patient_id) if c.isdigit())
+        pin_suffix = str(int(digits)) if digits else patient_id
+        default_pin = f"PIN-{pin_suffix}"
 
-    digits = ''.join(c for c in str(patient_id) if c.isdigit())
-    pin_suffix = str(int(digits)) if digits else patient_id
-    raw_pin =data .get ('access_pin') or f"PIN-{pin_suffix}"
+    raw_pin =data .get ('access_pin') or data .get ('pin') or default_pin
     pin_hash =hash_secret (raw_pin )
 
     candidate_ids = normalize_patient_id(patient_id)
@@ -760,25 +804,21 @@ def create_patient (data :Dict [str ,Any ])->Dict [str ,Any ]:
     if result :
         result ['generated_pin']=raw_pin 
 
-
     try :
         from disease_prediction .hospital_operations .supabase_client import SupabaseHospitalClient 
-        SupabaseHospitalClient .create_admission ({
+        SupabaseHospitalClient .register_patient ({
         "patient_id":patient_id ,
         "full_name":data .get ('name','Unknown'),
+        "name":data .get ('name','Unknown'),
         "age":int (data .get ('age',30 )),
         "gender":data .get ('gender','Other'),
         "phone":data .get ('contact',''),
-        "email":data .get ('email',''),
-        "has_insurance":bool (data .get ('has_insurance',False )),
-        "insurance_provider":data .get ('insurance_provider','Self Pay'),
-        "preferred_bed_type":data .get ('preferred_bed_type','General'),
-        "status":"Active"
+        "email":data .get ('email','')
         })
     except Exception as sync_err :
         print (f"[SUPABASE-PATIENT-SYNC-WARN] {sync_err }")
 
-    return result or {'patient_id':patient_id ,'name':data .get ('name','')}
+    return result or {'patient_id':patient_id ,'name':data .get ('name',''),'generated_pin':raw_pin}
 
 def ensure_patient_exists (patient_id :str ,name :str ,age :int ,gender :str ,contact :str ="",email :str ="",access_pin :Optional [str ]=None )->Dict [str ,Any ]:
     """Retrieves an existing patient by ID or inserts a new persistent record if not present."""
@@ -797,10 +837,10 @@ def ensure_patient_exists (patient_id :str ,name :str ,age :int ,gender :str ,co
     })
 
 def get_public_patients ()->List [Dict [str ,Any ]]:
-    """Returns safe patient summary for directory selector without sensitive personal details."""
+    """Returns safe patient summary for directory selector without sensitive personal details, newest first."""
     conn =get_db_connection ()
     cursor =conn .cursor ()
-    cursor .execute ("SELECT patient_id, name, age, gender FROM patients ORDER BY id DESC")
+    cursor .execute ("SELECT patient_id, name, age, gender, contact, email, created_at FROM patients ORDER BY created_at DESC, id DESC")
     rows =[]
     seen_ids =set ()
     for r in cursor .fetchall ():
@@ -810,11 +850,16 @@ def get_public_patients ()->List [Dict [str ,Any ]]:
         pin_suffix = str(int(digits)) if digits else pid
         pin_hint = f"PIN-{pin_suffix}"
         rows .append ({
+        "id":pid ,
         "patient_id":pid ,
         "name":r ['name'],
         "age":r ['age'],
         "gender":r ['gender'],
-        "pin_hint":pin_hint 
+        "contact":r ['contact'] if 'contact' in r.keys() else '',
+        "email":r ['email'] if 'email' in r.keys() else '',
+        "access_pin":pin_hint ,
+        "pin_hint":pin_hint ,
+        "created_at":r ['created_at']
         })
     conn .close ()
 
@@ -830,15 +875,22 @@ def get_public_patients ()->List [Dict [str ,Any ]]:
                 pin_suffix = str(int(digits)) if digits else pid
                 pin_hint = f"PIN-{pin_suffix}"
                 rows .append ({
+                "id":pid ,
                 "patient_id":pid ,
                 "name":sp .get ('full_name')or sp .get ('name','Patient'),
                 "age":sp .get ('age',30 ),
                 "gender":sp .get ('gender','Male'),
-                "pin_hint":pin_hint 
+                "contact":sp .get ('phone') or sp .get ('contact',''),
+                "email":sp .get ('email',''),
+                "access_pin":pin_hint ,
+                "pin_hint":pin_hint ,
+                "created_at":sp .get ('created_at','')
                 })
     except Exception as e :
         logger .warning (f"Failed fetching public patients from Supabase: {e }")
 
+    # Order newest patients first
+    rows .sort (key =lambda x :str (x .get ('created_at')or ''),reverse =True )
     return rows 
 
 def get_all_reports ()->List [Dict [str ,Any ]]:
@@ -1536,23 +1588,18 @@ def register_patient_appointment (data :Dict [str ,Any ])->Dict [str ,Any ]:
     appointment_id =f"APT-{timestamp_suffix }-{rand_suffix }"
 
 
-    patient_id =data .get ("patient_id")
-    if not patient_id :
-        cursor .execute ("SELECT patient_id FROM patients")
-        existing_pids =[r ['patient_id']for r in cursor .fetchall ()]
-        max_num =1000 
-        for pid in existing_pids :
-            digits = ''.join(c for c in str(pid) if c.isdigit())
-            if digits:
-                max_num = max(max_num, int(digits))
-        new_pat_num = max_num + 1 
-        patient_id = f"MCH-{new_pat_num:07d}"
-    else :
+    patient_id = data.get("patient_id")
+    if not patient_id:
+        patient_id, default_pin = generate_next_patient_id(conn)
         digits = ''.join(c for c in str(patient_id) if c.isdigit())
         new_pat_num = str(int(digits)) if digits else patient_id
+    else:
+        digits = ''.join(c for c in str(patient_id) if c.isdigit())
+        new_pat_num = str(int(digits)) if digits else patient_id
+        default_pin = f"PIN-{new_pat_num}"
 
-    raw_pin =data .get ("access_pin")or data .get ("pin")or f"PIN-{new_pat_num }"
-    now_iso =datetime .now ().isoformat ()
+    raw_pin = data.get("access_pin") or data.get("pin") or default_pin
+    now_iso = datetime.now().isoformat()
     pat_name =data .get ("full_name")or data .get ("name")or "Patient"
     pat_age =int (data .get ("age",30 ))
     pat_gender =data .get ("gender","Male")
@@ -1606,16 +1653,16 @@ def register_patient_appointment (data :Dict [str ,Any ])->Dict [str ,Any ]:
     pat_gender ,
     pat_phone ,
     pat_email ,
-    data .get ("address",""),
-    data .get ("emergency_contact",""),
-    data .get ("department","General Medicine"),
-    data .get ("doctor_name","Dr. Ramesh Gupta"),
-    data .get ("appointment_date",datetime .now ().strftime ("%Y-%m-%d")),
-    data .get ("time_slot","10:00 AM - 10:30 AM"),
-    data .get ("reason_for_visit","General Clinical Consultation"),
-    1 if data .get ("has_insurance")or data .get ("insurance_covered")else 0 ,
-    data .get ("insurance_provider",""),
-    data .get ("policy_number",""),
+    data .get ("address") or "",
+    data .get ("emergency_contact") or "",
+    data .get ("department") or "General Medicine",
+    data .get ("doctor_name") or data .get ("doctor") or "Dr. Ramesh Gupta",
+    data .get ("appointment_date") or datetime .now ().strftime ("%Y-%m-%d"),
+    data .get ("time_slot") or data .get ("appointment_time") or "10:00 AM - 10:30 AM",
+    data .get ("reason_for_visit") or data .get ("reason") or data .get ("symptoms") or "General Clinical Consultation",
+    1 if (data .get ("has_insurance") or data .get ("insurance_covered")) else 0 ,
+    data .get ("insurance_provider") or "",
+    data .get ("policy_number") or "",
     raw_pin ,
     now_iso 
     ))

@@ -379,6 +379,13 @@ def register_patient_record (req :PatientRegisterRequest ):
         elif not data .get ("name")and data .get ("full_name"):
             data ["name"]=data ["full_name"]
 
+        if not data .get ("doctor_name")and data .get ("doctor"):
+            data ["doctor_name"]=data ["doctor"]
+        if not data .get ("time_slot")and data .get ("appointment_time"):
+            data ["time_slot"]=data ["appointment_time"]
+        if not data .get ("reason_for_visit")and (data .get ("reason")or data .get ("symptoms")):
+            data ["reason_for_visit"]=data .get ("reason")or data .get ("symptoms")
+
         import disease_prediction .api .database as db 
         sqlite_res =db .register_patient_appointment (data )
 
@@ -417,8 +424,8 @@ def list_patients (q :Optional [str ]=None ,query :Optional [str ]=None ,limit :
         sqlite_patients =[]
         try :
             sqlite_patients =db .get_all_patients_public ()
-        except Exception :
-            pass 
+        except Exception as sq_err :
+            logger.warning(f"Error loading sqlite patients: {sq_err}") 
 
         supa_patients =[]
         try :
@@ -448,6 +455,7 @@ def list_patients (q :Optional [str ]=None ,query :Optional [str ]=None ,limit :
                 "gender":p .get ("gender"),
                 "phone":pphone ,
                 "email":p .get ("email"),
+                "created_at":p .get ("created_at",""),
                 "status":"Registered"
                 })
 
@@ -456,6 +464,9 @@ def list_patients (q :Optional [str ]=None ,query :Optional [str ]=None ,limit :
             if spid and spid not in seen :
                 seen .add (spid )
                 merged .append (sp )
+
+        # Ensure newest registrations always appear first
+        merged .sort (key =lambda x :str (x .get ("created_at")or ""),reverse =True )
 
         return merged [:limit ]
     except Exception as e :

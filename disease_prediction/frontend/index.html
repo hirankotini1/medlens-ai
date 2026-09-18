@@ -2748,6 +2748,28 @@
                 </div>
             </div>
 
+            <!-- Active Patient Selection Card -->
+            <div class="case-patient-card" style="background: #f0f9ff; border: 1.5px solid #7dd3fc; border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+                    <label for="case-patient-select" style="font-size: 0.88rem; font-weight: 800; color: #0369a1; display: flex; align-items: center; gap: 8px; margin: 0;">
+                        <span class="material-symbols-outlined" style="font-size: 20px; color: #0284c7;">person_search</span>
+                        Select Registered Patient for Case Taking
+                    </label>
+                    <span id="case-patient-status-pill" style="font-size: 0.72rem; background: #e0f2fe; color: #0369a1; padding: 3px 10px; border-radius: 999px; font-weight: 700; border: 1px solid #bae6fd;">Live Sync</span>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <select id="case-patient-select" class="search-input" style="flex: 1; font-size: 0.88rem; font-weight: 600; padding: 9px 12px; background: #ffffff; border: 1.5px solid #93c5fd; border-radius: 8px;" onchange="onCasePatientSelectChange(this.value)">
+                        <option value="">Loading registered patients...</option>
+                    </select>
+                    <button type="button" class="btn-secondary" style="font-size: 0.78rem; padding: 8px 14px; white-space: nowrap; border-radius: 8px;" onclick="populateCaseTakingPatientSelector(true)" title="Refresh patient list">
+                        <span class="material-symbols-outlined" style="font-size: 15px; vertical-align: middle;">sync</span> Reload
+                    </button>
+                </div>
+                <div id="case-selected-patient-meta" style="margin-top: 8px; font-size: 0.78rem; color: #0369a1; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                    <span class="material-symbols-outlined" style="font-size: 15px;">check_circle</span> Active Record Selected
+                </div>
+            </div>
+
             <!-- ABHA / ABDM Ready Section -->
             <div class="case-abha-card" style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 16px; margin-bottom: 20px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;">
