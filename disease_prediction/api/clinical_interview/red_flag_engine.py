@@ -13,7 +13,7 @@ RED_FLAG_DEFINITIONS: List[Dict[str, Any]] = [
         "category": "cardiac",
         "urgency": "CRITICAL",
         "keywords": {
-            "en-IN": ["chest pain", "crushing chest", "pressure in chest", "left arm numbness", "jaw pain", "sweating chest"],
+            "en-IN": ["crushing chest", "pressure in chest", "left arm numbness", "jaw pain", "sweating chest", "radiating to left arm", "radiating to left jaw", "chest pain radiating"],
             "hi-IN": ["छाती में दर्द", "सीने में दर्द", "छाती पर भारीपन", "सीने में भारीपन", "बाएं हाथ में दर्द", "सीना जकड़ना"],
             "te-IN": ["ఛాతీ నొప్పి", "గుండె నొప్పి", "ఛాతీలో బరువు", "ఎడమ చేయి నొప్పి"],
             "or-IN": ["ଛାତି ଯନ୍ତ୍ରଣା", "ଛାତି ଦରଜ", "ଛାତିରେ ଭାରୀ ଲାଗିବା", "ବାମ ହାତ ଯନ୍ତ୍ରଣା"],

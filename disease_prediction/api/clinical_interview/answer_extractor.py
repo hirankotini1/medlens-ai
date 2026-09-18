@@ -244,6 +244,40 @@ class ClinicalAnswerExtractor:
         return ""
 
     @classmethod
+    def extract_complaints(cls, text: str) -> List[str]:
+        """
+        Extracts all presenting clinical complaints from patient statements,
+        supporting multi-complaint presentations (e.g. 'I have fever, cough and weakness').
+        """
+        if not text:
+            return []
+        from .ontology import CLINICAL_ONTOLOGY
+        t_low = text.lower()
+        found = []
+        for domain, pw in CLINICAL_ONTOLOGY.items():
+            for pattern in pw.get("triggers", []):
+                if re.search(pattern, t_low, re.IGNORECASE):
+                    # Clean domain to friendly name e.g. fever, cough, weakness
+                    name = domain
+                    if domain == "weakness_fatigue":
+                        name = "weakness"
+                    elif domain == "urinary_symptoms":
+                        name = "urinary symptoms"
+                    elif domain == "throat_symptoms":
+                        name = "sore throat"
+                    elif domain == "diabetes_metabolic":
+                        name = "diabetes"
+                    elif domain == "hypertension_cardio":
+                        name = "hypertension"
+                    else:
+                        name = domain.replace("_", " ")
+
+                    if name not in found:
+                        found.append(name)
+                    break
+        return found
+
+    @classmethod
     def extract_from_text(
         cls,
         text: str,
@@ -254,6 +288,11 @@ class ClinicalAnswerExtractor:
         res = extractor.extract_entities_from_text(text, target_parameter)
         extracted = res.get("extracted", {})
         conf = res.get("confidence", 0.85)
+
+        # Check for multiple complaints in the utterance
+        complaints = cls.extract_complaints(text)
+        if complaints and "chief_complaints" not in extracted:
+            extracted["chief_complaints"] = complaints
 
         out = {}
         for k, v in extracted.items():

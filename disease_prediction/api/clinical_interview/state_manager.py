@@ -22,6 +22,40 @@ import json
 from typing import Dict, Any, List, Optional
 from datetime import datetime, timezone
 
+def get_parameter_value(state: Dict[str, Any], parameter: str) -> Any:
+    """
+    Safely retrieves a clinical parameter value from patient state,
+    handling dict-wrapped parameters (with 'value' key), nested HPI structures,
+    and direct state attributes.
+    """
+    if not isinstance(state, dict):
+        return None
+
+    # 1. Direct top-level check
+    if parameter in state:
+        val = state[parameter]
+        if isinstance(val, dict):
+            return val.get("value")
+        return val
+
+    # 2. Check in HPI
+    hpi = state.get("hpi")
+    if isinstance(hpi, dict) and parameter in hpi:
+        val = hpi[parameter]
+        if isinstance(val, dict):
+            return val.get("value")
+        return val
+
+    # 3. Check review_of_systems
+    ros = state.get("review_of_systems")
+    if isinstance(ros, dict) and parameter in ros:
+        val = ros[parameter]
+        if isinstance(val, dict):
+            return val.get("value")
+        return val
+
+    return None
+
 def create_initial_patient_state(
     patient_id: str,
     language_code: str = "en-IN",
@@ -166,6 +200,34 @@ class PatientStateManager:
             "confidence": confidence,
             "timestamp": datetime.now(timezone.utc).isoformat()
         })
+        return state
+
+    @classmethod
+    def get_parameter_value(cls, state: Dict[str, Any], parameter: str) -> Any:
+        return get_parameter_value(state, parameter)
+
+    @classmethod
+    def record_asked_question(cls, state: Dict[str, Any], question_id: str) -> Dict[str, Any]:
+        """Records question ID in asked_question_ids to prevent duplicate questions."""
+        if not question_id:
+            return state
+        if "asked_question_ids" not in state or not isinstance(state["asked_question_ids"], list):
+            state["asked_question_ids"] = []
+        if question_id not in state["asked_question_ids"]:
+            state["asked_question_ids"].append(question_id)
+        return state
+
+    @classmethod
+    def add_chief_complaint(cls, state: Dict[str, Any], complaint: str, source: str = "patient_voice") -> Dict[str, Any]:
+        """Adds a complaint to chief_complaints list, preserving multiple complaints."""
+        if not complaint or not str(complaint).strip():
+            return state
+        c_clean = str(complaint).strip().lower()
+        if "chief_complaints" not in state or not isinstance(state["chief_complaints"], list):
+            state["chief_complaints"] = []
+        if c_clean not in state["chief_complaints"]:
+            state["chief_complaints"].append(c_clean)
+        state["chief_complaint"] = ", ".join(c.title() for c in state["chief_complaints"])
         return state
 
     @classmethod

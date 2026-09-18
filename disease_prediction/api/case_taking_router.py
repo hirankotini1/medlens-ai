@@ -371,6 +371,7 @@ def start_interview_endpoint(payload: InterviewStartRequest):
             state = ci.PatientStateManager.set_chief_complaint(state, payload.chief_complaint, source="pre_registration")
 
     first_q = ci.ClinicalQuestionEngine.generate_open_ended_first_question(payload.language_code)
+    ci.PatientStateManager.record_asked_question(state, first_q["id"])
     db.save_case_interview_state(case_id, state)
 
     return {
@@ -404,6 +405,10 @@ def respond_interview_endpoint(payload: InterviewRespondRequest):
             primary_language=payload.language_code
         )
 
+    # Record current question as asked
+    if payload.current_question_id:
+        ci.PatientStateManager.record_asked_question(state, payload.current_question_id)
+
     # 1. Evaluate Red Flags
     rf_match = ci.RedFlagEngine.evaluate(payload.answer_text, payload.language_code)
     if rf_match:
@@ -426,13 +431,18 @@ def respond_interview_endpoint(payload: InterviewRespondRequest):
         language=payload.language_code
     )
 
-    # Set chief complaint if this is the opening answer
-    if not state.get("chief_complaint") or state.get("chief_complaint") == "Unspecified complaint":
+    # Multi-complaint extraction: preserve multiple symptoms e.g. "fever, cough and weakness"
+    complaints = ci.ClinicalAnswerExtractor.extract_complaints(payload.answer_text)
+    if complaints:
+        for c in complaints:
+            ci.PatientStateManager.add_chief_complaint(state, c, source=payload.input_mode)
+    elif not state.get("chief_complaint") or state.get("chief_complaint") == "Unspecified complaint":
         symptoms = extracted.get("associated_symptoms", {}).get("value", [])
         if symptoms and isinstance(symptoms, list):
-            state = ci.PatientStateManager.set_chief_complaint(state, ", ".join(symptoms[:2]), source=payload.input_mode)
+            for s in symptoms:
+                ci.PatientStateManager.add_chief_complaint(state, s, source=payload.input_mode)
         elif payload.answer_text:
-            state = ci.PatientStateManager.set_chief_complaint(state, payload.answer_text[:80], source=payload.input_mode)
+            ci.PatientStateManager.set_chief_complaint(state, payload.answer_text[:80], source=payload.input_mode)
 
     # 3. Update state with extracted parameters
     source_name = "patient_voice" if payload.input_mode == "voice" else "patient_text"
@@ -501,19 +511,28 @@ def respond_interview_endpoint(payload: InterviewRespondRequest):
         )
 
     if next_q:
-        q_text = next_q.get("question", {}).get(payload.language_code) or next_q.get("question", {}).get("en-IN") or ""
+        q_id = next_q.get("id") or next_q.get("question_id")
+        ci.PatientStateManager.record_asked_question(state, q_id)
+        q_text = next_q.get("question", {}).get(payload.language_code) or next_q.get("text") or next_q.get("question", {}).get("en-IN") or ""
         state = ci.PatientStateManager.append_conversation_turn(
             state,
             speaker="assistant",
             text=q_text,
             language=payload.language_code,
             audio_confidence=1.0,
-            extracted_entities={"question_id": next_q.get("id")}
+            extracted_entities={"question_id": q_id}
         )
 
-    db.save_case_interview_state(payload.case_id, state)
     completeness = ci.ClinicalSummarySynthesizer.calculate_completeness(state)
+    turn_count = state.get("conversation_turn_count", 0)
+    max_turns = state.get("max_turns_limit", 14)
     is_complete = next_q is None or completeness["score_percent"] >= 90
+    if turn_count >= max_turns and not is_complete:
+        gaps = completeness.get("missing_parameters", [])
+        state["limit_reached_note"] = f"Interview reached safe limit ({max_turns} turns). Remaining information gaps for clinician review: {', '.join(gaps)}."
+        is_complete = True
+
+    db.save_case_interview_state(payload.case_id, state)
 
     return {
         "status": "completed" if is_complete else "active",

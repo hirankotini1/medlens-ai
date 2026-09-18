@@ -175,6 +175,8 @@ class ClinicalSummarySynthesizer:
         transcripts = state.get("conversation_history", [])
         contradictions = state.get("contradictions", [])
         uncertainties = state.get("uncertainties", [])
+        red_flags = state.get("red_flags_detected", [])
+        provenance = state.get("source_provenance", [])
 
         return {
             "case_id": state.get("case_id"),
@@ -182,11 +184,16 @@ class ClinicalSummarySynthesizer:
             "primary_language": state.get("primary_language", "en-IN"),
             "generated_at": datetime.now(timezone.utc).isoformat(),
             "status": "READY_FOR_PHYSICIAN_VERIFICATION",
+            "disclaimer": "AI-generated draft — physician verification required.",
             "completeness": completeness,
             "quick_snapshot": snapshot,
             "detailed_case_history": detailed,
+            "red_flags": red_flags,
             "uncertainties": uncertainties,
             "contradictions": contradictions,
+            "documents": documents or [],
+            "timeline": detailed.get("chronological_timeline", []),
+            "source_provenance": provenance,
             "transcripts": transcripts,
             "ayush_notes": state.get("ayush_parameters", {})
         }

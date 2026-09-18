@@ -42,8 +42,10 @@ class ContradictionEngine:
                 "category": "medications",
                 "severity": "HIGH",
                 "patient_claim": "Patient reported not taking any regular medications.",
+                "document_claim": f"Active prescriptions: {', '.join(doc_meds)}",
                 "document_evidence": f"Uploaded records indicate active prescriptions: {', '.join(doc_meds)}.",
-                "doctor_probe_question": "Patient stated no current medications, but records show prior prescription for {doc_meds}. Confirm compliance or discontinuation.",
+                "discrepancy_description": f"Patient reported no medications, but document indicates active prescriptions: {', '.join(doc_meds)}.",
+                "doctor_probe_question": f"Patient stated no current medications, but records show prior prescription for {', '.join(doc_meds)}. Confirm compliance or discontinuation.",
                 "provenance": "document_crosscheck"
             })
 

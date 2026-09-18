@@ -1722,6 +1722,15 @@ def create_clinical_case(
     now_iso = datetime.now().isoformat()
     case_id = f"CASE-{datetime.now().strftime('%Y%m%d')}-{secrets.token_hex(3).upper()}"
 
+    # Ensure patient exists to satisfy foreign key constraint
+    cursor.execute("SELECT id FROM patients WHERE patient_id = ?", (patient_id,))
+    if not cursor.fetchone():
+        prov_pin_hash = hash_secret("1234")
+        cursor.execute("""
+        INSERT OR IGNORE INTO patients (patient_id, name, age, gender, contact, access_pin_hash, created_at)
+        VALUES (?, ?, 30, 'other', 'provisional', ?, ?)
+        """, (patient_id, f"Patient {patient_id}", prov_pin_hash, now_iso))
+
     cursor.execute("""
     INSERT INTO clinical_cases (
         case_id, patient_id, abha_id, status, triage_urgency,

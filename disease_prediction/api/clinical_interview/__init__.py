@@ -4,7 +4,7 @@ Conversational, Adaptive, Multilingual, Multimodal Patient Case-Taking Engine.
 """
 
 from .ontology import CLINICAL_ONTOLOGY, get_pathway_for_complaint, get_generic_pathway
-from .state_manager import PatientStateManager, create_initial_patient_state
+from .state_manager import PatientStateManager, create_initial_patient_state, get_parameter_value
 from .answer_extractor import ClinicalAnswerExtractor
 from .question_engine import ClinicalQuestionEngine
 from .red_flag_engine import RedFlagEngine, RedFlagEngine as ClinicalRedFlagEngine

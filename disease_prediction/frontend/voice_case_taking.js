@@ -851,9 +851,9 @@ async function voiceProceedToSession(touchOnly = false) {
     }
 }
 
-function voiceProceedToInterview() {
-    _voiceInitSession();
+async function voiceProceedToInterview() {
     _voiceShowStep('interview');
+    await _voiceInitSession();
 }
 
 function voiceGoBackToLanguage() {
@@ -948,6 +948,7 @@ async function runMicrophoneTest() {
    ============================================================================ */
 function _voiceInitSession() {
     _voiceSession.currentQuestionIndex = 0;
+    _voiceSession.turnCount = 0;
     _voiceSession.answers = {};
     _voiceSession.transcripts = [];
     _voiceSession.startedAt = new Date().toISOString();
@@ -955,8 +956,10 @@ function _voiceInitSession() {
     _voiceSession.pendingTranscript = '';
     _voiceSession.injectedFollowUpKeys = new Set();
     _voiceSession.activeFollowUpsTriggered = [];
+    _voiceSession.currentQuestion = null;
+    _voiceSession.completenessScore = 0;
 
-    // Build active question list: base + AYUSH if enabled
+    // Build fallback questions in case of network interruption
     _voiceBuildActiveQuestions();
 
     // Update language display badge
@@ -977,14 +980,65 @@ function _voiceInitSession() {
     // Populate settings language select
     _populateSettingsLanguageSelect();
 
-    // Load first question
-    _voiceLoadQuestion(0);
+    // Authoritative Interview Start via Backend Clinical Interview Engine
+    _voiceStartClinicalInterview();
+}
+
+async function _voiceStartClinicalInterview() {
+    try {
+        const payload = {
+            case_id: _voiceSession.caseId,
+            patient_id: _voiceSession.patientId || 'P-MEDICOVER-01',
+            language_code: _voiceSession.language || 'en-IN',
+            consent_obtained: true,
+            ayush_enabled: _voiceSession.ayushMode || false
+        };
+
+        const res = await fetch(apiUrl('/api/cases/interview/start'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+            const data = await res.json();
+            if (data.case_id) _voiceSession.caseId = data.case_id;
+            _voiceSession.backendState = data.patient_state;
+            if (data.current_question) {
+                _voiceRenderBackendQuestion(data.current_question);
+                return;
+            }
+        }
+    } catch (e) {
+        console.warn('[VoiceCT] Backend interview start deferred or offline, using standard opening:', e);
+    }
+
+    // Standard open-ended first question (SIH PS 26047) fallback
+    const fallbackQ = {
+        id: 'chief_complaint_open',
+        key: 'chief_complaint',
+        section: 'Chief Complaint',
+        priority: 'P1',
+        text: {
+            'en-IN': "Please tell me in your own words what is bothering you today?",
+            'hi-IN': "कृपया अपने शब्दों में बताएं कि आज आपको क्या परेशानी या तकलीफ हो रही है?",
+            'te-IN': "దయచేసి ఈరోజు మీకు ఉన్న సమస్య లేదా బాధ ఏమిటో మీ మాటల్లో చెప్పండి?",
+            'ta-IN': "இன்று உங்களுக்கு என்ன உடல்நல பிரச்சனை அல்லது தொந்தரவு உள்ளது என்பதை உங்கள் சொந்த வார்த்தைகளில் கூறுங்கள்?",
+            'kn-IN': "ಇಂದು ನಿಮಗೆ ಏನು ತೊಂದರೆ ಇದೆ ಎಂಬುದನ್ನು ನಿಮ್ಮ ಸ್ವಂತ ಮಾತುಗಳಲ್ಲಿ ದಯವಿಟ್ಟು ತಿಳಿಸಿ?",
+            'ml-IN': "ഇന്ന് നിങ്ങൾക്ക് എന്താണ് പ്രശ്നം എന്ന് നിങ്ങളുടെ സ്വന്തം വാക്കുകളിൽ ദയവായി പറയുക?",
+            'bn-IN': "দয়া করে আপনার নিজের ভাষায় বলুন আজ আপনার কী সমস্যা হচ্ছে?",
+            'mr-IN': "कृपया तुमच्या स्वतःच्या शब्दांत सांगा की आज तुम्हाला काय त्रास होत आहे?",
+            'gu-IN': "કૃપા કરીને તમારા પોતાના શબ્દોમાં કહો કે આજે તમને શું તકલીફ છે?",
+            'or-IN': "ଦୟାକରି ଆପଣଙ୍କ ଭାଷାରେ କୁହନ୍ତୁ ଯେ ଆଜି ଆପଣଙ୍କୁ କ'ଣ ଅସୁବିଧା ବା କଷ୍ଟ ହେଉଛି?"
+        },
+        quick_picks: ['Fever / ଜ୍ୱର', 'Pain / ଯନ୍ତ୍ରଣା', 'Weakness / ଦୁର୍ବଳତା', 'Breathlessness / ଶ୍ୱାସକଷ୍ଟ', 'Cough / କାଶ', 'Vomiting / ବାନ୍ତି', 'Other / ଅନ୍ୟାନ୍ୟ']
+    };
+    _voiceRenderBackendQuestion(fallbackQ);
 }
 
 function _voiceBuildActiveQuestions() {
-    // Start with base questions
+    // Base fallback questions
     let questions = [...VOICE_CLINICAL_QUESTIONS];
-    // Append AYUSH questions if mode is on
     if (_voiceSession.ayushMode) {
         questions = questions.concat(AYUSH_QUESTIONS);
     }
@@ -992,129 +1046,70 @@ function _voiceBuildActiveQuestions() {
 }
 
 /* ============================================================================
-   ADAPTIVE FOLLOW-UP EVALUATION & INJECTION (UNIVERSAL LINKAGE)
-   Dynamically links follow-up clinical probes directly to whatever the user said.
+   ADAPTIVE FOLLOW-UP EVALUATION (CRITICAL BUG #5 FIX)
+   Backend Clinical Interview Engine is the single authoritative source for follow-ups.
    ============================================================================ */
 function _voiceEvaluateFollowUps(answerText, questionKey) {
-    if (!answerText || answerText === '[SKIPPED]') return;
-    const lower = answerText.toLowerCase();
-    let toInject = [];
-    let matchedDomain = '';
-    let matchedKeyword = '';
-
-    const domainChecks = [
-        { domain: 'chest', keywords: ['chest', 'heart', 'cardiac', 'angina', 'छाती', 'गुण्डे', 'గుండె', 'நெஞ்சு', 'ଛାତି', 'ହୃଦ', 'କଲିଜା'], label: 'Chest / Heart symptoms' },
-        { domain: 'fever', keywords: ['fever', 'temperature', 'chills', 'shivering', 'बुखार', 'ज्वर', 'காய்ச்சல்', 'pyrexia', 'ଜ୍ୱର', 'ତାପମାତ୍ରା', 'ଥଣ୍ଡା'], label: 'Fever / High temperature' },
-        { domain: 'stomach', keywords: ['stomach', 'abdomen', 'belly', 'gastric', 'acidity', 'पेट', 'పొట్ట', 'വയറു', 'loose motion', 'ପେଟ', 'ପେଟବିନ୍ଧା', 'ଝାଡ଼ା'], label: 'Stomach / Abdominal issue' },
-        { domain: 'headache', keywords: ['headache', 'head ache', 'migraine', 'सिरदर्द', 'తలనొప్పి', 'தலைவலி', 'ମୁଣ୍ଡବିନ୍ଧା', 'ମୁଣ୍ଡ'], label: 'Headache / Migraine' },
-        { domain: 'breathlessness', keywords: ['breath', 'breathing', 'dyspnea', 'wheez', 'asthma', 'सांस', 'శ్వాస', 'ଶ୍ୱାସ', 'ନିଶ୍ୱାସ', 'ହାଲିଆ'], label: 'Breathing difficulty' },
-        { domain: 'cough', keywords: ['cough', 'khansi', 'phlegm', 'sputum', 'mucus', 'खांसी', 'దగ్గు', 'இருமல்', 'କାଶ', 'କଫ', 'ଖଙ୍କାର'], label: 'Cough & Sputum' },
-        { domain: 'throat', keywords: ['throat', 'sore throat', 'tonsil', 'swallow', 'गला', 'గొంతు', 'தொண்டை', 'ଗଳା', 'ତଣ୍ଟି'], label: 'Throat discomfort' },
-        { domain: 'joint_ortho', keywords: ['joint', 'knee', 'knee pain', 'arthritis', 'swelling', 'घुटने', 'నొప్పులు', 'மூட்டு', 'ଗଣ୍ଠି', 'ଆଣ୍ଠୁ', 'ହାଡ଼'], label: 'Joint / Knee pain' },
-        { domain: 'back_pain', keywords: ['back pain', 'lower back', 'spine', 'कमर', 'నడుము', 'முதுகு', 'ଅଣ୍ଟା', 'ପିଠି'], label: 'Back & Spine pain' },
-        { domain: 'vomiting_diarrhea', keywords: ['vomit', 'nausea', 'diarrhea', 'motion', 'उल्टी', 'వాంతి', 'வாந்தி', 'ବାନ୍ତି', 'ପତଳା ଝାଡ଼ା'], label: 'Nausea & Vomiting' },
-        { domain: 'skin_allergy', keywords: ['rash', 'itch', 'skin', 'allergy', 'hives', 'खुजली', 'దద్దుర్లు', 'அரிப்பு', 'କୁଣ୍ଡିଆ', 'ଫୋଟକା', 'ଚର୍ମ'], label: 'Skin rash / Allergy' },
-        { domain: 'diabetes_metabolic', keywords: ['sugar', 'diabetes', 'diabetic', 'मधुमेह', 'షుగర్', 'ମଧୁମେହ', 'ଡାଇବେଟିସ୍', 'ଶୁଗାର'], label: 'Diabetes / Blood sugar' },
-        { domain: 'hypertension_cardio', keywords: ['bp', 'blood pressure', 'hypertension', 'बीपी', 'ରକ୍ତଚାପ', 'ବିପି'], label: 'Blood pressure' },
-        { domain: 'urinary', keywords: ['urine', 'urination', 'burning', 'bladder', 'पेशाब', 'మూత్రం', 'ପରିସ୍ରା', 'ପୋଡ଼ାଜଳା'], label: 'Urinary symptoms' },
-        { domain: 'dizziness_vertigo', keywords: ['dizzy', 'dizziness', 'spinning', 'vertigo', 'faint', 'चक्कर', 'కళ్ళు తిరగడం', 'ଚକ୍କର', 'ମୁଣ୍ଡ ବୁଲାଇବା'], label: 'Dizziness & Balance' }
-    ];
-
-    if (!_voiceSession.injectedFollowUpKeys) _voiceSession.injectedFollowUpKeys = new Set();
-    if (!_voiceSession.activeFollowUpsTriggered) _voiceSession.activeFollowUpsTriggered = [];
-
-    for (const c of domainChecks) {
-        if (_voiceSession.injectedFollowUpKeys.has(c.domain)) continue;
-        const found = c.keywords.find(k => lower.includes(k));
-        if (found) {
-            matchedDomain = c.domain;
-            matchedKeyword = found;
-            toInject = (ADAPTIVE_FOLLOWUPS[c.domain] || []).slice(0, 2); // Pick top 2 most crucial clinical probes
-            _voiceSession.injectedFollowUpKeys.add(c.domain);
-            break;
-        }
-    }
-
-    // Dynamic clinical fallback for any symptom not in pre-defined domains
-    if (toInject.length === 0 && (questionKey === 'chief_complaint' || questionKey === 'associated_symptoms' || questionKey === 'past_medical_history')) {
-        const fallbackId = 'dyn_followup_' + questionKey;
-        if (!_voiceSession.injectedFollowUpKeys.has(fallbackId)) {
-            const dynamicQ = _buildDynamicClinicalFollowUp(answerText, questionKey);
-            if (dynamicQ) {
-                toInject = [dynamicQ];
-                _voiceSession.injectedFollowUpKeys.add(fallbackId);
-                matchedDomain = 'dynamic';
-                matchedKeyword = answerText.length > 25 ? answerText.slice(0, 25) + '...' : answerText;
-            }
-        }
-    }
-
-    if (toInject.length === 0) return;
-
-    // Stamp follow-up questions with direct linkage to user's response
-    toInject.forEach(q => {
-        q.isFollowUp = true;
-        q.linkedTo = `Linked to your mention of: "${matchedKeyword}"`;
-        q.triggerAnswer = answerText;
-    });
-
-    // Insert immediately after current question so it asks directly next!
-    const insertAt = _voiceSession.currentQuestionIndex + 1;
-    const current = _voiceSession.activeQuestions;
-    _voiceSession.activeQuestions = [
-        ...current.slice(0, insertAt),
-        ...toInject,
-        ...current.slice(insertAt),
-    ];
-
-    _voiceSession.activeFollowUpsTriggered.push({
-        domain: matchedDomain,
-        keyword: matchedKeyword,
-        triggerAnswer: answerText,
-        count: toInject.length
-    });
-
-    const total = _voiceSession.activeQuestions.length;
-    const label = document.getElementById('voice-progress-label');
-    if (label) label.textContent = `✨ AI Follow-Up linked to "${matchedKeyword}" added. (${total} total questions)`;
+    // Client-side dynamic injection disabled so backend ClinicalQuestionEngine controls clinical flow
+    return;
 }
 
 /* ============================================================================
-   QUESTION LOADING AND DISPLAY
+   QUESTION LOADING AND DISPLAY (CRITICAL BUG #1 & BUG #4 FIX)
+   Backend Clinical Interview Engine provides authoritative questions.
    ============================================================================ */
-function _voiceLoadQuestion(index) {
-    const questions = _voiceSession.activeQuestions;
-    if (index >= questions.length) {
+function _voiceRenderBackendQuestion(q) {
+    if (!q) {
         _voiceComplete();
         return;
     }
 
-    _voiceSession.currentQuestionIndex = index;
-    const q = questions[index];
+    _voiceSession.currentQuestion = q;
+    const turnIndex = (_voiceSession.turnCount || 0) + 1;
+    _voiceSession.currentQuestionIndex = turnIndex - 1;
+
+    // Extract localized question text
+    const lang = _voiceSession.language || 'en-IN';
+    let questionText = '';
+    if (typeof q.text === 'string' && q.text.trim()) {
+        questionText = q.text;
+    } else if (q.question && typeof q.question === 'object') {
+        questionText = q.question[lang] || q.question['en-IN'] || Object.values(q.question)[0] || '';
+    } else if (q.text && typeof q.text === 'object') {
+        questionText = q.text[lang] || q.text['en-IN'] || Object.values(q.text)[0] || '';
+    }
+    if (!questionText && typeof q.text === 'string') {
+        questionText = q.text;
+    }
+    if (!questionText) {
+        questionText = 'Please provide details regarding your symptoms for the physician review.';
+    }
 
     // Update progress
-    const pct = Math.round(((index + 1) / questions.length) * 100);
+    const completenessPct = _voiceSession.completenessScore || Math.min(95, Math.max(10, turnIndex * 12));
     const fillEl = document.getElementById('voice-progress-fill');
     const labelEl = document.getElementById('voice-progress-label');
-    if (fillEl) fillEl.style.width = `${pct}%`;
-    if (labelEl) labelEl.textContent = `Question ${index + 1} of ${questions.length} — ${q.section}`;
+    if (fillEl) fillEl.style.width = `${completenessPct}%`;
 
-    // Get localized question text
-    const lang = _voiceSession.language;
-    const questionText = q.text[lang] || q.text['en-IN'];
+    const sectionTitle = q.section || q.category || (q.domain ? q.domain.replace(/_/g, ' ').toUpperCase() : 'Clinical History');
+    const priorityBadgeText = q.priority ? ` [${q.priority}]` : '';
+    if (labelEl) {
+        labelEl.textContent = `Question ${turnIndex} — ${sectionTitle}${priorityBadgeText} (${completenessPct}% complete)`;
+    }
 
-    // Display question with section badge
+    // Display question text
     const questionEl = document.getElementById('voice-ai-question');
     if (questionEl) questionEl.textContent = questionText;
 
-    // Handle Dynamic AI Follow-up Indicator Banner
+    // AI Follow-up Indicator Banner
     const followupBadge = document.getElementById('voice-followup-badge');
     const followupText = document.getElementById('voice-followup-text');
     const bubble = document.querySelector('.voice-ai-bubble');
-    if (q.isFollowUp) {
+    const isFollowUp = !!(q.is_followup || q.isFollowUp || (turnIndex > 1 && (q.priority === 'P1' || q.priority === 'P2')));
+    if (isFollowUp && turnIndex > 1) {
         if (followupBadge) followupBadge.style.display = 'inline-flex';
         if (followupText) {
-            followupText.innerHTML = `<strong>✨ AI Follow-Up Question:</strong> ${escapeHtml(q.linkedTo || 'Specifically linked to your answer')}`;
+            followupText.innerHTML = `<strong>✨ AI Clinical Probe:</strong> Targeted inquiry based on your reported symptoms.`;
         }
         if (bubble) bubble.classList.add('voice-bubble-followup-active');
     } else {
@@ -1122,21 +1117,21 @@ function _voiceLoadQuestion(index) {
         if (bubble) bubble.classList.remove('voice-bubble-followup-active');
     }
 
-    // Update section badge color for AYUSH questions
+    // Section badge
     const sectionBadge = document.getElementById('voice-section-badge');
     if (sectionBadge) {
-        sectionBadge.textContent = q.section;
-        sectionBadge.className = 'voice-section-badge' +
-            (q.section.includes('AYUSH') ? ' ayush-badge' : '');
+        sectionBadge.textContent = sectionTitle;
+        sectionBadge.className = 'voice-section-badge' + (sectionTitle.includes('AYUSH') ? ' ayush-badge' : '');
     }
 
-    // Populate quick-pick options
-    _voiceRenderQuickPicks(q.quickPicks);
+    // Quick picks
+    const picks = q.quick_picks || q.quickPicks || [];
+    _voiceRenderQuickPicks(picks);
 
     // Clear previous transcript
     _voiceResetTranscriptUI();
 
-    // Auto-play question if enabled (instant snappy playback)
+    // Auto-play question with TTS
     const autoPlay = document.getElementById('voice-autoplay-toggle');
     if (!autoPlay || autoPlay.checked) {
         setTimeout(() => {
@@ -1144,19 +1139,27 @@ function _voiceLoadQuestion(index) {
         }, 80);
     }
 
-    // Show/hide back button
+    // Show/hide previous button
     const prevBtn = document.getElementById('voice-prev-btn');
-    if (prevBtn) prevBtn.style.display = index > 0 ? 'flex' : 'none';
+    if (prevBtn) prevBtn.style.display = turnIndex > 1 ? 'flex' : 'none';
 
     // Reset listening state
     if (typeof voiceStopListening === 'function') voiceStopListening();
     _voiceUpdateMicState('idle');
 
-    // If text-only mode, show text input
+    // Text fallback display
     if (_voiceSession.touchOnly || _voiceSession.showTextFallback) {
         _voiceShowTextInput(true);
     } else {
         _voiceShowTextInput(false);
+    }
+}
+
+function _voiceLoadQuestion(index) {
+    if (_voiceSession.activeQuestions && _voiceSession.activeQuestions[index]) {
+        _voiceRenderBackendQuestion(_voiceSession.activeQuestions[index]);
+    } else {
+        _voiceComplete();
     }
 }
 
@@ -1323,87 +1326,122 @@ function _voiceUpdateMicState(state) {
 /* ============================================================================
    ANSWER CONFIRMATION / EDITING
    ============================================================================ */
-function voiceConfirmAnswer() {
+async function voiceConfirmAnswer() {
     const answer = _voiceSession.pendingTranscript;
     if (!answer || !answer.trim()) {
         alert('Please speak or tap an option first.');
         return;
     }
 
-    const q = _voiceSession.activeQuestions[_voiceSession.currentQuestionIndex];
-    _voiceSession.answers[q.key] = {
-        questionText: q.text['en-IN'] || q.text[_voiceSession.language] || q.key,
-        section: q.section,
+    const currentQ = _voiceSession.currentQuestion || (_voiceSession.activeQuestions && _voiceSession.activeQuestions[_voiceSession.currentQuestionIndex]) || {};
+    const qKey = currentQ.id || currentQ.question_id || currentQ.key || `turn_${(_voiceSession.turnCount || 0) + 1}`;
+    const qSection = currentQ.section || 'Clinical History';
+    const lang = _voiceSession.language || 'en-IN';
+    const qText = (typeof currentQ.text === 'string' ? currentQ.text : currentQ.question?.[lang] || currentQ.question?.['en-IN'] || qKey);
+
+    _voiceSession.answers[qKey] = {
+        questionText: qText,
+        section: qSection,
         answer: answer.trim(),
-        confidence: 0.9,
+        confidence: 0.95,
         source: _voiceSession.touchOnly ? 'touch' : 'browser',
-        language: _voiceSession.language,
-        isFollowUp: !!q.isFollowUp,
-        linkedTo: q.linkedTo || null,
-        triggerAnswer: q.triggerAnswer || null
+        language: lang,
+        isFollowUp: !!(currentQ.is_followup || currentQ.isFollowUp),
+        linkedTo: currentQ.linked_to || currentQ.domain || null,
+        triggerAnswer: answer.trim()
     };
 
-    // Dynamically evaluate and inject follow-up clinical probes linked directly to patient input
-    _voiceEvaluateFollowUps(answer.trim(), q.key);
+    _voiceSession.turnCount = (_voiceSession.turnCount || 0) + 1;
 
     // Save transcript to voice backend (non-blocking)
-    if (typeof voiceSaveTranscript === 'function') {
-        const langText = q.text[_voiceSession.language] || q.text['en-IN'];
+    if (typeof voiceSaveTranscript === 'function' && _voiceSession.caseId) {
         voiceSaveTranscript(
             _voiceSession.caseId,
             _voiceSession.sessionId,
-            q.key,
-            langText,
+            qKey,
+            qText,
             answer.trim(),
-            _voiceSession.language,
-            0.9,
+            lang,
+            0.95,
             _voiceSession.touchOnly ? 'touch' : 'browser'
         );
     }
 
-    // Also persist section to Case Taking backend
+    // Stop microphone if currently listening
+    if (typeof voiceStopListening === 'function') voiceStopListening();
+    _voiceUpdateMicState('idle');
+
+    // Also persist section to Case Taking backend for database backward compatibility
     if (_voiceSession.caseId) {
         try {
             fetch(apiUrl(`/api/cases/${_voiceSession.caseId}/save-section`), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    section_id: q.key,
-                    section_title: q.section,
+                    section_id: qKey,
+                    section_title: qSection,
                     raw_input: answer.trim(),
                     structured_data: { user_response: answer.trim() },
                     input_mode: _voiceSession.touchOnly ? 'touch' : 'voice'
                 })
             }).catch(() => {});
         } catch (e) {}
-
-        // Unified Clinical Interview Engine integration (SIH PS 26047)
-        try {
-            fetch(apiUrl('/api/cases/interview/respond'), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    case_id: _voiceSession.caseId,
-                    answer_text: answer.trim(),
-                    current_question_id: q.key,
-                    language_code: _voiceSession.language || 'en-IN',
-                    input_mode: _voiceSession.touchOnly ? 'text' : 'voice',
-                    confidence: 0.9
-                })
-            }).then(r => r.json()).then(data => {
-                if (data.status === 'PAUSED_RED_FLAG') {
-                    _voiceHandleRedFlagInterruption(data);
-                } else if (data.extracted_entities) {
-                    _voiceRenderLiveEntityTags(data.extracted_entities, data.completeness);
-                }
-            }).catch(() => {});
-        } catch (e) {}
     }
 
-    // Move to next question (fast transition)
-    setTimeout(() => {
-        _voiceLoadQuestion(_voiceSession.currentQuestionIndex + 1);
-    }, 60);
+    // Authoritative Backend Clinical Interview Engine Integration (CRITICAL BUG #1 & #2 FIX)
+    try {
+        const payload = {
+            case_id: _voiceSession.caseId,
+            answer_text: answer.trim(),
+            current_question_id: qKey,
+            language_code: lang,
+            input_mode: _voiceSession.touchOnly ? 'touch' : 'voice',
+            confidence: 0.95
+        };
+
+        const res = await fetch(apiUrl('/api/cases/interview/respond'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+            const data = await res.json();
+            _voiceSession.backendState = data.state;
+            if (data.completeness) {
+                _voiceSession.completenessScore = data.completeness.score_percent;
+            }
+
+            // 1. Red Flag Interruption: Halt questioning immediately
+            if (data.status === 'PAUSED_RED_FLAG') {
+                _voiceHandleRedFlagInterruption(data);
+                return;
+            }
+
+            // 2. Render live entity tags
+            if (data.extracted_entities) {
+                _voiceRenderLiveEntityTags(data.extracted_entities, data.completeness);
+            }
+
+            // 3. Complete interview if done
+            if (data.is_complete === true || !data.next_question) {
+                _voiceSession.finalState = data.state;
+                _voiceComplete(data.state);
+                return;
+            }
+
+            // 4. Authoritative next question selected by ClinicalQuestionEngine
+            _voiceRenderBackendQuestion(data.next_question);
+            return;
+        } else {
+            console.warn('[VoiceCT] Backend respond returned status:', res.status);
+        }
+    } catch (e) {
+        console.error('[VoiceCT] Failed to communicate with Clinical Interview Engine:', e);
+    }
+
+    // Graceful fallback to completion if network fails
+    _voiceComplete();
 }
 
 function voiceConfirmTextInput() {
@@ -1470,24 +1508,24 @@ function voiceNavigatePrevious() {
 }
 
 function voiceSkipSection() {
-    const q = _voiceSession.activeQuestions[_voiceSession.currentQuestionIndex];
-    if (q) {
-        _voiceSession.answers[q.key] = {
-            answer: '[SKIPPED]',
-            source: 'skipped',
-            language: _voiceSession.language,
-        };
-    }
-    if (typeof stopSpeaking === 'function') stopSpeaking();
-    if (typeof voiceStopListening === 'function') voiceStopListening();
-    _voiceLoadQuestion(_voiceSession.currentQuestionIndex + 1);
+    _voiceSession.pendingTranscript = 'None / Skipped';
+    voiceConfirmAnswer();
 }
 
 function voiceReplayQuestion() {
-    const q = _voiceSession.activeQuestions[_voiceSession.currentQuestionIndex];
+    const q = _voiceSession.currentQuestion || (_voiceSession.activeQuestions && _voiceSession.activeQuestions[_voiceSession.currentQuestionIndex]);
     if (!q) return;
-    const text = q.text[_voiceSession.language] || q.text['en-IN'];
-    if (typeof speakText === 'function') speakText(text, _voiceSession.language);
+    const lang = _voiceSession.language || 'en-IN';
+    let text = '';
+    if (typeof q.text === 'string' && q.text.trim()) {
+        text = q.text;
+    } else if (q.question && typeof q.question === 'object') {
+        text = q.question[lang] || q.question['en-IN'] || Object.values(q.question)[0] || '';
+    } else if (q.text && typeof q.text === 'object') {
+        text = q.text[lang] || q.text['en-IN'] || Object.values(q.text)[0] || '';
+    }
+    if (!text && typeof q.text === 'string') text = q.text;
+    if (text && typeof speakText === 'function') speakText(text, lang);
 }
 
 /* ============================================================================
@@ -1670,40 +1708,58 @@ async function _voiceComplete() {
 }
 
 async function _voiceSubmitCaseToBackend() {
-    // Build clinical history from voice answers
-    const historyData = {};
-    Object.entries(_voiceSession.answers).forEach(([key, val]) => {
-        if (val.answer !== '[SKIPPED]') {
-            historyData[key] = val.answer;
-        }
-    });
-
-    if (Object.keys(historyData).length > 0) {
+    // Obsolete /api/cases/voice-submit removed (CRITICAL BUG #3 FIX)
+    // Uses authoritative /api/cases/interview/{case_id}/finalize
+    if (_voiceSession.caseId) {
         try {
-            const payload = {
-                patient_id: _voiceSession.patientId || 'P-MEDICOVER-01',
-                language_code: _voiceSession.language || 'en-IN',
-                voice_session_id: _voiceSession.sessionId,
-                abha_id: _voiceSession.abhaId || '91-4589-2041-8832',
-                responses: historyData,
-                source: 'voice_case_taking',
-            };
-
-            const res = await fetch(apiUrl('/api/cases/voice-submit'), {
+            const res = await fetch(apiUrl(`/api/cases/interview/${_voiceSession.caseId}/finalize`), {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
+                headers: { 'Content-Type': 'application/json' }
             });
-
             if (res.ok) {
                 const data = await res.json();
-                if (data.case_id) _voiceSession.caseId = data.case_id;
+                _voiceSession.finalReviewPackage = data.review_package;
+                _voiceSession.triageUrgency = data.triage_urgency;
             }
         } catch (e) {
-            // Non-fatal — local session is preserved
+            console.warn('[VoiceCT] Error calling finalize endpoint:', e);
         }
     }
 }
+
+async function voiceCorrectFact(parameterName, correctedValue, reason = 'Patient correction') {
+    if (!_voiceSession.caseId) return null;
+    try {
+        const res = await fetch(apiUrl('/api/cases/interview/correct-fact'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                case_id: _voiceSession.caseId,
+                parameter_name: parameterName,
+                corrected_value: correctedValue,
+                correction_reason: reason
+            })
+        });
+        if (res.ok) {
+            const data = await res.json();
+            if (data.completeness) {
+                _voiceSession.completenessScore = data.completeness.score_percent;
+            }
+            if (_voiceSession.answers[parameterName]) {
+                _voiceSession.answers[parameterName].answer = correctedValue;
+            }
+            if (typeof showToast === 'function') {
+                showToast(`✓ Corrected ${parameterName.replace(/_/g, ' ')}: ${correctedValue}`, 'success');
+            }
+            _voiceRenderSummaryHighlights();
+            return data;
+        }
+    } catch (e) {
+        console.warn('[VoiceCT] Error calling correct-fact endpoint:', e);
+    }
+    return null;
+}
+window.voiceCorrectFact = voiceCorrectFact;
 
 function _voiceRenderSummaryHighlights() {
     const container = document.getElementById('voice-summary-highlights');
@@ -1832,6 +1888,15 @@ function _voiceRenderSummaryHighlights() {
                     <div style="font-size:0.75rem; color:#cbd5e1; font-weight:600;">
                         Date: <strong>${intakeDate}</strong> &bull; <strong>${intakeTime}</strong>
                     </div>
+                </div>
+            </div>
+            
+            <!-- AI-Generated Clinical Intake Disclaimer (PS 26047) -->
+            <div style="background:#fffbeb; border:1.5px solid #fde68a; border-radius:8px; padding:10px 14px; margin: 12px 0; display:flex; align-items:center; gap:10px; color:#92400e; font-size:0.84rem;">
+                <span class="material-symbols-outlined" style="font-size:22px; color:#d97706;">shield</span>
+                <div>
+                    <strong>AI-generated draft — physician verification required.</strong>
+                    <div style="font-size:0.75rem; color:#b45309;">This record assists the clinical workflow and does not constitute a final diagnosis or medical prescription.</div>
                 </div>
             </div>
 

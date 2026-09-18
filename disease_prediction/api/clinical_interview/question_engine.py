@@ -40,10 +40,13 @@ class ClinicalQuestionEngine:
         }
 
         return {
-            "question_id": "core.open_ended_complaint",
+            "id": "chief_complaint_open",
+            "question_id": "chief_complaint_open",
+            "section": "Chief Complaint",
             "priority": PRIORITY_P1,
             "category": "chief_complaint",
             "text": text_map.get(language_code, text_map["en-IN"]),
+            "question": text_map,
             "is_first_question": True,
             "quick_picks": [
                 "Chest pain / సీన दर्द / ଛାତି ଯନ୍ତ୍ରଣା",
@@ -84,8 +87,8 @@ class ClinicalQuestionEngine:
                 active_pathways.append(pw)
 
         # 4. Build Candidate Question Queue with Information Gap Filtering
-        hpi = state.get("hpi", {})
         candidate_questions: List[Dict[str, Any]] = []
+        seen_state_keys = set()
 
         # A. Collect questions from specialized complaint pathways
         for pw in active_pathways:
@@ -96,8 +99,12 @@ class ClinicalQuestionEngine:
 
                 # Information Gap Check: If information is already known, skip!
                 state_key = q.get("state_key")
-                if state_key and self._is_parameter_already_known(hpi, state_key):
-                    continue  # GAP IS ALREADY FILLED — DO NOT ASK AGAIN!
+                if state_key:
+                    if state_key in seen_state_keys:
+                        continue  # Shared question already queued for earlier complaint
+                    if self._is_parameter_already_known(state, state_key):
+                        continue  # GAP IS ALREADY FILLED — DO NOT ASK AGAIN!
+                    seen_state_keys.add(state_key)
 
                 candidate_questions.append({
                     "raw_q": q,
@@ -112,8 +119,12 @@ class ClinicalQuestionEngine:
                 if q_id in asked_ids:
                     continue
                 state_key = q.get("state_key")
-                if state_key and self._is_parameter_already_known(hpi, state_key):
-                    continue
+                if state_key:
+                    if state_key in seen_state_keys:
+                        continue
+                    if self._is_parameter_already_known(state, state_key):
+                        continue
+                    seen_state_keys.add(state_key)
 
                 candidate_questions.append({
                     "raw_q": q,
@@ -141,7 +152,7 @@ class ClinicalQuestionEngine:
                 if q_fh: candidate_questions.append({"raw_q": q_fh, "priority": PRIORITY_P3, "domain": "family_history"})
 
         if not candidate_questions:
-            return None  # All gaps satisfied!
+            return None  # All gaps filled, no questions pending!
 
         # 5. Sort candidate questions strictly by Priority Hierarchy
         priority_weights = {
@@ -163,26 +174,41 @@ class ClinicalQuestionEngine:
         localized_text = raw_text_dict.get(language_code) or raw_text_dict.get("en-IN") or ""
         final_text = f"{memory_prefix}{localized_text}"
 
+        raw_translations = {}
+        if raw_text_dict:
+            for l_code, l_txt in raw_text_dict.items():
+                raw_translations[l_code] = f"{memory_prefix}{l_txt}"
+        else:
+            raw_translations["en-IN"] = final_text
+
+        section_name = chosen.get("section") or chosen.get("category") or candidate_questions[0]["domain"].replace("_", " ").title()
+
         return {
+            "id": chosen_id,
             "question_id": chosen_id,
+            "section": section_name,
             "priority": chosen.get("priority", PRIORITY_P2),
             "state_key": chosen.get("state_key"),
             "text": final_text,
+            "question": raw_translations,
+            "raw_q": chosen,
             "quick_picks": chosen.get("quick_picks", []),
             "red_flag_triggers": chosen.get("red_flag_triggers", []),
             "domain": candidate_questions[0]["domain"]
         }
 
-    def _is_parameter_already_known(self, hpi: Dict[str, Any], state_key: str) -> bool:
+    def _is_parameter_already_known(self, state_or_hpi: Dict[str, Any], state_key: str) -> bool:
         """
         Checks if the requested clinical parameter has already been captured
         during the opening statement or previous responses.
+        Uses get_parameter_value to safely unpack dictionaries or primitives.
         """
+        from .state_manager import get_parameter_value
+        wrapper = state_or_hpi if "hpi" in state_or_hpi else {"hpi": state_or_hpi}
+
         def has_val(k):
-            v = hpi.get(k)
-            if isinstance(v, dict):
-                v = v.get("value")
-            return v is not None and str(v).strip() != ""
+            v = get_parameter_value(wrapper, k)
+            return v is not None and str(v).strip() != "" and str(v).strip().lower() != "none"
 
         if state_key == "location_and_radiation":
             return has_val("location") and has_val("radiation")
@@ -194,15 +220,11 @@ class ClinicalQuestionEngine:
             return has_val("character")
         elif state_key == "exertional_relationship":
             return has_val("exertional_relationship")
-        elif state_key == "associated_symptoms":
-            assoc = hpi.get("associated_symptoms")
-            if isinstance(assoc, dict):
-                assoc = assoc.get("value")
+        elif state_key in ["associated_symptoms", "associated"]:
+            assoc = get_parameter_value(wrapper, "associated_symptoms")
             return bool(assoc)
-        elif state_key in hpi:
+        else:
             return has_val(state_key)
-
-        return False
 
     @classmethod
     def generate_open_ended_first_question(cls, language_code: str = "en-IN") -> Dict[str, Any]:
@@ -237,10 +259,17 @@ class ClinicalQuestionEngine:
 
         raw = q.get("raw_q", q)
         q_id = raw.get("id", raw.get("question_id", "q_next"))
-        translations = raw.get("translations", raw.get("text_map", {}))
-        if not translations:
-            text_val = q.get("text", raw.get("text", ""))
-            translations = {current_language: text_val, "en-IN": text_val}
+
+        raw_text_dict = raw.get("text", {})
+        if isinstance(raw_text_dict, dict) and raw_text_dict:
+            translations = {}
+            for l_code, l_text in raw_text_dict.items():
+                pfx = engine.extractor.build_contextual_conversation_prefix(patient_state, q_id, l_code)
+                translations[l_code] = f"{pfx}{l_text}"
+        elif isinstance(q.get("text"), str):
+            translations = {current_language: q["text"], "en-IN": q["text"]}
+        else:
+            translations = raw.get("translations", raw.get("text_map", {current_language: "", "en-IN": ""}))
 
         return {
             "id": q_id,

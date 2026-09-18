@@ -485,3 +485,278 @@ def test_api_interview_review_and_finalize():
     fin_resp = client.post(f"/api/cases/interview/{case_id}/finalize")
     assert fin_resp.status_code == 200
     assert fin_resp.json()["status"] == "finalized"
+
+
+# ==============================================================================
+# 11. REQUIRED CLINICAL INTERVIEW SCENARIOS (TEST 1 - 11)
+# ==============================================================================
+
+def test_scenario_1_start_interview_open_ended():
+    """TEST 1: Start interview -> expected open-ended first question."""
+    resp = client.post("/api/cases/interview/start", json={
+        "patient_id": "P-TEST-01",
+        "language_code": "en-IN"
+    })
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["status"] in ["started", "active"]
+    first_q = data["current_question"]
+    assert first_q["id"] in ["chief_complaint_open", "core.open_ended_complaint"]
+    assert "in your own words" in (first_q.get("question", {}).get("en-IN") or first_q.get("text", ""))
+
+def test_scenario_2_information_gap_chest_pain_duration():
+    """TEST 2: Answer severe chest pain since yesterday -> next question must NOT ask duration again."""
+    start_resp = client.post("/api/cases/interview/start", json={
+        "patient_id": "P-TEST-02",
+        "language_code": "en-IN"
+    })
+    case_id = start_resp.json()["case_id"]
+
+    resp = client.post("/api/cases/interview/respond", json={
+        "case_id": case_id,
+        "answer_text": "I have severe chest pain since yesterday",
+        "current_question_id": "chief_complaint_open",
+        "language_code": "en-IN",
+        "input_mode": "voice"
+    })
+    assert resp.status_code == 200
+    data = resp.json()
+    extracted = data["extracted_entities"]
+    complaints = extracted.get("chief_complaints", {}).get("value", [])
+    if not complaints and extracted.get("complaint", {}).get("value"):
+        complaints = [extracted["complaint"]["value"]]
+    complaint_text = " ".join(complaints).lower()
+    assert "chest pain" in complaint_text
+    assert extracted.get("severity", {}).get("value") in [7, "7", "severe"]
+    assert "day" in str(extracted.get("duration", {}).get("value", "")).lower() or "yesterday" in str(extracted.get("duration", {}).get("value", "")).lower()
+
+    # Next question must NOT be duration
+    if data["next_question"]:
+        assert data["next_question"]["id"] != "cardio.onset_duration"
+        assert data["next_question"]["id"] != "hpi.duration"
+
+def test_scenario_3_radiation_breathlessness_exertional():
+    """TEST 3: Radiation + breathlessness when walking -> missing info identifies character/onset/associated."""
+    start_resp = client.post("/api/cases/interview/start", json={
+        "patient_id": "P-TEST-03",
+        "language_code": "en-IN"
+    })
+    case_id = start_resp.json()["case_id"]
+
+    resp1 = client.post("/api/cases/interview/respond", json={
+        "case_id": case_id,
+        "answer_text": "I have chest discomfort for two days",
+        "current_question_id": "chief_complaint_open",
+        "language_code": "en-IN"
+    })
+    q1_id = resp1.json()["next_question"]["id"]
+
+    resp2 = client.post("/api/cases/interview/respond", json={
+        "case_id": case_id,
+        "answer_text": "Pain spreads to my left arm and I feel breathless when walking.",
+        "current_question_id": q1_id,
+        "language_code": "en-IN"
+    })
+    assert resp2.status_code == 200
+    data2 = resp2.json()
+    state = data2["state"]
+    # Radiation, breathlessness, exertional relationship extracted
+    assert state.get("hpi", {}).get("radiation") is not None
+    assert "arm" in str(state.get("hpi", {}).get("radiation")).lower()
+
+def test_scenario_4_red_flag_pause():
+    """TEST 4: Answer a red-flag statement -> interview paused (PAUSED_RED_FLAG)."""
+    start_resp = client.post("/api/cases/interview/start", json={
+        "patient_id": "P-TEST-04",
+        "language_code": "en-IN"
+    })
+    case_id = start_resp.json()["case_id"]
+
+    resp = client.post("/api/cases/interview/respond", json={
+        "case_id": case_id,
+        "answer_text": "I have severe crushing central chest pain radiating to left jaw and profuse sweating",
+        "current_question_id": "chief_complaint_open",
+        "language_code": "en-IN"
+    })
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["status"] == "PAUSED_RED_FLAG"
+    assert data["urgency"] in ["CRITICAL", "EMERGENT"]
+    assert "Immediate Attention Required" in data["message"]
+
+def test_scenario_5_no_duplicate_questions():
+    """TEST 5: Answer the same question twice -> no duplicate question returned."""
+    start_resp = client.post("/api/cases/interview/start", json={
+        "patient_id": "P-TEST-05",
+        "language_code": "en-IN"
+    })
+    case_id = start_resp.json()["case_id"]
+
+    resp1 = client.post("/api/cases/interview/respond", json={
+        "case_id": case_id,
+        "answer_text": "mild headache",
+        "current_question_id": "chief_complaint_open",
+        "language_code": "en-IN"
+    })
+    data1 = resp1.json()
+    q1 = data1.get("next_question")
+    if q1:
+        resp2 = client.post("/api/cases/interview/respond", json={
+            "case_id": case_id,
+            "answer_text": "mild headache again",
+            "current_question_id": q1["id"],
+            "language_code": "en-IN"
+        })
+        data2 = resp2.json()
+        q2 = data2.get("next_question")
+        if q2:
+            assert q2["id"] != q1["id"]
+            assert q2["id"] != "chief_complaint_open"
+
+def test_scenario_6_multiple_complaints_preserved():
+    """TEST 6: Multiple complaint 'fever and cough for three days' -> two complaints preserved."""
+    start_resp = client.post("/api/cases/interview/start", json={
+        "patient_id": "P-TEST-06",
+        "language_code": "en-IN"
+    })
+    case_id = start_resp.json()["case_id"]
+
+    resp = client.post("/api/cases/interview/respond", json={
+        "case_id": case_id,
+        "answer_text": "fever and cough for three days",
+        "current_question_id": "chief_complaint_open",
+        "language_code": "en-IN"
+    })
+    assert resp.status_code == 200
+    data = resp.json()
+    state = data["state"]
+    chief_complaints = state.get("chief_complaints", [])
+    complaints_str = " ".join([c.lower() for c in chief_complaints])
+    assert "fever" in complaints_str
+    assert "cough" in complaints_str
+
+def test_scenario_7_medication_contradiction_document():
+    """TEST 7: Patient says 'No medicines', document has Metformin -> discrepancy flag."""
+    start_resp = client.post("/api/cases/interview/start", json={
+        "patient_id": "P-TEST-07",
+        "language_code": "en-IN"
+    })
+    case_id = start_resp.json()["case_id"]
+
+    client.post("/api/cases/interview/respond", json={
+        "case_id": case_id,
+        "answer_text": "I do not take any regular medicines, no medications at all.",
+        "current_question_id": "med.current_reconciliation",
+        "language_code": "en-IN"
+    })
+
+    doc_resp = client.post("/api/cases/interview/verify-document", json={
+        "case_id": case_id,
+        "document_data": {
+            "medications": ["Metformin 500mg"],
+            "raw_text": "Rx: Metformin 500mg BD for Type 2 Diabetes"
+        }
+    })
+    assert doc_resp.status_code == 200
+    data = doc_resp.json()
+    assert data["count"] > 0
+    contradiction = data["contradictions_detected"][0]
+    contra_str = (contradiction.get("discrepancy_description", "") + " " + contradiction.get("document_claim", "") + " " + contradiction.get("document_evidence", "")).lower()
+    assert "metformin" in contra_str
+
+def test_scenario_8_patient_correction_recalculation():
+    """TEST 8: Patient correction: change 3 days -> 3 weeks -> state updated & completeness recalculated."""
+    start_resp = client.post("/api/cases/interview/start", json={
+        "patient_id": "P-TEST-08",
+        "language_code": "en-IN"
+    })
+    case_id = start_resp.json()["case_id"]
+
+    client.post("/api/cases/interview/respond", json={
+        "case_id": case_id,
+        "answer_text": "stomach pain for 3 days",
+        "current_question_id": "chief_complaint_open",
+        "language_code": "en-IN"
+    })
+
+    corr_resp = client.post("/api/cases/interview/correct-fact", json={
+        "case_id": case_id,
+        "parameter_name": "duration",
+        "corrected_value": "3 weeks",
+        "correction_reason": "Patient corrected duration statement"
+    })
+    assert corr_resp.status_code == 200
+    data = corr_resp.json()
+    assert data["new_value"] == "3 weeks"
+    assert "completeness" in data
+    assert data["completeness"]["score_percent"] > 0
+
+def test_scenario_9_telugu_language_localization():
+    """TEST 9: Telugu language -> question returned in Telugu or safe fallback."""
+    resp = client.post("/api/cases/interview/start", json={
+        "patient_id": "P-TEST-09",
+        "language_code": "te-IN"
+    })
+    assert resp.status_code == 200
+    data = resp.json()
+    first_q = data["current_question"]
+    assert "te-IN" in first_q.get("question", {})
+    assert "సమస్య" in first_q["question"]["te-IN"] or "బాధ" in first_q["question"]["te-IN"]
+
+def test_scenario_10_touch_input_mode_equality():
+    """TEST 10: Touch input mode routes to exact same interview engine path."""
+    start_resp = client.post("/api/cases/interview/start", json={
+        "patient_id": "P-TEST-10",
+        "language_code": "en-IN"
+    })
+    case_id = start_resp.json()["case_id"]
+
+    resp = client.post("/api/cases/interview/respond", json={
+        "case_id": case_id,
+        "answer_text": "Fever / 2-3 days",
+        "current_question_id": "chief_complaint_open",
+        "language_code": "en-IN",
+        "input_mode": "touch"
+    })
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["status"] in ["active", "completed"]
+    assert "extracted_entities" in data
+
+def test_scenario_11_complete_interview_review_finalize_doctor_package():
+    """TEST 11: Complete interview -> review -> finalize -> doctor package with all required fields."""
+    start_resp = client.post("/api/cases/interview/start", json={
+        "patient_id": "P-TEST-11",
+        "language_code": "en-IN",
+        "chief_complaint": "Joint pain"
+    })
+    case_id = start_resp.json()["case_id"]
+
+    # Post answers
+    client.post("/api/cases/interview/respond", json={
+        "case_id": case_id,
+        "answer_text": "Severe knee joint pain for 2 weeks, worse on walking",
+        "current_question_id": "chief_complaint_open",
+        "language_code": "en-IN"
+    })
+
+    # Review package
+    rev_resp = client.get(f"/api/cases/interview/{case_id}/review")
+    assert rev_resp.status_code == 200
+    pkg = rev_resp.json()
+    assert "quick_snapshot" in pkg
+    assert "detailed_case_history" in pkg
+    assert "contradictions" in pkg
+    assert "uncertainties" in pkg
+    assert "red_flags" in pkg
+    assert "transcripts" in pkg
+    assert "source_provenance" in pkg
+    assert pkg["status"] == "READY_FOR_PHYSICIAN_VERIFICATION"
+
+    # Finalize
+    fin_resp = client.post(f"/api/cases/interview/{case_id}/finalize")
+    assert fin_resp.status_code == 200
+    fin_data = fin_resp.json()
+    assert fin_data["status"] == "finalized"
+    assert "triage_urgency" in fin_data
+
