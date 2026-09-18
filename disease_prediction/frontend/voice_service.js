@@ -543,17 +543,20 @@ async function voiceStartListening(languageCode, onInterim, onFinal, onError, on
             };
 
             recognition.onresult = (event) => {
+                // IMPORTANT: Loop ALL results from i=0 (not event.resultIndex) and SET (not +=)
+                // _accumulatedFinalText to avoid duplicates when Chrome resets resultIndex.
+                let finalText = '';
                 let interim = '';
-                for (let i = event.resultIndex; i < event.results.length; i++) {
+                for (let i = 0; i < event.results.length; i++) {
                     const res = event.results[i];
                     if (res.isFinal) {
-                        _accumulatedFinalText += (res[0].transcript || '') + ' ';
+                        finalText += (res[0].transcript || '') + ' ';
                     } else {
                         interim += (res[0].transcript || '');
                     }
                 }
-
-                _latestLiveTranscript = (_accumulatedFinalText + interim).trim();
+                _accumulatedFinalText = finalText;
+                _latestLiveTranscript = (finalText + interim).trim();
                 if (_latestLiveTranscript) {
                     if (_currentOnInterim) _currentOnInterim(_latestLiveTranscript);
                     resetAutoStopTimer();
