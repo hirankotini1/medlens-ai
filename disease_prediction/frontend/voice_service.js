@@ -482,6 +482,7 @@ let _currentLanguageCode = 'en-IN';
 let _accumulatedFinalText = '';
 let _latestLiveTranscript = '';
 let _recognitionSilenceTimer = null;
+let _finalDelivered = false;  // Guard: prevents onFinal from firing more than once per session
 
 /**
  * Detects whether browser supports STT natively.
@@ -512,6 +513,7 @@ async function voiceStartListening(languageCode, onInterim, onFinal, onError, on
     _currentOnVolume = onVolume;
     _accumulatedFinalText = '';
     _latestLiveTranscript = '';
+    _finalDelivered = false;   // Reset guard for new session
     _voiceIsListening = true;
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -627,38 +629,44 @@ async function voiceStopListening() {
     if (_currentOnStatus) _currentOnStatus('converting', '⏳ Converting voice to text...');
 
     // PRIORITY 1: Deliver whatever text was captured by the browser engine!
-    // Check BOTH _latestLiveTranscript and _accumulatedFinalText so interim words are NEVER LOST!
-    const capturedText = (_latestLiveTranscript || _accumulatedFinalText || '').trim();
-    if (capturedText && capturedText.length > 0) {
-        if (_currentOnStatus) _currentOnStatus('done', `✅ Voice converted: "${capturedText}"`);
-        if (_currentOnFinal) _currentOnFinal(capturedText, 0.95);
-        if (_currentOnEnd) _currentOnEnd();
-        _latestLiveTranscript = '';
-        _accumulatedFinalText = '';
-        return;
-    }
-
-    // PRIORITY 2: If browser engine didn't capture text (e.g. fallback mode in Firefox), check audio blob
-    const wavBlob = _stopAudioRecording();
-    if (wavBlob && wavBlob.size >= 1000) {
-        const result = await _transcribeAudioWithServer(wavBlob, _currentLanguageCode);
-        if (result.transcript && result.transcript.trim()) {
-            const tr = result.transcript.trim();
-            if (_currentOnStatus) _currentOnStatus('done', `✅ Voice converted: "${tr}"`);
-            if (_currentOnFinal) _currentOnFinal(tr, 0.92);
-            if (_currentOnEnd) _currentOnEnd();
+    // _finalDelivered guard ensures onFinal is called EXACTLY ONCE per session even if
+    // voiceStopListening is called multiple times (race between auto-stop timer and onend).
+    if (!_finalDelivered) {
+        const capturedText = (_latestLiveTranscript || _accumulatedFinalText || '').trim();
+        if (capturedText && capturedText.length > 0) {
+            _finalDelivered = true;
             _latestLiveTranscript = '';
             _accumulatedFinalText = '';
+            if (_currentOnStatus) _currentOnStatus('done', `✅ Voice converted: "${capturedText}"`);
+            if (_currentOnFinal) _currentOnFinal(capturedText, 0.95);
+            if (_currentOnEnd) _currentOnEnd();
             return;
         }
-    }
 
-    // If genuine silence was heard
-    if (_currentOnStatus) _currentOnStatus('idle', '⚠️ No speech detected. Tap microphone and speak clearly, or type below.');
-    if (_currentOnError) _currentOnError('no_speech', 'No clear speech detected. Please speak closer to your microphone or type your answer.');
-    if (_currentOnEnd) _currentOnEnd();
-    _latestLiveTranscript = '';
-    _accumulatedFinalText = '';
+        // PRIORITY 2: If browser engine didn't capture text (Firefox fallback), check audio blob
+        const wavBlob = _stopAudioRecording();
+        if (wavBlob && wavBlob.size >= 1000) {
+            const result = await _transcribeAudioWithServer(wavBlob, _currentLanguageCode);
+            if (result.transcript && result.transcript.trim()) {
+                const tr = result.transcript.trim();
+                _finalDelivered = true;
+                _latestLiveTranscript = '';
+                _accumulatedFinalText = '';
+                if (_currentOnStatus) _currentOnStatus('done', `✅ Voice converted: "${tr}"`);
+                if (_currentOnFinal) _currentOnFinal(tr, 0.92);
+                if (_currentOnEnd) _currentOnEnd();
+                return;
+            }
+        }
+
+        // Genuine silence — nothing heard
+        _finalDelivered = true;
+        _latestLiveTranscript = '';
+        _accumulatedFinalText = '';
+        if (_currentOnStatus) _currentOnStatus('idle', '⚠️ No speech detected. Tap microphone and speak clearly, or type below.');
+        if (_currentOnError) _currentOnError('no_speech', 'No clear speech detected. Please speak closer to your microphone or type your answer.');
+        if (_currentOnEnd) _currentOnEnd();
+    }
 }
 
 function isListening() {

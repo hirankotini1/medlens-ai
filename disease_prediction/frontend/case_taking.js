@@ -462,12 +462,15 @@ async function startVoiceRecording() {
         // onFinal: write final converted text into textarea
         (finalText) => {
             if (textarea && finalText) {
+                // Replace textarea content completely (base + new speech or just new speech)
                 textarea.value = _caseVoiceBaseText ? `${_caseVoiceBaseText} ${finalText}` : finalText;
+                // Update base so next recording appends correctly
+                _caseVoiceBaseText = textarea.value.trim();
                 if (typeof showToast === 'function') {
                     showToast(`✓ Voice converted: "${finalText}"`, 'success');
                 }
             }
-            stopVoiceRecording();
+            // Do NOT call stopVoiceRecording() here - voiceService already calls onEnd which handles cleanup
         },
         // onError: handle microphone permission or recognition notices
         (errorType, errorMsg) => {
