@@ -505,9 +505,9 @@ function voiceSelectQuickPick(text, btn) {
 /* ============================================================================
    MICROPHONE BUTTON TOGGLE
    ============================================================================ */
-function voiceToggleListening() {
+async function voiceToggleListening() {
     if (typeof isListening === 'function' && isListening()) {
-        if (typeof voiceStopListening === 'function') voiceStopListening();
+        if (typeof voiceStopListening === 'function') await voiceStopListening();
         _voiceUpdateMicState('idle');
         return;
     }
@@ -517,12 +517,19 @@ function voiceToggleListening() {
     _voiceUpdateMicState('listening');
 
     const lang = _voiceSession.language;
-    const started = typeof voiceStartListening === 'function' && voiceStartListening(
+    if (typeof voiceStartListening !== 'function') {
+        _voiceShowTextInput(true);
+        _voiceUpdateMicState('idle');
+        return;
+    }
+
+    const started = await voiceStartListening(
         lang,
         // onInterim: display live words in real time
         (interimText) => {
             const el = document.getElementById('voice-transcript-text');
             if (el) el.textContent = interimText + '...';
+            _voiceSession.pendingTranscript = interimText;
             _voiceUpdateMicState('listening');
         },
         // onFinal: display final confirmed transcription

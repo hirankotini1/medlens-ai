@@ -503,6 +503,13 @@ async function startVoiceRecording() {
 }
 
 async function stopVoiceRecording() {
+    if (!isRecordingVoice && typeof isListening === 'function' && !isListening()) {
+        const micBtn = document.getElementById('case-mic-btn');
+        const micStatus = document.getElementById('case-mic-status');
+        if (micBtn) micBtn.classList.remove('recording-pulse');
+        if (micStatus) micStatus.innerText = 'Click microphone to record with your voice';
+        return;
+    }
     isRecordingVoice = false;
     const micBtn = document.getElementById('case-mic-btn');
     const micStatus = document.getElementById('case-mic-status');

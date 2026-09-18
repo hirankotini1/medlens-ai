@@ -62,7 +62,14 @@ function voiceGetSupportedLanguages() {
 }
 
 function voiceGetLanguageByCode(code) {
-    return VOICE_LANGUAGES.find(l => l.code === code) || VOICE_LANGUAGES[0];
+    if (!code) return VOICE_LANGUAGES[0];
+    const c = String(code).trim().toLowerCase();
+    return VOICE_LANGUAGES.find(l => 
+        l.code.toLowerCase() === c || 
+        l.name.toLowerCase() === c || 
+        l.code.toLowerCase().startsWith(c) ||
+        c.startsWith(l.code.toLowerCase().slice(0, 2))
+    ) || VOICE_LANGUAGES[0];
 }
 
 function voiceSetLanguage(code) {
@@ -473,6 +480,8 @@ let _currentOnStatus = null;
 let _currentOnVolume = null;
 let _currentLanguageCode = 'en-IN';
 let _accumulatedFinalText = '';
+let _latestLiveTranscript = '';
+let _recognitionSilenceTimer = null;
 
 /**
  * Detects whether browser supports STT natively.
@@ -485,13 +494,8 @@ function detectBrowserSTTSupport() {
 
 /**
  * Starts dual-engine voice recognition.
- * @param {string} languageCode - BCP-47 code (e.g., 'hi-IN')
- * @param {function} onInterim - called with interim transcript text
- * @param {function} onFinal - called with final transcript text
- * @param {function} onError - called with error message
- * @param {function} onEnd - called when recognition finishes
- * @param {function} onStatus - called with status updates
- * @param {function} onVolume - called with live volume RMS (0.0 to 1.0)
+ * Prioritizes native browser Web Speech API (Chrome/Edge/Safari/Android) for instant zero-latency recognition.
+ * Falls back to audio recorder + server transcribe only when SpeechRecognition is not available.
  */
 async function voiceStartListening(languageCode, onInterim, onFinal, onError, onEnd, onStatus, onVolume) {
     if (_voiceIsListening) {
@@ -507,13 +511,11 @@ async function voiceStartListening(languageCode, onInterim, onFinal, onError, on
     _currentOnStatus = onStatus;
     _currentOnVolume = onVolume;
     _accumulatedFinalText = '';
+    _latestLiveTranscript = '';
     _voiceIsListening = true;
 
-    // Start background audio recorder for reliable 16kHz PCM WAV capture & live volume
-    await _startAudioRecording();
-
-    // Try browser SpeechRecognition simultaneously for live interim typing
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
     if (SpeechRecognition) {
         try {
             const recognition = new SpeechRecognition();
@@ -525,50 +527,74 @@ async function voiceStartListening(languageCode, onInterim, onFinal, onError, on
             recognition.maxAlternatives = 1;
             recognition.lang = sttCode;
 
+            const resetAutoStopTimer = () => {
+                if (_recognitionSilenceTimer) clearTimeout(_recognitionSilenceTimer);
+                _recognitionSilenceTimer = setTimeout(() => {
+                    if (_voiceIsListening && (_latestLiveTranscript || _accumulatedFinalText)) {
+                        console.info('[VoiceService] Auto-finalizing after pause in speech...');
+                        voiceStopListening();
+                    }
+                }, 2200);
+            };
+
             recognition.onstart = () => {
                 _voiceIsListening = true;
-                if (onStatus) onStatus('listening', '🔴 Listening... Speak clearly into your mic');
+                if (_currentOnStatus) _currentOnStatus('listening', '🔴 Listening... Speak clearly into your mic');
             };
 
             recognition.onresult = (event) => {
-                let interimText = '';
+                let interim = '';
                 for (let i = event.resultIndex; i < event.results.length; i++) {
-                    const result = event.results[i];
-                    if (result.isFinal) {
-                        _accumulatedFinalText += (result[0].transcript || '') + ' ';
+                    const res = event.results[i];
+                    if (res.isFinal) {
+                        _accumulatedFinalText += (res[0].transcript || '') + ' ';
                     } else {
-                        interimText += (result[0].transcript || '');
+                        interim += (res[0].transcript || '');
                     }
                 }
-                const display = (_accumulatedFinalText + interimText).trim();
-                if (display) {
-                    _speechDetected = true;
-                    _lastSpeechTime = Date.now();
-                    if (_currentOnInterim) _currentOnInterim(display);
+
+                _latestLiveTranscript = (_accumulatedFinalText + interim).trim();
+                if (_latestLiveTranscript) {
+                    if (_currentOnInterim) _currentOnInterim(_latestLiveTranscript);
+                    resetAutoStopTimer();
                 }
             };
 
             recognition.onerror = (event) => {
                 console.warn('[VoiceService] Browser STT notice:', event.error);
                 if (event.error === 'not-allowed') {
-                    if (_currentOnError) _currentOnError('not-allowed', 'Microphone permission denied. Please allow microphone access in browser.');
+                    if (_currentOnError) _currentOnError('not-allowed', 'Microphone permission denied. Please click the lock or microphone icon in your browser address bar and select "Allow".');
+                    voiceStopListening();
+                } else if (event.error === 'no-speech') {
+                    // benign interim event - do not abort
+                } else if (event.error === 'audio-capture') {
+                    if (_currentOnError) _currentOnError('audio-capture', 'No microphone detected or audio input is busy.');
+                    voiceStopListening();
                 }
-                // For 'network' or other errors, audio recorder keeps running for server transcribe!
             };
 
             recognition.onend = () => {
-                // Do not auto-restart if stopped
+                if (_recognitionSilenceTimer) {
+                    clearTimeout(_recognitionSilenceTimer);
+                    _recognitionSilenceTimer = null;
+                }
+                // If browser recognition ended while still marked listening, cleanly finalize!
+                if (_voiceIsListening) {
+                    voiceStopListening();
+                }
             };
 
             recognition.start();
             _voiceActiveRecognition = recognition;
+            return true;
         } catch (e) {
-            console.warn('[VoiceService] Browser SpeechRecognition start error:', e);
+            console.warn('[VoiceService] Browser SpeechRecognition start error, attempting audio recorder fallback:', e);
         }
-    } else {
-        if (onStatus) onStatus('listening', '🔴 Recording voice for AI conversion...');
     }
 
+    // Fallback for browsers without native SpeechRecognition (e.g. Firefox desktop)
+    if (_currentOnStatus) _currentOnStatus('listening', '🔴 Recording audio for server transcription...');
+    await _startAudioRecording();
     return true;
 }
 
@@ -579,9 +605,16 @@ async function voiceStopListening() {
     if (!_voiceIsListening) return;
     _voiceIsListening = false;
 
+    if (_recognitionSilenceTimer) {
+        clearTimeout(_recognitionSilenceTimer);
+        _recognitionSilenceTimer = null;
+    }
+
     // Stop browser recognition
     if (_voiceActiveRecognition) {
         try {
+            _voiceActiveRecognition.onresult = null;
+            _voiceActiveRecognition.onerror = null;
             _voiceActiveRecognition.onend = null;
             _voiceActiveRecognition.stop();
         } catch (e) {}
@@ -590,19 +623,20 @@ async function voiceStopListening() {
 
     if (_currentOnStatus) _currentOnStatus('converting', '⏳ Converting voice to text...');
 
-    // Stop audio recording and get standard 16kHz PCM WAV blob
-    const wavBlob = _stopAudioRecording();
-    const browserText = (_accumulatedFinalText || '').trim();
-
-    // Priority 1: If browser STT got good text, use it immediately!
-    if (browserText && browserText.length > 1) {
-        if (_currentOnStatus) _currentOnStatus('done', '✅ Voice converted successfully');
-        if (_currentOnFinal) _currentOnFinal(browserText, 0.95);
+    // PRIORITY 1: Deliver whatever text was captured by the browser engine!
+    // Check BOTH _latestLiveTranscript and _accumulatedFinalText so interim words are NEVER LOST!
+    const capturedText = (_latestLiveTranscript || _accumulatedFinalText || '').trim();
+    if (capturedText && capturedText.length > 0) {
+        if (_currentOnStatus) _currentOnStatus('done', `✅ Voice converted: "${capturedText}"`);
+        if (_currentOnFinal) _currentOnFinal(capturedText, 0.95);
         if (_currentOnEnd) _currentOnEnd();
+        _latestLiveTranscript = '';
+        _accumulatedFinalText = '';
         return;
     }
 
-    // Priority 2: Transcribe recorded 16kHz WAV audio on the server!
+    // PRIORITY 2: If browser engine didn't capture text (e.g. fallback mode in Firefox), check audio blob
+    const wavBlob = _stopAudioRecording();
     if (wavBlob && wavBlob.size >= 1000) {
         const result = await _transcribeAudioWithServer(wavBlob, _currentLanguageCode);
         if (result.transcript && result.transcript.trim()) {
@@ -610,14 +644,18 @@ async function voiceStopListening() {
             if (_currentOnStatus) _currentOnStatus('done', `✅ Voice converted: "${tr}"`);
             if (_currentOnFinal) _currentOnFinal(tr, 0.92);
             if (_currentOnEnd) _currentOnEnd();
+            _latestLiveTranscript = '';
+            _accumulatedFinalText = '';
             return;
         }
     }
 
-    // If both returned empty
-    if (_currentOnStatus) _currentOnStatus('idle', '⚠️ No clear speech heard. Speak closer to mic, tap a preset, or type below.');
-    if (_currentOnError) _currentOnError('no_speech', 'No clear speech was heard. Speak closer to the microphone, tap a quick option, or type your answer.');
+    // If genuine silence was heard
+    if (_currentOnStatus) _currentOnStatus('idle', '⚠️ No speech detected. Tap microphone and speak clearly, or type below.');
+    if (_currentOnError) _currentOnError('no_speech', 'No clear speech detected. Please speak closer to your microphone or type your answer.');
     if (_currentOnEnd) _currentOnEnd();
+    _latestLiveTranscript = '';
+    _accumulatedFinalText = '';
 }
 
 function isListening() {
