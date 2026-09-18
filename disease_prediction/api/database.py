@@ -408,6 +408,11 @@ def init_db ():
             pin_code =f"PIN-{pid .split ('-')[-1 ]}"if '-'in pid else "PIN-1000"
             cursor .execute ("UPDATE patients SET access_pin_hash = ? WHERE patient_id = ?",(hash_secret (pin_code ),pid ))
 
+    cursor.execute("PRAGMA table_info(clinical_cases)")
+    cc_cols = [r['name'] for r in cursor.fetchall()]
+    if 'interview_state_json' not in cc_cols:
+        cursor.execute("ALTER TABLE clinical_cases ADD COLUMN interview_state_json TEXT DEFAULT '{}'")
+
 
     cursor .execute ("SELECT password_hash FROM users WHERE username = 'admin'")
     admin_row =cursor .fetchone ()
@@ -1760,6 +1765,10 @@ def get_clinical_case(case_id: str) -> Optional[Dict[str, Any]]:
         res["summary"] = json.loads(res.get("summary_json") or "{}")
     except Exception:
         res["summary"] = {}
+    try:
+        res["interview_state"] = json.loads(res.get("interview_state_json") or "{}")
+    except Exception:
+        res["interview_state"] = {}
 
     cursor.execute("SELECT * FROM case_history_records WHERE case_id = ? ORDER BY id ASC", (case_id,))
     sections = []
@@ -1948,6 +1957,44 @@ def doctor_review_case(
     conn.commit()
     conn.close()
     return {"status": "reviewed", "case_id": case_id, "confirmed_at": now_iso}
+
+def save_case_interview_state(case_id: str, state_dict: Dict[str, Any]) -> bool:
+    """Saves structured interview state and synchronizes chief complaint / triage urgency."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    now_iso = datetime.now().isoformat()
+    state_json = json.dumps(state_dict, ensure_ascii=False)
+    chief = state_dict.get("chief_complaint", "")
+    urgency = state_dict.get("triage_urgency", "ROUTINE").lower()
+    red_flags = json.dumps(state_dict.get("red_flags_detected", []))
+
+    cursor.execute("""
+    UPDATE clinical_cases
+    SET interview_state_json = ?,
+        chief_complaint = CASE WHEN ? != '' THEN ? ELSE chief_complaint END,
+        triage_urgency = ?,
+        red_flags_json = ?,
+        updated_at = ?
+    WHERE case_id = ?
+    """, (state_json, chief, chief, urgency, red_flags, now_iso, case_id))
+
+    conn.commit()
+    conn.close()
+    return True
+
+def get_case_interview_state(case_id: str) -> Optional[Dict[str, Any]]:
+    """Retrieves full clinical interview state for a case."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT interview_state_json FROM clinical_cases WHERE case_id = ?", (case_id,))
+    row = cursor.fetchone()
+    conn.close()
+    if not row or not row["interview_state_json"]:
+        return None
+    try:
+        return json.loads(row["interview_state_json"])
+    except Exception:
+        return None
  
 
 

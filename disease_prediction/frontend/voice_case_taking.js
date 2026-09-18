@@ -20,22 +20,22 @@
    Linked to existing case_taking_engine.py sections
    ============================================================================ */
 const VOICE_CLINICAL_QUESTIONS = [
-    /* 0: Chief Complaint */
+    /* 0: Chief Complaint — Open-ended entry per SIH requirement */
     {
         key: 'chief_complaint',
         section: 'Chief Complaint',
         sectionIndex: 1,
         text: {
-            'en-IN': "What is the main reason you are visiting the hospital today? What is your main problem?",
-            'hi-IN': "आज आप अस्पताल क्यों आए हैं? आपकी मुख्य समस्या क्या है?",
-            'te-IN': "మీరు ఈరోజు ఆస్పత్రికి ఎందుకు వచ్చారు? మీ ప్రధాన సమస్య ఏమిటి?",
-            'ta-IN': "நீங்கள் இன்று மருத்துவமனைக்கு ஏன் வந்தீர்கள்? உங்கள் முக்கிய பிரச்னை என்ன?",
-            'kn-IN': "ಇಂದು ನೀವು ಆಸ್ಪತ್ರೆಗೆ ಏಕೆ ಬಂದಿದ್ದೀರಿ? ನಿಮ್ಮ ಮುಖ್ಯ ಸಮಸ್ಯೆ ಏನು?",
-            'ml-IN': "ഇന്ന് നിങ്ങൾ ആശുപത്രിയിൽ വരാൻ കാരണം എന്ത്? നിങ്ങളുടെ പ്രധാന പ്രശ്നം എന്ത്?",
-            'bn-IN': "আজ আপনি কেন হাসপাতালে এসেছেন? আপনার প্রধান সমস্যা কী?",
-            'mr-IN': "आज तुम्ही रुग्णालयात का आलात? तुमची मुख्य समस्या काय आहे?",
-            'gu-IN': "આজ તમે હૉસ્પિટલ કેમ આવ્યા? તમારી મુખ્ય સમસ્યા શું છે?",
-            'or-IN': "ଆଜି ଆପଣ ହାସ୍ପାତାଲ ଆସିବାର ମୁଖ୍ୟ କାରଣ କ'ଣ? ଆପଣଙ୍କ ମୁଖ୍ୟ ଅସୁବିଧା କ'ଣ?",
+            'en-IN': "Please tell me in your own words what is bothering you today.",
+            'hi-IN': "कृपया अपने शब्दों में बताएं कि आज आपको क्या परेशानी या तकलीफ हो रही है।",
+            'te-IN': "దయచేసి ఈరోజు మీకు ఉన్న సమస్య లేదా బాధ ఏమిటో మీ మాటల్లో చెప్పండి.",
+            'ta-IN': "இன்று உங்களுக்கு என்ன உடல்நல பிரச்சனை அல்லது தொந்தரவு உள்ளது என்பதை உங்கள் சொந்த வார்த்தைகளில் கூறுங்கள்.",
+            'kn-IN': "ಇಂದು ನಿಮಗೆ ಏನು ತೊಂದರೆ ಇದೆ ಎಂಬುದನ್ನು ನಿಮ್ಮ ಸ್ವಂತ ಮಾತುಗಳಲ್ಲಿ ದಯವಿಟ್ಟು ತಿಳಿಸಿ.",
+            'ml-IN': "ഇന്ന് നിങ്ങൾക്ക് എന്താണ് പ്രശ്നം എന്ന് നിങ്ങളുടെ സ്വന്തം വാക്കുകളിൽ ദയവായി പറയുക.",
+            'bn-IN': "দয়া করে আপনার নিজের ভাষায় বলুন আজ আপনার কী সমস্যা হচ্ছে।",
+            'mr-IN': "कृपया तुमच्या स्वतःच्या शब्दांत सांगा की आज तुम्हाला काय त्रास होत आहे.",
+            'gu-IN': "કૃપા કરીને તમારા પોતાના શબ્દોમાં કહો કે આજે તમને શું તકલીફ છે.",
+            'or-IN': "ଦୟାକରି ଆପଣଙ୍କ ଭାଷାରେ କୁହନ୍ତୁ ଯେ ଆଜି ଆପଣଙ୍କୁ କ'ଣ ଅସୁବିଧା ବା କଷ୍ଟ ହେଉଛି।",
         },
         quickPicks: ['Fever / ଜ୍ୱର', 'Pain / ଯନ୍ତ୍ରଣା', 'Weakness / ଦୁର୍ବଳତା', 'Breathlessness / ଶ୍ୱାସକଷ୍ଟ', 'Cough / କାଶ', 'Vomiting / ବାନ୍ତି', 'Other / ଅନ୍ୟାନ୍ୟ'],
         redFlags: ['chest pain', 'can not breathe', 'breathing', 'unconscious', 'stroke', 'paralysis', 'bleeding', 'सांस', 'छाती में दर्द', 'పడిపోయాను', 'ଛାତିରେ ଯନ୍ତ୍ରଣା', 'ନିଶ୍ୱାସ'],
@@ -1376,6 +1376,28 @@ function voiceConfirmAnswer() {
                 })
             }).catch(() => {});
         } catch (e) {}
+
+        // Unified Clinical Interview Engine integration (SIH PS 26047)
+        try {
+            fetch(apiUrl('/api/cases/interview/respond'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    case_id: _voiceSession.caseId,
+                    answer_text: answer.trim(),
+                    current_question_id: q.key,
+                    language_code: _voiceSession.language || 'en-IN',
+                    input_mode: _voiceSession.touchOnly ? 'text' : 'voice',
+                    confidence: 0.9
+                })
+            }).then(r => r.json()).then(data => {
+                if (data.status === 'PAUSED_RED_FLAG') {
+                    _voiceHandleRedFlagInterruption(data);
+                } else if (data.extracted_entities) {
+                    _voiceRenderLiveEntityTags(data.extracted_entities, data.completeness);
+                }
+            }).catch(() => {});
+        } catch (e) {}
     }
 
     // Move to next question (fast transition)
@@ -1534,6 +1556,65 @@ function _voiceCheckRedFlags(text) {
             }
         }
     }
+}
+
+function _voiceHandleRedFlagInterruption(rfData) {
+    _voiceSession.hasRedFlag = true;
+    const banner = document.getElementById('voice-red-flag-banner');
+    if (banner) {
+        banner.style.display = 'flex';
+        banner.innerHTML = `
+            <div style="font-size:1.4rem; margin-right:10px;">🚨</div>
+            <div>
+                <strong style="color:#b91c1c;">PRIORITY CLINICAL ATTENTION REQUIRED</strong>
+                <p style="margin:4px 0 0; font-size:0.9rem; color:#7f1d1d;">${escapeHtml(rfData.message || 'Urgent symptom reported. Please sit down, rest, and alert hospital staff immediately.')}</p>
+            </div>
+        `;
+    }
+    const triageBadge = document.getElementById('voice-case-triage-badge');
+    if (triageBadge) {
+        triageBadge.textContent = '🔴 CRITICAL RED FLAG — PRIORITY TRIAGE';
+        triageBadge.style.background = '#fee2e2';
+        triageBadge.style.color = '#dc2626';
+    }
+    if (typeof showToast === 'function') {
+        showToast('🚨 Critical Clinical Alert: Attending physician notified.', 'error');
+    }
+}
+
+function _voiceRenderLiveEntityTags(entities, completeness) {
+    let tagContainer = document.getElementById('voice-live-extracted-tags');
+    if (!tagContainer) {
+        const parent = document.getElementById('voice-transcript-card') || document.querySelector('.voice-interview-main');
+        if (parent) {
+            tagContainer = document.createElement('div');
+            tagContainer.id = 'voice-live-extracted-tags';
+            tagContainer.className = 'voice-live-tags-bar';
+            tagContainer.style.cssText = 'display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; padding:6px; background:#f1f5f9; border-radius:8px;';
+            parent.appendChild(tagContainer);
+        }
+    }
+    if (!tagContainer) return;
+
+    tagContainer.innerHTML = '';
+    if (completeness && completeness.score_percent !== undefined) {
+        const cBadge = document.createElement('span');
+        cBadge.style.cssText = 'background:#0284c7; color:#fff; font-size:0.75rem; font-weight:600; padding:2px 8px; border-radius:12px;';
+        cBadge.textContent = `Completeness: ${completeness.score_percent}%`;
+        tagContainer.appendChild(cBadge);
+    }
+
+    Object.entries(entities).forEach(([k, v]) => {
+        if (v && v.value !== undefined && v.value !== null) {
+            const valStr = Array.isArray(v.value) ? v.value.join(', ') : String(v.value);
+            if (valStr.trim()) {
+                const tag = document.createElement('span');
+                tag.style.cssText = 'background:#e0e7ff; color:#3730a3; font-size:0.75rem; font-weight:500; padding:2px 8px; border-radius:12px;';
+                tag.textContent = `✓ ${k.replace('_', ' ')}: ${valStr}`;
+                tagContainer.appendChild(tag);
+            }
+        }
+    });
 }
 
 /* ============================================================================
@@ -2185,6 +2266,31 @@ function exitKioskMode() {
     const overlay = document.getElementById('voice-kiosk-overlay');
     if (overlay) overlay.style.display = 'none';
     try { document.exitFullscreen?.(); } catch (e) {}
+    kioskResetAndClear();
+}
+
+function kioskResetAndClear() {
+    // Medical Privacy Guard (PS 26047): Purge all session data, transcripts, and PII from kiosk
+    _voiceSession.patientId = null;
+    _voiceSession.abhaId = null;
+    _voiceSession.caseId = null;
+    _voiceSession.sessionId = null;
+    _voiceSession.answers = {};
+    _voiceSession.transcripts = [];
+    _voiceSession.pendingTranscript = '';
+    _voiceSession.hasRedFlag = false;
+
+    try {
+        localStorage.removeItem('medlens_last_registered_patient');
+        localStorage.removeItem('medlens_voice_session');
+        sessionStorage.clear();
+    } catch (e) {}
+
+    const pendingBox = document.getElementById('voice-transcript-text');
+    if (pendingBox) pendingBox.textContent = '';
+    _voiceResetTranscriptUI();
+    _voiceShowStep('language');
+    console.info('[VoiceCT] Kiosk session data purged successfully for patient privacy.');
 }
 
 console.info('[VoiceCaseTaking] MEDLENS Voice Case Taking module loaded.');

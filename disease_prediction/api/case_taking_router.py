@@ -20,15 +20,18 @@ try:
     from disease_prediction.api import database as db
     from disease_prediction.api import case_taking_engine as engine
     from disease_prediction.api import report_extractor
+    from disease_prediction.api import clinical_interview as ci
 except ImportError:
     try:
         import database as db
         import case_taking_engine as engine
         import report_extractor
+        import clinical_interview as ci
     except ImportError:
         from api import database as db
         from api import case_taking_engine as engine
         from api import report_extractor
+        from api import clinical_interview as ci
 
 router = APIRouter(prefix="/api/cases", tags=["SIH Clinical Case-Taking"])
 
@@ -69,6 +72,31 @@ class AttachDocumentRequest(BaseModel):
     document_type: str = "lab_report"
     filename: str
     extracted_data: Optional[Dict[str, Any]] = None
+
+class InterviewStartRequest(BaseModel):
+    patient_id: str
+    case_id: Optional[str] = None
+    language_code: str = "en-IN"
+    chief_complaint: Optional[str] = None
+    is_kiosk: bool = False
+
+class InterviewRespondRequest(BaseModel):
+    case_id: str
+    answer_text: str
+    current_question_id: Optional[str] = None
+    language_code: str = "en-IN"
+    input_mode: str = "voice"
+    confidence: Optional[float] = 0.9
+
+class InterviewCorrectFactRequest(BaseModel):
+    case_id: str
+    parameter_name: str
+    corrected_value: Any
+    correction_reason: Optional[str] = "Patient correction"
+
+class InterviewVerifyDocRequest(BaseModel):
+    case_id: str
+    document_data: Dict[str, Any]
 
 
 # ==============================================================================
@@ -308,3 +336,285 @@ def doctor_review_endpoint(case_id: str, payload: DoctorReviewRequest):
         status=payload.status
     )
     return res
+
+
+# ==============================================================================
+# UNIFIED CLINICAL INTERVIEW ENGINE ENDPOINTS (SIH PS 26047)
+# ==============================================================================
+
+@router.post("/interview/start")
+def start_interview_endpoint(payload: InterviewStartRequest):
+    """
+    Initializes a structured conversational clinical interview session.
+    Always starts with the required open-ended prompt:
+    'Please tell me in your own words what is bothering you today.'
+    """
+    case_id = payload.case_id
+    if not case_id:
+        case_data = db.create_clinical_case(
+            patient_id=payload.patient_id,
+            chief_complaint=payload.chief_complaint or "",
+            abha_id=None,
+            consent_text="Digital Clinical Interview Consent"
+        )
+        case_id = case_data["case_id"]
+
+    state = db.get_case_interview_state(case_id)
+    if not state:
+        state = ci.create_initial_patient_state(
+            case_id=case_id,
+            patient_id=payload.patient_id,
+            primary_language=payload.language_code,
+            is_kiosk=payload.is_kiosk
+        )
+        if payload.chief_complaint:
+            state = ci.PatientStateManager.set_chief_complaint(state, payload.chief_complaint, source="pre_registration")
+
+    first_q = ci.ClinicalQuestionEngine.generate_open_ended_first_question(payload.language_code)
+    db.save_case_interview_state(case_id, state)
+
+    return {
+        "status": "active",
+        "case_id": case_id,
+        "patient_id": payload.patient_id,
+        "language_code": payload.language_code,
+        "current_question": first_q,
+        "completeness": ci.ClinicalSummarySynthesizer.calculate_completeness(state),
+        "state": ci.PatientStateManager.sanitize_for_export(state, is_physician_view=False)
+    }
+
+@router.post("/interview/respond")
+def respond_interview_endpoint(payload: InterviewRespondRequest):
+    """
+    Core conversational interview step:
+    1. Red flag scan (immediate pause and patient instructions if positive).
+    2. Answer entity extraction & confidence check.
+    3. State update & provenance tracking.
+    4. Contradiction & ambiguity check.
+    5. Priority-driven next question selection with gap analysis.
+    """
+    state = db.get_case_interview_state(payload.case_id)
+    if not state:
+        case = db.get_clinical_case(payload.case_id)
+        if not case:
+            raise HTTPException(status_code=404, detail=f"Case '{payload.case_id}' not found.")
+        state = ci.create_initial_patient_state(
+            case_id=payload.case_id,
+            patient_id=case["patient_id"],
+            primary_language=payload.language_code
+        )
+
+    # 1. Evaluate Red Flags
+    rf_match = ci.RedFlagEngine.evaluate(payload.answer_text, payload.language_code)
+    if rf_match:
+        state = ci.PatientStateManager.add_red_flag(state, rf_match)
+        state = ci.PatientStateManager.append_conversation_turn(
+            state,
+            speaker="patient",
+            text=payload.answer_text,
+            language=payload.language_code,
+            audio_confidence=payload.confidence or 0.9,
+            extracted_entities={"red_flag": rf_match}
+        )
+        db.save_case_interview_state(payload.case_id, state)
+        return ci.RedFlagEngine.format_interruption_response(rf_match, payload.language_code)
+
+    # 2. Extract clinical entities
+    extracted = ci.ClinicalAnswerExtractor.extract_from_text(
+        text=payload.answer_text,
+        target_parameter=payload.current_question_id,
+        language=payload.language_code
+    )
+
+    # Set chief complaint if this is the opening answer
+    if not state.get("chief_complaint") or state.get("chief_complaint") == "Unspecified complaint":
+        symptoms = extracted.get("associated_symptoms", {}).get("value", [])
+        if symptoms and isinstance(symptoms, list):
+            state = ci.PatientStateManager.set_chief_complaint(state, ", ".join(symptoms[:2]), source=payload.input_mode)
+        elif payload.answer_text:
+            state = ci.PatientStateManager.set_chief_complaint(state, payload.answer_text[:80], source=payload.input_mode)
+
+    # 3. Update state with extracted parameters
+    source_name = "patient_voice" if payload.input_mode == "voice" else "patient_text"
+    for param_name, param_obj in extracted.items():
+        if param_obj.get("value") is not None:
+            state = ci.PatientStateManager.update_hpi_parameter(
+                state=state,
+                parameter_name=param_name,
+                value=param_obj["value"],
+                source=source_name,
+                confidence=param_obj.get("confidence", 0.85),
+                raw_text=param_obj.get("raw_text", payload.answer_text)
+            )
+
+    # 4. Check for internal self-contradictions
+    for p_name, p_obj in extracted.items():
+        if p_obj.get("value") is not None:
+            internal_contra = ci.ContradictionEngine.check_internal_contradiction(
+                state, p_name, p_obj["value"]
+            )
+            if internal_contra:
+                ci.PatientStateManager.add_contradiction(state, internal_contra)
+
+    # Append turn to transcript
+    state = ci.PatientStateManager.append_conversation_turn(
+        state,
+        speaker="patient",
+        text=payload.answer_text,
+        language=payload.language_code,
+        audio_confidence=payload.confidence or 0.9,
+        extracted_entities=extracted
+    )
+
+    # 5. Evaluate confidence & clarifications
+    needs_clarification = False
+    clarification_question = None
+    for p_name, p_obj in extracted.items():
+        conf_eval = ci.ConfidenceManager.evaluate_extraction(
+            p_name, p_obj, payload.answer_text, payload.language_code
+        )
+        if conf_eval.get("needs_clarification"):
+            needs_clarification = True
+            clarification_question = {
+                "id": f"CLARIFY_{p_name.upper()}",
+                "parameter": p_name,
+                "priority": "P1",
+                "question": {payload.language_code: conf_eval["clarification_prompt"]},
+                "quick_picks": {payload.language_code: ["Not sure", "Mild", "Severe"]}
+            }
+            ci.PatientStateManager.add_uncertainty(state, {
+                "parameter": p_name,
+                "raw_text": payload.answer_text,
+                "reason": "Low confidence extraction",
+                "confidence": conf_eval["confidence"]
+            })
+            break
+
+    # 6. Select next question
+    if needs_clarification and clarification_question:
+        next_q = clarification_question
+    else:
+        next_q = ci.ClinicalQuestionEngine.select_next_question(
+            patient_state=state,
+            current_language=payload.language_code,
+            last_answer_entities=extracted
+        )
+
+    if next_q:
+        q_text = next_q.get("question", {}).get(payload.language_code) or next_q.get("question", {}).get("en-IN") or ""
+        state = ci.PatientStateManager.append_conversation_turn(
+            state,
+            speaker="assistant",
+            text=q_text,
+            language=payload.language_code,
+            audio_confidence=1.0,
+            extracted_entities={"question_id": next_q.get("id")}
+        )
+
+    db.save_case_interview_state(payload.case_id, state)
+    completeness = ci.ClinicalSummarySynthesizer.calculate_completeness(state)
+    is_complete = next_q is None or completeness["score_percent"] >= 90
+
+    return {
+        "status": "completed" if is_complete else "active",
+        "case_id": payload.case_id,
+        "next_question": next_q,
+        "is_complete": is_complete,
+        "completeness": completeness,
+        "extracted_entities": extracted,
+        "state": ci.PatientStateManager.sanitize_for_export(state, is_physician_view=False)
+    }
+
+@router.post("/interview/correct-fact")
+def correct_fact_endpoint(payload: InterviewCorrectFactRequest):
+    """Allows patient or clinician to explicitly rectify a previously noted fact."""
+    state = db.get_case_interview_state(payload.case_id)
+    if not state:
+        raise HTTPException(status_code=404, detail=f"Case '{payload.case_id}' state not found.")
+
+    state = ci.PatientStateManager.correct_fact(
+        state=state,
+        parameter_name=payload.parameter_name,
+        new_value=payload.corrected_value,
+        corrected_by="patient_correction",
+        reason=payload.correction_reason or "Direct correction"
+    )
+    db.save_case_interview_state(payload.case_id, state)
+
+    return {
+        "status": "corrected",
+        "case_id": payload.case_id,
+        "parameter_name": payload.parameter_name,
+        "new_value": payload.corrected_value,
+        "completeness": ci.ClinicalSummarySynthesizer.calculate_completeness(state)
+    }
+
+@router.post("/interview/verify-document")
+def verify_document_endpoint(payload: InterviewVerifyDocRequest):
+    """Cross-references uploaded documents with interview statements."""
+    state = db.get_case_interview_state(payload.case_id)
+    if not state:
+        raise HTTPException(status_code=404, detail=f"Case '{payload.case_id}' state not found.")
+
+    contradictions = ci.ContradictionEngine.check_document_vs_patient(state, payload.document_data)
+    for c in contradictions:
+        ci.PatientStateManager.add_contradiction(state, c)
+
+    db.save_case_interview_state(payload.case_id, state)
+    return {
+        "case_id": payload.case_id,
+        "contradictions_detected": contradictions,
+        "count": len(contradictions)
+    }
+
+@router.get("/interview/{case_id}/state")
+def get_interview_state_endpoint(case_id: str, view: str = "patient"):
+    """Returns the patient state, sanitized according to view mode (patient vs physician)."""
+    state = db.get_case_interview_state(case_id)
+    if not state:
+        raise HTTPException(status_code=404, detail=f"No interview state found for case '{case_id}'.")
+    is_physician = (view.lower() in ["physician", "doctor"])
+    return ci.PatientStateManager.sanitize_for_export(state, is_physician_view=is_physician)
+
+@router.get("/interview/{case_id}/review")
+def get_interview_review_endpoint(case_id: str):
+    """Generates the full physician review package: Quick Snapshot, Detailed Case History, Contradictions, Transcripts."""
+    state = db.get_case_interview_state(case_id)
+    if not state:
+        raise HTTPException(status_code=404, detail=f"No interview state found for case '{case_id}'.")
+
+    case = db.get_clinical_case(case_id)
+    docs = case.get("documents", []) if case else []
+    review_package = ci.ClinicalSummarySynthesizer.synthesize_full_review(state, docs)
+    return review_package
+
+@router.post("/interview/{case_id}/finalize")
+def finalize_interview_endpoint(case_id: str):
+    """Finalizes the interview, updates clinical_cases summary and triage, marks ready for doctor sign-off."""
+    state = db.get_case_interview_state(case_id)
+    if not state:
+        raise HTTPException(status_code=404, detail=f"No interview state found for case '{case_id}'.")
+
+    case = db.get_clinical_case(case_id)
+    docs = case.get("documents", []) if case else []
+    review_pkg = ci.ClinicalSummarySynthesizer.synthesize_full_review(state, docs)
+
+    triage_urgency = state.get("triage_urgency", "ROUTINE").lower()
+    red_flags = [rf.get("flag_id", str(rf)) for rf in state.get("red_flags_detected", [])]
+
+    db.update_case_summary_and_triage(
+        case_id=case_id,
+        summary_data=review_pkg,
+        triage_urgency=triage_urgency,
+        red_flags=red_flags,
+        ayush_data=state.get("ayush_parameters"),
+        chief_complaint=state.get("chief_complaint", "")
+    )
+
+    return {
+        "status": "finalized",
+        "case_id": case_id,
+        "triage_urgency": triage_urgency,
+        "review_package": review_pkg
+    }
+

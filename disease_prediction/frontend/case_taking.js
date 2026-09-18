@@ -148,7 +148,8 @@ function onCasePatientSelectChange(selectedId) {
     // Update meta display
     const metaEl = document.getElementById('case-selected-patient-meta');
     if (metaEl && matched) {
-        const pinInfo = matched.access_pin ? ` &bull; PIN: <code>${escapeHtml(matched.access_pin)}</code>` : '';
+        const isDocView = typeof currentAuth !== 'undefined' && currentAuth && (currentAuth.role === 'doctor' || currentAuth.role === 'admin');
+        const pinInfo = (isDocView && matched.access_pin) ? ` &bull; PIN: <code>${escapeHtml(matched.access_pin)}</code>` : '';
         const phoneInfo = matched.contact ? ` &bull; Phone: ${escapeHtml(matched.contact)}` : '';
         metaEl.innerHTML = `<span class="material-symbols-outlined" style="font-size: 15px; color: #16a34a;">verified</span> Selected: <strong>${escapeHtml(matched.name)}</strong> (${escapeHtml(selectedId)})${pinInfo}${phoneInfo}`;
     }
@@ -992,6 +993,72 @@ async function openDoctorCaseReviewModal(caseId) {
         const sum = caseData.summary || {};
         const secs = sum.sections || {};
 
+        // Also attempt to load unified clinical interview review package
+        let interviewPkg = null;
+        try {
+            const intRes = await fetch(apiUrl(`/api/cases/interview/${caseId}/review`));
+            if (intRes.ok) interviewPkg = await intRes.json();
+        } catch (e) {}
+
+        const snapshot = interviewPkg?.quick_snapshot;
+        const contradictions = interviewPkg?.contradictions || [];
+        const uncertainties = interviewPkg?.uncertainties || [];
+        const timeline = interviewPkg?.detailed_case_history?.chronological_timeline || [];
+        const transcripts = interviewPkg?.transcripts || [];
+
+        let contradictionHtml = '';
+        if (contradictions.length > 0) {
+            contradictionHtml = `
+                <div style="background: #fff1f2; border: 1.5px solid #fecdd3; border-radius: 8px; padding: 12px 14px; margin-bottom: 14px;">
+                    <div style="color: #be123c; font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">crisis_alert</span>
+                        <span>CLINICAL CONTRADICTION &amp; DISCREPANCY DETECTED (${contradictions.length})</span>
+                    </div>
+                    <div style="margin-top: 6px; display: flex; flex-direction: column; gap: 6px; font-size: 0.82rem;">
+                        ${contradictions.map(c => `
+                            <div style="background: #fff; padding: 6px 10px; border-radius: 6px; border-left: 3px solid #e11d48;">
+                                <div><strong>Patient Statement:</strong> ${escapeHtml(c.patient_claim || '')}</div>
+                                <div style="color: #9f1239;"><strong>Document Evidence:</strong> ${escapeHtml(c.document_evidence || '')}</div>
+                                <div style="color: #475569; font-style: italic; font-size: 0.76rem;">Suggested Doctor Probe: ${escapeHtml(c.doctor_probe_question || '')}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        let snapshotHtml = '';
+        if (snapshot) {
+            snapshotHtml = `
+                <div style="background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 8px; padding: 12px 14px; margin-bottom: 14px;">
+                    <div style="color: #15803d; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">bolt</span>
+                        <span>QUICK CONSULTATION SNAPSHOT (1-MINUTE OPD SCAN)</span>
+                    </div>
+                    <div style="margin-top: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.82rem;">
+                        <div>
+                            <div><strong>Key Positives:</strong></div>
+                            <ul style="margin: 2px 0 6px 16px; padding: 0; color: #1e293b;">
+                                ${(snapshot.key_positives || []).map(p => `<li>${escapeHtml(p)}</li>`).join('') || '<li>None noted</li>'}
+                            </ul>
+                        </div>
+                        <div>
+                            <div><strong>Pertinent Negatives:</strong></div>
+                            <ul style="margin: 2px 0 6px 16px; padding: 0; color: #475569;">
+                                ${(snapshot.pertinent_negatives || []).map(n => `<li>${escapeHtml(n)}</li>`).join('') || '<li>None recorded</li>'}
+                            </ul>
+                        </div>
+                    </div>
+                    ${(snapshot.provisional_differentials && snapshot.provisional_differentials.length > 0) ? `
+                        <div style="margin-top: 6px; font-size: 0.8rem; background: #fff; padding: 6px 10px; border-radius: 6px; border: 1px solid #dcfce7;">
+                            <strong style="color: #166534;">Differentials to Consider (Clinical Draft):</strong>
+                            ${snapshot.provisional_differentials.map(d => `<span style="display:inline-block; margin-right:8px; background:#e2e8f0; padding:2px 8px; border-radius:12px; margin-top:3px;">${escapeHtml(d.condition)}</span>`).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
         content.innerHTML = `
             <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 18px; margin-bottom: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 0.84rem;">
                 <div>
@@ -1013,6 +1080,9 @@ async function openDoctorCaseReviewModal(caseId) {
                     </div>
                 </div>
             </div>
+
+            ${contradictionHtml}
+            ${snapshotHtml}
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.82rem;">
                 <div class="case-sec-box" style="margin: 0; padding: 10px 12px;">
