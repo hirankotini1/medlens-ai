@@ -519,7 +519,11 @@ function switchView(viewName) {
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    if (viewName === 'admin') {
+    if (viewName === 'voice-case-taking') {
+        if (typeof launchVoiceCaseTaking === 'function') {
+            launchVoiceCaseTaking();
+        }
+    } else if (viewName === 'admin') {
         if (currentAuth.role === 'admin' && currentAuth.token) {
             document.getElementById('admin-login-box').style.display = 'none';
             document.getElementById('admin-dashboard-box').style.display = 'block';

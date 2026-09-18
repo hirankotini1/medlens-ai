@@ -300,8 +300,10 @@ function navigatePreviousSection() {
 
 
 // ==============================================================================
-// 5. SPEECH-TO-TEXT VOICE INPUT ENGINE
+// 5. SPEECH-TO-TEXT VOICE INPUT ENGINE (DUAL ENGINE: Browser STT + Server Fallback)
 // ==============================================================================
+let _caseVoiceBaseText = '';
+
 function toggleVoiceRecording() {
     if (isRecordingVoice) {
         stopVoiceRecording();
@@ -310,74 +312,93 @@ function toggleVoiceRecording() {
     }
 }
 
-function startVoiceRecording() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-        showModalAlert('Speech recognition is not natively supported in your browser. You can still type directly into the text box below.', 'Voice Input Unavailable');
+async function startVoiceRecording() {
+    const micBtn = document.getElementById('case-mic-btn');
+    const micStatus = document.getElementById('case-mic-status');
+    const textarea = document.getElementById('case-section-input');
+
+    if (!textarea) return;
+
+    _caseVoiceBaseText = textarea.value.trim();
+    isRecordingVoice = true;
+
+    // Immediate visual cue
+    if (micBtn) micBtn.classList.add('recording-pulse');
+    if (micStatus) micStatus.innerHTML = '<span class="rec-dot"></span> Listening... Speak now (auto-stops on pause)';
+
+    const lang = window._selectedLanguage || 'en-IN';
+    let targetLangCode = 'en-IN';
+    if (lang === 'Hindi' || lang === 'hi-IN') targetLangCode = 'hi-IN';
+    else if (lang === 'Telugu' || lang === 'te-IN') targetLangCode = 'te-IN';
+    else if (typeof lang === 'string' && lang.includes('-')) targetLangCode = lang;
+
+    if (typeof voiceStartListening !== 'function') {
+        console.warn('[CaseTaking] voiceStartListening not yet loaded');
         return;
     }
 
-    try {
-        activeSpeechRecognition = new SpeechRecognition();
-        activeSpeechRecognition.continuous = true;
-        activeSpeechRecognition.interimResults = true;
-        
-        // Match language selector if Hindi or Telugu
-        const lang = window._selectedLanguage || 'English';
-        if (lang === 'Hindi') activeSpeechRecognition.lang = 'hi-IN';
-        else if (lang === 'Telugu') activeSpeechRecognition.lang = 'te-IN';
-        else activeSpeechRecognition.lang = 'en-US';
-
-        const micBtn = document.getElementById('case-mic-btn');
-        const micStatus = document.getElementById('case-mic-status');
-        const textarea = document.getElementById('case-section-input');
-
-        activeSpeechRecognition.onstart = () => {
-            isRecordingVoice = true;
-            if (micBtn) micBtn.classList.add('recording-pulse');
-            if (micStatus) micStatus.innerHTML = '<span class="rec-dot"></span> Listening... Speak your medical history clearly';
-            showToast('🎙️ Microphone active. Speak now...', 'info');
-        };
-
-        activeSpeechRecognition.onresult = (event) => {
-            let transcript = '';
-            for (let i = event.resultIndex; i < event.results.length; ++i) {
-                transcript += event.results[i][0].transcript;
+    await voiceStartListening(
+        targetLangCode,
+        // onInterim: display live transcription as the patient speaks
+        (interimText) => {
+            if (textarea) {
+                textarea.value = _caseVoiceBaseText ? `${_caseVoiceBaseText} ${interimText}` : interimText;
             }
-            if (textarea && transcript) {
-                const currentText = textarea.value;
-                textarea.value = currentText ? `${currentText} ${transcript}`.trim() : transcript;
+        },
+        // onFinal: write final converted text into textarea
+        (finalText) => {
+            if (textarea && finalText) {
+                textarea.value = _caseVoiceBaseText ? `${_caseVoiceBaseText} ${finalText}` : finalText;
+                if (typeof showToast === 'function') {
+                    showToast(`✓ Voice converted: "${finalText}"`, 'success');
+                }
             }
-        };
-
-        activeSpeechRecognition.onerror = (event) => {
-            console.warn('Speech recognition error:', event.error);
             stopVoiceRecording();
-            showToast(`Voice notice: ${event.error}. You can continue by typing.`, 'warning');
-        };
-
-        activeSpeechRecognition.onend = () => {
+        },
+        // onError: handle microphone permission or recognition notices
+        (errorType, errorMsg) => {
+            console.warn('[CaseTaking] STT Notice:', errorType, errorMsg);
+            if (errorType === 'not-allowed') {
+                if (typeof showModalAlert === 'function') {
+                    showModalAlert('Microphone permission was blocked. Please click the lock / microphone icon in your browser address bar and select "Allow".', 'Microphone Access Required');
+                }
+            }
             stopVoiceRecording();
-        };
-
-        activeSpeechRecognition.start();
-    } catch (e) {
-        console.error('Error starting speech recognition:', e);
-        stopVoiceRecording();
-        showModalAlert('Could not activate microphone. Please type your history into the text box.', 'Microphone Notice');
-    }
+        },
+        // onEnd: reset recording UI state
+        () => {
+            isRecordingVoice = false;
+            if (micBtn) micBtn.classList.remove('recording-pulse');
+            if (micStatus) micStatus.innerText = 'Click microphone to record with your voice';
+        },
+        // onStatus: show status updates
+        (statusState, statusMsg) => {
+            if (micStatus && isRecordingVoice) {
+                micStatus.innerHTML = `<span class="rec-dot"></span> ${statusMsg}`;
+            }
+        },
+        // onVolume: live volume indicator meter
+        (rms) => {
+            if (micStatus && isRecordingVoice) {
+                const level = Math.min(8, Math.max(1, Math.round(rms * 90)));
+                const bars = ' ▂▃▄▅▆▇█'.slice(0, level);
+                micStatus.innerHTML = `<span class="rec-dot"></span> Listening... <span style="color:#0284c7;font-family:monospace;font-weight:700;">${bars}</span> (auto-stops on pause)`;
+            }
+        }
+    );
 }
 
-function stopVoiceRecording() {
+async function stopVoiceRecording() {
     isRecordingVoice = false;
-    if (activeSpeechRecognition) {
-        try { activeSpeechRecognition.stop(); } catch (e) {}
-        activeSpeechRecognition = null;
-    }
     const micBtn = document.getElementById('case-mic-btn');
     const micStatus = document.getElementById('case-mic-status');
+
     if (micBtn) micBtn.classList.remove('recording-pulse');
     if (micStatus) micStatus.innerText = 'Click microphone to record with your voice';
+
+    if (typeof voiceStopListening === 'function') {
+        await voiceStopListening();
+    }
 }
 
 

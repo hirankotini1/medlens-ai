@@ -39,6 +39,7 @@ try :
     from disease_prediction .api .case_taking_router import router as case_taking_router
     from disease_prediction .api .sms_gateway import router as sms_gateway_router
     from disease_prediction .api .sms_gateway import normalize_phone ,build_sms_text
+    from disease_prediction .api .voice_router import router as voice_router
 except ImportError :
     try :
         import train_malaria 
@@ -49,6 +50,7 @@ except ImportError :
         from case_taking_router import router as case_taking_router
         from sms_gateway import router as sms_gateway_router
         from sms_gateway import normalize_phone ,build_sms_text
+        from voice_router import router as voice_router
     except ImportError :
         from training import train_malaria 
         from training .train_malaria import MalariaFeatureExtractor 
@@ -58,6 +60,9 @@ except ImportError :
         from api .case_taking_router import router as case_taking_router
         from api .sms_gateway import router as sms_gateway_router
         from api .sms_gateway import normalize_phone ,build_sms_text
+        from api .voice_router import router as voice_router
+
+
 
 sys .modules ['train_malaria']=train_malaria 
 
@@ -138,6 +143,14 @@ allow_headers =["*"],
 app .include_router (operations_router )
 app .include_router (case_taking_router )
 app .include_router (sms_gateway_router )
+
+# ── Multilingual Voice Case-Taking Router (SIH PS 26047) ─────────────────────
+try:
+    app.include_router(voice_router)
+except Exception:
+    pass  # Voice router is optional; app continues without it
+# ─────────────────────────────────────────────────────────────────────────────
+
 
 MODELS_DIR =os .path .abspath (os .path .join (os .path .dirname (__file__ ),'..','models'))
 FRONTEND_DIR =os .path .abspath (os .path .join (os .path .dirname (__file__ ),'..','frontend'))

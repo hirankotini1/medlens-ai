@@ -42,6 +42,9 @@
             <button type="button" class="nav-btn" id="tab-case-taking" onclick="launchClinicalCaseTaking()">
                 <span class="material-symbols-outlined">clinical_notes</span> Case Taking
             </button>
+            <button type="button" class="nav-btn" id="tab-voice-case-taking" onclick="launchVoiceCaseTaking()" title="Multilingual Voice Patient Case Taking — SIH PS 26047" style="background: linear-gradient(135deg, rgba(0,57,126,0.08), rgba(16,185,129,0.08)); border: 1px solid rgba(16,185,129,0.3);">
+                <span class="material-symbols-outlined" style="color: #059669;">mic</span> <span style="color: #059669; font-weight: 700;">Voice</span> Case Taking
+            </button>
             <button type="button" class="nav-btn" id="tab-analyzer" onclick="switchView('analyzer')">
                 <span class="material-symbols-outlined">analytics</span> AI Analyzer
             </button>
@@ -61,10 +64,30 @@
                     
                     <div class="lang-selector-wrapper">
                         <span class="material-symbols-outlined" style="font-size: 16px; color: var(--primary);">translate</span>
-                        <select id="global-lang-select" class="lang-selector" onchange="onLanguageChange(this.value)" title="Select AI response language">
-                            <option value="English">English</option>
-                            <option value="Hindi">हिन्दी (Hindi)</option>
-                            <option value="Telugu">తెలుగు (Telugu)</option>
+                        <select id="global-lang-select" class="lang-selector" onchange="onLanguageChange(this.value)" title="Select AI response language / वाणी भाषा चुनें">
+                            <option value="en-IN">English</option>
+                            <option value="hi-IN">हिन्दी (Hindi)</option>
+                            <option value="te-IN">తెలుగు (Telugu)</option>
+                            <option value="or-IN">ଓଡ଼ିଆ (Odia)</option>
+                            <option value="ta-IN">தமிழ் (Tamil)</option>
+                            <option value="kn-IN">ಕನ್ನಡ (Kannada)</option>
+                            <option value="ml-IN">മലയാളം (Malayalam)</option>
+                            <option value="bn-IN">বাংলা (Bengali)</option>
+                            <option value="mr-IN">मराठी (Marathi)</option>
+                            <option value="gu-IN">ગુજરાતી (Gujarati)</option>
+                            <option value="pa-IN">ਪੰਜਾਬੀ (Punjabi)</option>
+                            <option value="ur-IN">اردو (Urdu)</option>
+                            <option value="as-IN">অসমীয়া (Assamese)</option>
+                            <option value="ks-IN">कश्मीरी (Kashmiri)</option>
+                            <option value="ne-IN">नेपाली (Nepali)</option>
+                            <option value="kok-IN">कोंकणी (Konkani)</option>
+                            <option value="mai-IN">मैथिली (Maithili)</option>
+                            <option value="mni-IN">মৈতৈলোন্ (Manipuri)</option>
+                            <option value="brx-IN">बड़ो (Bodo)</option>
+                            <option value="doi-IN">डोगरी (Dogri)</option>
+                            <option value="sat-IN">ᱥᱟᱱᱛᱟᱲᱤ (Santali)</option>
+                            <option value="sd-IN">سنڌي (Sindhi)</option>
+                            <option value="sa-IN">संस्कृत (Sanskrit)</option>
                         </select>
                     </div>
 
@@ -3525,13 +3548,10 @@
                             <textarea id="lab-res-notes" class="search-input" rows="2" placeholder="e.g. Sample verified and approved. No clot detected."></textarea>
                         </div>
                     </div>
-                    <div class="modal-footer" style="display: flex; justify-content: space-between; padding: 12px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0;">
-                        <button type="button" class="btn-secondary" onclick="closeLabResultModal()">Cancel</button>
-                        <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, #16a34a, #15803d); font-weight: 800;">
-                            <span class="material-symbols-outlined">check_circle</span> Validate &amp; Complete Order
-                        </button>
-                    </div>
                 </form>
+            </div>
+        </div>
+
         <!-- ======================================================================
              DOCTOR CLINICAL CASE REVIEW MODAL
              ====================================================================== -->
@@ -3552,6 +3572,9 @@
                     <button type="button" class="btn-primary" style="background: linear-gradient(135deg, #16a34a, #15803d); font-weight: 800;" onclick="submitDoctorCaseSignoff()">
                         <span class="material-symbols-outlined">verified</span> Confirm Case Sheet &amp; Sign Off
                     </button>
+                </div>
+            </div>
+        </div>
         <!-- ======================================================================
              DIRECT TEST SMS DISPATCH MODAL
              ====================================================================== -->
@@ -3588,7 +3611,340 @@
             </div>
         </div>
 
-    <script src="app.js?v=20260917_sms_v3"></script>
-    <script src="case_taking.js?v=20260904_sih_v1"></script>
+        <!-- ======================================================================
+             VOICE CASE TAKING VIEW — SIH PS 26047
+             Multilingual Voice Patient History Interview
+             ====================================================================== -->
+        <section id="view-voice-case-taking" class="section-view">
+
+            <!-- KIOSK MODE OVERLAY (hidden by default) -->
+            <div id="voice-kiosk-overlay" class="voice-kiosk-overlay" style="display:none;">
+                <div class="voice-kiosk-inner">
+                    <div class="voice-kiosk-brand">
+                        <span class="material-symbols-outlined" style="font-size: 48px; color: #059669;">mic</span>
+                        <h1>MEDLENS AI</h1>
+                        <p>Patient Voice Check-In</p>
+                    </div>
+                    <div id="voice-kiosk-content"></div>
+                    <button type="button" onclick="exitKioskMode()" style="position:fixed;bottom:16px;right:16px;background:rgba(0,0,0,0.3);color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.78rem;">Exit Kiosk</button>
+                </div>
+            </div>
+
+            <div class="voice-ct-wrapper">
+
+                <!-- ── STEP 0: LANGUAGE SELECTION ──────────────────────────── -->
+                <div id="voice-step-language" class="voice-step-panel">
+                    <div class="voice-step-header">
+                        <div class="voice-step-badge">
+                            <span class="material-symbols-outlined">language</span> Step 1 of 4
+                        </div>
+                        <h2 class="voice-step-title">Choose Your Language</h2>
+                        <p class="voice-step-subtitle">
+                            <span class="material-symbols-outlined" style="font-size:18px;vertical-align:middle;color:#059669;">mic</span>
+                            आप अपनी भाषा में बोल सकते हैं • You can speak in your preferred language
+                        </p>
+                    </div>
+
+                    <div class="voice-lang-grid" id="voice-lang-grid">
+                        <!-- Populated by voice_case_taking.js -->
+                    </div>
+
+                    <div style="margin-top:24px; text-align:center;">
+                        <button type="button" class="voice-continue-btn" onclick="voiceProceedToConsent()" id="voice-lang-continue-btn" disabled>
+                            <span class="material-symbols-outlined">arrow_forward</span> Continue →
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ── STEP 1: VOICE CONSENT ────────────────────────────────── -->
+                <div id="voice-step-consent" class="voice-step-panel" style="display:none;">
+                    <div class="voice-step-header">
+                        <div class="voice-step-badge">
+                            <span class="material-symbols-outlined">security</span> Step 2 of 4
+                        </div>
+                        <h2 class="voice-step-title">Voice Consent</h2>
+                        <p class="voice-step-subtitle">Please listen to or read the information below before we begin.</p>
+                    </div>
+
+                    <div class="voice-consent-card">
+                        <div class="voice-consent-icon">🔒</div>
+                        <div class="voice-consent-body">
+                            <p class="voice-consent-text">
+                                <strong>MEDLENS AI</strong> will listen to your answers to prepare your medical history for the doctor.
+                                Your voice will be converted to text. <strong>No audio recordings are stored</strong> — only your text answers.
+                                Your privacy is protected.
+                            </p>
+                            <p class="voice-consent-text" style="margin-top:10px; color:#64748b; font-size:0.85rem;">
+                                This system collects medical history only. It does NOT diagnose conditions.
+                                A physician will review all information.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:8px; text-align:center;">
+                        <button type="button" class="voice-listen-btn" onclick="speakText(document.querySelector('.voice-consent-text').innerText, voiceGetCurrentLanguage())" title="Listen to explanation">
+                            <span class="material-symbols-outlined">volume_up</span> 🔊 Listen to Explanation
+                        </button>
+                    </div>
+
+                    <div style="margin-top:24px; display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+                        <button type="button" class="voice-agree-btn" onclick="voiceProceedToSession()">
+                            <span class="material-symbols-outlined">check_circle</span> I Agree — Start Voice Session
+                        </button>
+                        <button type="button" class="voice-touchonly-btn" onclick="voiceProceedToSession(true)">
+                            <span class="material-symbols-outlined">touch_app</span> Continue with Touch / Text Only
+                        </button>
+                    </div>
+                    <div style="text-align:center; margin-top:12px;">
+                        <button type="button" onclick="voiceGoBackToLanguage()" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:0.85rem;">
+                            ← Back to Language Selection
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ── STEP 2: MICROPHONE TEST ──────────────────────────────── -->
+                <div id="voice-step-mic-test" class="voice-step-panel" style="display:none;">
+                    <div class="voice-step-header">
+                        <div class="voice-step-badge">
+                            <span class="material-symbols-outlined">mic</span> Step 3 of 4
+                        </div>
+                        <h2 class="voice-step-title">🎤 Microphone Check</h2>
+                        <p class="voice-step-subtitle">Let's make sure your microphone is working.</p>
+                    </div>
+
+                    <div class="voice-mic-test-card">
+                        <div class="voice-mic-test-icon" id="voice-mic-test-icon">🎤</div>
+                        <div id="voice-mic-test-status" class="voice-mic-test-status">Click the button below to test your microphone</div>
+                        <button type="button" class="voice-mic-test-btn" id="voice-mic-test-btn" onclick="runMicrophoneTest()">
+                            <span class="material-symbols-outlined">mic</span> Test Microphone
+                        </button>
+                    </div>
+
+                    <div id="voice-stt-fallback-notice" style="display:none; background:#fef3c7; border:1px solid #fcd34d; border-radius:10px; padding:14px 18px; margin:16px auto; max-width:520px; font-size:0.87rem; color:#92400e; text-align:center;">
+                        <strong>Voice recognition is not available on this device.</strong><br>
+                        You can still complete the form using touch buttons and text input.
+                    </div>
+
+                    <div style="margin-top:24px; display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+                        <button type="button" class="voice-continue-btn" onclick="voiceProceedToInterview()">
+                            <span class="material-symbols-outlined">arrow_forward</span> Continue to Interview →
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ── STEP 3: VOICE INTERVIEW ──────────────────────────────── -->
+                <div id="voice-step-interview" class="voice-step-panel" style="display:none;">
+
+                    <!-- Header Bar -->
+                    <div class="voice-interview-header">
+                        <div class="voice-interview-brand">
+                            <span class="material-symbols-outlined" style="color:#059669;">mic</span>
+                            <strong>MEDLENS AI</strong> — Patient Case Taking
+                        </div>
+                        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                            <div class="voice-lang-badge" id="voice-session-lang-display">🇬🇧 English</div>
+                            <button type="button" class="voice-small-btn" onclick="showVoiceSettings()" title="Voice Settings">
+                                <span class="material-symbols-outlined" style="font-size:16px;">settings</span> Settings
+                            </button>
+                            <button type="button" class="voice-small-btn" onclick="enterKioskMode()" title="Kiosk Mode">
+                                <span class="material-symbols-outlined" style="font-size:16px;">fullscreen</span> Kiosk
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="voice-progress-container">
+                        <div class="voice-progress-bar-track">
+                            <div class="voice-progress-bar-fill" id="voice-progress-fill" style="width:10%"></div>
+                        </div>
+                        <div class="voice-progress-label" id="voice-progress-label">Section 1 of 10</div>
+                    </div>
+
+                    <!-- RED FLAG ALERT (shown when emergency detected) -->
+                    <div id="voice-red-flag-banner" class="voice-red-flag-banner" style="display:none;">
+                        <span class="material-symbols-outlined" style="font-size:28px;">crisis_alert</span>
+                        <div>
+                            <div style="font-size:1.1rem; font-weight:800;">🚨 PRIORITY ALERT</div>
+                            <div id="voice-red-flag-message">Your response contains a symptom that may require urgent clinical attention. Please contact hospital staff immediately.</div>
+                        </div>
+                    </div>
+
+                    <!-- AI Question Bubble -->
+                    <div class="voice-ai-bubble">
+                        <div class="voice-ai-avatar">
+                            <span class="material-symbols-outlined">smart_toy</span>
+                        </div>
+                        <div class="voice-ai-bubble-content">
+                            <div class="voice-ai-label">MEDLENS AI is asking:</div>
+                            <div class="voice-ai-question" id="voice-ai-question">Loading question...</div>
+                            <div class="voice-ai-controls">
+                                <button type="button" class="voice-ctrl-btn" onclick="voiceReplayQuestion()" title="Play question again" aria-label="Replay question">
+                                    <span class="material-symbols-outlined">volume_up</span> 🔊 Replay
+                                </button>
+                                <button type="button" class="voice-ctrl-btn" onclick="stopSpeaking()" title="Stop speaking" aria-label="Stop audio">
+                                    <span class="material-symbols-outlined">stop</span> Stop
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Touch Quick-Pick Options -->
+                    <div id="voice-touch-options" class="voice-touch-options">
+                        <!-- Populated per question by JS -->
+                    </div>
+
+                    <!-- Microphone Interface -->
+                    <div class="voice-mic-interface">
+                        <div class="voice-mic-status-bar" id="voice-mic-status-bar">
+                            <div class="voice-status-dot" id="voice-status-dot"></div>
+                            <span id="voice-mic-status-text">Tap the microphone to speak</span>
+                        </div>
+
+                        <button type="button"
+                            class="voice-mic-btn"
+                            id="voice-main-mic-btn"
+                            onclick="voiceToggleListening()"
+                            aria-label="Start speaking"
+                            title="Tap to speak your answer">
+                            <span class="material-symbols-outlined" id="voice-mic-icon">mic</span>
+                        </button>
+
+                        <!-- Live Transcript -->
+                        <div class="voice-transcript-box" id="voice-transcript-box">
+                            <div class="voice-transcript-label">You said:</div>
+                            <div class="voice-transcript-text" id="voice-transcript-text">&nbsp;</div>
+                        </div>
+
+                        <!-- Transcript Actions -->
+                        <div class="voice-transcript-actions" id="voice-transcript-actions" style="display:none;">
+                            <button type="button" class="voice-action-btn voice-action-confirm" onclick="voiceConfirmAnswer()" aria-label="Confirm this answer">
+                                <span class="material-symbols-outlined">check_circle</span> ✓ Confirm
+                            </button>
+                            <button type="button" class="voice-action-btn voice-action-edit" onclick="voiceEditAnswer()" aria-label="Edit this answer">
+                                <span class="material-symbols-outlined">edit</span> ✎ Edit
+                            </button>
+                            <button type="button" class="voice-action-btn voice-action-retry" onclick="voiceRetryRecording()" aria-label="Record again">
+                                <span class="material-symbols-outlined">replay</span> 🔄 Record Again
+                            </button>
+                        </div>
+
+                        <!-- Text Input Fallback -->
+                        <div class="voice-text-fallback" id="voice-text-fallback">
+                            <textarea
+                                id="voice-text-input"
+                                class="voice-text-input"
+                                placeholder="Type your answer here..."
+                                rows="3"
+                                aria-label="Type your answer"></textarea>
+                            <button type="button" class="voice-action-btn voice-action-confirm" onclick="voiceConfirmTextInput()">
+                                <span class="material-symbols-outlined">send</span> Submit Answer
+                            </button>
+                        </div>
+
+                        <!-- Type Instead Button -->
+                        <button type="button" class="voice-type-instead-btn" id="voice-type-instead-btn" onclick="voiceToggleTextFallback()">
+                            <span class="material-symbols-outlined">keyboard</span> ⌨️ Type Instead
+                        </button>
+                    </div>
+
+                    <!-- Navigation -->
+                    <div class="voice-nav-row">
+                        <button type="button" class="voice-nav-btn" onclick="voiceNavigatePrevious()" id="voice-prev-btn">
+                            <span class="material-symbols-outlined">arrow_back</span> Back
+                        </button>
+                        <button type="button" class="voice-nav-btn voice-nav-skip" onclick="voiceSkipSection()" id="voice-skip-btn">
+                            Skip →
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ── STEP 4: VOICE SETTINGS PANEL ──────────────────────────── -->
+                <div id="voice-settings-panel" class="voice-settings-panel" style="display:none;">
+                    <div class="voice-step-header">
+                        <h2 class="voice-step-title">🔊 Voice Settings</h2>
+                    </div>
+
+                    <div class="voice-settings-grid">
+                        <div class="voice-setting-row">
+                            <label>Language</label>
+                            <select id="voice-settings-lang" class="voice-setting-select" onchange="voiceChangeLanguage(this.value)">
+                                <!-- Populated by JS -->
+                            </select>
+                        </div>
+                        <div class="voice-setting-row">
+                            <label>Speech Speed</label>
+                            <div class="voice-speed-btns">
+                                <button type="button" onclick="voiceSetSpeed(0.7); updateSpeedDisplay(0.7)">🐢 Slow</button>
+                                <button type="button" onclick="voiceSetSpeed(1.0); updateSpeedDisplay(1.0)" class="active-speed">🚶 Normal</button>
+                                <button type="button" onclick="voiceSetSpeed(1.4); updateSpeedDisplay(1.4)">🚀 Fast</button>
+                            </div>
+                        </div>
+                        <div class="voice-setting-row">
+                            <label>Auto-play Questions</label>
+                            <label class="voice-toggle">
+                                <input type="checkbox" id="voice-autoplay-toggle" checked onchange="voiceSetAutoPlay(this.checked)">
+                                <span class="voice-toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="voice-setting-row">
+                            <label>Microphone Test</label>
+                            <button type="button" class="voice-mic-test-btn" onclick="runMicrophoneTest()" style="padding:8px 16px;font-size:0.85rem;">
+                                <span class="material-symbols-outlined">mic</span> Test Mic
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="text-align:center; margin-top:20px;">
+                        <button type="button" class="voice-continue-btn" onclick="hideVoiceSettings()">
+                            <span class="material-symbols-outlined">check</span> Save &amp; Back
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ── STEP 5: CASE SUMMARY (VOICE VERSION) ──────────────────── -->
+                <div id="voice-step-summary" class="voice-step-panel" style="display:none;">
+                    <div class="voice-step-header">
+                        <div class="voice-step-badge" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff;">
+                            <span class="material-symbols-outlined">check_circle</span> Complete!
+                        </div>
+                        <h2 class="voice-step-title">Your Information Has Been Recorded</h2>
+                        <p class="voice-step-subtitle">
+                            Thank you. Your medical history has been sent to the doctor for review.
+                        </p>
+                    </div>
+
+                    <div class="voice-summary-card">
+                        <div style="text-align:center; padding:20px;">
+                            <div style="font-size:64px; margin-bottom:12px;">✅</div>
+                            <div style="font-size:1.1rem; font-weight:700; color:#059669;">Information Submitted Successfully</div>
+                            <div id="voice-summary-case-id" style="font-size:0.82rem; color:#94a3b8; margin-top:8px;"></div>
+                        </div>
+
+                        <div class="voice-summary-notice">
+                            <span class="material-symbols-outlined">info</span>
+                            <span><strong>AI-generated history draft. Physician verification required.</strong> A doctor will review and confirm your case history before it is used clinically.</span>
+                        </div>
+
+                        <div id="voice-summary-highlights" style="margin-top:16px;"></div>
+                    </div>
+
+                    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:24px;">
+                        <button type="button" class="voice-continue-btn" onclick="voiceStartNewSession()" style="background:linear-gradient(135deg,#059669,#10b981);">
+                            <span class="material-symbols-outlined">refresh</span> New Patient Session
+                        </button>
+                        <button type="button" class="voice-continue-btn" onclick="switchView('admin')" style="background:linear-gradient(135deg,#0284c7,#0369a1);">
+                            <span class="material-symbols-outlined">stethoscope</span> Doctor Review
+                        </button>
+                    </div>
+                </div>
+
+            </div><!-- end voice-ct-wrapper -->
+        </section><!-- end view-voice-case-taking -->
+    </main>
+
+    <script src="app.js?v=20260918_v5"></script>
+    <script src="voice_service.js?v=20260918_v5"></script>
+    <script src="case_taking.js?v=20260918_v5"></script>
+    <script src="voice_case_taking.js?v=20260918_v5"></script>
 </body>
 </html>

@@ -360,6 +360,44 @@ def init_db ():
     """)
     # ── End SMS Gateway Tables ──────────────────────────────────────────────────
 
+    # ── Voice Case-Taking Tables (safe migration — CREATE IF NOT EXISTS) ────────
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS voice_case_sessions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        session_id TEXT UNIQUE NOT NULL,
+        case_id TEXT,
+        patient_id TEXT NOT NULL,
+        language_code TEXT NOT NULL DEFAULT 'en-IN',
+        tts_provider TEXT DEFAULT 'browser',
+        stt_provider TEXT DEFAULT 'browser',
+        status TEXT DEFAULT 'active',
+        voice_consent_given INTEGER DEFAULT 1,
+        kiosk_mode INTEGER DEFAULT 0,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        completed_at TEXT,
+        FOREIGN KEY (patient_id) REFERENCES patients (patient_id) ON DELETE CASCADE
+    );
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS voice_transcripts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        transcript_id TEXT UNIQUE NOT NULL,
+        case_id TEXT,
+        session_id TEXT,
+        question_key TEXT NOT NULL,
+        question_text TEXT NOT NULL,
+        answer_original TEXT NOT NULL,
+        answer_normalized TEXT,
+        language_code TEXT NOT NULL DEFAULT 'en-IN',
+        confidence REAL,
+        source TEXT DEFAULT 'browser',
+        timestamp TEXT NOT NULL
+    );
+    """)
+    # ── End Voice Case-Taking Tables ─────────────────────────────────────────────
+
     cursor .execute ("PRAGMA table_info(patients)")
     cols =[r ['name']for r in cursor .fetchall ()]
     if 'access_pin_hash'not in cols :
@@ -2177,3 +2215,62 @@ def get_sms_daily_count(device_id: Optional[str] = None) -> Dict[str, int]:
 
     conn.close()
     return {"today_total": total, "sent": sent, "failed": failed, "queued": queued}
+
+
+# ==============================================================================
+# VOICE TRANSCRIPT FUNCTIONS (Multilingual Voice Case-Taking)
+# ==============================================================================
+
+def save_voice_transcript(
+    case_id: str,
+    session_id: Optional[str],
+    question_key: str,
+    question_text: str,
+    answer_original: str,
+    language_code: str = "en-IN",
+    normalized_answer: Optional[str] = None,
+    confidence: Optional[float] = None,
+    source: str = "browser"
+) -> Dict[str, Any]:
+    """
+    Saves a single voice transcript entry (one Q&A pair).
+    Raw audio is NOT stored — only text transcript is persisted.
+    """
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        now = datetime.now().isoformat()
+        transcript_id = f"VT-{secrets.token_hex(8).upper()}"
+
+        cursor.execute("""
+        INSERT INTO voice_transcripts
+            (transcript_id, case_id, session_id, question_key, question_text,
+             answer_original, answer_normalized, language_code, confidence, source, timestamp)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            transcript_id, case_id, session_id, question_key, question_text,
+            answer_original, normalized_answer or answer_original,
+            language_code, confidence, source, now
+        ))
+        conn.commit()
+        return {"transcript_id": transcript_id, "saved_at": now}
+    finally:
+        conn.close()
+
+
+def get_voice_transcripts(case_id: str) -> List[Dict[str, Any]]:
+    """
+    Retrieves all voice transcripts for a given case.
+    Used by Doctor Console to review original patient voice responses.
+    """
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("""
+        SELECT * FROM voice_transcripts WHERE case_id = ? ORDER BY timestamp ASC
+        """, (case_id,))
+        rows = cursor.fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        conn.close()
+
