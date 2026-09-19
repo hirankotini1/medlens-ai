@@ -2028,15 +2028,13 @@ input:focus, select:focus, textarea:focus {
 
 @media (max-width: 768px) {
     .top-navbar {
-        padding: 0.75rem 1rem;
-        flex-direction: column;
-        gap: 10px;
+        padding: 8px 14px;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
     }
     .nav-links {
-        width: 100%;
-        overflow-x: auto;
-        justify-content: flex-start;
-        padding-bottom: 4px;
+        display: none;
     }
     .main-container {
         padding: 1rem;
@@ -3797,11 +3795,13 @@ input:focus, select:focus, textarea:focus {
     
     .top-navbar {
         display: flex !important;
+        flex-direction: row !important;
         justify-content: space-between !important;
         align-items: center !important;
         flex-wrap: nowrap !important;
         width: 100% !important;
-        min-height: 54px !important;
+        box-sizing: border-box !important;
+        min-height: 56px !important;
         padding: 8px 14px !important;
         gap: 8px !important;
         position: sticky;
@@ -3815,10 +3815,12 @@ input:focus, select:focus, textarea:focus {
 
     .brand-logo {
         display: flex !important;
+        flex-direction: row !important;
         align-items: center !important;
         gap: 8px !important;
-        flex-shrink: 1 !important;
+        flex-shrink: 0 !important;
         min-width: 0 !important;
+        margin: 0 !important;
         cursor: pointer;
         text-decoration: none;
     }
@@ -3837,6 +3839,7 @@ input:focus, select:focus, textarea:focus {
         flex-direction: column !important;
         line-height: 1.15 !important;
         min-width: 0 !important;
+        flex-shrink: 1 !important;
     }
 
     .brand-title {
@@ -3861,9 +3864,12 @@ input:focus, select:focus, textarea:focus {
 
     .mobile-nav-actions {
         display: flex !important;
+        flex-direction: row !important;
         align-items: center !important;
         gap: 8px !important;
         margin-left: auto !important;
+        flex-shrink: 0 !important;
+        flex-wrap: nowrap !important;
     }
 
     .mobile-book-btn {
@@ -4221,23 +4227,70 @@ input:focus, select:focus, textarea:focus {
 
 @media (max-width: 480px) {
     .top-navbar {
-        padding: 6px 12px !important;
+        padding: 6px 10px !important;
         gap: 6px !important;
+        min-height: 50px !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        flex-wrap: nowrap !important;
+    }
+
+    .brand-logo {
+        gap: 6px !important;
+        flex-shrink: 0 !important;
+    }
+
+    .brand-icon {
+        width: 28px !important;
+        height: 28px !important;
     }
 
     .brand-title {
-        font-size: 0.96rem !important;
+        font-size: 0.94rem !important;
     }
 
     .brand-subtitle {
-        font-size: 0.52rem !important;
+        font-size: 0.50rem !important;
         letter-spacing: 0.02em !important;
     }
 
-    .mobile-book-btn {
-        padding: 6px 10px !important;
-        font-size: 0.74rem !important;
+    .mobile-nav-actions {
+        gap: 6px !important;
+        flex-shrink: 0 !important;
+        flex-wrap: nowrap !important;
     }
+
+    .mobile-book-btn {
+        padding: 5px 9px !important;
+        font-size: 0.72rem !important;
+        min-height: 34px !important;
+        height: 34px !important;
+        gap: 4px !important;
+    }
+
+    .mobile-menu-toggle {
+        width: 36px !important;
+        height: 36px !important;
+        min-height: 36px !important;
+    }
+}
+
+@media (max-width: 360px) {
+    .brand-subtitle {
+        display: none !important;
+    }
+    .mobile-book-btn span:not(.material-symbols-outlined) {
+        display: none !important;
+    }
+    .mobile-book-btn {
+        padding: 0 !important;
+        width: 34px !important;
+        height: 34px !important;
+        justify-content: center !important;
+        border-radius: 10px !important;
+    }
+}
 
     .patient-hero-title {
         font-size: 1.3rem !important;
