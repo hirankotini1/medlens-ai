@@ -487,8 +487,9 @@ function renderPatientPortalQuickButtons(patients) {
         return;
     }
 
-    // Merge any locally registered patient to guarantee it always shows up first
     let list = [...patients];
+
+    // Merge any locally registered patient if available
     try {
         const saved = localStorage.getItem('medlens_last_registered_patient');
         if (saved) {
@@ -501,7 +502,8 @@ function renderPatientPortalQuickButtons(patients) {
                     age: parsed.age || 30,
                     gender: parsed.gender || 'Other',
                     pin_hint: parsed.access_pin || `PIN-${parsed.patient_id.split('-').pop()}`,
-                    is_local_new: true
+                    is_local_new: true,
+                    created_at: parsed.created_at || new Date().toISOString()
                 };
                 if (existingIdx >= 0) {
                     list.splice(existingIdx, 1);
@@ -511,7 +513,15 @@ function renderPatientPortalQuickButtons(patients) {
         }
     } catch (e) {}
 
-    // Show 3 clean, sleek 1-click accounts
+    // Sort strictly by created_at descending so the newest 3 are always picked
+    list.sort((a, b) => {
+        const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
+        if (timeB !== timeA) return timeB - timeA;
+        return String(b.patient_id || '').localeCompare(String(a.patient_id || ''));
+    });
+
+    // Show strictly the latest 3 patients only
     const displayList = list.slice(0, 3);
     container.innerHTML = displayList.map(p => {
         const safeName = (typeof escapeHtml === 'function') ? escapeHtml(p.name) : p.name;
