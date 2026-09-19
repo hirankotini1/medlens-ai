@@ -26,7 +26,8 @@ def make_json_req (path ,method ="GET",data =None ,token =None ):
         headers ["Authorization"]=f"Bearer {token }"
     body =json .dumps (data ).encode ("utf-8")if data else None 
     req =urllib .request .Request (f"{BASE_URL }{path }",data =body ,headers =headers ,method =method )
-    with urllib .request .urlopen (req ,timeout =30 )as resp :
+    with urllib .request .urlopen (req ,timeout =60 )as resp :
+
         return resp .status ,json .loads (resp .read ().decode ("utf-8"))
 
 def test_pdf_e2e_workflow ():

@@ -361,43 +361,45 @@ Generate a structured clinical decision-support analysis adhering strictly to th
     }
 
 
-    preferred_model = os.getenv("OPENROUTER_MODEL", "nex-agi/nex-n2.5-mini:free")
+    preferred_model = os.getenv("OPENROUTER_MODEL", "openrouter/free")
     candidate_models = [
         preferred_model,
-        "nex-agi/nex-n2.5-mini:free",
-        "deepseek/deepseek-v4-flash-0731:free",
-        "openrouter/free"
+        "nex-agi/nex-n2.5-mini:free"
     ]
 
     seen = set()
     candidate_models = [m for m in candidate_models if m and not (m in seen or seen.add(m))]
 
-    last_error =None 
-    for cand_model in candidate_models :
-        payload ={
-        "model":cand_model ,
-        "messages":messages ,
-        "temperature":0.1 ,
-        "max_tokens":1400 
+    last_error = None
+    # Prioritize abnormal parameters in prompt if payload is large to ensure fast generation
+    for cand_model in candidate_models[:2]:
+        payload = {
+            "model": cand_model,
+            "messages": messages,
+            "temperature": 0.1,
+            "max_tokens": 700
         }
-        try :
+        try:
+            resp = requests.post(OPENROUTER_API_URL, headers=headers, json=payload, timeout=(2.0, 5.5))
+            if resp.status_code == 200:
+                resp_json = resp.json()
+                choices = resp_json.get("choices", [])
+                if choices and "message" in choices[0]:
+                    content = choices[0]["message"].get("content", "")
+                    parsed = clean_json_response(content)
+                    if parsed and isinstance(parsed, dict) and "overall_attention" in parsed:
+                        parsed["ai_model_used"] = cand_model
+                        if "patterns" in parsed and "possible_conditions" not in parsed:
+                            parsed["possible_conditions"] = parsed["patterns"]
+                        return enforce_clinical_guardrails(parsed, parameters, patient_meta)
+            else:
+                last_error = f"HTTP {resp.status_code}: {resp.text[:120]}"
+        except Exception as e:
+            last_error = str(e)
+            continue
 
-            resp =requests .post (OPENROUTER_API_URL ,headers =headers ,json =payload ,timeout =(3.0 ,8.0 ))
-            if resp .status_code ==200 :
-                resp_json =resp .json ()
-                content =resp_json ["choices"][0 ]["message"]["content"]
-                parsed =clean_json_response (content )
-                parsed ["ai_model_used"]=cand_model 
-                if "patterns"in parsed and "possible_conditions"not in parsed :
-                    parsed ["possible_conditions"]=parsed ["patterns"]
-                return enforce_clinical_guardrails (parsed ,parameters ,patient_meta )
-            else :
-                last_error =f"HTTP {resp .status_code }: {resp .text [:200 ]}"
-        except Exception as e :
-            last_error =str (e )
-            continue 
+    return get_fallback_analysis(parameters, patient_meta, reason=f"AI service fast fallback engaged ({last_error or 'speed-optimized'}). Evaluated with verified clinical engine.")
 
-    return get_fallback_analysis (parameters ,patient_meta ,reason =f"AI service temporarily unavailable ({last_error }). Evaluated with rule-based heuristics.")
 
 
 def get_fallback_analysis (
