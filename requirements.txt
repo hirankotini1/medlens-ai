@@ -15,3 +15,4 @@ twilio>=9.0.0
 psycopg2-binary>=2.9.9
 PyJWT>=2.8.0
 SpeechRecognition>=3.10.0
+fpdf2>=2.8.0

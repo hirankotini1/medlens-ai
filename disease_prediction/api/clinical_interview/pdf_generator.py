@@ -26,7 +26,10 @@ Key Features:
 import os
 from datetime import datetime
 from typing import Dict, Any, List, Optional
-from fpdf import FPDF
+try:
+    from fpdf import FPDF
+except ImportError:
+    FPDF = object
 
 class MedLensReportPDF(FPDF):
     """Custom FPDF class providing standardized hospital headers, footers, and page numbers."""
@@ -113,6 +116,9 @@ def generate_clinical_pdf(
     case_id = case_meta.get("case_id") or "CASE-UNKNOWN"
     date_str = case_meta.get("created_at") or datetime.now().strftime("%Y-%m-%d")
     status_str = case_meta.get("status") or "Ready for Physician Review"
+
+    if FPDF is object:
+        raise RuntimeError("PDF generation requires the 'fpdf2' package. Please install it with 'pip install fpdf2'.")
 
     pdf = MedLensReportPDF(case_id=case_id, intake_date=date_str, status=status_str)
     pdf.alias_nb_pages()
