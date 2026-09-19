@@ -6191,9 +6191,86 @@ if (document.readyState === 'loading') {
 // HOSPITAL OPERATIONS INTELLIGENCE CONTROLLER
 // =========================================================
 let opsCachedOverview = null;
-let opsCachedConflicts = [];
+let opsCachedConflicts = [
+    {
+        severity: 'High',
+        category: 'BED_VS_HIS_OCCUPANCY',
+        record_ref: 'Date: 2026-07-01 | Ward: General Ward A',
+        source_a_value: '15',
+        source_b_value: '20',
+        resolution_status: 'Needs_Review',
+        conflict_id: 'CONF-OCC-2026-07-01-2'
+    },
+    {
+        severity: 'High',
+        category: 'BED_VS_HIS_OCCUPANCY',
+        record_ref: 'Date: 2026-07-01 | Ward: General Ward B',
+        source_a_value: '18',
+        source_b_value: '8',
+        resolution_status: 'Needs_Review',
+        conflict_id: 'CONF-OCC-2026-07-01-3'
+    },
+    {
+        severity: 'High',
+        category: 'BED_VS_HIS_OCCUPANCY',
+        record_ref: 'Date: 2026-07-01 | Ward: Medical ICU (MICU)',
+        source_a_value: '5',
+        source_b_value: '8',
+        resolution_status: 'Needs_Review',
+        conflict_id: 'CONF-OCC-2026-07-01-1'
+    },
+    {
+        severity: 'High',
+        category: 'BED_VS_HIS_OCCUPANCY',
+        record_ref: 'Date: 2026-07-02 | Ward: Intensive Care Unit (ICU)',
+        source_a_value: '9',
+        source_b_value: '6',
+        resolution_status: 'Needs_Review',
+        conflict_id: 'CONF-OCC-2026-07-02-5'
+    },
+    {
+        severity: 'High',
+        category: 'BED_VS_HIS_OCCUPANCY',
+        record_ref: 'Date: 2026-07-02 | Ward: Medical ICU (MICU)',
+        source_a_value: '8',
+        source_b_value: '5',
+        resolution_status: 'Needs_Review',
+        conflict_id: 'CONF-OCC-2026-07-02-6'
+    }
+];
 let opsCachedRules = [];
-let opsCachedSources = null;
+let opsCachedSources = {
+    his: {
+        source_name: 'HIS Admissions & Discharges',
+        file_name: '01_his_admissions_discharges.csv',
+        total_records: 307,
+        date_range_start: '2026-06-21',
+        date_range_end: '2026-08-05',
+        missing_values_count: 38,
+        duplicate_records_count: 2,
+        processing_status: 'Processed'
+    },
+    lab: {
+        source_name: 'Lab Order-to-Result',
+        file_name: '02_lab_order_to_result.csv',
+        total_records: 630,
+        date_range_start: '2026-06-21',
+        date_range_end: '2026-08-06',
+        missing_values_count: 3,
+        duplicate_records_count: 0,
+        processing_status: 'Processed'
+    },
+    bed: {
+        source_name: 'Manual Bed Occupancy Sheet',
+        file_name: '03_bed_occupancy_manual.csv',
+        total_records: 130,
+        date_range_start: '2026-07-01',
+        date_range_end: '2026-07-30',
+        missing_values_count: 86,
+        duplicate_records_count: 0,
+        processing_status: 'Processed'
+    }
+};
 let opsCurrentSubView = 'overview';
 
 function switchOpsSubView(subViewName) {
@@ -6360,63 +6437,78 @@ function renderOperationsOverview(data) {
     }
 }
 
+function renderSourcesCardsUI(sources) {
+    const container = document.getElementById('ops-sources-cards');
+    if (!container || !sources) return;
+
+    const sourcesList = [
+        { key: 'his', icon: 'local_hospital', color: '#0284c7', desc: 'Inpatient admissions, discharges, demographics, and ward transfers ledger.' },
+        { key: 'lab', icon: 'biotech', color: '#6366f1', desc: 'Laboratory diagnostic orders, phlebotomy collection, and analyzer turnaround logs.' },
+        { key: 'bed', icon: 'hotel', color: '#ea580c', desc: 'Manually logged nursing shift bed occupancy sheets with qualitative shift remarks.' }
+    ];
+
+    container.innerHTML = sourcesList.map(item => {
+        const s = sources[item.key];
+        if (!s) return '';
+        return `
+            <div class="ops-source-card">
+                <div class="ops-source-card-header">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="material-symbols-outlined" style="color: ${item.color}; font-size: 26px;">${item.icon}</span>
+                        <span class="ops-source-name">${s.source_name}</span>
+                    </div>
+                    <span class="badge" style="background: #dcfce7; color: #166534; font-weight: 800;">✓ ${s.processing_status}</span>
+                </div>
+                <p style="font-size: 0.82rem; color: #64748b; margin-bottom: 12px;">${item.desc}</p>
+                <div class="ops-source-stat-row">
+                    <span class="ops-source-stat-lbl">Total Records:</span>
+                    <span class="ops-source-stat-val"><strong>${s.total_records}</strong></span>
+                </div>
+                <div class="ops-source-stat-row">
+                    <span class="ops-source-stat-lbl">Date Range:</span>
+                    <span class="ops-source-stat-val">${s.date_range_start || 'N/A'} to ${s.date_range_end || 'N/A'}</span>
+                </div>
+                <div class="ops-source-stat-row">
+                    <span class="ops-source-stat-lbl">Missing Values Handled:</span>
+                    <span class="ops-source-stat-val" style="color: ${s.missing_values_count > 0 ? '#ea580c' : '#16a34a'};">${s.missing_values_count} fields</span>
+                </div>
+                <div class="ops-source-stat-row">
+                    <span class="ops-source-stat-lbl">Duplicate Rows Detected:</span>
+                    <span class="ops-source-stat-val" style="color: ${s.duplicate_records_count > 0 ? '#b91c1c' : '#16a34a'};">${s.duplicate_records_count} rows</span>
+                </div>
+                <div class="ops-source-stat-row">
+                    <span class="ops-source-stat-lbl">Source File:</span>
+                    <span class="ops-source-stat-val" style="font-family: monospace; font-size: 0.78rem;">${s.file_name}</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
 async function loadOpsSources() {
     try {
-        const res = await fetch(apiUrl('/api/operations/sources'));
-        if (!res.ok) return;
-        const data = await res.json();
-        opsCachedSources = data.sources;
+        // Fast instant render from cache if available
+        if (opsCachedSources) {
+            renderSourcesCardsUI(opsCachedSources);
+        }
 
-        const container = document.getElementById('ops-sources-cards');
-        if (!container || !data.sources) return;
+        // Fetch sources and comparison in parallel to minimize latency
+        const [res, matchRes] = await Promise.allSettled([
+            fetch(apiUrl('/api/operations/sources')),
+            fetch(apiUrl('/api/operations/comparison'))
+        ]);
 
-        const sourcesList = [
-            { key: 'his', icon: 'local_hospital', color: '#0284c7', desc: 'Inpatient admissions, discharges, demographics, and ward transfers ledger.' },
-            { key: 'lab', icon: 'biotech', color: '#6366f1', desc: 'Laboratory diagnostic orders, phlebotomy collection, and analyzer turnaround logs.' },
-            { key: 'bed', icon: 'hotel', color: '#ea580c', desc: 'Manually logged nursing shift bed occupancy sheets with qualitative shift remarks.' }
-        ];
-
-        container.innerHTML = sourcesList.map(item => {
-            const s = data.sources[item.key];
-            if (!s) return '';
-            return `
-                <div class="ops-source-card">
-                    <div class="ops-source-card-header">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <span class="material-symbols-outlined" style="color: ${item.color}; font-size: 26px;">${item.icon}</span>
-                            <span class="ops-source-name">${s.source_name}</span>
-                        </div>
-                        <span class="badge" style="background: #dcfce7; color: #166534; font-weight: 800;">✓ ${s.processing_status}</span>
-                    </div>
-                    <p style="font-size: 0.82rem; color: #64748b; margin-bottom: 12px;">${item.desc}</p>
-                    <div class="ops-source-stat-row">
-                        <span class="ops-source-stat-lbl">Total Records:</span>
-                        <span class="ops-source-stat-val"><strong>${s.total_records}</strong></span>
-                    </div>
-                    <div class="ops-source-stat-row">
-                        <span class="ops-source-stat-lbl">Date Range:</span>
-                        <span class="ops-source-stat-val">${s.date_range_start || 'N/A'} to ${s.date_range_end || 'N/A'}</span>
-                    </div>
-                    <div class="ops-source-stat-row">
-                        <span class="ops-source-stat-lbl">Missing Values Handled:</span>
-                        <span class="ops-source-stat-val" style="color: ${s.missing_values_count > 0 ? '#ea580c' : '#16a34a'};">${s.missing_values_count} fields</span>
-                    </div>
-                    <div class="ops-source-stat-row">
-                        <span class="ops-source-stat-lbl">Duplicate Rows Detected:</span>
-                        <span class="ops-source-stat-val" style="color: ${s.duplicate_records_count > 0 ? '#b91c1c' : '#16a34a'};">${s.duplicate_records_count} rows</span>
-                    </div>
-                    <div class="ops-source-stat-row">
-                        <span class="ops-source-stat-lbl">Source File:</span>
-                        <span class="ops-source-stat-val" style="font-family: monospace; font-size: 0.78rem;">${s.file_name}</span>
-                    </div>
-                </div>
-            `;
-        }).join('');
+        if (res.status === 'fulfilled' && res.value.ok) {
+            const data = await res.value.json();
+            if (data && data.sources) {
+                opsCachedSources = data.sources;
+                renderSourcesCardsUI(opsCachedSources);
+            }
+        }
 
         // Matching summary table
-        const matchRes = await fetch(apiUrl('/api/operations/comparison'));
-        if (matchRes.ok) {
-            const matchData = await matchRes.json();
+        if (matchRes.status === 'fulfilled' && matchRes.value.ok) {
+            const matchData = await matchRes.value.json();
             const summaryBox = document.getElementById('ops-matching-summary-table');
             if (summaryBox && matchData.matching_summary) {
                 const ms = matchData.matching_summary;
@@ -6447,6 +6539,46 @@ async function loadOpsSources() {
     }
 }
 
+function renderConflictsRowsUI(conflicts, query = '') {
+    const tbody = document.getElementById('ops-conflicts-tbody');
+    if (!tbody) return;
+
+    let filtered = conflicts || [];
+    if (query) {
+        filtered = filtered.filter(c => 
+            (c.record_ref && c.record_ref.toLowerCase().includes(query)) ||
+            (c.difference_summary && c.difference_summary.toLowerCase().includes(query)) ||
+            (c.applied_rule_name && c.applied_rule_name.toLowerCase().includes(query)) ||
+            (c.conflict_id && c.conflict_id.toLowerCase().includes(query))
+        );
+    }
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 24px; color: #94a3b8;">No matching conflicts found for current filter criteria.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = filtered.map(c => {
+        const sevBadge = c.severity === 'Critical' ? 'badge-critical' : (c.severity === 'High' ? 'badge-critical' : (c.severity === 'Medium' ? 'badge-warning' : 'badge-optimal'));
+        const statusBadge = c.resolution_status === 'Resolved' ? 'badge-optimal' : 'badge-warning';
+        return `
+            <tr>
+                <td><span class="ops-ward-badge ${sevBadge}">${c.severity}</span></td>
+                <td><strong style="font-size: 0.8rem; color: #334155;">${(c.category || '').replace(/_/g, ' ')}</strong></td>
+                <td><strong>${c.record_ref}</strong></td>
+                <td style="font-size: 0.8rem; color: #64748b;">${c.source_a_value !== null ? c.source_a_value : '<em>Blank / Missing</em>'}</td>
+                <td style="font-size: 0.8rem; color: #64748b;">${c.source_b_value !== null ? c.source_b_value : '<em>None</em>'}</td>
+                <td><span class="ops-ward-badge ${statusBadge}">${(c.resolution_status || '').replace('_', ' ')}</span></td>
+                <td>
+                    <button type="button" class="btn-secondary" style="font-size: 0.76rem; padding: 4px 10px; display: inline-flex; align-items: center; gap: 4px;" onclick="openConflictDetail('${c.conflict_id}')">
+                        <span class="material-symbols-outlined" style="font-size: 14px; color: #0284c7;">help</span> Why?
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
 async function renderConflictsTable() {
     try {
         const catSelect = document.getElementById('conflict-filter-category');
@@ -6457,6 +6589,11 @@ async function renderConflictsTable() {
         const severity = sevSelect ? sevSelect.value : '';
         const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
+        // Immediately render from cache if available
+        if (opsCachedConflicts && opsCachedConflicts.length > 0 && !category && !severity) {
+            renderConflictsRowsUI(opsCachedConflicts, query);
+        }
+
         let url = apiUrl(`/api/operations/conflicts?`);
         if (category) url += `category=${encodeURIComponent(category)}&`;
         if (severity) url += `severity=${encodeURIComponent(severity)}&`;
@@ -6466,43 +6603,7 @@ async function renderConflictsTable() {
         const data = await res.json();
         opsCachedConflicts = data.conflicts || [];
 
-        let filtered = opsCachedConflicts;
-        if (query) {
-            filtered = filtered.filter(c => 
-                (c.record_ref && c.record_ref.toLowerCase().includes(query)) ||
-                (c.difference_summary && c.difference_summary.toLowerCase().includes(query)) ||
-                (c.applied_rule_name && c.applied_rule_name.toLowerCase().includes(query)) ||
-                (c.conflict_id && c.conflict_id.toLowerCase().includes(query))
-            );
-        }
-
-        const tbody = document.getElementById('ops-conflicts-tbody');
-        if (!tbody) return;
-
-        if (filtered.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 24px; color: #94a3b8;">No matching conflicts found for current filter criteria.</td></tr>`;
-            return;
-        }
-
-        tbody.innerHTML = filtered.map(c => {
-            const sevBadge = c.severity === 'Critical' ? 'badge-critical' : (c.severity === 'High' ? 'badge-critical' : (c.severity === 'Medium' ? 'badge-warning' : 'badge-optimal'));
-            const statusBadge = c.resolution_status === 'Resolved' ? 'badge-optimal' : 'badge-warning';
-            return `
-                <tr>
-                    <td><span class="ops-ward-badge ${sevBadge}">${c.severity}</span></td>
-                    <td><strong style="font-size: 0.8rem; color: #334155;">${c.category.replace(/_/g, ' ')}</strong></td>
-                    <td><strong>${c.record_ref}</strong></td>
-                    <td style="font-size: 0.8rem; color: #64748b;">${c.source_a_value !== null ? c.source_a_value : '<em>Blank / Missing</em>'}</td>
-                    <td style="font-size: 0.8rem; color: #64748b;">${c.source_b_value !== null ? c.source_b_value : '<em>None</em>'}</td>
-                    <td><span class="ops-ward-badge ${statusBadge}">${c.resolution_status.replace('_', ' ')}</span></td>
-                    <td>
-                        <button type="button" class="btn-secondary" style="font-size: 0.76rem; padding: 4px 10px; display: inline-flex; align-items: center; gap: 4px;" onclick="openConflictDetail('${c.conflict_id}')">
-                            <span class="material-symbols-outlined" style="font-size: 14px; color: #0284c7;">help</span> Why?
-                        </button>
-                    </td>
-                </tr>
-            `;
-        }).join('');
+        renderConflictsRowsUI(opsCachedConflicts, query);
 
     } catch (err) {
         console.error("Error rendering conflicts table:", err);
@@ -7789,6 +7890,9 @@ async function loadReceptionistDashboard() {
     loadSupabaseAdmissions();
     checkBedQuotaStatus();
     calculateReceptionistBill();
+    // Pre-warm and auto-load Challenge Dataset Sources and Reconciliation Conflicts
+    loadOpsSources();
+    loadOpsConflicts();
 }
 
 async function updateReceptionistHeroStats() {

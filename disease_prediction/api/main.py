@@ -184,6 +184,15 @@ DISCLAIMER =(
 @app .on_event ("startup")
 def on_startup ():
     db .init_db ()
+    # Asynchronously pre-warm operations intelligence pipeline so UI loads instantaneously
+    import threading
+    def _warmup_operations():
+        try:
+            from disease_prediction.api.operations_router import _ops_service
+            _ops_service.run_reconciliation_pipeline()
+        except Exception as e:
+            print(f"[OPS-WARMUP-WARN] {e}")
+    threading.Thread(target=_warmup_operations, daemon=True).start()
 
 
 loaded_models :Dict [str ,Any ]={}

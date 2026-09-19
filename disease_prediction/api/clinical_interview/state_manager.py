@@ -65,6 +65,13 @@ def create_initial_patient_state(
     demographics: Optional[Dict[str, Any]] = None,
     is_demo_mode: bool = False,
     is_kiosk: bool = False,
+    case_type: str = "general",
+    consent_given: bool = False,
+    consent_timestamp: Optional[str] = None,
+    consent_version: str = "v2.0",
+    participant_role: str = "patient",
+    participant_name: Optional[str] = None,
+    easy_mode: bool = False,
     **kwargs
 ) -> Dict[str, Any]:
     """Initializes a blank, structured clinical interview state."""
@@ -74,19 +81,31 @@ def create_initial_patient_state(
 
     clean_demographics = {
         "name": demo_dict.get("name", "Outpatient"),
-        "age": demo_dict.get("age", "—"),
-        "gender": demo_dict.get("gender", "—"),
-        "contact": demo_dict.get("contact", "—"),
+        "age": demo_dict.get("age", "Not provided"),
+        "gender": demo_dict.get("gender", "Not provided"),
+        "contact": demo_dict.get("contact", "Not provided"),
         "is_demo_mode": is_demo_mode
     }
+
+    normalized_case_type = case_type.lower().strip() if case_type else "general"
+    if normalized_case_type not in ["general", "ayurveda", "homeopathy"]:
+        normalized_case_type = "general"
 
     return {
         "session_id": f"INTERVIEW-{datetime.now().strftime('%Y%m%d%H%M%S')}",
         "case_id": c_id,
         "patient_id": patient_id,
+        "demographics": clean_demographics,
         "abha_id": abha_id or "",
         "language": lang,
         "primary_language": lang,
+        "case_type": normalized_case_type,
+        "consent_given": consent_given,
+        "consent_timestamp": consent_timestamp or (datetime.now(timezone.utc).isoformat() if consent_given else None),
+        "consent_version": consent_version,
+        "participant_role": participant_role or "patient",
+        "participant_name": participant_name or "",
+        "easy_mode": bool(easy_mode),
         "is_demo_mode": is_demo_mode,
         "is_kiosk": is_kiosk,
         "interview_started_at": datetime.now(timezone.utc).isoformat(),
@@ -127,16 +146,63 @@ def create_initial_patient_state(
             "physical_activity": None
         },
         "review_of_systems": {},
-        "ayush_parameters": {},
+        
+        # AYUSH (Ayurveda) Structured Assessment State
+        "ayush_parameters": {
+            "prakriti": None,
+            "vikriti": None,
+            "agni": None,
+            "koshtha": None,
+            "ahara": None,
+            "vihara": None,
+            "sleep": None,
+            "vyayama": None,
+            "dashavidha_pariksha": {
+                "sara": None,
+                "samhanana": None,
+                "pramana": None,
+                "satmya": None,
+                "sattva": None,
+                "ahara_shakti": None,
+                "vyayama_shakti": None,
+                "vaya": None
+            }
+        },
 
-        # Safety & Triage State
+        # Homeopathy Structured Assessment State
+        "homeopathy_parameters": {
+            "location": None,
+            "sensation": None,
+            "modalities": {"better": [], "worse": []},
+            "concomitants": [],
+            "mental_emotional": None,
+            "thermal_preference": None,
+            "thirst": None,
+            "appetite": None,
+            "food_cravings_aversions": None,
+            "sleep": None,
+            "past_history": None,
+            "family_history": None
+        },
+
+        # Safety, Gaps & Triage State
         "red_flags": [],
         "red_flags_detected": [],
         "active_red_flag_alert": None,
         "is_red_flag_paused": False,
         "contradictions": [],
         "uncertainties": [],
+        "information_gaps": [],
         "completed_domains": [],
+
+        # Doctor Review & Verification State
+        "doctor_review": {
+            "status": "AI-ASSISTED DRAFT",
+            "doctor_id": None,
+            "doctor_notes": "",
+            "verified_at": None,
+            "edits": {}
+        },
 
         # Provenance & Transcripts
         "documents": [],
@@ -393,6 +459,144 @@ class PatientStateManager:
         })
         return state
 
+
+    @classmethod
+    def update_ayush_parameter(
+        cls,
+        state: Dict[str, Any],
+        parameter_name: str,
+        value: Any,
+        source: str = "patient_voice",
+        confidence: float = 0.85
+    ) -> Dict[str, Any]:
+        """Updates an Ayurveda assessment parameter in state."""
+        if "ayush_parameters" not in state or not isinstance(state["ayush_parameters"], dict):
+            state["ayush_parameters"] = {}
+        
+        dasha_keys = ["sara", "samhanana", "pramana", "satmya", "sattva", "ahara_shakti", "vyayama_shakti", "vaya"]
+        clean_param = parameter_name.lower().replace("ayush.", "").replace("ayurveda.", "").strip()
+        if clean_param in dasha_keys:
+            if "dashavidha_pariksha" not in state["ayush_parameters"] or not isinstance(state["ayush_parameters"]["dashavidha_pariksha"], dict):
+                state["ayush_parameters"]["dashavidha_pariksha"] = {}
+            state["ayush_parameters"]["dashavidha_pariksha"][clean_param] = {
+                "value": value,
+                "source": source,
+                "confidence": confidence,
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }
+        else:
+            state["ayush_parameters"][clean_param] = {
+                "value": value,
+                "source": source,
+                "confidence": confidence,
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }
+        return state
+
+    @classmethod
+    def update_homeopathy_parameter(
+        cls,
+        state: Dict[str, Any],
+        parameter_name: str,
+        value: Any,
+        source: str = "patient_voice",
+        confidence: float = 0.85
+    ) -> Dict[str, Any]:
+        """Updates a Homeopathy assessment parameter in state."""
+        if "homeopathy_parameters" not in state or not isinstance(state["homeopathy_parameters"], dict):
+            state["homeopathy_parameters"] = {}
+        clean_param = parameter_name.lower().replace("homeo.", "").replace("homeopathy.", "").strip()
+        state["homeopathy_parameters"][clean_param] = {
+            "value": value,
+            "source": source,
+            "confidence": confidence,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }
+        return state
+
+    @classmethod
+    def record_information_gap(
+        cls,
+        state: Dict[str, Any],
+        parameter_name: str,
+        reason: str = "patient_unanswered"
+    ) -> Dict[str, Any]:
+        """Records an unanswered or skipped parameter as an information gap."""
+        if "information_gaps" not in state or not isinstance(state["information_gaps"], list):
+            state["information_gaps"] = []
+        clean_name = parameter_name.lower().strip()
+        
+        # Distinguish gap status based on reason expression
+        status = "MISSING"
+        reason_lower = (reason or "").lower()
+        if "skip" in reason_lower:
+            status = "SKIPPED"
+        elif any(u in reason_lower for u in ["don't know", "dont know", "not sure", "can't recall", "cant recall", "no idea", "unsure", "not aware", "पता नहीं", "ପତା ନାହିଁ", "తెలియదు"]):
+            status = "UNKNOWN"
+
+        for gap in state["information_gaps"]:
+            if isinstance(gap, dict) and gap.get("parameter") == clean_name:
+                gap["reason"] = reason
+                gap["status"] = status
+                gap["timestamp"] = datetime.now(timezone.utc).isoformat()
+                return state
+            elif isinstance(gap, str) and gap == clean_name:
+                return state
+        state["information_gaps"].append({
+            "parameter": clean_name,
+            "reason": reason,
+            "status": status,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        })
+        return state
+
+    @classmethod
+    def update_contradiction_status(
+        cls,
+        state: Dict[str, Any],
+        conflict_id: str,
+        status: str,
+        notes: str = "",
+        resolved_by: str = "doctor"
+    ) -> Dict[str, Any]:
+        """Updates contradiction lifecycle status: UNRESOLVED, PATIENT_CONFIRMED, DOCUMENT_CONFIRMED, DOCTOR_RESOLVED."""
+        if "contradictions" not in state or not isinstance(state["contradictions"], list):
+            state["contradictions"] = []
+        for c in state["contradictions"]:
+            if isinstance(c, dict) and c.get("id") == conflict_id:
+                c["status"] = status
+                c["resolution_notes"] = notes
+                c["resolved_by"] = resolved_by
+                c["resolved_at"] = datetime.now(timezone.utc).isoformat()
+                return state
+        state["contradictions"].append({
+            "id": conflict_id,
+            "status": status,
+            "resolution_notes": notes,
+            "resolved_by": resolved_by,
+            "resolved_at": datetime.now(timezone.utc).isoformat()
+        })
+        return state
+
+    @classmethod
+    def verify_doctor_signoff(
+        cls,
+        state: Dict[str, Any],
+        doctor_id: str,
+        doctor_notes: str = "",
+        updated_summary: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """Marks interview case status as DOCTOR VERIFIED with physician sign-off metadata."""
+        if "doctor_review" not in state or not isinstance(state["doctor_review"], dict):
+            state["doctor_review"] = {}
+        state["doctor_review"]["status"] = "DOCTOR VERIFIED"
+        state["doctor_review"]["doctor_id"] = doctor_id
+        state["doctor_review"]["doctor_notes"] = doctor_notes
+        state["doctor_review"]["verified_at"] = datetime.now(timezone.utc).isoformat()
+        if updated_summary:
+            state["doctor_review"]["updated_summary"] = updated_summary
+        state["interview_status"] = "doctor_verified"
+        return state
 
     @classmethod
     def sanitize_for_export(cls, state: Dict[str, Any], is_physician_view: bool = False) -> Dict[str, Any]:

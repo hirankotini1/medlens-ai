@@ -16,7 +16,12 @@ from .ontology import (
     CLINICAL_ONTOLOGY,
     GENERIC_CLINICAL_PATHWAY,
     SYSTEMIC_INQUIRY_MODULES,
+    AYURVEDA_PATHWAY,
+    HOMEOPATHY_PATHWAY,
     get_pathway_for_complaint,
+    get_generic_pathway,
+    get_ayurveda_pathway,
+    get_homeopathy_pathway,
     PRIORITY_P0,
     PRIORITY_P1,
     PRIORITY_P2,
@@ -69,54 +74,86 @@ class ClinicalQuestionEngine:
         Examines state: What is already captured? What high-priority gap remains?
         Returns the single most important next question, or None if interview is complete.
         """
-        # 1. Check if max turns limit reached
+        # 1. Check if max patient answers limit reached
         asked_ids = set(state.get("asked_question_ids", []))
-        turn_count = state.get("conversation_turn_count", 0)
-        max_turns = state.get("max_turns_limit", 14)
+        patient_answers = state.get("patient_answer_count", 0)
+        max_answers = state.get("max_patient_answers", 16)
 
-        if turn_count >= max_turns:
+        if patient_answers >= max_answers:
             return None  # Safety cap reached
 
         # 2. Check if open-ended first question hasn't been asked yet
-        if not state.get("chief_complaints") and "core.open_ended_complaint" not in asked_ids:
+        if not state.get("chief_complaints") and "chief_complaint_open" not in asked_ids:
             return self.get_first_open_ended_question(language_code)
 
-        # 3. Identify all active clinical pathways for all reported complaints (Multi-complaint merger)
-        active_pathways: List[Dict[str, Any]] = []
-        for complaint in state.get("chief_complaints", []):
-            pw = get_pathway_for_complaint(complaint)
-            if pw and pw not in active_pathways:
-                active_pathways.append(pw)
-
-        # 4. Build Candidate Question Queue with Information Gap Filtering
         candidate_questions: List[Dict[str, Any]] = []
         seen_state_keys = set()
+        case_type = state.get("case_type", "general")
 
-        # A. Collect questions from specialized complaint pathways
-        for pw in active_pathways:
-            for q in pw.get("questions", []):
+        # 3. ROUTE ACCORDING TO AUTHORITATIVE CASE TYPE (General / Ayurveda / Homeopathy)
+        if case_type == "ayurveda":
+            # --- AYURVEDA CLINICAL PATHWAY ---
+            # Check if duration is already captured
+            if not self._is_parameter_already_known(state, "duration"):
+                q_dur = next((q for q in GENERIC_CLINICAL_PATHWAY if q.get("state_key") == "duration"), None)
+                if q_dur and q_dur["id"] not in asked_ids:
+                    candidate_questions.append({
+                        "raw_q": q_dur,
+                        "priority": PRIORITY_P1,
+                        "domain": "ayurveda_hpi"
+                    })
+                    seen_state_keys.add("duration")
+
+            # Evaluate patient complaint for specific Ayurvedic focus
+            all_complaints_text = " ".join(state.get("chief_complaints", [])).lower()
+            is_digestive = any(w in all_complaints_text for w in ["digest", "stomach", "acidity", "gas", "constipat", "appetite", "motion", "loose", "vomit", "purg"])
+
+            for q in AYURVEDA_PATHWAY:
                 q_id = q["id"]
                 if q_id in asked_ids:
-                    continue  # Already asked!
-
-                # Information Gap Check: If information is already known, skip!
+                    continue
                 state_key = q.get("state_key")
                 if state_key:
                     if state_key in seen_state_keys:
-                        continue  # Shared question already queued for earlier complaint
+                        continue
                     if self._is_parameter_already_known(state, state_key):
-                        continue  # GAP IS ALREADY FILLED — DO NOT ASK AGAIN!
+                        continue
                     seen_state_keys.add(state_key)
+
+                # Prioritize Agni, Koshtha & Ahara if complaint is digestive
+                q_priority = q.get("priority", PRIORITY_P2)
+                if is_digestive and q.get("state_key") in ["agni", "koshtha", "ahara"]:
+                    q_priority = PRIORITY_P1
 
                 candidate_questions.append({
                     "raw_q": q,
-                    "priority": q.get("priority", PRIORITY_P2),
-                    "domain": pw.get("domain")
+                    "priority": q_priority,
+                    "domain": "ayurveda"
                 })
 
-        # B. If no specialized pathway matched, use Generic OPQRST
-        if not active_pathways:
-            for q in GENERIC_CLINICAL_PATHWAY:
+            # Add systemic medications / allergies check after patient answers >= 2 if not elicited
+            if patient_answers >= 2:
+                if not state.get("medications") and "med.current_reconciliation" not in asked_ids:
+                    q_med = next((m for m in SYSTEMIC_INQUIRY_MODULES if m["id"] == "med.current_reconciliation"), None)
+                    if q_med: candidate_questions.append({"raw_q": q_med, "priority": PRIORITY_P2, "domain": "medications"})
+                if not state.get("allergies") and "allergy.drug_reactions" not in asked_ids:
+                    q_all = next((m for m in SYSTEMIC_INQUIRY_MODULES if m["id"] == "allergy.drug_reactions"), None)
+                    if q_all: candidate_questions.append({"raw_q": q_all, "priority": PRIORITY_P2, "domain": "allergies"})
+
+        elif case_type == "homeopathy":
+            # --- HOMEOPATHY CLINICAL PATHWAY ---
+            # Check if duration is already captured
+            if not self._is_parameter_already_known(state, "duration"):
+                q_dur = next((q for q in GENERIC_CLINICAL_PATHWAY if q.get("state_key") == "duration"), None)
+                if q_dur and q_dur["id"] not in asked_ids:
+                    candidate_questions.append({
+                        "raw_q": q_dur,
+                        "priority": PRIORITY_P1,
+                        "domain": "homeopathy_hpi"
+                    })
+                    seen_state_keys.add("duration")
+
+            for q in HOMEOPATHY_PATHWAY:
                 q_id = q["id"]
                 if q_id in asked_ids:
                     continue
@@ -131,27 +168,85 @@ class ClinicalQuestionEngine:
                 candidate_questions.append({
                     "raw_q": q,
                     "priority": q.get("priority", PRIORITY_P2),
-                    "domain": "generic"
+                    "domain": "homeopathy"
                 })
 
-        # C. Include Systemic Contextual Inquiry (PMH, Meds, Allergies, Family, Social)
-        # Only inject if we have already asked at least 1-2 HPI questions or turn_count >= 2
-        if turn_count >= 2:
-            if not state.get("past_medical_history") and "pmh.chronic_illnesses" not in asked_ids:
-                q_pmh = next((m for m in SYSTEMIC_INQUIRY_MODULES if m["id"] == "pmh.chronic_illnesses"), None)
-                if q_pmh: candidate_questions.append({"raw_q": q_pmh, "priority": PRIORITY_P2, "domain": "past_medical"})
+            # Add past medical history & allergies check after patient answers >= 2
+            if patient_answers >= 2:
+                if not state.get("past_medical_history") and "pmh.chronic_illnesses" not in asked_ids:
+                    q_pmh = next((m for m in SYSTEMIC_INQUIRY_MODULES if m["id"] == "pmh.chronic_illnesses"), None)
+                    if q_pmh: candidate_questions.append({"raw_q": q_pmh, "priority": PRIORITY_P2, "domain": "past_medical"})
+                if not state.get("allergies") and "allergy.drug_reactions" not in asked_ids:
+                    q_all = next((m for m in SYSTEMIC_INQUIRY_MODULES if m["id"] == "allergy.drug_reactions"), None)
+                    if q_all: candidate_questions.append({"raw_q": q_all, "priority": PRIORITY_P2, "domain": "allergies"})
 
-            if not state.get("medications") and "med.current_reconciliation" not in asked_ids:
-                q_med = next((m for m in SYSTEMIC_INQUIRY_MODULES if m["id"] == "med.current_reconciliation"), None)
-                if q_med: candidate_questions.append({"raw_q": q_med, "priority": PRIORITY_P2, "domain": "medications"})
+        else:
+            # --- GENERAL CLINICAL PATHWAY ---
+            # Identify all active clinical pathways for all reported complaints (Multi-complaint merger)
+            active_pathways: List[Dict[str, Any]] = []
+            for complaint in state.get("chief_complaints", []):
+                pw = get_pathway_for_complaint(complaint)
+                if pw and pw not in active_pathways:
+                    active_pathways.append(pw)
 
-            if not state.get("allergies") and "allergy.drug_reactions" not in asked_ids:
-                q_all = next((m for m in SYSTEMIC_INQUIRY_MODULES if m["id"] == "allergy.drug_reactions"), None)
-                if q_all: candidate_questions.append({"raw_q": q_all, "priority": PRIORITY_P2, "domain": "allergies"})
+            # A. Collect questions from specialized complaint pathways
+            for pw in active_pathways:
+                for q in pw.get("questions", []):
+                    q_id = q["id"]
+                    if q_id in asked_ids:
+                        continue
 
-            if not state.get("family_history") and "fh.hereditary" not in asked_ids and turn_count >= 5:
-                q_fh = next((m for m in SYSTEMIC_INQUIRY_MODULES if m["id"] == "fh.hereditary"), None)
-                if q_fh: candidate_questions.append({"raw_q": q_fh, "priority": PRIORITY_P3, "domain": "family_history"})
+                    state_key = q.get("state_key")
+                    if state_key:
+                        if state_key in seen_state_keys:
+                            continue
+                        if self._is_parameter_already_known(state, state_key):
+                            continue
+                        seen_state_keys.add(state_key)
+
+                    candidate_questions.append({
+                        "raw_q": q,
+                        "priority": q.get("priority", PRIORITY_P2),
+                        "domain": pw.get("domain")
+                    })
+
+            # B. If no specialized pathway matched, use Generic OPQRST
+            if not active_pathways:
+                for q in GENERIC_CLINICAL_PATHWAY:
+                    q_id = q["id"]
+                    if q_id in asked_ids:
+                        continue
+                    state_key = q.get("state_key")
+                    if state_key:
+                        if state_key in seen_state_keys:
+                            continue
+                        if self._is_parameter_already_known(state, state_key):
+                            continue
+                        seen_state_keys.add(state_key)
+
+                    candidate_questions.append({
+                        "raw_q": q,
+                        "priority": q.get("priority", PRIORITY_P2),
+                        "domain": "generic"
+                    })
+
+            # C. Include Systemic Contextual Inquiry (PMH, Meds, Allergies, Family, Social)
+            if patient_answers >= 2:
+                if not state.get("past_medical_history") and "pmh.chronic_illnesses" not in asked_ids:
+                    q_pmh = next((m for m in SYSTEMIC_INQUIRY_MODULES if m["id"] == "pmh.chronic_illnesses"), None)
+                    if q_pmh: candidate_questions.append({"raw_q": q_pmh, "priority": PRIORITY_P2, "domain": "past_medical"})
+
+                if not state.get("medications") and "med.current_reconciliation" not in asked_ids:
+                    q_med = next((m for m in SYSTEMIC_INQUIRY_MODULES if m["id"] == "med.current_reconciliation"), None)
+                    if q_med: candidate_questions.append({"raw_q": q_med, "priority": PRIORITY_P2, "domain": "medications"})
+
+                if not state.get("allergies") and "allergy.drug_reactions" not in asked_ids:
+                    q_all = next((m for m in SYSTEMIC_INQUIRY_MODULES if m["id"] == "allergy.drug_reactions"), None)
+                    if q_all: candidate_questions.append({"raw_q": q_all, "priority": PRIORITY_P2, "domain": "allergies"})
+
+                if not state.get("family_history") and "fh.hereditary" not in asked_ids and patient_answers >= 5:
+                    q_fh = next((m for m in SYSTEMIC_INQUIRY_MODULES if m["id"] == "fh.hereditary"), None)
+                    if q_fh: candidate_questions.append({"raw_q": q_fh, "priority": PRIORITY_P3, "domain": "family_history"})
 
         if not candidate_questions:
             return None  # All gaps filled, no questions pending!
@@ -195,6 +290,7 @@ class ClinicalQuestionEngine:
                 chosen_picks = ai_res["quick_picks"]
 
         section_name = chosen.get("section") or chosen.get("category") or candidate_questions[0]["domain"].replace("_", " ").title()
+        why_asking_text = chosen.get("why_asking") or "This question helps complete your clinical case history for physician evaluation."
 
         return {
             "id": chosen_id,
@@ -202,6 +298,7 @@ class ClinicalQuestionEngine:
             "section": section_name,
             "priority": chosen.get("priority", PRIORITY_P2),
             "state_key": chosen.get("state_key"),
+            "why_asking": why_asking_text,
             "text": final_text,
             "question": raw_translations,
             "raw_q": chosen,
@@ -310,15 +407,46 @@ class ClinicalQuestionEngine:
     def _is_parameter_already_known(self, state_or_hpi: Dict[str, Any], state_key: str) -> bool:
         """
         Checks if the requested clinical parameter has already been captured
-        during the opening statement or previous responses.
+        or skipped/marked unknown during the interview.
         Uses get_parameter_value to safely unpack dictionaries or primitives.
         """
         from .state_manager import get_parameter_value
         wrapper = state_or_hpi if "hpi" in state_or_hpi else {"hpi": state_or_hpi}
 
+        # If parameter has been recorded in information_gaps as skipped/unknown, do not re-ask
+        for gap in wrapper.get("information_gaps", []):
+            gap_param = gap.get("parameter") if isinstance(gap, dict) else str(gap)
+            if gap_param and gap_param.lower() == str(state_key).lower():
+                return True
+
         def has_val(k):
             v = get_parameter_value(wrapper, k)
-            return v is not None and str(v).strip() != "" and str(v).strip().lower() != "none"
+            if v is not None and str(v).strip() != "" and str(v).strip().lower() not in ["none", "null", "undefined"]:
+                return True
+            # Check in ayush_parameters
+            ayush = wrapper.get("ayush_parameters", {})
+            if isinstance(ayush, dict):
+                v_ayush = ayush.get(k)
+                if isinstance(v_ayush, dict):
+                    v_ayush = v_ayush.get("value")
+                if v_ayush is not None and str(v_ayush).strip() != "":
+                    return True
+                dasha = ayush.get("dashavidha_pariksha", {})
+                if isinstance(dasha, dict):
+                    v_d = dasha.get(k)
+                    if isinstance(v_d, dict):
+                        v_d = v_d.get("value")
+                    if v_d is not None and str(v_d).strip() != "":
+                        return True
+            # Check in homeopathy_parameters
+            homeo = wrapper.get("homeopathy_parameters", {})
+            if isinstance(homeo, dict):
+                v_h = homeo.get(k)
+                if isinstance(v_h, dict):
+                    v_h = v_h.get("value")
+                if v_h is not None and str(v_h).strip() != "":
+                    return True
+            return False
 
         if state_key == "location_and_radiation":
             return has_val("location") and has_val("radiation")
@@ -333,6 +461,8 @@ class ClinicalQuestionEngine:
         elif state_key in ["associated_symptoms", "associated"]:
             assoc = get_parameter_value(wrapper, "associated_symptoms")
             return bool(assoc)
+        elif state_key in ["thermal_and_thirst", "thermal_preference"]:
+            return has_val("thermal_preference") or has_val("thermal_and_thirst")
         else:
             return has_val(state_key)
 
@@ -340,7 +470,8 @@ class ClinicalQuestionEngine:
     def generate_open_ended_first_question(cls, language_code: str = "en-IN") -> Dict[str, Any]:
         engine = cls()
         res = engine.get_first_open_ended_question(language_code)
-        res["id"] = res.get("question_id", "core.open_ended_complaint")
+        res["id"] = "chief_complaint_open"
+        res["question_id"] = "chief_complaint_open"
         res["parameter"] = "chief_complaint"
         res["question"] = {
             "en-IN": "Please tell me in your own words what is bothering you today. What is your main problem?",
@@ -396,6 +527,7 @@ class ClinicalQuestionEngine:
             "id": q_id,
             "parameter": raw.get("state_key", raw.get("parameter", "general")),
             "priority": raw.get("priority", PRIORITY_P1),
+            "why_asking": q.get("why_asking") or raw.get("why_asking") or "This question helps complete your clinical case history for physician evaluation.",
             "text": final_question_text,
             "question": translations,
             "quick_picks": clean_picks

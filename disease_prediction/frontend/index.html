@@ -2723,7 +2723,96 @@
                             <button type="button" class="btn-link" onclick="loadOpsSources()">Refresh Sources</button>
                         </div>
                         <div id="ops-sources-cards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px;">
-                            <div style="grid-column: 1/-1; text-align: center; color: #64748b; padding: 16px;">Click "Refresh Sources" to load dataset metadata.</div>
+                            <div class="ops-source-card">
+                                <div class="ops-source-card-header">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <span class="material-symbols-outlined" style="color: #0284c7; font-size: 26px;">local_hospital</span>
+                                        <span class="ops-source-name">HIS Admissions &amp; Discharges</span>
+                                    </div>
+                                    <span class="badge" style="background: #dcfce7; color: #166534; font-weight: 800;">✓ Processed</span>
+                                </div>
+                                <p style="font-size: 0.82rem; color: #64748b; margin-bottom: 12px;">Inpatient admissions, discharges, demographics, and ward transfers ledger.</p>
+                                <div class="ops-source-stat-row">
+                                    <span class="ops-source-stat-lbl">Total Records:</span>
+                                    <span class="ops-source-stat-val"><strong>307</strong></span>
+                                </div>
+                                <div class="ops-source-stat-row">
+                                    <span class="ops-source-stat-lbl">Date Range:</span>
+                                    <span class="ops-source-stat-val">2026-06-21 to 2026-08-05</span>
+                                </div>
+                                <div class="ops-source-stat-row">
+                                    <span class="ops-source-stat-lbl">Missing Values Handled:</span>
+                                    <span class="ops-source-stat-val" style="color: #ea580c;">38 fields</span>
+                                </div>
+                                <div class="ops-source-stat-row">
+                                    <span class="ops-source-stat-lbl">Duplicate Rows Detected:</span>
+                                    <span class="ops-source-stat-val" style="color: #b91c1c;">2 rows</span>
+                                </div>
+                                <div class="ops-source-stat-row">
+                                    <span class="ops-source-stat-lbl">Source File:</span>
+                                    <span class="ops-source-stat-val" style="font-family: monospace; font-size: 0.78rem;">01_his_admissions_discharges.csv</span>
+                                </div>
+                            </div>
+                            <div class="ops-source-card">
+                                <div class="ops-source-card-header">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <span class="material-symbols-outlined" style="color: #6366f1; font-size: 26px;">biotech</span>
+                                        <span class="ops-source-name">Lab Order-to-Result</span>
+                                    </div>
+                                    <span class="badge" style="background: #dcfce7; color: #166534; font-weight: 800;">✓ Processed</span>
+                                </div>
+                                <p style="font-size: 0.82rem; color: #64748b; margin-bottom: 12px;">Laboratory diagnostic orders, phlebotomy collection, and analyzer turnaround logs.</p>
+                                <div class="ops-source-stat-row">
+                                    <span class="ops-source-stat-lbl">Total Records:</span>
+                                    <span class="ops-source-stat-val"><strong>630</strong></span>
+                                </div>
+                                <div class="ops-source-stat-row">
+                                    <span class="ops-source-stat-lbl">Date Range:</span>
+                                    <span class="ops-source-stat-val">2026-06-21 to 2026-08-06</span>
+                                </div>
+                                <div class="ops-source-stat-row">
+                                    <span class="ops-source-stat-lbl">Missing Values Handled:</span>
+                                    <span class="ops-source-stat-val" style="color: #ea580c;">3 fields</span>
+                                </div>
+                                <div class="ops-source-stat-row">
+                                    <span class="ops-source-stat-lbl">Duplicate Rows Detected:</span>
+                                    <span class="ops-source-stat-val" style="color: #16a34a;">0 rows</span>
+                                </div>
+                                <div class="ops-source-stat-row">
+                                    <span class="ops-source-stat-lbl">Source File:</span>
+                                    <span class="ops-source-stat-val" style="font-family: monospace; font-size: 0.78rem;">02_lab_order_to_result.csv</span>
+                                </div>
+                            </div>
+                            <div class="ops-source-card">
+                                <div class="ops-source-card-header">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <span class="material-symbols-outlined" style="color: #ea580c; font-size: 26px;">hotel</span>
+                                        <span class="ops-source-name">Manual Bed Occupancy Sheet</span>
+                                    </div>
+                                    <span class="badge" style="background: #dcfce7; color: #166534; font-weight: 800;">✓ Processed</span>
+                                </div>
+                                <p style="font-size: 0.82rem; color: #64748b; margin-bottom: 12px;">Manually logged nursing shift bed occupancy sheets with qualitative shift remarks.</p>
+                                <div class="ops-source-stat-row">
+                                    <span class="ops-source-stat-lbl">Total Records:</span>
+                                    <span class="ops-source-stat-val"><strong>130</strong></span>
+                                </div>
+                                <div class="ops-source-stat-row">
+                                    <span class="ops-source-stat-lbl">Date Range:</span>
+                                    <span class="ops-source-stat-val">2026-07-01 to 2026-07-30</span>
+                                </div>
+                                <div class="ops-source-stat-row">
+                                    <span class="ops-source-stat-lbl">Missing Values Handled:</span>
+                                    <span class="ops-source-stat-val" style="color: #ea580c;">86 fields</span>
+                                </div>
+                                <div class="ops-source-stat-row">
+                                    <span class="ops-source-stat-lbl">Duplicate Rows Detected:</span>
+                                    <span class="ops-source-stat-val" style="color: #16a34a;">0 rows</span>
+                                </div>
+                                <div class="ops-source-stat-row">
+                                    <span class="ops-source-stat-lbl">Source File:</span>
+                                    <span class="ops-source-stat-val" style="font-family: monospace; font-size: 0.78rem;">03_bed_occupancy_manual.csv</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -2747,7 +2836,71 @@
                                     </tr>
                                 </thead>
                                 <tbody id="ops-conflicts-tbody">
-                                    <tr><td colspan="7" style="text-align: center; color: #64748b; padding: 16px;">Click "Load Conflicts" to display reconciliation audit data.</td></tr>
+                                    <tr>
+                                        <td><span class="ops-ward-badge badge-critical">High</span></td>
+                                        <td><strong style="font-size: 0.8rem; color: #334155;">BED VS HIS OCCUPANCY</strong></td>
+                                        <td><strong>Date: 2026-07-01 | Ward: General Ward A</strong></td>
+                                        <td style="font-size: 0.8rem; color: #64748b;">15</td>
+                                        <td style="font-size: 0.8rem; color: #64748b;">20</td>
+                                        <td><span class="ops-ward-badge badge-warning">Needs Review</span></td>
+                                        <td>
+                                            <button type="button" class="btn-secondary" style="font-size: 0.76rem; padding: 4px 10px; display: inline-flex; align-items: center; gap: 4px;" onclick="openConflictDetail('CONF-OCC-2026-07-01-2')">
+                                                <span class="material-symbols-outlined" style="font-size: 14px; color: #0284c7;">help</span> Why?
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="ops-ward-badge badge-critical">High</span></td>
+                                        <td><strong style="font-size: 0.8rem; color: #334155;">BED VS HIS OCCUPANCY</strong></td>
+                                        <td><strong>Date: 2026-07-01 | Ward: General Ward B</strong></td>
+                                        <td style="font-size: 0.8rem; color: #64748b;">18</td>
+                                        <td style="font-size: 0.8rem; color: #64748b;">8</td>
+                                        <td><span class="ops-ward-badge badge-warning">Needs Review</span></td>
+                                        <td>
+                                            <button type="button" class="btn-secondary" style="font-size: 0.76rem; padding: 4px 10px; display: inline-flex; align-items: center; gap: 4px;" onclick="openConflictDetail('CONF-OCC-2026-07-01-3')">
+                                                <span class="material-symbols-outlined" style="font-size: 14px; color: #0284c7;">help</span> Why?
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="ops-ward-badge badge-critical">High</span></td>
+                                        <td><strong style="font-size: 0.8rem; color: #334155;">BED VS HIS OCCUPANCY</strong></td>
+                                        <td><strong>Date: 2026-07-01 | Ward: Medical ICU (MICU)</strong></td>
+                                        <td style="font-size: 0.8rem; color: #64748b;">5</td>
+                                        <td style="font-size: 0.8rem; color: #64748b;">8</td>
+                                        <td><span class="ops-ward-badge badge-warning">Needs Review</span></td>
+                                        <td>
+                                            <button type="button" class="btn-secondary" style="font-size: 0.76rem; padding: 4px 10px; display: inline-flex; align-items: center; gap: 4px;" onclick="openConflictDetail('CONF-OCC-2026-07-01-1')">
+                                                <span class="material-symbols-outlined" style="font-size: 14px; color: #0284c7;">help</span> Why?
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="ops-ward-badge badge-critical">High</span></td>
+                                        <td><strong style="font-size: 0.8rem; color: #334155;">BED VS HIS OCCUPANCY</strong></td>
+                                        <td><strong>Date: 2026-07-02 | Ward: Intensive Care Unit (ICU)</strong></td>
+                                        <td style="font-size: 0.8rem; color: #64748b;">9</td>
+                                        <td style="font-size: 0.8rem; color: #64748b;">6</td>
+                                        <td><span class="ops-ward-badge badge-warning">Needs Review</span></td>
+                                        <td>
+                                            <button type="button" class="btn-secondary" style="font-size: 0.76rem; padding: 4px 10px; display: inline-flex; align-items: center; gap: 4px;" onclick="openConflictDetail('CONF-OCC-2026-07-02-5')">
+                                                <span class="material-symbols-outlined" style="font-size: 14px; color: #0284c7;">help</span> Why?
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="ops-ward-badge badge-critical">High</span></td>
+                                        <td><strong style="font-size: 0.8rem; color: #334155;">BED VS HIS OCCUPANCY</strong></td>
+                                        <td><strong>Date: 2026-07-02 | Ward: Medical ICU (MICU)</strong></td>
+                                        <td style="font-size: 0.8rem; color: #64748b;">8</td>
+                                        <td style="font-size: 0.8rem; color: #64748b;">5</td>
+                                        <td><span class="ops-ward-badge badge-warning">Needs Review</span></td>
+                                        <td>
+                                            <button type="button" class="btn-secondary" style="font-size: 0.76rem; padding: 4px 10px; display: inline-flex; align-items: center; gap: 4px;" onclick="openConflictDetail('CONF-OCC-2026-07-02-6')">
+                                                <span class="material-symbols-outlined" style="font-size: 14px; color: #0284c7;">help</span> Why?
+                                            </button>
+                                        </td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -3255,20 +3408,18 @@
                     <div style="display: flex; align-items: center; gap: 6px;">
                         <span class="material-symbols-outlined" style="color: #0284c7;">badge</span>
                         <strong style="font-size: 0.9rem; color: #1e293b;">ABHA / ABDM Profile (Integration Ready)</strong>
-                        <span style="font-size: 0.7rem; background: #e2e8f0; color: #475569; padding: 2px 6px; border-radius: 4px; font-weight: 700;">DEMO / MOCK ABHA</span>
+                        <span style="font-size: 0.7rem; background: #e2e8f0; color: #475569; padding: 2px 6px; border-radius: 4px; font-weight: 700;">OPTIONAL</span>
                     </div>
-                    <button type="button" class="btn-secondary" style="font-size: 0.76rem; padding: 4px 10px;" onclick="generateMockAbhaNumber()">
-                        <span>⚡</span> Generate Mock ABHA
-                    </button>
+                    <span style="font-size: 0.75rem; color: #64748b; font-style: italic;">Leave blank if not linked</span>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                     <div>
                         <label style="font-size: 0.78rem; font-weight: 700; color: #475569;">ABHA Number</label>
-                        <input type="text" id="case-abha-input" class="search-input" placeholder="e.g. 91-1234-5678-9012" value="91-4589-2041-8832 (Demo ABHA)">
+                        <input type="text" id="case-abha-input" class="search-input" placeholder="e.g. 91-1234-5678-9012 (optional)" value="">
                     </div>
                     <div>
                         <label style="font-size: 0.78rem; font-weight: 700; color: #475569;">ABHA Address</label>
-                        <input type="text" id="case-abha-address" class="search-input" placeholder="e.g. patient.4589@abdm" value="patient.medicover@abdm">
+                        <input type="text" id="case-abha-address" class="search-input" placeholder="e.g. patient@abdm (optional)" value="">
                     </div>
                 </div>
             </div>
@@ -4187,37 +4338,66 @@
                             <div style="display: flex; align-items: center; gap: 6px;">
                                 <span class="material-symbols-outlined" style="color: #0284c7;">badge</span>
                                 <strong style="font-size: 0.9rem; color: #1e293b;">ABHA / ABDM ID (Ayushman Bharat Digital Mission)</strong>
-                                <span style="font-size: 0.7rem; background: #e2e8f0; color: #475569; padding: 2px 6px; border-radius: 4px; font-weight: 700;">ABDM READY</span>
+                                <span style="font-size: 0.7rem; background: #e2e8f0; color: #475569; padding: 2px 6px; border-radius: 4px; font-weight: 700;">OPTIONAL</span>
                             </div>
-                            <button type="button" class="btn-secondary" style="font-size: 0.76rem; padding: 4px 10px;" onclick="generateMockVoiceAbha()">
-                                <span>⚡</span> Generate Mock ABHA
-                            </button>
+                            <span style="font-size: 0.75rem; color: #64748b; font-style: italic;">Leave blank if not linked</span>
                         </div>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                             <div>
                                 <label style="font-size: 0.78rem; font-weight: 700; color: #475569;">ABHA Number</label>
-                                <input type="text" id="voice-abha-input" class="search-input" placeholder="e.g. 91-1234-5678-9012" value="91-4589-2041-8832 (Demo ABHA)">
+                                <input type="text" id="voice-abha-input" class="search-input" placeholder="e.g. 91-1234-5678-9012 (optional)" value="">
                             </div>
                             <div>
                                 <label style="font-size: 0.78rem; font-weight: 700; color: #475569;">ABHA Address</label>
-                                <input type="text" id="voice-abha-address" class="search-input" placeholder="e.g. patient.4589@abdm" value="patient.medicover@abdm">
+                                <input type="text" id="voice-abha-address" class="search-input" placeholder="e.g. patient@abdm (optional)" value="">
                             </div>
                         </div>
                     </div>
 
-                    <!-- AYUSH Evaluation Mode Toggle Option -->
-                    <div style="background: #fefce8; border: 1.5px solid #fde047; border-radius: 12px; padding: 14px 16px; margin-bottom: 16px;">
+
+                    <!-- Clinical Context Panel: Case Type + Participant Role + Easy Mode -->
+                    <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+                        <div style="font-size: 0.88rem; font-weight: 800; color: #0f172a; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                            <span class="material-symbols-outlined" style="font-size: 18px; color: #6366f1;">tune</span> Clinical Interview Configuration
+                        </div>
+
+                        <!-- Case Type Selector -->
+                        <div style="margin-bottom: 12px;">
+                            <label style="font-size: 0.78rem; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Medical System / Case Type</label>
+                            <select id="voice-case-type-select" class="search-input" style="font-size: 0.85rem; padding: 8px 12px; border-radius: 8px; border: 1.5px solid #cbd5e1; width: 100%;" onchange="voiceOnCaseTypeChange(this.value)">
+                                <option value="general">🏥 General / Allopathy</option>
+                                <option value="ayurveda">🌿 Ayurveda (Prakriti &amp; Dosha Assessment)</option>
+                                <option value="homeopathy">💊 Homeopathy (Constitutional Totality)</option>
+                            </select>
+                        </div>
+
+                        <!-- Participant Role -->
+                        <div style="margin-bottom: 12px;">
+                            <label style="font-size: 0.78rem; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Who is answering these questions?</label>
+                            <select id="voice-participant-role-select" class="search-input" style="font-size: 0.85rem; padding: 8px 12px; border-radius: 8px; border: 1.5px solid #cbd5e1; width: 100%;">
+                                <option value="patient">👤 Patient (Self)</option>
+                                <option value="relative">👨‍👩‍👧 Family Member / Relative</option>
+                                <option value="caregiver">🏥 Caregiver / Attendant</option>
+                                <option value="asha_worker">🌸 ASHA / Health Worker</option>
+                            </select>
+                        </div>
+
+                        <!-- Easy Mode -->
                         <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; margin: 0; user-select: none;">
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <span style="font-size: 24px;">🌿</span>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 20px;">🟢</span>
                                 <div>
-                                    <strong style="font-size: 0.9rem; color: #854d0e; display: block;">Include AYUSH Evaluation (Ayurveda / Siddha / Unani)</strong>
-                                    <span style="font-size: 0.78rem; color: #a16207;">Adds Prakriti (body constitution), dietary habits, and lifestyle assessment questions.</span>
+                                    <strong style="font-size: 0.86rem; color: #1e293b; display: block;">Easy / Simplified Mode</strong>
+                                    <span style="font-size: 0.75rem; color: #64748b;">Uses shorter, simpler questions for elderly patients or low-literacy users.</span>
                                 </div>
                             </div>
-                            <input type="checkbox" id="voice-ayush-setup-checkbox" onchange="voiceToggleAyushMode()" style="width: 20px; height: 20px; accent-color: #ca8a04; cursor: pointer;">
+                            <input type="checkbox" id="voice-easy-mode-checkbox" style="width: 20px; height: 20px; accent-color: #6366f1; cursor: pointer;">
                         </label>
                     </div>
+
+                    <!-- AYUSH Legacy Checkbox (hidden, kept for backward compat) -->
+                    <input type="checkbox" id="voice-ayush-setup-checkbox" onchange="voiceToggleAyushMode()" style="display:none;">
+
 
                     <div class="voice-consent-card">
                         <div class="voice-consent-icon">🔒</div>
@@ -4540,7 +4720,7 @@
         </section><!-- end view-voice-case-taking -->
     </main>
 
-    <script src="app.js?v=20260920_v1"></script>
+    <script src="app.js?v=20260920_v2"></script>
     <script src="voice_service.js?v=20260920_v1"></script>
     <script src="case_taking.js?v=20260920_v1"></script>
     <script src="voice_case_taking.js?v=20260920_v1"></script>

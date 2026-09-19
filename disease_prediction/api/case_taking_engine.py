@@ -500,14 +500,14 @@ def synthesize_physician_summary(
         return default
 
     chief_complaint = case_info.get("chief_complaint") or get_sec_text("chief_complaint", "General medical review")
-    hpi = get_sec_text("hpi", "No acute progression details provided.")
-    past_medical = get_sec_text("past_medical", "No pre-existing chronic conditions noted.")
-    past_surgical = get_sec_text("past_surgical", "No past surgical history reported.")
-    drug_history = get_sec_text("drug_history", "No current medications documented.")
-    allergy_history = get_sec_text("allergy_history", "No Known Drug Allergies (NKDA).")
-    family_history = get_sec_text("family_history", "Non-contributory.")
-    personal_history = get_sec_text("personal_history", "Standard diet, non-smoker, non-alcoholic.")
-    ros = get_sec_text("ros", "Systemic review non-contributory.")
+    hpi = get_sec_text("hpi", "Not reported")
+    past_medical = get_sec_text("past_medical", "Not reported")
+    past_surgical = get_sec_text("past_surgical", "Not reported")
+    drug_history = get_sec_text("drug_history", "Not reported")
+    allergy_history = get_sec_text("allergy_history", "Not reported")
+    family_history = get_sec_text("family_history", "Not reported")
+    personal_history = get_sec_text("personal_history", "Not provided")
+    ros = get_sec_text("ros", "Not reported")
     prev_investigations = get_sec_text("previous_investigations", "No prior investigation records provided.")
 
     # Combine all text for red flag scanning

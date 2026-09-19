@@ -977,8 +977,8 @@ def create_report (data :Dict [str ,Any ])->Dict [str ,Any ]:
     if not cursor.fetchone():
         # Attempt to resolve demographic details from Supabase admissions
         p_name = data.get('patient_name') or f"Patient {patient_id}"
-        p_age = data.get('patient_age', 35)
-        p_gender = data.get('patient_gender', 'Female')
+        p_age = data.get('patient_age', 0)
+        p_gender = data.get('patient_gender', 'Not provided')
         try:
             from disease_prediction.hospital_operations.supabase_client import SupabaseHospitalClient
             supa_p = SupabaseHospitalClient.list_patients(query=patient_id, limit=1)
@@ -990,7 +990,7 @@ def create_report (data :Dict [str ,Any ])->Dict [str ,Any ]:
             pass
         cursor.execute(
             "INSERT INTO patients (patient_id, name, age, gender, contact, email, access_pin_hash, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-            (patient_id, p_name, p_age, p_gender, '+91-9876543210', f"{patient_id.lower()}@medicover.org", hash_secret("123456"), now)
+            (patient_id, p_name, p_age, p_gender, 'Not provided', 'Not provided', hash_secret("123456"), now)
         )
         conn.commit()
 
@@ -1806,7 +1806,7 @@ def create_clinical_case(
         prov_pin_hash = hash_secret("1234")
         cursor.execute("""
         INSERT OR IGNORE INTO patients (patient_id, name, age, gender, contact, access_pin_hash, created_at)
-        VALUES (?, ?, 30, 'other', 'provisional', ?, ?)
+        VALUES (?, ?, 0, 'Not provided', 'Not provided', ?, ?)
         """, (patient_id, f"Patient {patient_id}", prov_pin_hash, now_iso))
 
     cursor.execute("""
