@@ -656,6 +656,7 @@ function switchView(viewName) {
             loadPatientTimeline(currentAuth.patientId, currentAuth.token);
             loadPatientReminders(currentAuth.patientId);
             loadPatientReportedIssues(currentAuth.patientId);
+            loadPatientAppointments(currentAuth.patientId);
         } else {
             document.getElementById('patient-login-container').style.display = 'block';
             document.getElementById('patient-dashboard-container').style.display = 'none';
@@ -988,6 +989,7 @@ async function handlePatientLogin() {
         loadPatientTimeline(data.patient.patient_id, data.token);
         loadPatientReminders(data.patient.patient_id);
         loadPatientReportedIssues(data.patient.patient_id);
+        loadPatientAppointments(data.patient.patient_id);
     } catch (err) {
         if (err.name === 'TypeError' || (err.message && err.message.includes('fetch'))) {
             const banner = document.getElementById('server-status-banner');
@@ -1007,6 +1009,14 @@ function handlePatientLogout() {
     currentAuth.patientAge = null;
     currentAuth.patientGender = null;
     clearSessionAuth();
+    const pTot = document.getElementById('pstat-total-reports');
+    if (pTot) pTot.innerText = '0';
+    const pApt = document.getElementById('pstat-appointments');
+    if (pApt) pApt.innerText = '0';
+    const pRem = document.getElementById('pstat-reminders');
+    if (pRem) pRem.innerText = '0';
+    const pFin = document.getElementById('pstat-finalized-reports');
+    if (pFin) pFin.innerText = '0';
     document.getElementById('patient-login-container').style.display = 'block';
     document.getElementById('patient-dashboard-container').style.display = 'none';
     loadPublicPatients();
@@ -1026,11 +1036,24 @@ async function fetchAndRenderPatientReports() {
         if (!res.ok) throw new Error("Failed to fetch reports.");
         patientReports = await res.json();
 
-        
-        document.getElementById('pstat-total-reports').innerText = patientReports.length;
-        document.getElementById('pstat-finalized-reports').innerText = patientReports.filter(r => r.status === 'Finalized').length;
+        const totEl = document.getElementById('pstat-total-reports');
+        if (totEl) totEl.innerText = patientReports.length;
+        const finEl = document.getElementById('pstat-finalized-reports');
+        if (finEl) finEl.innerText = patientReports.filter(r => r.status === 'Finalized').length;
+
+        const latestTestEl = document.getElementById('p-dash-latest-test');
+        const latestMetaEl = document.getElementById('p-dash-latest-meta');
+        const latestBadgeEl = document.getElementById('p-dash-latest-badge');
 
         if (!patientReports || patientReports.length === 0) {
+            if (latestTestEl) latestTestEl.innerText = "No Reports on File";
+            if (latestMetaEl) latestMetaEl.innerText = "Awaiting laboratory pathology tests";
+            if (latestBadgeEl) {
+                latestBadgeEl.innerText = "—";
+                latestBadgeEl.className = "flag-badge";
+                latestBadgeEl.style.background = "#f1f5f9";
+                latestBadgeEl.style.color = "#64748b";
+            }
             listContainer.innerHTML = `
                 <div style="text-align: center; padding: 30px; color: #94a3b8;">
                     <div style="font-size: 2.5rem; margin-bottom: 8px; opacity: 0.4;">📋</div>
@@ -1039,6 +1062,16 @@ async function fetchAndRenderPatientReports() {
                 </div>
             `;
             return;
+        }
+
+        const latest = patientReports[0];
+        if (latestTestEl) latestTestEl.innerText = latest.test_category || latest.report_id;
+        if (latestMetaEl) latestMetaEl.innerText = `Verified on ${new Date(latest.created_at).toLocaleDateString()}`;
+        if (latestBadgeEl) {
+            latestBadgeEl.innerText = latest.status || 'Finalized';
+            latestBadgeEl.className = `flag-badge ${latest.status === 'Finalized' ? 'flag-normal' : 'flag-high'}`;
+            latestBadgeEl.style.background = '';
+            latestBadgeEl.style.color = '';
         }
 
         listContainer.innerHTML = `
@@ -5291,6 +5324,7 @@ window._selectedReminderFilter = 'all';
 
 async function loadPatientReminders(patientId) {
     const container = document.getElementById('patient-reminders-list');
+    const remStat = document.getElementById('pstat-reminders');
     if (!container) return;
 
     try {
@@ -5302,8 +5336,11 @@ async function loadPatientReminders(patientId) {
 
         const data = await safeJson(res);
         window._currentPatientReminders = data.reminders || [];
+        const pendingCount = (window._currentPatientReminders || []).filter(r => r.status !== 'completed' && r.status !== 'acknowledged').length;
+        if (remStat) remStat.innerText = pendingCount;
         renderPatientReminders();
     } catch (err) {
+        if (remStat) remStat.innerText = '0';
         container.innerHTML = `
             <div class="timeline-empty-state">
                 <div class="tes-icon">🔔</div>
@@ -5332,6 +5369,10 @@ function filterPatientReminders(category) {
 
 function renderPatientReminders() {
     const container = document.getElementById('patient-reminders-list');
+    const remStat = document.getElementById('pstat-reminders');
+    const pendingCount = (window._currentPatientReminders || []).filter(r => r.status !== 'completed' && r.status !== 'acknowledged').length;
+    if (remStat) remStat.innerText = pendingCount;
+
     if (!container) return;
 
     let items = window._currentPatientReminders || [];
@@ -5361,15 +5402,17 @@ function renderPatientReminders() {
         'diagnosis': '🩺 Diagnosis Directive',
         'checkup': '🏥 Health Checkup',
         'prescription_instruction': '📜 Prescription Instructions',
-        'custom': '✉️ Direct Care Alert'
+        'custom': '✉️ Direct Care Alert',
+        'dietary': '🥗 Diet & Nutrition',
+        'rehabilitation': '🏃 Exercise / Rehab'
     };
 
     const html = `
-        <div class="care-reminder-list">
+        <div class="care-reminders-wrapper">
             ${items.map(r => {
-                const isDone = r.status === 'completed';
-                const createdDate = r.created_at ? new Date(r.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '';
-                const dueDateStr = r.due_date ? `Due: ${r.due_date}` : 'Ongoing Daily';
+                const isDone = r.status === 'completed' || r.status === 'acknowledged';
+                const createdDate = r.created_at ? new Date(r.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Recently';
+                const dueDateStr = r.due_date ? new Date(r.due_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Action Required';
 
                 let smsBadge = '';
                 if (r.sms_status === 'sent') {
@@ -5438,6 +5481,55 @@ async function acknowledgeCareReminder(reminderId) {
         renderPatientReminders();
     } catch (err) {
         alert("Error updating reminder: " + err.message);
+    }
+}
+
+async function loadPatientAppointments(patientId) {
+    const aptStat = document.getElementById('pstat-appointments');
+    const titleEl = document.getElementById('p-dash-apt-title');
+    const metaEl = document.getElementById('p-dash-apt-meta');
+    const statusEl = document.getElementById('p-dash-apt-status');
+    const btnEl = document.getElementById('p-dash-apt-btn');
+
+    if (!patientId) {
+        if (aptStat) aptStat.innerText = '0';
+        return;
+    }
+
+    try {
+        const headers = {};
+        if (currentAuth.token) headers['Authorization'] = `Bearer ${currentAuth.token}`;
+
+        const res = await fetch(apiUrl(`/api/appointments?patient_id=${encodeURIComponent(patientId)}`), { headers });
+        if (!res.ok) throw new Error("Could not load appointments.");
+
+        const appointments = await safeJson(res);
+        const active = (Array.isArray(appointments) ? appointments : []).filter(a => {
+            const st = (a.status || '').toLowerCase();
+            return st !== 'cancelled' && st !== 'completed';
+        });
+
+        if (aptStat) aptStat.innerText = active.length;
+
+        if (active.length > 0) {
+            const nextApt = active[0];
+            if (titleEl) titleEl.innerText = nextApt.reason_for_visit || nextApt.department || 'Clinical Consultation';
+            if (metaEl) metaEl.innerText = `${nextApt.doctor_name || 'Consultant Specialist'} • ${nextApt.appointment_date || ''} ${nextApt.time_slot || ''}`.trim();
+            if (statusEl) statusEl.innerHTML = `<span style="font-size: 0.82rem; font-weight: 700; color: #059669;">📅 ${nextApt.status || 'Confirmed'}</span>`;
+            if (btnEl) btnEl.innerText = 'Manage →';
+        } else {
+            if (titleEl) titleEl.innerText = 'No Scheduled Appointments';
+            if (metaEl) metaEl.innerText = 'You have no upcoming clinical consultations.';
+            if (statusEl) statusEl.innerHTML = `<span style="font-size: 0.82rem; font-weight: 600; color: #64748b;">— No Active Booking</span>`;
+            if (btnEl) btnEl.innerText = 'Book New →';
+        }
+    } catch (err) {
+        console.warn("Could not load patient appointments:", err);
+        if (aptStat) aptStat.innerText = '0';
+        if (titleEl) titleEl.innerText = 'No Scheduled Appointments';
+        if (metaEl) metaEl.innerText = 'You have no upcoming clinical consultations.';
+        if (statusEl) statusEl.innerHTML = `<span style="font-size: 0.82rem; font-weight: 600; color: #64748b;">— No Active Booking</span>`;
+        if (btnEl) btnEl.innerText = 'Book New →';
     }
 }
 
@@ -7407,6 +7499,9 @@ async function handlePatientRegistrationSubmit(event) {
         }
         if (typeof loadPublicPatients === 'function') {
             loadPublicPatients();
+        }
+        if (typeof loadPatientAppointments === 'function' && assignedPatId) {
+            loadPatientAppointments(assignedPatId);
         }
     } catch (err) {
         console.error("Error submitting patient registration:", err);

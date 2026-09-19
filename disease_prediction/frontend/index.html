@@ -583,7 +583,7 @@
                             <span class="material-symbols-outlined">description</span>
                         </div>
                         <div>
-                            <div class="ml-kpi-num" id="pstat-total-reports">1</div>
+                            <div class="ml-kpi-num" id="pstat-total-reports">0</div>
                             <div class="ml-kpi-label">Reports on File &bull; View →</div>
                         </div>
                     </div>
@@ -593,7 +593,7 @@
                             <span class="material-symbols-outlined">calendar_month</span>
                         </div>
                         <div>
-                            <div class="ml-kpi-num" id="pstat-appointments">1</div>
+                            <div class="ml-kpi-num" id="pstat-appointments">0</div>
                             <div class="ml-kpi-label">Upcoming Appointment</div>
                         </div>
                     </div>
@@ -603,7 +603,7 @@
                             <span class="material-symbols-outlined">notifications_active</span>
                         </div>
                         <div>
-                            <div class="ml-kpi-num" id="pstat-reminders">2</div>
+                            <div class="ml-kpi-num" id="pstat-reminders">0</div>
                             <div class="ml-kpi-label">Care Reminders &bull; Pending →</div>
                         </div>
                     </div>
@@ -613,7 +613,7 @@
                             <span class="material-symbols-outlined">verified</span>
                         </div>
                         <div>
-                            <div class="ml-kpi-num" id="pstat-finalized-reports">1</div>
+                            <div class="ml-kpi-num" id="pstat-finalized-reports">0</div>
                             <div class="ml-kpi-label">Finalized Official Reports</div>
                         </div>
                     </div>
@@ -624,11 +624,11 @@
                     <div style="background: white; border-radius: 18px; padding: 22px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);">
                         <div>
                             <div style="font-size: 0.74rem; font-weight: 800; color: #0284c7; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">Latest Certified Report</div>
-                            <h4 style="font-size: 1.12rem; font-weight: 800; color: #0f2744; margin: 0 0 6px;" id="p-dash-latest-test">Complete Blood Count (CBC)</h4>
-                            <div style="font-size: 0.82rem; color: #64748b;" id="p-dash-latest-meta">Verified by Clinical Pathology Department</div>
+                            <h4 style="font-size: 1.12rem; font-weight: 800; color: #0f2744; margin: 0 0 6px;" id="p-dash-latest-test">No Reports on File</h4>
+                            <div style="font-size: 0.82rem; color: #64748b;" id="p-dash-latest-meta">Awaiting laboratory pathology tests</div>
                         </div>
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 12px; border-top: 1px solid #f1f5f9;">
-                            <span class="flag-badge flag-normal" style="font-size: 0.76rem;">Finalized</span>
+                            <span class="flag-badge flag-normal" style="font-size: 0.76rem;" id="p-dash-latest-badge">—</span>
                             <button type="button" class="ml-btn-outline" style="padding: 6px 14px; font-size: 0.8rem;" onclick="document.getElementById('patient-reports-list-container').scrollIntoView({behavior: 'smooth'})">View Details →</button>
                         </div>
                     </div>
@@ -636,12 +636,12 @@
                     <div style="background: white; border-radius: 18px; padding: 22px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);">
                         <div>
                             <div style="font-size: 0.74rem; font-weight: 800; color: #10b981; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">Upcoming Clinical Consultation</div>
-                            <h4 style="font-size: 1.12rem; font-weight: 800; color: #0f2744; margin: 0 0 6px;">General Medicine Follow-Up</h4>
-                            <div style="font-size: 0.82rem; color: #64748b;">Medicover Hospital &bull; OPD Clinic Room 204</div>
+                            <h4 style="font-size: 1.12rem; font-weight: 800; color: #0f2744; margin: 0 0 6px;" id="p-dash-apt-title">No Scheduled Appointments</h4>
+                            <div style="font-size: 0.82rem; color: #64748b;" id="p-dash-apt-meta">You have no upcoming clinical consultations.</div>
                         </div>
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 12px; border-top: 1px solid #f1f5f9;">
-                            <span style="font-size: 0.82rem; font-weight: 700; color: #1e293b;">📅 Scheduled</span>
-                            <button type="button" class="ml-btn-outline" style="padding: 6px 14px; font-size: 0.8rem;" onclick="openPatientRegistrationModal()">Manage →</button>
+                            <span style="font-size: 0.82rem; font-weight: 600; color: #64748b;" id="p-dash-apt-status">— No Active Booking</span>
+                            <button type="button" class="ml-btn-outline" style="padding: 6px 14px; font-size: 0.8rem;" id="p-dash-apt-btn" onclick="openPatientRegistrationModal()">Book New →</button>
                         </div>
                     </div>
                 </div>
@@ -4515,7 +4515,7 @@
         </section><!-- end view-voice-case-taking -->
     </main>
 
-    <script src="app.js?v=20260919_v16"></script>
+    <script src="app.js?v=20260919_v17"></script>
     <script src="voice_service.js?v=20260919_v16"></script>
     <script src="case_taking.js?v=20260919_v16"></script>
     <script src="voice_case_taking.js?v=20260919_v16"></script>
