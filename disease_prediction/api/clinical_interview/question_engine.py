@@ -218,10 +218,13 @@ class ClinicalQuestionEngine:
         Returns dict with "text" and "quick_picks" or None on timeout/error.
         """
         try:
-            from disease_prediction.api.openrouter_service import get_api_key, OPENROUTER_API_URL, SITE_URL, APP_NAME
+            from disease_prediction.api.openrouter_service import get_api_key, OPENROUTER_API_URL, SITE_URL, APP_NAME, is_circuit_open, trip_circuit_breaker
             import requests
             import json
             import re
+
+            if is_circuit_open():
+                return None
             
             api_key = get_api_key()
             if not api_key:
@@ -237,9 +240,8 @@ class ClinicalQuestionEngine:
             primary_complaint = complaints[0] if complaints else "symptoms"
 
             candidate_models = [
-                "nex-agi/nex-n2.5-mini:free",
-                "deepseek/deepseek-v4-flash-0731:free",
-                os.getenv("OPENROUTER_FOLLOWUP_MODEL", "openrouter/free")
+                os.getenv("OPENROUTER_FOLLOWUP_MODEL", "nex-agi/nex-n2.5-mini:free"),
+                "openrouter/free"
             ]
 
             prompt = (
@@ -271,6 +273,7 @@ class ClinicalQuestionEngine:
                             {"role": "system", "content": "You are a clinical inquiry rephraser. Return ONLY the JSON object. No reasoning or thoughts."},
                             {"role": "user", "content": prompt}
                         ],
+                        "response_format": {"type": "json_object"},
                         "temperature": 0.2,
                         "max_tokens": 300
                     }
@@ -280,19 +283,23 @@ class ClinicalQuestionEngine:
                         msg = choice.get("message", {})
                         raw_c = (msg.get("content") or msg.get("reasoning") or "").strip()
                         # Clean common quote encoding glitches
-                        raw_c = raw_c.replace("\ufffd", "'").replace("‘", "'").replace("’", "'").replace("“", '"').replace("”", '"')
+                        raw_c = raw_c.replace("\ufffd", "-").replace("‘", "'").replace("’", "'").replace("“", '"').replace("”", '"')
                         m = re.search(r'(\{[\s\S]*\})', raw_c)
                         if m:
                             parsed = json.loads(m.group(1))
                             q_txt = str(parsed.get("question") or "").strip()
                             if q_txt and len(q_txt) > 8 and "..." not in q_txt and "Warm empathetic question" not in q_txt:
-                                q_picks = [str(x).strip().replace("\ufffd", "'") for x in parsed.get("quick_picks", []) if str(x).strip() and "Option" not in str(x)][:4]
+                                q_picks = [str(x).strip().replace("\ufffd", "-") for x in parsed.get("quick_picks", []) if str(x).strip() and "Option" not in str(x)][:4]
                                 return {
                                     "text": q_txt,
                                     "quick_picks": q_picks if len(q_picks) >= 2 else (chosen.get("quick_picks") or [])
                                 }
+                    elif resp.status_code == 429:
+                        trip_circuit_breaker(180.0, "OpenRouter daily quota limit reached (50/50)")
+                        return None
                 except Exception as e:
                     import logging
+
                     logging.getLogger("clinical_interview").warning(f"AI Rephrase attempt failed on {model_name}: {e}")
                     continue
         except Exception as e:
@@ -363,22 +370,35 @@ class ClinicalQuestionEngine:
         raw = q.get("raw_q", q)
         q_id = raw.get("id", raw.get("question_id", "q_next"))
 
-        raw_text_dict = raw.get("text", {})
-        if isinstance(raw_text_dict, dict) and raw_text_dict:
-            translations = {}
-            for l_code, l_text in raw_text_dict.items():
-                pfx = engine.extractor.build_contextual_conversation_prefix(patient_state, q_id, l_code)
-                translations[l_code] = f"{pfx}{l_text}"
-        elif isinstance(q.get("text"), str):
+        # Check if q already has valid translations (including AI rephrased text)
+        if q.get("question") and isinstance(q["question"], dict) and q["question"]:
+
+            translations = dict(q["question"])
+        elif isinstance(q.get("text"), str) and q.get("text"):
             translations = {current_language: q["text"], "en-IN": q["text"]}
         else:
-            translations = raw.get("translations", raw.get("text_map", {current_language: "", "en-IN": ""}))
+            raw_text_dict = raw.get("text", {})
+            if isinstance(raw_text_dict, dict) and raw_text_dict:
+                translations = {}
+                for l_code, l_text in raw_text_dict.items():
+                    pfx = engine.extractor.build_contextual_conversation_prefix(patient_state, q_id, l_code)
+                    translations[l_code] = f"{pfx}{l_text}"
+            else:
+                translations = raw.get("translations", raw.get("text_map", {current_language: "", "en-IN": ""}))
+
+        # Clean unicode artifacts (\ufffd) in quick_picks
+        raw_picks = q.get("quick_picks") or raw.get("quick_picks", [])
+        clean_picks = [str(p).replace("\ufffd", "-").strip() for p in raw_picks if str(p).strip()]
+
+        final_question_text = q.get("text") or translations.get(current_language) or translations.get("en-IN") or ""
 
         return {
             "id": q_id,
             "parameter": raw.get("state_key", raw.get("parameter", "general")),
             "priority": raw.get("priority", PRIORITY_P1),
+            "text": final_question_text,
             "question": translations,
-            "quick_picks": q.get("quick_picks", raw.get("quick_picks", []))
+            "quick_picks": clean_picks
         }
+
 

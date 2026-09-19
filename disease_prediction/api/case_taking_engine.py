@@ -8,6 +8,7 @@ Provides:
 - Physician-Ready Structured Case Summary Synthesis
 """
 
+import os
 import re
 import json
 from typing import Dict, Any, List, Optional
@@ -302,42 +303,50 @@ def get_deterministic_adaptive_questions(chief_complaint: str, answers: Dict[str
     return suggested[:3]
 
 
-def get_ai_adaptive_questions(chief_complaint: str, answers: Dict[str, Any], timeout: float = 2.5) -> Optional[List[Dict[str, Any]]]:
+def get_ai_adaptive_questions(chief_complaint: str, answers: Dict[str, Any], timeout: float = 4.5, language: str = "en-IN") -> Optional[List[Dict[str, Any]]]:
     """
     Calls OpenRouter AI API to generate tailored clinical follow-up questions.
     Returns None if API key is missing, network fails, times out, or output is invalid.
     """
-    if not chief_complaint or not chief_complaint.strip():
+    if not chief_complaint or not str(chief_complaint).strip():
         return None
 
     try:
+        from disease_prediction.api.openrouter_service import get_api_key, OPENROUTER_API_URL, SITE_URL, APP_NAME, is_circuit_open, trip_circuit_breaker
+    except ImportError:
         try:
-            from disease_prediction.api.openrouter_service import get_api_key, OPENROUTER_API_URL, SITE_URL, APP_NAME
+            from openrouter_service import get_api_key, OPENROUTER_API_URL, SITE_URL, APP_NAME, is_circuit_open, trip_circuit_breaker
         except ImportError:
-            from openrouter_service import get_api_key, OPENROUTER_API_URL, SITE_URL, APP_NAME
+            is_circuit_open = lambda: False
+            trip_circuit_breaker = lambda *a, **kw: None
         import requests
-    except Exception:
+
+    if is_circuit_open():
         return None
 
     api_key = get_api_key()
     if not api_key:
         return None
 
+    lang_instruction = f"Target Language: {language}.\n" if language and language != "en-IN" else ""
     prompt = (
         "You are an expert clinical history intake assistant for an outpatient clinic.\n"
         "Generate 2 to 3 clinically relevant follow-up questions based on the patient's complaint and recorded answers.\n"
         "Follow standard clinical history protocol (OPQRST / SOCRATES).\n"
+        f"{lang_instruction}"
         "CRITICAL RULES:\n"
         "1. DO NOT provide a diagnosis, medical advice, or reassure the patient.\n"
         "2. Only ask intake questions to gather more specific clinical history.\n"
         "3. For each question, provide 3 to 4 concise selectable options / answer chips.\n"
         f"Chief Complaint: {chief_complaint}\n"
         f"Known Answers: {json.dumps(answers)}\n\n"
-        "Respond ONLY with a JSON array in this exact format:\n"
-        "[\n"
-        '  {"id": "q1", "question": "Question text here?", "options": ["Option 1", "Option 2", "Option 3"]},\n'
-        '  {"id": "q2", "question": "Question text here?", "options": ["Option 1", "Option 2", "Option 3"]}\n'
-        "]"
+        "Respond ONLY with a JSON object in this exact format:\n"
+        "{\n"
+        '  "questions": [\n'
+        '    {"id": "q1", "question": "Question text here?", "options": ["Option 1", "Option 2", "Option 3"]},\n'
+        '    {"id": "q2", "question": "Question text here?", "options": ["Option 1", "Option 2", "Option 3"]}\n'
+        '  ]\n'
+        "}"
     )
 
     headers = {
@@ -347,64 +356,72 @@ def get_ai_adaptive_questions(chief_complaint: str, answers: Dict[str, Any], tim
         "Content-Type": "application/json"
     }
 
-    payload = {
-        "model": "google/gemma-4-31b-it:free",
-        "messages": [
-            {"role": "system", "content": "You are a clinical intake question generator. You only return valid JSON arrays."},
-            {"role": "user", "content": prompt}
-        ],
-        "temperature": 0.2,
-        "max_tokens": 400
-    }
+    candidate_models = [
+        os.getenv("OPENROUTER_FOLLOWUP_MODEL", "nex-agi/nex-n2.5-mini:free"),
+        "openrouter/free"
+    ]
 
-    try:
-        resp = requests.post(OPENROUTER_API_URL, headers=headers, json=payload, timeout=(1.5, timeout))
-        if resp.status_code == 200:
-            content = resp.json().get("choices", [{}])[0].get("message", {}).get("content", "").strip()
-            if content.startswith("```json"):
-                content = content[7:]
-            elif content.startswith("```"):
-                content = content[3:]
-            if content.endswith("```"):
-                content = content[:-3]
-            content = content.strip()
+    for model_name in candidate_models:
+        payload = {
+            "model": model_name,
+            "messages": [
+                {"role": "system", "content": "You are a clinical intake question generator. Return valid JSON only with 'questions' array. No markdown, no thinking."},
+                {"role": "user", "content": prompt}
+            ],
+            "response_format": {"type": "json_object"},
+            "temperature": 0.2,
+            "max_tokens": 450
+        }
 
-            match = re.search(r'(\[[\s\S]*\])', content)
-            if match:
-                raw_json = match.group(1)
-                parsed = json.loads(raw_json)
-                if isinstance(parsed, list) and len(parsed) > 0:
-                    valid_qs = []
-                    for i, q in enumerate(parsed[:3]):
-                        if isinstance(q, dict) and "question" in q:
-                            valid_qs.append({
-                                "id": str(q.get("id") or f"ai_q_{i+1}"),
-                                "question": str(q["question"]),
-                                "options": [str(opt) for opt in q.get("options", []) if str(opt).strip()][:4],
-                                "source": "ai_generated"
-                            })
-                    if valid_qs:
-                        return valid_qs
-    except Exception:
-        # If API drops, times out, or fails, gracefully return None so built-in engine is used
-        pass
+        try:
+            resp = requests.post(OPENROUTER_API_URL, headers=headers, json=payload, timeout=(1.5, timeout))
+            if resp.status_code == 200:
+                choice = resp.json().get("choices", [{}])[0]
+                msg = choice.get("message", {})
+                raw = (msg.get("content") or msg.get("reasoning") or "").strip()
+                raw = raw.replace("\ufffd", "-").replace("‘", "'").replace("’", "'").replace("“", '"').replace("”", '"')
+                
+                # Check for questions wrapper or raw array
+                m = re.search(r'(\{[\s\S]*\})', raw)
+                if m:
+                    parsed = json.loads(m.group(1))
+                    q_list = parsed.get("questions") if isinstance(parsed, dict) else (parsed if isinstance(parsed, list) else None)
+                    if isinstance(q_list, list) and len(q_list) > 0:
+                        valid_qs = []
+                        for i, q in enumerate(q_list[:3]):
+                            if isinstance(q, dict) and q.get("question"):
+                                valid_qs.append({
+                                    "id": str(q.get("id") or f"ai_q_{i+1}"),
+                                    "question": str(q["question"]).strip(),
+                                    "options": [str(opt).replace("\ufffd", "-").strip() for opt in q.get("options", []) if str(opt).strip()][:4],
+                                    "source": "ai_generated"
+                                })
+                        if valid_qs:
+                            return valid_qs
+            elif resp.status_code == 429:
+                trip_circuit_breaker(180.0, "OpenRouter daily quota limit reached (50/50)")
+                return None
+        except Exception:
+            continue
 
     return None
 
 
-def get_adaptive_questions(chief_complaint: str, answers: Dict[str, Any]) -> List[Dict[str, Any]]:
+
+def get_adaptive_questions(chief_complaint: str, answers: Dict[str, Any], language: str = "en-IN") -> List[Dict[str, Any]]:
     """
     Evaluates chief complaint and current section answers.
     1. First attempts to query AI API for tailored follow-up questions.
     2. SAFETY FALLBACK: If the API key is missing, internet drops, or API gets stuck/times out,
        it seamlessly uses the user's built-in clinical engine so the screen never gets stuck.
     """
-    ai_questions = get_ai_adaptive_questions(chief_complaint, answers, timeout=2.5)
+    ai_questions = get_ai_adaptive_questions(chief_complaint, answers, timeout=4.5, language=language)
     if ai_questions:
         return ai_questions
 
     # Built-in Engine Fallback
     return get_deterministic_adaptive_questions(chief_complaint, answers)
+
 
 
 # ==============================================================================

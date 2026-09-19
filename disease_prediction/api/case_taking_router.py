@@ -59,6 +59,7 @@ class SaveSectionRequest(BaseModel):
 class AdaptiveQuestionsRequest(BaseModel):
     chief_complaint: str = ""
     answers: Dict[str, Any] = {}
+    language: Optional[str] = "en-IN"
 
 class GenerateSummaryRequest(BaseModel):
     chief_complaint: Optional[str] = None
@@ -193,11 +194,16 @@ def list_all_cases(limit: int = 50):
 @router.post("/{case_id}/adaptive-questions")
 def get_adaptive_questions_endpoint(case_id: str, payload: AdaptiveQuestionsRequest):
     """Generates adaptive, contextual follow-up questions based on patient's answers."""
+    case = db.get_clinical_case(case_id)
+    cc = payload.chief_complaint or (case.get("chief_complaint") if case else "") or ""
+    lang = getattr(payload, "language", None) or "en-IN"
     questions = engine.get_adaptive_questions(
-        chief_complaint=payload.chief_complaint,
-        answers=payload.answers
+        chief_complaint=cc,
+        answers=payload.answers,
+        language=lang
     )
     return {"case_id": case_id, "questions": questions}
+
 
 @router.post("/{case_id}/save-section")
 def save_section_endpoint(case_id: str, payload: SaveSectionRequest):

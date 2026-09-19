@@ -5,6 +5,7 @@ JSON sanitization, multi-biomarker concordance detection, and evidence-based cli
 """
 
 import os 
+import time
 import json 
 import re 
 import requests 
@@ -22,16 +23,34 @@ else :
 
 OPENROUTER_API_URL ="https://openrouter.ai/api/v1/chat/completions"
 DEFAULT_MODEL =os .getenv ("OPENROUTER_MODEL","openrouter/auto")
-SITE_URL =os .getenv ("OPENROUTER_SITE_URL","http://localhost:8000")
-APP_NAME =os .getenv ("OPENROUTER_APP_NAME","MEDLENS AI Health Report Analyzer")
+SITE_URL = os.getenv("OPENROUTER_SITE_URL", "http://localhost:8000")
+APP_NAME = os.getenv("OPENROUTER_APP_NAME", "MEDLENS AI Health Report Analyzer")
+
+_CIRCUIT_BREAKER_RESET_TIME = 0.0
+_LAST_RATE_LIMIT_REASON = ""
+
+def is_circuit_open() -> bool:
+    """Returns True if the circuit breaker is open (rate-limited), avoiding redundant failed requests."""
+    global _CIRCUIT_BREAKER_RESET_TIME
+    return time.time() < _CIRCUIT_BREAKER_RESET_TIME
+
+def trip_circuit_breaker(duration_seconds: float = 120.0, reason: str = "Rate limit reached"):
+    """Trips the circuit breaker for a duration to immediately engage built-in safety fallbacks."""
+    global _CIRCUIT_BREAKER_RESET_TIME, _LAST_RATE_LIMIT_REASON
+    _CIRCUIT_BREAKER_RESET_TIME = time.time() + duration_seconds
+    _LAST_RATE_LIMIT_REASON = reason
+
+def get_circuit_breaker_reason() -> str:
+    return _LAST_RATE_LIMIT_REASON
 
 
-def get_api_key ()->str :
+def get_api_key() -> str:
     """Retrieve OpenRouter API key from environment."""
-    key =os .getenv ("OPENROUTER_API_KEY","")
-    if not key or key .strip ()==""or "your_openrouter_api_key_here"in key :
+    key = os.getenv("OPENROUTER_API_KEY", "")
+    if not key or key.strip() == "" or "your_openrouter_api_key_here" in key:
         return ""
-    return key .strip ()
+    return key.strip()
+
 
 
 def strip_pii_from_payload (parameters :List [Dict [str ,Any ]],patient_meta :Optional [Dict [str ,Any ]]=None )->Dict [str ,Any ]:
@@ -370,6 +389,9 @@ Generate a structured clinical decision-support analysis adhering strictly to th
     seen = set()
     candidate_models = [m for m in candidate_models if m and not (m in seen or seen.add(m))]
 
+    if is_circuit_open():
+        return get_fallback_analysis(parameters, patient_meta, reason="OpenRouter daily free-tier limit reached (50/50). Using verified clinical decision engine.")
+
     last_error = None
     # Prioritize abnormal parameters in prompt if payload is large to ensure fast generation
     for cand_model in candidate_models[:2]:
@@ -392,6 +414,10 @@ Generate a structured clinical decision-support analysis adhering strictly to th
                         if "patterns" in parsed and "possible_conditions" not in parsed:
                             parsed["possible_conditions"] = parsed["patterns"]
                         return enforce_clinical_guardrails(parsed, parameters, patient_meta)
+            elif resp.status_code == 429:
+                trip_circuit_breaker(180.0, "OpenRouter daily quota limit reached (50/50)")
+                last_error = f"HTTP 429: {resp.text[:120]}"
+                break
             else:
                 last_error = f"HTTP {resp.status_code}: {resp.text[:120]}"
         except Exception as e:
@@ -399,6 +425,7 @@ Generate a structured clinical decision-support analysis adhering strictly to th
             continue
 
     return get_fallback_analysis(parameters, patient_meta, reason=f"AI service fast fallback engaged ({last_error or 'speed-optimized'}). Evaluated with verified clinical engine.")
+
 
 
 
