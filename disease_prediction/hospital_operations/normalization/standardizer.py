@@ -120,13 +120,23 @@ class DataStandardizer :
     @classmethod 
     def standardize_his_data (cls ,df_his :pd .DataFrame )->List [NormalizedHISRecord ]:
         """
-        Standardizes HIS Admissions and Discharges records.
+        Standardizes HIS Admissions and Discharges records with vectorized datetime conversions.
         Detects exact duplicate entries without deleting them.
         """
         records :List [NormalizedHISRecord ]=[]
         seen_admissions :Dict [Tuple [str ,str ],int ]={}
 
-        for idx ,row in df_his .iterrows ():
+        adm_col = 'admission_datetime' if 'admission_datetime' in df_his.columns else ('admitted_at' if 'admitted_at' in df_his.columns else None)
+        dis_col = 'discharge_datetime' if 'discharge_datetime' in df_his.columns else ('discharged_at' if 'discharged_at' in df_his.columns else None)
+
+        dt_adm_series = pd.to_datetime(df_his[adm_col], errors='coerce') if adm_col else pd.Series([None] * len(df_his))
+        dt_dis_series = pd.to_datetime(df_his[dis_col], errors='coerce') if dis_col else pd.Series([None] * len(df_his))
+
+        adm_strs = [dt.strftime("%Y-%m-%d %H:%M:%S") if pd.notnull(dt) else str(df_his.iloc[i].get(adm_col, '')).strip() for i, dt in enumerate(dt_adm_series)]
+        dis_strs = [dt.strftime("%Y-%m-%d %H:%M:%S") if pd.notnull(dt) else None for dt in dt_dis_series]
+
+        his_rows = df_his.to_dict('records')
+        for idx ,row in enumerate(his_rows):
             raw_pid =str (row.get ('patient_id', ''))
             canon_pid ,num_id ,_ =cls .normalize_patient_id (raw_pid )
             raw_ward =str (row.get ('ward') or row.get ('department') or 'General Ward A')
@@ -136,13 +146,8 @@ class DataStandardizer :
             raw_gender =str (row.get ('gender', 'Male' if (num_id % 2 == 0) else 'Female'))
             canon_gender =cls .normalize_gender (raw_gender )
 
-            raw_adm = row.get ('admission_datetime') or row.get ('admitted_at')
-            dt_adm =pd .to_datetime (raw_adm, errors ='coerce')
-            adm_str =dt_adm .strftime ("%Y-%m-%d %H:%M:%S")if pd .notnull (dt_adm )else str (raw_adm).strip ()
-
-            raw_dis = row.get ('discharge_datetime') or row.get ('discharged_at')
-            dt_dis =pd .to_datetime (raw_dis, errors ='coerce') if pd.notnull(raw_dis) and str(raw_dis).strip() != '' else None
-            dis_str =dt_dis .strftime ("%Y-%m-%d %H:%M:%S")if pd .notnull (dt_dis )else None 
+            adm_str = adm_strs[idx]
+            dis_str = dis_strs[idx]
             
             raw_stat = str(row.get('status', ''))
             is_active =(dis_str is None) or (raw_stat.lower() in ['admitted', 'active'])
@@ -179,12 +184,43 @@ class DataStandardizer :
     @classmethod 
     def standardize_lab_data (cls ,df_lab :pd .DataFrame )->List [NormalizedLabRecord ]:
         """
-        Standardizes Laboratory order-to-result turnaround records.
+        Standardizes Laboratory order-to-result turnaround records with high-speed vectorized parsing.
         Calculates durations in minutes and classifies delays.
         """
         records :List [NormalizedLabRecord ]=[]
 
-        for idx ,row in df_lab .iterrows ():
+        ord_col = 'ordered_at' if 'ordered_at' in df_lab.columns else ('order_datetime' if 'order_datetime' in df_lab.columns else None)
+        col_col = 'collected_at' if 'collected_at' in df_lab.columns else None
+        res_col = 'resulted_at' if 'resulted_at' in df_lab.columns else ('result_datetime' if 'result_datetime' in df_lab.columns else None)
+
+        ord_series = pd.to_datetime(df_lab[ord_col], dayfirst=True, errors='coerce') if ord_col else pd.Series([None] * len(df_lab))
+        col_series = pd.to_datetime(df_lab[col_col], dayfirst=True, errors='coerce') if col_col else ord_series
+        res_series = pd.to_datetime(df_lab[res_col], dayfirst=True, errors='coerce') if res_col else pd.Series([None] * len(df_lab))
+
+        ord_strs = [dt.strftime("%Y-%m-%d %H:%M:%S") if pd.notnull(dt) else str(df_lab.iloc[i].get(ord_col, '')) for i, dt in enumerate(ord_series)]
+        col_strs = [dt.strftime("%Y-%m-%d %H:%M:%S") if pd.notnull(dt) else str(df_lab.iloc[i].get(col_col or ord_col, '')) for i, dt in enumerate(col_series)]
+        res_strs = [dt.strftime("%Y-%m-%d %H:%M:%S") if pd.notnull(dt) else None for dt in res_series]
+
+        ord_valid = ord_series.notnull()
+        col_valid = col_series.notnull()
+        res_valid = res_series.notnull()
+
+        n_rows = len(df_lab)
+        order_to_col_mins = [
+            (col_series.iloc[i] - ord_series.iloc[i]).total_seconds() / 60.0 if (col_valid.iloc[i] and ord_valid.iloc[i]) else 0.0
+            for i in range(n_rows)
+        ]
+        col_to_res_mins = [
+            (res_series.iloc[i] - (col_series.iloc[i] if col_valid.iloc[i] else ord_series.iloc[i])).total_seconds() / 60.0 if (res_valid.iloc[i] and ord_valid.iloc[i]) else None
+            for i in range(n_rows)
+        ]
+        total_tat_mins = [
+            (res_series.iloc[i] - ord_series.iloc[i]).total_seconds() / 60.0 if (res_valid.iloc[i] and ord_valid.iloc[i]) else None
+            for i in range(n_rows)
+        ]
+
+        lab_rows = df_lab.to_dict('records')
+        for idx ,row in enumerate(lab_rows):
             order_id =str (row.get ('order_id') or row.get ('lab_order_id') or f"LAB-{idx}").strip ()
             raw_pid =str (row.get ('patient_id', ''))
             canon_pid ,num_id ,is_outpatient =cls .normalize_patient_id (raw_pid )
@@ -193,27 +229,17 @@ class DataStandardizer :
             canon_prio =cls .normalize_priority (raw_prio )
             dept =str (row.get ('department') or 'Pathology').strip ()
 
-            raw_ord = row.get ('ordered_at') or row.get ('order_datetime')
-            raw_col = row.get ('collected_at') or row.get ('order_datetime')
-            raw_res = row.get ('resulted_at') or row.get ('result_datetime')
+            ord_str = ord_strs[idx]
+            col_str = col_strs[idx]
+            res_str = res_strs[idx]
 
-            dt_ord =pd .to_datetime (raw_ord, dayfirst=True, errors ='coerce')
-            dt_col =pd .to_datetime (raw_col, dayfirst=True, errors ='coerce') if pd.notnull(raw_col) else dt_ord
-            dt_res =pd .to_datetime (raw_res, dayfirst=True, errors ='coerce') if pd .notnull (raw_res) and str(raw_res).strip() != '' else None 
+            order_to_col_min = order_to_col_mins[idx]
+            col_to_res_min = col_to_res_mins[idx]
+            total_tat_min = total_tat_mins[idx]
 
-            ord_str =dt_ord .strftime ("%Y-%m-%d %H:%M:%S")if pd .notnull (dt_ord )else str (raw_ord)
-            col_str =dt_col .strftime ("%Y-%m-%d %H:%M:%S")if pd .notnull (dt_col )else str (raw_col)
-            res_str =dt_res .strftime ("%Y-%m-%d %H:%M:%S")if pd .notnull (dt_res )else None 
-
-            order_to_col_min =(dt_col -dt_ord ).total_seconds ()/60.0 if (pd .notnull (dt_col )and pd .notnull (dt_ord ))else 0.0 
-
-            if pd .notnull (dt_res )and pd .notnull (dt_ord ):
-                col_to_res_min =(dt_res -(dt_col or dt_ord )).total_seconds ()/60.0 
-                total_tat_min =(dt_res -dt_ord ).total_seconds ()/60.0 
+            if total_tat_min is not None :
                 status ="Completed"
             else :
-                col_to_res_min =None 
-                total_tat_min =None 
                 status = str(row.get('status', 'Pending'))
 
             is_delayed =False 
@@ -255,7 +281,7 @@ class DataStandardizer :
     @classmethod 
     def standardize_bed_data (cls ,df_bed :pd .DataFrame )->List [NormalizedBedRecord ]:
         """
-        Standardizes manual Bed Occupancy logs / Bed census.
+        Standardizes manual Bed Occupancy logs / Bed census with optimized date vectorization.
         Handles both individual bed logs and daily ward summaries.
         """
         records :List [NormalizedBedRecord ]=[]
@@ -297,10 +323,15 @@ class DataStandardizer :
                 ))
             return records
 
-        for idx ,row in df_bed .iterrows ():
+        canon_dates = None
+        if 'Date' in df_bed.columns:
+            bed_dt_series = pd.to_datetime(df_bed['Date'], format="%d-%b-%y", errors='coerce')
+            canon_dates = [dt.strftime("%Y-%m-%d") if pd.notnull(dt) else str(df_bed['Date'].iloc[i]).strip() for i, dt in enumerate(bed_dt_series)]
+
+        bed_rows = df_bed.to_dict('records')
+        for idx ,row in enumerate(bed_rows):
             raw_date =str (row.get ('Date', ''))
-            dt_date =pd .to_datetime (raw_date ,format ="%d-%b-%y",errors ='coerce')
-            canon_date =dt_date .strftime ("%Y-%m-%d")if pd .notnull (dt_date )else raw_date .strip ()
+            canon_date = canon_dates[idx] if (canon_dates is not None and idx < len(canon_dates)) else raw_date.strip()
 
             raw_ward =str (row.get ('Ward', 'General Ward A'))
             canon_ward =cls .normalize_ward_name (raw_ward )

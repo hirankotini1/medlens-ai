@@ -82,7 +82,7 @@ class HospitalDataLoader :
         lab_nulls =df_lab .isnull ().sum ().to_dict ()
         lab_dups =int (df_lab .duplicated ().sum ())
         lab_date_col = 'ordered_at' if 'ordered_at' in df_lab.columns else ('order_datetime' if 'order_datetime' in df_lab.columns else df_lab.columns[0])
-        lab_dates =pd .to_datetime (df_lab [lab_date_col], errors ='coerce').dropna()
+        lab_dates =pd .to_datetime (df_lab [lab_date_col], dayfirst=True, errors ='coerce').dropna()
         lab_start =lab_dates .min ().strftime ("%Y-%m-%d")if not lab_dates .empty else None 
         lab_end =lab_dates .max ().strftime ("%Y-%m-%d")if not lab_dates .empty else None 
 
@@ -105,7 +105,7 @@ class HospitalDataLoader :
         bed_nulls =df_bed .isnull ().sum ().to_dict ()
         bed_dups =int (df_bed .duplicated ().sum ())
         bed_date_col = 'Date' if 'Date' in df_bed.columns else ('last_updated' if 'last_updated' in df_bed.columns else df_bed.columns[0])
-        bed_dates =pd .to_datetime (df_bed [bed_date_col], errors ='coerce').dropna()
+        bed_dates =pd .to_datetime (df_bed [bed_date_col], format='mixed', errors ='coerce').dropna()
         bed_start =bed_dates .min ().strftime ("%Y-%m-%d")if not bed_dates .empty else None 
         bed_end =bed_dates .max ().strftime ("%Y-%m-%d")if not bed_dates .empty else None 
 
