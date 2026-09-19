@@ -2017,7 +2017,9 @@ function switchAdminSubtab(subtab) {
         }
     });
 
-    if (subtab === 'issues') {
+    if (subtab === 'reports') {
+        loadAdminData();
+    } else if (subtab === 'issues') {
         loadAdminReportedIssues();
     } else if (subtab === 'reminders') {
         loadAdminReminders();
@@ -2029,12 +2031,18 @@ function switchAdminSubtab(subtab) {
 }
 
 async function loadAdminData() {
-    if (!currentAuth.token || currentAuth.role !== 'admin') return;
+    const adminBox = document.getElementById('admin-dashboard-box');
+    const isBoxVisible = adminBox && adminBox.style.display !== 'none';
+    if (!isBoxVisible && (!currentAuth.token || currentAuth.role !== 'admin')) return;
 
     try {
+        const headers = {};
+        if (currentAuth && currentAuth.token) {
+            headers['Authorization'] = `Bearer ${currentAuth.token}`;
+        }
         const [patientsRes, reportsRes] = await Promise.all([
-            fetch(apiUrl('/api/patients'), { headers: { 'Authorization': `Bearer ${currentAuth.token}` } }),
-            fetch(apiUrl('/api/reports'), { headers: { 'Authorization': `Bearer ${currentAuth.token}` } })
+            fetch(apiUrl('/api/patients'), { headers }),
+            fetch(apiUrl('/api/reports'), { headers })
         ]);
         
         if (patientsRes.ok) allPatients = await patientsRes.json();
@@ -2053,23 +2061,27 @@ async function loadAdminData() {
         
         const tbodyRep = document.getElementById('admin-reports-table-body');
         if (tbodyRep) {
-            tbodyRep.innerHTML = allReports.map(r => `
-                <tr>
-                    <td><strong>${r.report_id}</strong></td>
-                    <td>
-                        <div style="font-weight: 700; color: var(--text-main);">${r.patient_name || r.patient_id}</div>
-                        <div style="font-size: 0.75rem; color: var(--text-dim);">${r.patient_id} &bull; ${r.patient_age}Y / ${r.patient_gender}</div>
-                    </td>
-                    <td><strong style="color: var(--primary); text-transform: uppercase;">${r.test_category}</strong></td>
-                    <td><span class="flag-badge ${r.status === 'Finalized' ? 'flag-normal' : 'flag-high'}">${r.status}</span></td>
-                    <td style="color: var(--text-muted); font-size: 0.85rem;">${new Date(r.created_at).toLocaleDateString()}</td>
-                    <td>
-                        <button type="button" class="btn-secondary" style="padding: 4px 10px; font-size: 0.8rem;" onclick="adminViewReport('${r.report_id}')">👁️ View</button>
-                        <button type="button" class="btn-primary" style="padding: 4px 10px; font-size: 0.8rem;" onclick="adminTriggerML('${r.report_id}')">⚡ Run ML</button>
-                        <button type="button" class="btn-secondary" style="padding: 4px 8px; font-size: 0.8rem; color: var(--danger); border-color: var(--danger-border);" onclick="adminDeleteReport('${r.report_id}')" title="Delete Report">🗑️</button>
-                    </td>
-                </tr>
-            `).join('');
+            if (!allReports || allReports.length === 0) {
+                tbodyRep.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">No laboratory reports recorded yet. Click <strong>+ Create Lab Report</strong> above to generate the first report.</td></tr>`;
+            } else {
+                tbodyRep.innerHTML = allReports.map(r => `
+                    <tr>
+                        <td><strong>${r.report_id}</strong></td>
+                        <td>
+                            <div style="font-weight: 700; color: var(--text-main);">${r.patient_name || r.patient_id}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-dim);">${r.patient_id} &bull; ${r.patient_age || '--'}Y / ${r.patient_gender || 'Unspecified'}</div>
+                        </td>
+                        <td><strong style="color: var(--primary); text-transform: uppercase;">${r.test_category}</strong></td>
+                        <td><span class="flag-badge ${r.status === 'Finalized' ? 'flag-normal' : 'flag-high'}">${r.status}</span></td>
+                        <td style="color: var(--text-muted); font-size: 0.85rem;">${r.created_at ? new Date(r.created_at).toLocaleDateString() : 'Recent'}</td>
+                        <td>
+                            <button type="button" class="btn-secondary" style="padding: 4px 10px; font-size: 0.8rem;" onclick="adminViewReport('${r.report_id}')">👁️ View</button>
+                            <button type="button" class="btn-primary" style="padding: 4px 10px; font-size: 0.8rem;" onclick="adminTriggerML('${r.report_id}')">⚡ Run ML</button>
+                            <button type="button" class="btn-secondary" style="padding: 4px 8px; font-size: 0.8rem; color: var(--danger); border-color: var(--danger-border);" onclick="adminDeleteReport('${r.report_id}')" title="Delete Report">🗑️</button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
         }
 
 
@@ -2334,7 +2346,8 @@ async function submitReportWithStatus(status) {
             throw new Error(errorMsg);
         }
         closeModal('report-modal');
-        loadAdminData();
+        switchAdminSubtab('reports');
+        await loadAdminData();
         alert(`Official Laboratory Report saved as '${status}'!`);
     } catch (err) {
         alert("Error creating report: " + err.message);

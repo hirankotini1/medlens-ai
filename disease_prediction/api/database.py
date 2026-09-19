@@ -902,35 +902,49 @@ def get_all_reports ()->List [Dict [str ,Any ]]:
     conn =get_db_connection ()
     cursor =conn .cursor ()
     cursor .execute ("""
-    SELECT r.*, p.name as patient_name, p.gender as patient_gender, p.age as patient_age
+    SELECT r.*, 
+           COALESCE(p.name, 'Patient ' || r.patient_id) as patient_name, 
+           COALESCE(p.gender, 'Unspecified') as patient_gender, 
+           COALESCE(p.age, '--') as patient_age
     FROM lab_reports r
-    JOIN patients p ON r.patient_id = p.patient_id
+    LEFT JOIN patients p ON TRIM(LOWER(r.patient_id)) = TRIM(LOWER(p.patient_id))
     ORDER BY r.id DESC
     """)
     rows =[]
     for r in cursor .fetchall ():
         item =dict (r )
-        item ['report_data']=json .loads (item ['report_data'])
+        try:
+            item ['report_data']=json .loads (item ['report_data'])
+        except Exception:
+            item ['report_data'] = {}
         rows .append (item )
     conn .close ()
     return rows 
 
 def get_reports_by_patient (patient_id :str )->List [Dict [str ,Any ]]:
+    if not patient_id:
+        return []
     conn =get_db_connection ()
     cursor =conn .cursor ()
     candidate_ids = normalize_patient_id(patient_id)
     placeholders = ','.join(['?'] * len(candidate_ids))
     cursor .execute (f"""
-    SELECT r.*, p.name as patient_name, p.gender as patient_gender, p.age as patient_age
+    SELECT r.*, 
+           COALESCE(p.name, 'Patient ' || r.patient_id) as patient_name, 
+           COALESCE(p.gender, 'Unspecified') as patient_gender, 
+           COALESCE(p.age, '--') as patient_age
     FROM lab_reports r
-    JOIN patients p ON r.patient_id = p.patient_id
+    LEFT JOIN patients p ON TRIM(LOWER(r.patient_id)) = TRIM(LOWER(p.patient_id))
     WHERE r.patient_id IN ({placeholders})
     ORDER BY r.id DESC
     """, candidate_ids)
     rows =[]
     for r in cursor .fetchall ():
         item =dict (r )
-        item ['report_data']=json .loads (item ['report_data'])
+        try:
+            item ['report_data']=json .loads (item ['report_data'])
+        except Exception:
+            item ['report_data'] = {}
         rows .append (item )
     conn .close ()
     return rows 
