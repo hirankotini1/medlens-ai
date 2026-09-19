@@ -174,35 +174,39 @@ h1, h2, h3, h4, h5, h6,
 }
 
 .nav-btn, .nav-btn:visited {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    color: #334155;
-    padding: 5px 10px;
-    border-radius: 8px;
-    font-weight: 700;
-    font-size: 0.80rem;
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    color: #0f2744;
+    padding: 6px 12px;
+    border-radius: 9px;
+    font-weight: 800;
+    font-size: 0.81rem;
+    letter-spacing: 0.03em;
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
     text-decoration: none;
     white-space: nowrap;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .nav-btn .material-symbols-outlined {
-    font-size: 16px;
+    font-size: 17px;
     vertical-align: middle;
 }
 
 .nav-btn:hover {
     transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(15, 23, 42, 0.08);
 }
 
 .nav-btn.active {
-    font-weight: 800;
-    border-width: 1.5px;
+    font-weight: 900;
+    border-width: 2px;
     transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.25);
 }
 
 /* 1. Home - Clinical Sky Blue Highlight */
@@ -8831,20 +8835,20 @@ input:focus, select:focus, textarea:focus {
 /* ========================================================================== */
 
 .ml-hero-section {
-    background: linear-gradient(135deg, #f8fafc 0%, #edf6fc 50%, #f1f8fc 100%);
-    border-radius: 24px;
-    padding: 36px 36px 32px;
-    margin-bottom: 28px;
-    border: 1px solid #e2e8f0;
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 30%, #f8fafc 70%, #ffffff 100%);
+    border-radius: 26px;
+    padding: 38px 40px 34px;
+    margin-bottom: 30px;
+    border: 2px solid #bae6fd;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.03);
+    box-shadow: 0 16px 40px rgba(2, 132, 199, 0.09), 0 2px 8px rgba(0, 0, 0, 0.03);
 }
 
 .ml-hero-grid {
     display: grid;
     grid-template-columns: 1.25fr 0.95fr;
-    gap: 32px;
+    gap: 36px;
     align-items: center;
 }
 
@@ -8858,83 +8862,101 @@ input:focus, select:focus, textarea:focus {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    font-size: 0.78rem;
-    font-weight: 800;
-    color: #0284c7;
+    font-size: 0.82rem;
+    font-weight: 900;
+    color: #ffffff;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    padding: 7px 18px;
+    border-radius: 9999px;
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
 }
 
 .ml-hero-title {
-    font-size: 2.75rem;
-    font-weight: 800;
+    font-size: clamp(2.3rem, 5vw, 3.2rem);
+    font-weight: 900;
     color: #0b1f3a;
-    line-height: 1.15;
+    line-height: 1.12;
     letter-spacing: -0.03em;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
+    text-transform: uppercase;
 }
 
 .ml-hero-title span {
-    color: #0284c7;
+    background: linear-gradient(135deg, #0284c7 0%, #2563eb 50%, #7c3aed 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 4px 20px rgba(37, 99, 235, 0.15);
+    display: inline-block;
 }
 
 .ml-hero-desc {
-    font-size: 1.05rem;
-    color: #475569;
-    line-height: 1.6;
-    margin-bottom: 24px;
-    max-width: 580px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #334155;
+    line-height: 1.65;
+    margin-bottom: 26px;
+    max-width: 600px;
 }
 
 .ml-hero-buttons {
     display: flex;
-    gap: 14px;
+    gap: 16px;
     align-items: center;
     flex-wrap: wrap;
     margin-bottom: 28px;
 }
 
 .ml-btn-primary {
-    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
     color: white;
-    font-weight: 700;
-    font-size: 0.95rem;
-    padding: 12px 26px;
+    font-weight: 900;
+    font-size: 0.96rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 14px 28px;
     border-radius: 12px;
     border: none;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3);
-    transition: all 0.2s ease;
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+    transition: all 0.22s ease;
 }
 
 .ml-btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(2, 132, 199, 0.4);
+    box-shadow: 0 10px 26px rgba(37, 99, 235, 0.5);
+    background: linear-gradient(135deg, #0369a1 0%, #1d4ed8 100%);
 }
 
 .ml-btn-outline {
-    background: white;
-    color: #0f2744;
-    font-weight: 700;
+    background: #ffffff;
+    color: #0284c7;
+    font-weight: 900;
     font-size: 0.95rem;
-    padding: 12px 22px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 13px 26px;
     border-radius: 12px;
-    border: 1.5px solid #cbd5e1;
+    border: 2.5px solid #0284c7;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    transition: all 0.2s ease;
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.18);
+    transition: all 0.22s ease;
 }
 
 .ml-btn-outline:hover {
-    border-color: #0284c7;
-    color: #0284c7;
-    background: #f8fafc;
+    border-color: #0369a1;
+    color: #ffffff;
+    background: #0284c7;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(2, 132, 199, 0.3);
 }
 
 .ml-stats-strip {
