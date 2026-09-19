@@ -27,15 +27,18 @@ logger = logging.getLogger(__name__)
 try:
     from disease_prediction.api.voice_service.voice_manager import get_voice_manager
     from disease_prediction.api.voice_service.language_config import SUPPORTED_LANGUAGES, get_language
+    from disease_prediction.api.voice_service.odia_service import convert_to_odia, is_odia_text
     from disease_prediction.api import database as db
 except ImportError:
     try:
         from voice_service.voice_manager import get_voice_manager
         from voice_service.language_config import SUPPORTED_LANGUAGES, get_language
+        from voice_service.odia_service import convert_to_odia, is_odia_text
         import database as db
     except ImportError:
         from api.voice_service.voice_manager import get_voice_manager
         from api.voice_service.language_config import SUPPORTED_LANGUAGES, get_language
+        from api.voice_service.odia_service import convert_to_odia, is_odia_text
         from api import database as db
 
 router = APIRouter(prefix="/api/voice", tags=["Multilingual Voice Engine"])
@@ -50,6 +53,10 @@ class SpeakRequest(BaseModel):
     text: str
     language_code: str = "en-IN"
     speed: float = 1.0  # 0.5 to 2.0
+
+
+class OdiaConvertRequest(BaseModel):
+    text: str
 
 
 class TranscriptSaveRequest(BaseModel):
@@ -214,6 +221,10 @@ async def transcribe_speech(
         transcript = vm.transcribe(audio_bytes, language_code)
 
         if transcript:
+            # If Odia was requested, ensure transcript is converted into native Odia script
+            if language_code in ("or-IN", "or", "ory-IN", "ory"):
+                transcript = convert_to_odia(transcript)
+
             return {
                 "transcript": transcript,
                 "language_code": language_code,
@@ -236,6 +247,22 @@ async def transcribe_speech(
             "language_code": language_code,
             "reason": f"STT service unavailable: {type(e).__name__}",
         })
+
+
+@router.post("/convert-odia")
+def convert_speech_to_odia(payload: OdiaConvertRequest):
+    """
+    Converts recognized speech (English phonetics, Romanized Odia, or mixed)
+    into native Odia Unicode script (ଓଡ଼ିଆ ଲିପି).
+    """
+    raw_text = payload.text or ""
+    odia_text = convert_to_odia(raw_text)
+    return {
+        "original": raw_text,
+        "odia_text": odia_text,
+        "is_odia": is_odia_text(odia_text),
+        "success": True
+    }
 
 
 @router.post("/save-transcript")

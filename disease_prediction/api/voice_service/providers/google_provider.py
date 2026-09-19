@@ -85,7 +85,14 @@ class GoogleSTTProvider:
                 transcript = self.recognizer.recognize_google(audio_data, language=target_lang)
                 if transcript and transcript.strip():
                     logger.info(f"[GoogleSTT] Transcribed ({target_lang}): {transcript}")
-                    return transcript.strip()
+                    res = transcript.strip()
+                    if language_code in ("or-IN", "or"):
+                        try:
+                            from disease_prediction.api.voice_service.odia_service import convert_to_odia
+                            res = convert_to_odia(res)
+                        except Exception:
+                            pass
+                    return res
             except sr.UnknownValueError:
                 # If target language had no match and wasn't en-IN, try Indian English fallback
                 if target_lang not in ("en-IN", "en-US"):
@@ -93,7 +100,14 @@ class GoogleSTTProvider:
                         transcript = self.recognizer.recognize_google(audio_data, language="en-IN")
                         if transcript and transcript.strip():
                             logger.info(f"[GoogleSTT] Fallback transcribed (en-IN): {transcript}")
-                            return transcript.strip()
+                            res = transcript.strip()
+                            if language_code in ("or-IN", "or"):
+                                try:
+                                    from disease_prediction.api.voice_service.odia_service import convert_to_odia
+                                    res = convert_to_odia(res)
+                                except Exception:
+                                    pass
+                            return res
                     except Exception:
                         pass
                 logger.info(f"[GoogleSTT] No recognizable speech in audio ({target_lang})")

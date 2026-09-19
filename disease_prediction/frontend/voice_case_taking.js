@@ -1265,20 +1265,25 @@ async function voiceToggleListening() {
             _voiceUpdateMicState('listening');
         },
         // onFinal: display final confirmed transcription
-        (finalText, confidence) => {
-            _voiceSession.pendingTranscript = finalText;
+        async (finalText, confidence) => {
+            let confirmedText = finalText;
+            const isOdia = (lang === 'or-IN' || lang === 'or' || _voiceSession.language === 'or-IN');
+            if (isOdia && typeof convertToOdiaScript === 'function') {
+                confirmedText = await convertToOdiaScript(finalText);
+            }
+            _voiceSession.pendingTranscript = confirmedText;
             const el = document.getElementById('voice-transcript-text');
-            if (el) el.textContent = finalText;
+            if (el) el.textContent = confirmedText;
             const box = document.getElementById('voice-transcript-box');
             if (box) box.classList.add('voice-transcript-has-content');
             const actions = document.getElementById('voice-transcript-actions');
             if (actions) actions.style.display = 'flex';
             _voiceUpdateMicState('done');
-            _voiceCheckRedFlags(finalText);
+            _voiceCheckRedFlags(confirmedText);
 
             // Pre-fill text fallback input so user can edit if desired
             const textInput = document.getElementById('voice-text-input');
-            if (textInput) textInput.value = finalText;
+            if (textInput) textInput.value = confirmedText;
         },
         // onError: handle errors gracefully
         (errorType, errorMsg) => {
@@ -1353,10 +1358,24 @@ function _voiceUpdateMicState(state) {
    ANSWER CONFIRMATION / EDITING
    ============================================================================ */
 async function voiceConfirmAnswer() {
-    const answer = _voiceSession.pendingTranscript;
+    let answer = _voiceSession.pendingTranscript;
+    const textInput = document.getElementById('voice-text-input');
+    if (textInput && textInput.value && textInput.value.trim()) {
+        answer = textInput.value.trim();
+    }
     if (!answer || !answer.trim()) {
         alert('Please speak or tap an option first.');
         return;
+    }
+
+    const lang = _voiceSession.language || 'en-IN';
+    const isOdia = (lang === 'or-IN' || lang === 'or');
+    if (isOdia && typeof convertToOdiaScript === 'function') {
+        answer = await convertToOdiaScript(answer);
+        _voiceSession.pendingTranscript = answer;
+        if (textInput) textInput.value = answer;
+        const el = document.getElementById('voice-transcript-text');
+        if (el) el.textContent = answer;
     }
 
     const currentQ = _voiceSession.currentQuestion || (_voiceSession.activeQuestions && _voiceSession.activeQuestions[_voiceSession.currentQuestionIndex]) || {};

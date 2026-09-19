@@ -21,7 +21,7 @@ const VOICE_LANGUAGES = [
     { code: 'en-IN', name: 'English', nativeName: 'English', flag: '🇬🇧', ttsLang: 'en-IN', sttLang: 'en-IN' },
     { code: 'hi-IN', name: 'Hindi', nativeName: 'हिन्दी', flag: '🇮🇳', ttsLang: 'hi-IN', sttLang: 'hi-IN' },
     { code: 'te-IN', name: 'Telugu', nativeName: 'తెలుగు', flag: '🇮🇳', ttsLang: 'te-IN', sttLang: 'te-IN' },
-    { code: 'or-IN', name: 'Odia', nativeName: 'ଓଡ଼ିଆ', flag: '🇮🇳', ttsLang: 'or-IN', sttLang: 'or-IN' },
+    { code: 'or-IN', name: 'Odia', nativeName: 'ଓଡ଼ିଆ', flag: '🇮🇳', ttsLang: 'or-IN', sttLang: 'en-IN', isOdia: true },
     { code: 'ta-IN', name: 'Tamil', nativeName: 'தமிழ்', flag: '🇮🇳', ttsLang: 'ta-IN', sttLang: 'ta-IN' },
     { code: 'kn-IN', name: 'Kannada', nativeName: 'ಕನ್ನಡ', flag: '🇮🇳', ttsLang: 'kn-IN', sttLang: 'kn-IN' },
     { code: 'ml-IN', name: 'Malayalam', nativeName: 'മലയാളം', flag: '🇮🇳', ttsLang: 'ml-IN', sttLang: 'ml-IN' },
@@ -583,9 +583,78 @@ async function voiceStartListening(languageCode, onInterim, onFinal, onError, on
                 }
             };
 
+/* ============================================================================
+   ODIA SCRIPT CONVERTER — Multitier Client & Server Translation
+   Converts English words, Romanized Odia, and mixed speech into authentic Odia script.
+   ============================================================================ */
+const CLIENT_ODIA_LEXICON = {
+    'fever': 'ଜ୍ୱର',
+    'high fever': 'ପ୍ରବଳ ଜ୍ୱର',
+    'headache': 'ମୁଣ୍ଡବିନ୍ଧା',
+    'severe headache': 'ଅସହ୍ୟ ମୁଣ୍ଡବିନ୍ଧା',
+    'chest pain': 'ଛାତିରେ ଯନ୍ତ୍ରଣା',
+    'stomach pain': 'ପେଟ ଯନ୍ତ୍ରଣା',
+    'vomiting': 'ବାନ୍ତି',
+    'nausea': 'ଅଇଁଷିଆ ଲାଗିବା',
+    'cough': 'କାଶ',
+    'cold': 'ଥଣ୍ଡା',
+    'cough and cold': 'ଥଣ୍ଡା ଏବଂ କାଶ',
+    'munda bindhuchi': 'ମୋର ମୁଣ୍ଡ ବିନ୍ଧୁଛି',
+    'petare betha': 'ପେଟରେ ଯନ୍ତ୍ରଣା',
+    'jwara': 'ଜ୍ୱର',
+    'jwar': 'ଜ୍ୱର',
+    'severe': 'ଅସହ୍ୟ ଯନ୍ତ୍ରଣା',
+    'mild': 'ସାମାନ୍ୟ କଷ୍ଟ',
+    'today': 'ଆଜି',
+    'yesterday': 'ଗତକାଲି',
+    'diabetes': 'ମଧୁମେହ (ଡାଇବେଟିସ୍)',
+    'bp': 'ରକ୍ତଚାପ (ବିପି)',
+    'none': 'ନାହିଁ',
+    'no': 'ନାହିଁ',
+};
+
+async function convertToOdiaScript(text) {
+    if (!text || !text.trim()) return text;
+    const clean = text.trim();
+    // Check if text already has Odia Unicode characters (U+0B00 to U+0B7F)
+    const odiaCharCount = (clean.match(/[\u0B00-\u0B7F]/g) || []).length;
+    if (odiaCharCount >= Math.max(2, clean.length * 0.3)) {
+        return clean;
+    }
+
+    try {
+        const endpoint = (typeof apiUrl === 'function') ? apiUrl('/api/voice/convert-odia') : '/api/voice/convert-odia';
+        const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: clean }),
+            signal: AbortSignal.timeout(6000)
+        });
+        if (res.ok) {
+            const data = await res.json();
+            if (data && data.odia_text && data.odia_text.trim()) {
+                console.info('[VoiceService] Converted to Odia script:', data.odia_text);
+                return data.odia_text.trim();
+            }
+        }
+    } catch (e) {
+        console.warn('[VoiceService] Odia API conversion error, using client lexicon:', e);
+    }
+
+    // Client-side lexicon fallback
+    const lower = clean.toLowerCase();
+    for (const [k, v] of Object.entries(CLIENT_ODIA_LEXICON)) {
+        if (lower.includes(k)) {
+            return v;
+        }
+    }
+    return clean;
+}
+window.convertToOdiaScript = convertToOdiaScript;
+
             // onend fires ONCE when recognition stops (either naturally or via .stop())
             // This is the single, guaranteed delivery point.
-            recognition.onend = () => {
+            recognition.onend = async () => {
                 _clearSilenceTimer();
                 _voiceIsListening = false;
                 _voiceActiveRecognition = null;
@@ -593,8 +662,13 @@ async function voiceStartListening(languageCode, onInterim, onFinal, onError, on
                 if (_delivered) return; // Already delivered (e.g. from onerror)
                 _delivered = true;
 
-                const text = _sessionTranscript.trim();
+                let text = _sessionTranscript.trim();
                 if (text) {
+                    const isOdiaSession = (languageCode === 'or-IN' || languageCode === 'or' || languageCode === 'Odia' || (langConfig && langConfig.isOdia));
+                    if (isOdiaSession) {
+                        if (onStatus) onStatus('converting', '⏳ Converting to Odia (ଓଡ଼ିଆ ଲିପିରେ ରୂପାନ୍ତର ହେଉଛି...)');
+                        text = await convertToOdiaScript(text);
+                    }
                     if (onStatus) onStatus('done', `✅ Captured: "${text}"`);
                     if (onFinal) onFinal(text, 0.95);
                 } else {
@@ -636,7 +710,11 @@ async function voiceStopListening() {
             if (_currentOnStatus) _currentOnStatus('converting', '⏳ Transcribing...');
             const result = await _transcribeAudioWithServer(wavBlob, _currentLanguageCode);
             if (result.transcript && result.transcript.trim()) {
-                const tr = result.transcript.trim();
+                let tr = result.transcript.trim();
+                const isOdiaSession = (_currentLanguageCode === 'or-IN' || _currentLanguageCode === 'or' || _currentLanguageCode === 'Odia');
+                if (isOdiaSession) {
+                    tr = await convertToOdiaScript(tr);
+                }
                 if (_currentOnStatus) _currentOnStatus('done', `✅ Voice converted: "${tr}"`);
                 if (_currentOnFinal) _currentOnFinal(tr, 0.92);
                 if (_currentOnEnd) _currentOnEnd();

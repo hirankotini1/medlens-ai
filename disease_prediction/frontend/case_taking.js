@@ -584,6 +584,7 @@ async function startVoiceRecording() {
     let targetLangCode = 'en-IN';
     if (lang === 'Hindi' || lang === 'hi-IN') targetLangCode = 'hi-IN';
     else if (lang === 'Telugu' || lang === 'te-IN') targetLangCode = 'te-IN';
+    else if (lang === 'Odia' || lang === 'or-IN' || lang === 'or') targetLangCode = 'or-IN';
     else if (typeof lang === 'string' && lang.includes('-')) targetLangCode = lang;
 
     if (typeof voiceStartListening !== 'function') {
@@ -600,11 +601,15 @@ async function startVoiceRecording() {
             }
         },
         // onFinal: commit the final recognized text
-        (finalText) => {
+        async (finalText) => {
             if (textarea && finalText) {
-                textarea.value = _caseVoiceBaseText ? `${_caseVoiceBaseText} ${finalText}` : finalText;
+                let textToCommit = finalText;
+                if ((targetLangCode === 'or-IN' || lang === 'Odia' || lang === 'or') && typeof convertToOdiaScript === 'function') {
+                    textToCommit = await convertToOdiaScript(finalText);
+                }
+                textarea.value = _caseVoiceBaseText ? `${_caseVoiceBaseText} ${textToCommit}` : textToCommit;
                 if (typeof showToast === 'function') {
-                    showToast(`✓ Voice: "${finalText}"`, 'success');
+                    showToast(`✓ Voice: "${textToCommit}"`, 'success');
                 }
             }
             // voiceService calls onEnd next which resets UI — don't call stopVoiceRecording() here
