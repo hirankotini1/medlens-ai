@@ -1241,11 +1241,11 @@
             
             <div class="card">
                 <div class="card-header">
-                    <h2><span class="material-symbols-outlined" style="color: var(--primary);">smart_toy</span> AI Health Report Analyzer</h2>
-                    <span class="ml-badge">OpenRouter AI &bull; Multi-Model Decision Support</span>
+                    <h2><span class="material-symbols-outlined" style="color: var(--primary);">biotech</span> Clinical Laboratory Report Analyzer</h2>
+                    <span class="ml-badge">Clinical Decision Support &bull; Multi-Panel ML Engine</span>
                 </div>
                 <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 18px; line-height: 1.6;">
-                    Upload a complete pathology or diagnostic health report to extract structured laboratory biomarkers, review parameters, and receive a comprehensive clinical AI analysis synthesized with validated machine-learning models.
+                    Upload diagnostic blood panels or pathology reports (PDF, CSV, Image) to extract structured biomarkers, cross-reference physiological reference intervals, and evaluate validated clinical ML risk models.
                 </p>
 
                 
@@ -2059,29 +2059,49 @@
                 <div id="pane-role-receptionist" class="staff-role-pane">
                     
                     
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 20px;">
-                        <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
-                            <div style="font-size: 0.74rem; font-weight: 800; color: #64748b; text-transform: uppercase;">Patients Today</div>
-                            <div style="font-size: 1.8rem; font-weight: 900; color: #0284c7; margin-top: 2px;" id="rec-stat-patients-today">18</div>
-                            <div style="font-size: 0.74rem; color: #64748b;">Outpatient + Admissions</div>
-                        </div>
-                        <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
-                            <div style="font-size: 0.74rem; font-weight: 800; color: #64748b; text-transform: uppercase;">New Registrations</div>
-                            <div style="font-size: 1.8rem; font-weight: 900; color: #16a34a; margin-top: 2px;" id="rec-stat-new-reg">12</div>
-                            <div style="font-size: 0.74rem; color: #64748b;">Created in Supabase</div>
-                        </div>
-                        <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <div style="font-size: 0.74rem; font-weight: 800; color: #64748b; text-transform: uppercase;">Available Beds</div>
-                                <span id="rec-quota-badge" class="badge" style="display: none; background: #fee2e2; color: #991b1b; font-weight: 800;">🔴 BED QUOTA FULL</span>
+                    <!-- 4 RECEPTIONIST KPI TILES (Screen 6) -->
+                    <div class="ml-kpi-grid">
+                        <div class="ml-kpi-card" style="background: #f0f9ff; border-color: #bae6fd;">
+                            <div class="ml-kpi-icon" style="background: #0284c7; color: white;">
+                                <span class="material-symbols-outlined">groups</span>
                             </div>
-                            <div style="font-size: 1.8rem; font-weight: 900; color: #0f172a; margin-top: 2px;" id="rec-stat-avail-beds">38</div>
-                            <div style="font-size: 0.74rem; color: #64748b;">Across 98 Hospital Beds</div>
+                            <div>
+                                <div class="ml-kpi-num" id="rec-stat-patients-today">18</div>
+                                <div class="ml-kpi-label">Patients Today (OP + IP)</div>
+                            </div>
                         </div>
-                        <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
-                            <div style="font-size: 0.74rem; font-weight: 800; color: #64748b; text-transform: uppercase;">Today's Appointments</div>
-                            <div style="font-size: 1.8rem; font-weight: 900; color: #7c3aed; margin-top: 2px;" id="rec-stat-appointments">24</div>
-                            <div style="font-size: 0.74rem; color: #64748b;">Scheduled OP Visits</div>
+
+                        <div class="ml-kpi-card" style="background: #ecfdf5; border-color: #a7f3d0;">
+                            <div class="ml-kpi-icon" style="background: #10b981; color: white;">
+                                <span class="material-symbols-outlined">person_add</span>
+                            </div>
+                            <div>
+                                <div class="ml-kpi-num" id="rec-stat-new-reg">12</div>
+                                <div class="ml-kpi-label">New Registrations (ERP)</div>
+                            </div>
+                        </div>
+
+                        <div class="ml-kpi-card" style="background: #faf5ff; border-color: #e9d5ff;">
+                            <div class="ml-kpi-icon" style="background: #8b5cf6; color: white;">
+                                <span class="material-symbols-outlined">hotel</span>
+                            </div>
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div class="ml-kpi-num" id="rec-stat-avail-beds">38</div>
+                                    <span id="rec-quota-badge" class="badge" style="display: none; background: #fee2e2; color: #991b1b; font-weight: 800; font-size: 0.68rem;">BED QUOTA FULL</span>
+                                </div>
+                                <div class="ml-kpi-label">Available Beds (of 98)</div>
+                            </div>
+                        </div>
+
+                        <div class="ml-kpi-card" style="background: #fefce8; border-color: #fef08a;">
+                            <div class="ml-kpi-icon" style="background: #eab308; color: white;">
+                                <span class="material-symbols-outlined">calendar_month</span>
+                            </div>
+                            <div>
+                                <div class="ml-kpi-num" id="rec-stat-appointments" style="color: #a16207;">24</div>
+                                <div class="ml-kpi-label" style="color: #854d0e;">Scheduled OP Consults</div>
+                            </div>
                         </div>
                     </div>
 
@@ -2496,6 +2516,106 @@
                             <div class="ops-metric-sub">Cross-Source Discrepancies Audited</div>
                             <div class="ops-metric-trend text-orange">
                                 <span class="material-symbols-outlined" style="font-size: 16px;">rule</span> All Rules Applied
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BED OCCUPANCY & REAL-TIME OPERATIONAL ALERTS (Screen 9) -->
+                    <div class="ml-ops-overview-grid">
+                        <!-- Bed Occupancy Gauge Card -->
+                        <div class="ml-card-clinical">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                <div>
+                                    <div style="font-size: 0.76rem; color: #0284c7; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Inpatient Capacity</div>
+                                    <h3 style="font-size: 1.15rem; font-weight: 800; color: #0f2744; margin: 2px 0 0 0;">Bed Occupancy Status</h3>
+                                </div>
+                                <span class="badge" style="background: #e0f2fe; color: #0369a1; font-weight: 800;">LIVE TELEMETRY</span>
+                            </div>
+
+                            <div class="ml-bed-radial-wrap">
+                                <div class="ml-bed-radial">
+                                    <svg viewBox="0 0 140 140">
+                                        <circle class="circle-bg" cx="70" cy="70" r="60"></circle>
+                                        <circle class="circle-progress" cx="70" cy="70" r="60"></circle>
+                                    </svg>
+                                    <div class="ml-bed-radial-text">
+                                        <div class="pct">78%</div>
+                                        <div class="lbl">Occupied</div>
+                                    </div>
+                                </div>
+                                <div class="ml-ward-bars">
+                                    <div class="ml-ward-item">
+                                        <div class="ml-ward-header">
+                                            <span>General Ward</span>
+                                            <span style="color: #0284c7;">24 / 30 Beds</span>
+                                        </div>
+                                        <div class="ml-ward-bar-track">
+                                            <div class="ml-ward-bar-fill" style="width: 80%; background: #0284c7;"></div>
+                                        </div>
+                                    </div>
+                                    <div class="ml-ward-item">
+                                        <div class="ml-ward-header">
+                                            <span>Maternity Ward</span>
+                                            <span style="color: #10b981;">16 / 20 Beds</span>
+                                        </div>
+                                        <div class="ml-ward-bar-track">
+                                            <div class="ml-ward-bar-fill" style="width: 80%; background: #10b981;"></div>
+                                        </div>
+                                    </div>
+                                    <div class="ml-ward-item">
+                                        <div class="ml-ward-header">
+                                            <span>Intensive Care (ICU)</span>
+                                            <span style="color: #ef4444;">12 / 15 Beds</span>
+                                        </div>
+                                        <div class="ml-ward-bar-track">
+                                            <div class="ml-ward-bar-fill" style="width: 80%; background: #ef4444;"></div>
+                                        </div>
+                                    </div>
+                                    <div class="ml-ward-item">
+                                        <div class="ml-ward-header">
+                                            <span>Private Deluxe</span>
+                                            <span style="color: #8b5cf6;">8 / 10 Beds</span>
+                                        </div>
+                                        <div class="ml-ward-bar-track">
+                                            <div class="ml-ward-bar-fill" style="width: 80%; background: #8b5cf6;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Operational Alerts Card -->
+                        <div class="ml-card-clinical">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                <div>
+                                    <div style="font-size: 0.76rem; color: #dc2626; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Hospital Operations Feed</div>
+                                    <h3 style="font-size: 1.15rem; font-weight: 800; color: #0f2744; margin: 2px 0 0 0;">Real-Time Clinical Alerts</h3>
+                                </div>
+                                <span class="badge" style="background: #fef2f2; color: #b91c1c; font-weight: 800;">3 NEW</span>
+                            </div>
+
+                            <div class="ml-alerts-list">
+                                <div class="ml-alert-item warning">
+                                    <span class="material-symbols-outlined" style="font-size: 20px; color: #d97706;">warning</span>
+                                    <div>
+                                        <strong>ICU Ward Near Capacity:</strong> Occupancy reached 80% threshold (12/15 beds). Triage coordinator notified.
+                                        <div style="font-size: 0.74rem; color: #b45309; margin-top: 2px;">12 mins ago &bull; Inpatient Management</div>
+                                    </div>
+                                </div>
+                                <div class="ml-alert-item success">
+                                    <span class="material-symbols-outlined" style="font-size: 20px; color: #16a34a;">check_circle</span>
+                                    <div>
+                                        <strong>Supabase ERP Reconciled:</strong> 1,046 admissions &amp; lab records synchronized with zero data conflicts.
+                                        <div style="font-size: 0.74rem; color: #15803d; margin-top: 2px;">24 mins ago &bull; Automated Pipeline</div>
+                                    </div>
+                                </div>
+                                <div class="ml-alert-item info">
+                                    <span class="material-symbols-outlined" style="font-size: 20px; color: #0284c7;">biotech</span>
+                                    <div>
+                                        <strong>Pathology Batch Ingestion:</strong> 14 outpatient blood panels successfully processed by ML classifier.
+                                        <div style="font-size: 0.74rem; color: #0369a1; margin-top: 2px;">45 mins ago &bull; Lab Order Queue</div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -3920,6 +4040,26 @@
             </div>
 
             <div class="voice-ct-wrapper">
+
+                <!-- 4-STEP CLINICAL INTAKE STEPPER (Screen 7) -->
+                <div class="ml-case-stepper" id="ml-voice-case-stepper" style="max-width: 650px; margin: 0 auto 28px auto;">
+                    <div class="ml-step-node active" id="stepper-step-1">
+                        <div class="ml-step-circle">1</div>
+                        <span class="ml-step-label">Language</span>
+                    </div>
+                    <div class="ml-step-node" id="stepper-step-2">
+                        <div class="ml-step-circle">2</div>
+                        <span class="ml-step-label">Consent &amp; ABHA</span>
+                    </div>
+                    <div class="ml-step-node" id="stepper-step-3">
+                        <div class="ml-step-circle">3</div>
+                        <span class="ml-step-label">Mic Test</span>
+                    </div>
+                    <div class="ml-step-node" id="stepper-step-4">
+                        <div class="ml-step-circle">4</div>
+                        <span class="ml-step-label">Clinical Interview</span>
+                    </div>
+                </div>
 
                 <!-- ── STEP 0: LANGUAGE SELECTION ──────────────────────────── -->
                 <div id="voice-step-language" class="voice-step-panel">

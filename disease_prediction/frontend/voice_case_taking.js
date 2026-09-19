@@ -885,6 +885,17 @@ function _voiceShowStep(stepName) {
         target = document.getElementById('voice-settings-panel');
     }
     if (target) target.style.display = 'block';
+
+    const stepMap = { 'language': 1, 'consent': 2, 'mic-test': 3, 'interview': 4, 'summary': 4 };
+    const currentStepNum = stepMap[stepName] || 1;
+    for (let i = 1; i <= 4; i++) {
+        const stepEl = document.getElementById(`stepper-step-${i}`);
+        if (stepEl) {
+            stepEl.classList.remove('active', 'completed');
+            if (i < currentStepNum) stepEl.classList.add('completed');
+            else if (i === currentStepNum) stepEl.classList.add('active');
+        }
+    }
 }
 
 // Ensure globally accessible on window for HTML button onclicks
