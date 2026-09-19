@@ -7391,20 +7391,41 @@ input:focus, select:focus, textarea:focus {
 }
 
 .voice-lang-flag {
-    font-size: 1.8rem;
-    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 28px;
+    margin-bottom: 4px;
+}
+
+.voice-lang-flag svg,
+.lang-flag-svg {
+    display: inline-block;
+    vertical-align: middle;
+    border-radius: 4px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.16);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
+    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s ease;
+}
+
+.voice-lang-card:hover .lang-flag-svg {
+    transform: scale(1.08);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.22);
 }
 
 .voice-lang-native {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     font-weight: 700;
     color: #1e293b;
     text-align: center;
+    letter-spacing: -0.01em;
 }
 
 .voice-lang-english {
-    font-size: 0.72rem;
+    font-size: 0.74rem;
     color: #64748b;
+    font-weight: 500;
 }
 
 /* CONTINUE BUTTON */

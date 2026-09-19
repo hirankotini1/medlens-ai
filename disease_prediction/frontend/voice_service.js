@@ -44,6 +44,66 @@ const VOICE_LANGUAGES = [
 ];
 
 /* ============================================================================
+   CROSS-PLATFORM SVG FLAG GENERATOR
+   Renders true graphical SVG flags across Windows, Linux, macOS, iOS, Android.
+   Resolves Windows OS font engine limitation where unicode flag emojis (🇮🇳, 🇬🇧)
+   render as raw textual regional indicator symbol codes ("IN", "GB").
+   ============================================================================ */
+function getLanguageFlagBadge(langOrCode, w = 36, h = 24) {
+    let code = '';
+    let flagEmoji = '';
+    if (typeof langOrCode === 'object' && langOrCode !== null) {
+        code = (langOrCode.code || langOrCode.country || '').toLowerCase();
+        flagEmoji = langOrCode.flag || '';
+    } else if (typeof langOrCode === 'string') {
+        if (langOrCode.includes('🇬🇧') || langOrCode === 'GB' || langOrCode === 'gb') {
+            flagEmoji = '🇬🇧';
+        } else if (langOrCode.includes('🇮🇳') || langOrCode === 'IN' || langOrCode === 'in') {
+            flagEmoji = '🇮🇳';
+        } else {
+            code = langOrCode.toLowerCase();
+        }
+    }
+
+    const isEnglishUk = code.startsWith('en') || flagEmoji === '🇬🇧' || code === 'gb' || code === 'uk';
+
+    if (isEnglishUk) {
+        // High-precision United Kingdom Union Jack SVG (St George, St Andrew, St Patrick)
+        return `<svg class="lang-flag-svg" viewBox="0 0 60 30" width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="United Kingdom Flag" style="border-radius:3px;vertical-align:middle;box-shadow:0 1px 3px rgba(0,0,0,0.18);border:1px solid rgba(0,0,0,0.12);display:inline-block;overflow:hidden;flex-shrink:0;">
+          <rect width="60" height="30" fill="#012169"/>
+          <path d="M0 0l60 30m0-30L0 30" stroke="#fff" stroke-width="6"/>
+          <path d="M0 0l60 30m0-30L0 30" stroke="#C8102E" stroke-width="2"/>
+          <path d="M30 0v30M0 15h60" stroke="#fff" stroke-width="10"/>
+          <path d="M30 0v30M0 15h60" stroke="#C8102E" stroke-width="6"/>
+        </svg>`;
+    }
+
+    // Authentic Indian Tricolor (Tiranga) with 24-spoke Ashoka Chakra
+    const cx = 18, cy = 12, r = 3.3;
+    return `<svg class="lang-flag-svg" viewBox="0 0 36 24" width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Indian National Flag" style="border-radius:3px;vertical-align:middle;box-shadow:0 1px 3px rgba(0,0,0,0.18);border:1px solid rgba(0,0,0,0.12);display:inline-block;overflow:hidden;flex-shrink:0;">
+      <rect width="36" height="8" fill="#FF9933"/>
+      <rect y="8" width="36" height="8" fill="#FFFFFF"/>
+      <rect y="16" width="36" height="8" fill="#138808"/>
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#000080" stroke-width="0.55"/>
+      <circle cx="${cx}" cy="${cy}" r="0.65" fill="#000080"/>
+      <g stroke="#000080" stroke-width="0.32">
+        <line x1="14.70" y1="12.00" x2="21.30" y2="12.00"/>
+        <line x1="18.00" y1="8.70" x2="18.00" y2="15.30"/>
+        <line x1="15.67" y1="9.67" x2="20.33" y2="14.33"/>
+        <line x1="15.67" y1="14.33" x2="20.33" y2="9.67"/>
+        <line x1="16.81" y1="8.86" x2="19.19" y2="15.14"/>
+        <line x1="19.19" y1="8.86" x2="16.81" y2="15.14"/>
+        <line x1="14.86" y1="10.81" x2="21.14" y2="13.19"/>
+        <line x1="14.86" y1="13.19" x2="21.14" y2="10.81"/>
+        <line x1="17.43" y1="8.75" x2="18.57" y2="15.25"/>
+        <line x1="18.57" y1="8.75" x2="17.43" y2="15.25"/>
+        <line x1="14.75" y1="11.43" x2="21.25" y2="12.57"/>
+        <line x1="14.75" y1="12.57" x2="21.25" y2="11.43"/>
+      </g>
+    </svg>`;
+}
+
+/* ============================================================================
    INTERNAL STATE
    ============================================================================ */
 let _voiceCurrentLanguage = 'en-IN';
@@ -737,6 +797,7 @@ window.voiceStopListening = voiceStopListening;
 window.isListening = isListening;
 window.voiceGetSupportedLanguages = voiceGetSupportedLanguages;
 window.voiceGetLanguageByCode = voiceGetLanguageByCode;
+window.getLanguageFlagBadge = getLanguageFlagBadge;
 
 /* ============================================================================
    MICROPHONE PERMISSION TEST
@@ -803,7 +864,7 @@ function onLanguageChange(langCode) {
     if (voiceLangDisplay) {
         const langConfig = voiceGetLanguageByCode(langCode);
         voiceLangDisplay.innerHTML = langConfig
-            ? `${langConfig.flag} ${langConfig.nativeName}`
+            ? `${getLanguageFlagBadge(langConfig, 20, 14)} <span style="margin-left:6px; vertical-align:middle;">${langConfig.nativeName}</span>`
             : langCode;
     }
 }

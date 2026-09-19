@@ -603,6 +603,24 @@ function launchVoiceCaseTaking() {
 }
 
 /* ============================================================================
+   CROSS-PLATFORM FLAG BADGE HELPER
+   ============================================================================ */
+function _voiceGetFlagBadge(lang, w = 36, h = 24) {
+    if (typeof getLanguageFlagBadge === 'function') {
+        return getLanguageFlagBadge(lang, w, h);
+    }
+    if (typeof window !== 'undefined' && typeof window.getLanguageFlagBadge === 'function') {
+        return window.getLanguageFlagBadge(lang, w, h);
+    }
+    const code = (typeof lang === 'object' && lang ? (lang.code || '') : String(lang || '')).toLowerCase();
+    const isUk = code.startsWith('en') || (lang && lang.flag === '🇬🇧') || code === 'gb';
+    if (isUk) {
+        return `<svg class="lang-flag-svg" viewBox="0 0 60 30" width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="UK Flag" style="border-radius:3px;vertical-align:middle;box-shadow:0 1px 3px rgba(0,0,0,0.18);border:1px solid rgba(0,0,0,0.12);display:inline-block;overflow:hidden;flex-shrink:0;"><rect width="60" height="30" fill="#012169"/><path d="M0 0l60 30m0-30L0 30" stroke="#fff" stroke-width="6"/><path d="M0 0l60 30m0-30L0 30" stroke="#C8102E" stroke-width="2"/><path d="M30 0v30M0 15h60" stroke="#fff" stroke-width="10"/><path d="M30 0v30M0 15h60" stroke="#C8102E" stroke-width="6"/></svg>`;
+    }
+    return `<svg class="lang-flag-svg" viewBox="0 0 36 24" width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Indian Flag" style="border-radius:3px;vertical-align:middle;box-shadow:0 1px 3px rgba(0,0,0,0.18);border:1px solid rgba(0,0,0,0.12);display:inline-block;overflow:hidden;flex-shrink:0;"><rect width="36" height="8" fill="#FF9933"/><rect y="8" width="36" height="8" fill="#FFFFFF"/><rect y="16" width="36" height="8" fill="#138808"/><circle cx="18" cy="12" r="3.3" fill="none" stroke="#000080" stroke-width="0.55"/><circle cx="18" cy="12" r="0.65" fill="#000080"/><g stroke="#000080" stroke-width="0.32"><line x1="14.70" y1="12.00" x2="21.30" y2="12.00"/><line x1="18.00" y1="8.70" x2="18.00" y2="15.30"/><line x1="15.67" y1="9.67" x2="20.33" y2="14.33"/><line x1="15.67" y1="14.33" x2="20.33" y2="9.67"/><line x1="16.81" y1="8.86" x2="19.19" y2="15.14"/><line x1="19.19" y1="8.86" x2="16.81" y2="15.14"/><line x1="14.86" y1="10.81" x2="21.14" y2="13.19"/><line x1="14.86" y1="13.19" x2="21.14" y2="10.81"/><line x1="17.43" y1="8.75" x2="18.57" y2="15.25"/><line x1="18.57" y1="8.75" x2="17.43" y2="15.25"/><line x1="14.75" y1="11.43" x2="21.25" y2="12.57"/><line x1="14.75" y1="12.57" x2="21.25" y2="11.43"/></g></svg>`;
+}
+
+/* ============================================================================
    LANGUAGE GRID INITIALIZATION
    ============================================================================ */
 function _voiceInitLanguageGrid() {
@@ -623,7 +641,7 @@ function _voiceInitLanguageGrid() {
         card.setAttribute('aria-label', `Select ${lang.name}`);
         card.onclick = () => voiceSelectLanguage(lang.code);
         card.innerHTML = `
-            <span class="voice-lang-flag">${lang.flag}</span>
+            <span class="voice-lang-flag">${_voiceGetFlagBadge(lang, 36, 24)}</span>
             <span class="voice-lang-native">${lang.nativeName}</span>
             <span class="voice-lang-english">${lang.name}</span>
         `;
@@ -984,7 +1002,7 @@ function _voiceInitSession() {
         ? voiceGetLanguageByCode(_voiceSession.language)
         : null;
     if (langDisplay && langConfig) {
-        langDisplay.innerHTML = `${langConfig.flag} ${langConfig.nativeName}`;
+        langDisplay.innerHTML = `${_voiceGetFlagBadge(langConfig, 20, 14)} <span style="margin-left:6px; vertical-align:middle;">${langConfig.nativeName}</span>`;
     }
 
     // Update AYUSH badge
@@ -2078,7 +2096,7 @@ function _voiceRenderSummaryHighlights() {
     const intakeDate = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
     const intakeTime = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
     const langConfig = typeof voiceGetLanguageByCode === 'function' ? voiceGetLanguageByCode(_voiceSession.language) : null;
-    const langLabel = langConfig ? `${langConfig.flag} ${langConfig.nativeName} (${langConfig.name})` : (_voiceSession.language || 'English');
+    const langLabel = langConfig ? `${_voiceGetFlagBadge(langConfig, 18, 12)} <span style="vertical-align:middle; margin-left:4px;">${langConfig.nativeName} (${langConfig.name})</span>` : (_voiceSession.language || 'English');
 
     const cc = _voiceSession.answers['chief_complaint']?.answer || 'General outpatient clinical consultation';
     const duration = _voiceSession.answers['present_illness_duration']?.answer || 'Recent onset';
@@ -2689,7 +2707,7 @@ function voiceChangeLanguage(langCode) {
     const langDisplay = document.getElementById('voice-session-lang-display');
     const langConfig = typeof voiceGetLanguageByCode === 'function' ? voiceGetLanguageByCode(langCode) : null;
     if (langDisplay && langConfig) {
-        langDisplay.innerHTML = `${langConfig.flag} ${langConfig.nativeName}`;
+        langDisplay.innerHTML = `${_voiceGetFlagBadge(langConfig, 20, 14)} <span style="margin-left:6px; vertical-align:middle;">${langConfig.nativeName}</span>`;
     }
 
     // Re-render current question in new language preserving all session state & question ID

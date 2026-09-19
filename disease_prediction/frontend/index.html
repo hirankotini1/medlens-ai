@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=20260919_v16">
+    <link rel="stylesheet" href="style.css?v=20260920_v1">
 </head>
 <body>
 
@@ -4293,7 +4293,16 @@
                             <strong>MEDLENS AI</strong> — Patient Case Taking
                         </div>
                         <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-                            <div class="voice-lang-badge" id="voice-session-lang-display">🇬🇧 English</div>
+                            <div class="voice-lang-badge" id="voice-session-lang-display" style="display:inline-flex; align-items:center; gap:6px;">
+                                <svg class="lang-flag-svg" viewBox="0 0 60 30" width="20" height="14" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="UK Flag" style="border-radius:2px;vertical-align:middle;box-shadow:0 1px 2px rgba(0,0,0,0.18);border:1px solid rgba(0,0,0,0.12);display:inline-block;overflow:hidden;flex-shrink:0;">
+                                  <rect width="60" height="30" fill="#012169"/>
+                                  <path d="M0 0l60 30m0-30L0 30" stroke="#fff" stroke-width="6"/>
+                                  <path d="M0 0l60 30m0-30L0 30" stroke="#C8102E" stroke-width="2"/>
+                                  <path d="M30 0v30M0 15h60" stroke="#fff" stroke-width="10"/>
+                                  <path d="M30 0v30M0 15h60" stroke="#C8102E" stroke-width="6"/>
+                                </svg>
+                                <span>English</span>
+                            </div>
                             <span id="voice-ayush-badge" class="voice-ayush-badge" style="display:none; font-size:0.75rem; font-weight:800; padding:4px 10px; border-radius:999px; background:#fef3c7; color:#92400e; border:1px solid #fcd34d;">🌿 AYUSH</span>
                             <button type="button" class="voice-small-btn" id="voice-ayush-toggle-btn" onclick="voiceToggleAyushMode()" title="Toggle AYUSH Assessment">
                                 🌿 AYUSH Mode
@@ -4531,9 +4540,9 @@
         </section><!-- end view-voice-case-taking -->
     </main>
 
-    <script src="app.js?v=20260919_v18"></script>
-    <script src="voice_service.js?v=20260919_v16"></script>
-    <script src="case_taking.js?v=20260919_v16"></script>
-    <script src="voice_case_taking.js?v=20260919_v16"></script>
+    <script src="app.js?v=20260920_v1"></script>
+    <script src="voice_service.js?v=20260920_v1"></script>
+    <script src="case_taking.js?v=20260920_v1"></script>
+    <script src="voice_case_taking.js?v=20260920_v1"></script>
 </body>
 </html>
