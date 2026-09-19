@@ -215,3 +215,28 @@ def test_06_doctor_console_review_and_signoff():
     assert case["status"] == "confirmed"
     assert "Rheumatoid factor" in case["doctor_notes"]
     assert case["doctor_id"] == "Dr. A. K. Mehta (Clinical Consultant)"
+
+
+def test_07_adaptive_questions_ai_and_fallback_engine():
+    from unittest.mock import patch
+    from disease_prediction.api import case_taking_engine as ce
+
+    # 1. Built-in engine returns predefined clinical questions
+    fb_questions = ce.get_deterministic_adaptive_questions("Severe chest pain radiating to left arm", {})
+    assert len(fb_questions) > 0
+    assert any("chest pain" in q["question"].lower() or "onset" in q["question"].lower() for q in fb_questions)
+
+    # 2. When API is unavailable or times out, get_adaptive_questions seamlessly falls back to built-in engine
+    with patch("disease_prediction.api.case_taking_engine.get_ai_adaptive_questions", return_value=None):
+        res = ce.get_adaptive_questions("Severe chest pain radiating to left arm", {})
+        assert len(res) > 0
+        assert res == fb_questions
+
+    # 3. When API succeeds, returns AI generated questions with options
+    mock_ai_qs = [
+        {"id": "ai_q1", "question": "Does the pain get worse with deep breathing?", "options": ["Yes", "No"], "source": "ai_generated"}
+    ]
+    with patch("disease_prediction.api.case_taking_engine.get_ai_adaptive_questions", return_value=mock_ai_qs):
+        res = ce.get_adaptive_questions("Severe chest pain radiating to left arm", {})
+        assert res == mock_ai_qs
+
