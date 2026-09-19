@@ -390,87 +390,91 @@
         
         <section id="view-patient" class="section-view">
             
-            <div class="subpage-division-banner patient-banner">
-                <span style="display: flex; align-items: center; gap: 8px;">
-                    <span class="material-symbols-outlined" style="font-size: 18px;">person</span> <strong>PATIENT CARE DIVISION</strong> &bull; Confidential Patient Services &amp; Lab Report Retrieval
-                </span>
-                <span style="font-size: 0.74rem; background: #ffffff; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--primary-border); color: var(--primary); font-weight: 700;">
-                    🔒 Protected by Receipt PIN
-                </span>
-            </div>
-
-            
-            <!-- SCREEN 3: PATIENT PORTAL LOGIN -->
-            <div id="patient-login-container" style="max-width: 900px; margin: 30px auto; background: white; border-radius: 24px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 12px 36px rgba(15, 23, 42, 0.06); display: grid; grid-template-columns: 1fr 1.2fr;">
-                <!-- Left side: Value proposition -->
-                <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); padding: 36px; display: flex; flex-direction: column; justify-content: space-between; border-right: 1px solid #bae6fd;">
-                    <div>
-                        <div style="display: inline-flex; align-items: center; gap: 6px; background: white; padding: 4px 12px; border-radius: 999px; font-size: 0.74rem; font-weight: 800; color: #0284c7; margin-bottom: 16px;">
-                            <span>🔐</span> Secure Patient Access
-                        </div>
-                        <h2 style="font-size: 2rem; font-weight: 800; color: #0c4a6e; line-height: 1.2; margin-bottom: 12px;">
-                            Your Health Journey <br><span style="color: #0284c7;">Starts Here</span>
-                        </h2>
-                        <p style="font-size: 0.92rem; color: #475569; line-height: 1.6; margin-bottom: 24px;">
-                            Access your certified lab reports, review doctor care directives, and engage with multilingual AI clinical case taking.
-                        </p>
-                        <div style="display: flex; flex-direction: column; gap: 14px;">
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <span class="material-symbols-outlined" style="color: #0284c7; font-size: 20px;">verified_user</span>
-                                <div style="font-size: 0.85rem; color: #1e293b; font-weight: 600;">Secure &amp; Private — HIPAA-compliant encryption</div>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <span class="material-symbols-outlined" style="color: #0284c7; font-size: 20px;">receipt_long</span>
-                                <div style="font-size: 0.85rem; color: #1e293b; font-weight: 600;">Easy Access — Digital reports available 24/7</div>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <span class="material-symbols-outlined" style="color: #0284c7; font-size: 20px;">psychology</span>
-                                <div style="font-size: 0.85rem; color: #1e293b; font-weight: 600;">Clinical AI Insights — Plain language explanations</div>
-                            </div>
-                        </div>
+            <!-- SCREEN 3: PATIENT PORTAL SIGN-IN -->
+            <div id="patient-login-container" style="max-width: 460px; margin: 36px auto; background: #ffffff; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05), 0 8px 10px -6px rgba(15, 23, 42, 0.03); padding: 36px 32px;">
+                
+                <!-- Hospital Crest & Header -->
+                <div style="text-align: center; margin-bottom: 24px;">
+                    <div style="width: 52px; height: 52px; border-radius: 14px; background: #f0f9ff; border: 1.5px solid #bae6fd; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 12px; color: #0284c7;">
+                        <span class="material-symbols-outlined" style="font-size: 28px;">medical_services</span>
                     </div>
-                    <div style="font-size: 0.76rem; color: #64748b; margin-top: 24px;">
-                        Need assistance? Ask at the reception desk or call hospital support.
-                    </div>
+                    <div style="font-size: 0.72rem; font-weight: 800; color: #0284c7; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px;">Medicover Patient Services</div>
+                    <h2 style="font-size: 1.55rem; font-weight: 800; color: #0f2744; margin: 0 0 6px 0; letter-spacing: -0.01em;">Patient Portal Sign In</h2>
+                    <p style="font-size: 0.85rem; color: #64748b; margin: 0; line-height: 1.45;">Enter your Patient ID and Security PIN from your receipt slip to access your medical records.</p>
                 </div>
 
-                <!-- Right side: Login Form -->
-                <div style="padding: 36px 40px; display: flex; flex-direction: column; justify-content: center;">
-                    <div style="text-align: center; margin-bottom: 24px;">
-                        <h3 style="font-size: 1.45rem; font-weight: 800; color: #0f2744;">Patient Portal</h3>
-                        <p style="font-size: 0.84rem; color: #64748b; margin-top: 4px;">Login using your Patient ID and Security PIN</p>
+                <!-- Form Fields -->
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                    <div class="form-group" style="margin: 0;">
+                        <label style="font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 6px; display: block;">
+                            Patient ID <span style="color: #ef4444;">*</span>
+                        </label>
+                        <div style="position: relative;">
+                            <span class="material-symbols-outlined" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 20px; pointer-events: none;">badge</span>
+                            <input type="text" id="patient-id-input" class="search-input" placeholder="e.g. PAT-1001 or MCH-0009999" style="width: 100%; padding: 12px 14px 12px 42px; border-radius: 10px; border: 1.5px solid #cbd5e1; font-size: 0.92rem; font-weight: 600; color: #0f2744; background: #ffffff;" autocomplete="username">
+                        </div>
                     </div>
 
-                    <div style="display: flex; flex-direction: column; gap: 14px;">
-                        <div class="form-group">
-                            <label style="font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 4px; display: block;">Patient ID</label>
-                            <div style="position: relative;">
-                                <input type="text" id="patient-id-input" class="search-input" placeholder="e.g. PAT-1001" style="width: 100%; padding: 11px 14px; border-radius: 10px; border: 1.5px solid #cbd5e1; font-size: 0.9rem;" autocomplete="username">
-                            </div>
+                    <div class="form-group" style="margin: 0;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <label style="font-size: 0.82rem; font-weight: 700; color: #334155; margin: 0;">
+                                Security PIN <span style="color: #ef4444;">*</span>
+                            </label>
+                            <span style="font-size: 0.75rem; color: #64748b; display: inline-flex; align-items: center; gap: 3px;">
+                                <span class="material-symbols-outlined" style="font-size: 14px; color: #0284c7;">receipt_long</span> On receipt slip
+                            </span>
                         </div>
-                        <div class="form-group">
-                            <label style="font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 4px; display: block;">Security PIN</label>
-                            <div style="position: relative;">
-                                <input type="password" id="patient-pin-input" class="search-input" placeholder="e.g. 123456" style="width: 100%; padding: 11px 14px; border-radius: 10px; border: 1.5px solid #cbd5e1; font-size: 0.9rem;" autocomplete="current-password">
-                            </div>
+                        <div style="position: relative;">
+                            <span class="material-symbols-outlined" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 20px; pointer-events: none;">lock</span>
+                            <input type="password" id="patient-pin-input" class="search-input" placeholder="e.g. 123456" style="width: 100%; padding: 12px 42px 12px 42px; border-radius: 10px; border: 1.5px solid #cbd5e1; font-size: 0.92rem; font-weight: 600; color: #0f2744; background: #ffffff;" autocomplete="current-password">
+                            <button type="button" onclick="togglePinVisibility()" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #94a3b8; padding: 0; display: flex; align-items: center;" title="Toggle PIN visibility">
+                                <span class="material-symbols-outlined" id="pin-visibility-icon" style="font-size: 20px;">visibility</span>
+                            </button>
                         </div>
-                        <button type="button" class="ml-btn-primary" style="width: 100%; justify-content: center; padding: 13px; font-size: 0.95rem; margin-top: 6px;" onclick="handlePatientLogin()">
-                            <span>Access My Health Record</span> <span class="material-symbols-outlined" style="font-size: 18px;">arrow_forward</span>
+                    </div>
+
+                    <button type="button" class="ml-btn-primary" style="width: 100%; justify-content: center; padding: 13px; font-size: 0.96rem; font-weight: 700; border-radius: 10px; background: linear-gradient(135deg, #0284c7, #0369a1); box-shadow: 0 4px 14px rgba(2, 132, 199, 0.25); margin-top: 4px;" onclick="handlePatientLogin()">
+                        <span>Sign In to Health Record</span>
+                        <span class="material-symbols-outlined" style="font-size: 18px;">arrow_forward</span>
+                    </button>
+                </div>
+
+                <!-- Registration & PIN Help Links -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px; padding-top: 14px; border-top: 1px solid #f1f5f9; font-size: 0.82rem;">
+                    <a href="javascript:void(0)" onclick="openPatientRegistrationModal()" style="color: #0284c7; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                        <span class="material-symbols-outlined" style="font-size: 16px;">person_add</span> Register as New Patient
+                    </a>
+                    <a href="javascript:void(0)" onclick="alert('Your Security PIN is the 6-digit access code printed on your laboratory receipt or appointment confirmation slip (e.g. PIN-001 or 123456). If you cannot find your PIN, please contact hospital reception.');" style="color: #64748b; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                        <span class="material-symbols-outlined" style="font-size: 15px;">help_outline</span> Where is my PIN?
+                    </a>
+                </div>
+
+                <!-- Quick 1-Click Demo Profiles -->
+                <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #f1f5f9;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span style="font-size: 0.72rem; color: #64748b; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">
+                            ⚡ Quick 1-Click Demo Fill:
+                        </span>
+                        <button type="button" class="btn-secondary" style="padding: 2px 8px; font-size: 0.72rem; border-radius: 6px;" onclick="loadPublicPatients()" title="Refresh patient list">
+                            <span class="material-symbols-outlined" style="font-size: 13px; vertical-align: middle;">sync</span> Refresh
                         </button>
                     </div>
+                    <div id="patient-quick-login-grid" style="display: flex; flex-direction: column; gap: 6px;"></div>
+                </div>
 
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px; font-size: 0.82rem;">
-                        <a href="javascript:void(0)" onclick="openPatientRegistrationModal()" style="color: #0284c7; font-weight: 700; text-decoration: none;">New Patient? Register here →</a>
-                        <span style="color: #94a3b8;">🔒 Receipt PIN</span>
-                    </div>
-
-                    <div style="margin-top: 24px; padding-top: 18px; border-top: 1px solid #f1f5f9;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                            <span style="font-size: 0.74rem; color: #64748b; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Quick Demo Patients:</span>
-                            <button type="button" class="btn-secondary" style="padding: 2px 8px; font-size: 0.72rem;" onclick="loadPublicPatients()"><span>🔄</span> Refresh</button>
-                        </div>
-                        <div id="patient-quick-login-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 6px;"></div>
-                    </div>
+                <!-- Security Trust Footer -->
+                <div style="display: flex; justify-content: center; align-items: center; gap: 14px; margin-top: 22px; padding-top: 14px; border-top: 1px solid #f1f5f9; font-size: 0.74rem; color: #64748b; flex-wrap: wrap;">
+                    <span style="display: inline-flex; align-items: center; gap: 4px;">
+                        <span class="material-symbols-outlined" style="font-size: 14px; color: #10b981;">lock</span> HIPAA Encrypted
+                    </span>
+                    <span style="color: #cbd5e1;">•</span>
+                    <span style="display: inline-flex; align-items: center; gap: 4px;">
+                        <span class="material-symbols-outlined" style="font-size: 14px; color: #0284c7;">verified</span> ABDM &amp; ABHA Ready
+                    </span>
+                    <span style="color: #cbd5e1;">•</span>
+                    <span style="display: inline-flex; align-items: center; gap: 4px;">
+                        <span class="material-symbols-outlined" style="font-size: 14px; color: #8b5cf6;">health_and_safety</span> Official EHR
+                    </span>
                 </div>
             </div>
 

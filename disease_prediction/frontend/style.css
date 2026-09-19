@@ -9283,6 +9283,14 @@ input:focus, select:focus, textarea:focus {
     color: #0284c7;
 }
 
+/* PATIENT PORTAL LOGIN ENHANCEMENTS */
+#patient-login-container input:focus {
+    border-color: #0284c7 !important;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15) !important;
+    outline: none !important;
+}
+
+
 
 
 

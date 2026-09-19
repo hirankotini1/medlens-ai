@@ -483,7 +483,7 @@ function renderPatientPortalQuickButtons(patients) {
     const container = document.getElementById('patient-quick-login-grid');
     if (!container) return;
     if (!patients || patients.length === 0) {
-        container.innerHTML = `<div style="font-size: 0.8rem; color: #94a3b8; padding: 6px;">No registered patients found. Register via button above.</div>`;
+        container.innerHTML = `<div style="font-size: 0.78rem; color: #94a3b8; padding: 6px; text-align: center;">No registered patients found.</div>`;
         return;
     }
 
@@ -511,23 +511,38 @@ function renderPatientPortalQuickButtons(patients) {
         }
     } catch (e) {}
 
-    // Show up to 8 recent patients with prominent quick-login cards
-    const displayList = list.slice(0, 8);
+    // Show 3 clean, sleek 1-click accounts
+    const displayList = list.slice(0, 3);
     container.innerHTML = displayList.map(p => {
-        const isNew = p.is_local_new || (p.created_at && (new Date() - new Date(p.created_at) < 86400000 * 3));
         const safeName = (typeof escapeHtml === 'function') ? escapeHtml(p.name) : p.name;
         return `
-        <button type="button" class="btn-secondary" style="font-size: 0.82rem; padding: 10px 14px; text-align: left; border: 1.5px solid ${isNew ? '#059669' : '#bae6fd'}; background: ${isNew ? '#f0fdf4' : '#f8fafc'}; border-radius: 10px; cursor: pointer; transition: all 0.2s ease; display: flex; flex-direction: column; gap: 3px; box-shadow: ${isNew ? '0 2px 8px rgba(5,150,105,0.15)' : 'none'};" onclick="fillPatientCreds('${p.patient_id}', '${p.pin_hint}')">
-            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                <span style="font-weight: 800; color: ${isNew ? '#059669' : '#0284c7'}; font-size: 0.88rem;">${p.patient_id}</span>
-                ${isNew ? '<span style="font-size: 0.65rem; background: #10b981; color: white; padding: 2px 7px; border-radius: 999px; font-weight: 800; letter-spacing: 0.04em;">NEW</span>' : ''}
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.2s ease;" onclick="fillPatientCreds('${p.patient_id}', '${p.pin_hint}')" onmouseover="this.style.borderColor='#0284c7'; this.style.background='#f0f9ff';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.background='#f8fafc';">
+            <div style="display: flex; align-items: center; gap: 8px; overflow: hidden;">
+                <span class="material-symbols-outlined" style="font-size: 18px; color: #0284c7; flex-shrink: 0;">person</span>
+                <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    <strong style="color: #0f2744; font-size: 0.83rem;">${safeName}</strong>
+                    <span style="color: #64748b; font-size: 0.74rem;">(${p.patient_id})</span>
+                </div>
             </div>
-            <div style="color: #1e293b; font-weight: 700; font-size: 0.85rem;">${safeName} <span style="font-weight: 500; color: #64748b; font-size: 0.76rem;">(${p.gender}, ${p.age}Y)</span></div>
-            <div style="font-size: 0.74rem; color: #475569; margin-top: 2px;">Receipt PIN: <strong style="color: #0284c7; font-size: 0.8rem;">${p.pin_hint}</strong></div>
-        </button>
+            <span style="font-size: 0.72rem; color: #0284c7; font-weight: 700; background: #e0f2fe; padding: 2px 8px; border-radius: 6px; white-space: nowrap; flex-shrink: 0;">Fill &bull; ${p.pin_hint} →</span>
+        </div>
         `;
     }).join('');
 }
+
+function togglePinVisibility() {
+    const input = document.getElementById('patient-pin-input');
+    const icon = document.getElementById('pin-visibility-icon');
+    if (!input || !icon) return;
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.textContent = 'visibility_off';
+    } else {
+        input.type = 'password';
+        icon.textContent = 'visibility';
+    }
+}
+window.togglePinVisibility = togglePinVisibility;
 
 
 
