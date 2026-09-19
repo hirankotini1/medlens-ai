@@ -97,7 +97,7 @@
                             <button type="button" class="ml-btn-primary" onclick="document.getElementById('ml-roles-gateway').scrollIntoView({behavior: 'smooth'})">
                                 <span>Get Started</span> <span class="material-symbols-outlined" style="font-size: 18px;">arrow_forward</span>
                             </button>
-                            <button type="button" class="ml-btn-outline" onclick="launchVoiceCaseTaking()">
+                            <button type="button" class="ml-btn-outline" onclick="openFeatureInNewTab('voice-case-taking')">
                                 <span class="material-symbols-outlined" style="font-size: 18px; color: #0284c7;">mic</span>
                                 <span>Try Voice Case-Taking</span>
                             </button>
@@ -562,7 +562,7 @@
                                 <p style="margin: 0; font-size: 0.82rem; color: #475569;">Prepare a physician-ready clinical case sheet with voice input, medical documents, and adaptive questions before your doctor consultation.</p>
                             </div>
                         </div>
-                        <button type="button" class="btn-primary" style="background: linear-gradient(135deg, #059669, #047857); font-weight: 800; padding: 10px 20px; font-size: 0.88rem; box-shadow: 0 4px 12px rgba(5,150,105,0.3);" onclick="launchVoiceCaseTaking()">
+                        <button type="button" class="btn-primary" style="background: linear-gradient(135deg, #059669, #047857); font-weight: 800; padding: 10px 20px; font-size: 0.88rem; box-shadow: 0 4px 12px rgba(5,150,105,0.3);" onclick="openFeatureInNewTab('voice-case-taking')">
                             <span class="material-symbols-outlined" style="font-size: 18px;">mic</span> Start AI Case Taking →
                         </button>
                     </div>
@@ -2750,7 +2750,6 @@
                 </div>
             </div>
         </section>
-    </main>
 
     
     <div id="patient-modal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(4px); z-index: 200; align-items: center; justify-content: center;">
@@ -4435,9 +4434,9 @@
         </section><!-- end view-voice-case-taking -->
     </main>
 
-    <script src="app.js?v=20260919_v15"></script>
-    <script src="voice_service.js?v=20260919_v15"></script>
-    <script src="case_taking.js?v=20260919_v15"></script>
-    <script src="voice_case_taking.js?v=20260919_v15"></script>
+    <script src="app.js?v=20260919_v16"></script>
+    <script src="voice_service.js?v=20260919_v16"></script>
+    <script src="case_taking.js?v=20260919_v16"></script>
+    <script src="voice_case_taking.js?v=20260919_v16"></script>
 </body>
 </html>

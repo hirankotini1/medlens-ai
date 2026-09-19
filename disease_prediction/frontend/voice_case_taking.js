@@ -566,6 +566,11 @@ let _voiceSession = {
    ENTRY POINT — called from nav button
    ============================================================================ */
 function launchVoiceCaseTaking() {
+    try {
+        localStorage.setItem('medlens_active_view', 'voice-case-taking');
+        sessionStorage.setItem('nexus_active_view', 'voice-case-taking');
+    } catch (e) {}
+
     // Restore auth state
     if (typeof restoreSessionAuth === 'function') restoreSessionAuth();
 
@@ -1381,7 +1386,6 @@ async function voiceConfirmAnswer() {
     const currentQ = _voiceSession.currentQuestion || (_voiceSession.activeQuestions && _voiceSession.activeQuestions[_voiceSession.currentQuestionIndex]) || {};
     const qKey = currentQ.id || currentQ.question_id || currentQ.key || `turn_${(_voiceSession.turnCount || 0) + 1}`;
     const qSection = currentQ.section || 'Clinical History';
-    const lang = _voiceSession.language || 'en-IN';
     const qText = (typeof currentQ.text === 'string' ? currentQ.text : currentQ.question?.[lang] || currentQ.question?.['en-IN'] || qKey);
 
     _voiceSession.answers[qKey] = {
