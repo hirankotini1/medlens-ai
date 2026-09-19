@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=20260919_v14">
+    <link rel="stylesheet" href="style.css?v=20260919_v15">
 </head>
 <body>
 
@@ -64,7 +64,119 @@
                 <option value="en-IN" selected>English</option>
             </select>
         </nav>
+
+        <!-- Modern Mobile Actions (Visible on small screens) -->
+        <div class="mobile-nav-actions">
+            <button type="button" class="mobile-book-btn" onclick="openPatientRegistrationModal()" title="Book Appointment">
+                <span class="material-symbols-outlined" style="font-size: 17px;">calendar_month</span>
+                <span>Book</span>
+            </button>
+            <button type="button" class="mobile-menu-toggle" id="mobile-menu-toggle" onclick="toggleMobileNavDrawer()" aria-label="Open navigation menu">
+                <span class="material-symbols-outlined" id="mobile-menu-icon" style="font-size: 24px;">menu</span>
+            </button>
+        </div>
     </header>
+
+    <!-- MODERN CLINICAL MOBILE NAVIGATION DRAWER -->
+    <div class="mobile-nav-backdrop" id="mobile-nav-backdrop" onclick="closeMobileNavDrawer()"></div>
+    <aside class="mobile-nav-drawer" id="mobile-nav-drawer" aria-label="Mobile Clinical Navigation">
+        <div class="mobile-drawer-header">
+            <div class="mobile-drawer-brand">
+                <span class="material-symbols-outlined" style="font-size: 24px; color: var(--primary);">biotech</span>
+                <div>
+                    <div style="font-weight: 800; font-size: 1.05rem; color: var(--primary); letter-spacing: -0.02em;">MEDLENS <span style="color: var(--mc-blue-light);">AI</span></div>
+                    <div style="font-size: 0.62rem; color: var(--text-dim); font-weight: 700; text-transform: uppercase;">Medicover Clinical EHR</div>
+                </div>
+            </div>
+            <button type="button" class="mobile-drawer-close" onclick="closeMobileNavDrawer()" aria-label="Close menu">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <div class="mobile-drawer-body">
+            <!-- Fast Book Appointment CTA -->
+            <button type="button" class="mobile-drawer-book-cta" onclick="closeMobileNavDrawer(); openPatientRegistrationModal();">
+                <span class="material-symbols-outlined">calendar_month</span>
+                <span>Book Patient Appointment</span>
+                <span class="material-symbols-outlined" style="font-size: 16px; margin-left: auto;">arrow_forward</span>
+            </button>
+
+            <div class="mobile-drawer-section-label">CLINICAL PORTALS</div>
+            <div class="mobile-drawer-links">
+                <a href="?view=home" target="_blank" rel="noopener noreferrer" class="mobile-drawer-link" onclick="closeMobileNavDrawer()">
+                    <span class="drawer-link-icon home-bg"><span class="material-symbols-outlined">dashboard</span></span>
+                    <div class="drawer-link-info">
+                        <span class="drawer-link-title">Home Dashboard</span>
+                        <span class="drawer-link-desc">Overview, quick access &amp; health pearls</span>
+                    </div>
+                </a>
+                <a href="?view=admin" target="_blank" rel="noopener noreferrer" class="mobile-drawer-link" onclick="closeMobileNavDrawer()">
+                    <span class="drawer-link-icon doctor-bg"><span class="material-symbols-outlined">stethoscope</span></span>
+                    <div class="drawer-link-info">
+                        <span class="drawer-link-title">Doctor Console</span>
+                        <span class="drawer-link-desc">EHR validation, clinical triage &amp; review</span>
+                    </div>
+                </a>
+                <a href="?view=patient" target="_blank" rel="noopener noreferrer" class="mobile-drawer-link" onclick="closeMobileNavDrawer()">
+                    <span class="drawer-link-icon patient-bg"><span class="material-symbols-outlined">description</span></span>
+                    <div class="drawer-link-info">
+                        <span class="drawer-link-title">Patient Portal</span>
+                        <span class="drawer-link-desc">Certified lab reports &amp; timeline</span>
+                    </div>
+                </a>
+                <a href="?view=operations" target="_blank" rel="noopener noreferrer" class="mobile-drawer-link" onclick="closeMobileNavDrawer()">
+                    <span class="drawer-link-icon staff-bg"><span class="material-symbols-outlined">badge</span></span>
+                    <div class="drawer-link-info">
+                        <span class="drawer-link-title">Staff Operations</span>
+                        <span class="drawer-link-desc">Inpatient admissions &amp; live bed tracker</span>
+                    </div>
+                </a>
+            </div>
+
+            <div class="mobile-drawer-section-label">AI INTELLIGENCE SUITE</div>
+            <div class="mobile-drawer-links">
+                <a href="?view=voice-case-taking" target="_blank" rel="noopener noreferrer" class="mobile-drawer-link featured" onclick="closeMobileNavDrawer()">
+                    <span class="drawer-link-icon voice-bg"><span class="material-symbols-outlined">mic</span></span>
+                    <div class="drawer-link-info">
+                        <span class="drawer-link-title">Voice Case Taking</span>
+                        <span class="drawer-link-desc">23 languages • Voice, touch &amp; OCR</span>
+                    </div>
+                    <span class="drawer-chip-badge">SIH</span>
+                </a>
+                <a href="?view=analyzer" target="_blank" rel="noopener noreferrer" class="mobile-drawer-link" onclick="closeMobileNavDrawer()">
+                    <span class="drawer-link-icon analyzer-bg"><span class="material-symbols-outlined">analytics</span></span>
+                    <div class="drawer-link-info">
+                        <span class="drawer-link-title">AI Lab Analyzer</span>
+                        <span class="drawer-link-desc">Instant document OCR &amp; biomarkers</span>
+                    </div>
+                </a>
+                <a href="?view=symptoms" target="_blank" rel="noopener noreferrer" class="mobile-drawer-link" onclick="closeMobileNavDrawer()">
+                    <span class="drawer-link-icon symptoms-bg"><span class="material-symbols-outlined">psychology</span></span>
+                    <div class="drawer-link-info">
+                        <span class="drawer-link-title">Symptoms AI</span>
+                        <span class="drawer-link-desc">Symptom checker &amp; differential insight</span>
+                    </div>
+                </a>
+                <a href="?view=sandbox" target="_blank" rel="noopener noreferrer" class="mobile-drawer-link" onclick="closeMobileNavDrawer()">
+                    <span class="drawer-link-icon sandbox-bg"><span class="material-symbols-outlined">query_stats</span></span>
+                    <div class="drawer-link-info">
+                        <span class="drawer-link-title">ML Sandbox</span>
+                        <span class="drawer-link-desc">Interactive predictive simulator</span>
+                    </div>
+                </a>
+            </div>
+
+            <div class="mobile-drawer-footer">
+                <a href="tel:1066" class="mobile-drawer-emergency">
+                    <span class="material-symbols-outlined">emergency</span>
+                    <div>
+                        <div style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700;">Medicover 24/7 Emergency</div>
+                        <div style="font-size: 1.05rem; font-weight: 900; letter-spacing: 0.05em;">Dial 1066</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </aside>
 
     
     <div id="server-status-banner" style="display: none; background: linear-gradient(135deg, #b91c1c, #dc2626); color: #ffffff; padding: 12px 20px; font-size: 0.86rem; font-weight: 600; text-align: center; justify-content: center; align-items: center; gap: 14px; box-shadow: 0 4px 14px rgba(220,38,38,0.25); z-index: 1000; position: sticky; top: 68px;">
@@ -123,7 +235,7 @@
                     </div>
 
                     <!-- Right Column: Quick Report Access Card -->
-                    <div style="background: white; border-radius: 20px; padding: 26px; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);">
+                    <div class="ml-quick-access-card" style="background: white; border-radius: 20px; padding: 26px; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);">
                         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
                             <span class="material-symbols-outlined" style="font-size: 24px; color: #0284c7;">pin</span>
                             <div>
@@ -3326,37 +3438,6 @@
             </div>
         </div>
     </section>
-
-    
-    
-    
-    
-    <nav class="mobile-bottom-nav" id="mobile-bottom-bar" aria-label="Mobile Navigation">
-        <a href="?view=home" target="_blank" rel="noopener noreferrer" class="mob-nav-btn active" id="mob-tab-home" aria-label="Home Dashboard">
-            <span class="material-symbols-outlined">dashboard</span>
-            <span class="mob-nav-label">Home</span>
-        </a>
-        <a href="?view=operations" target="_blank" rel="noopener noreferrer" class="mob-nav-btn" id="mob-tab-operations" aria-label="Hospital Operations">
-            <span class="material-symbols-outlined">domain</span>
-            <span class="mob-nav-label">Operations</span>
-        </a>
-        <a href="?view=patient" target="_blank" rel="noopener noreferrer" class="mob-nav-btn" id="mob-tab-patient" aria-label="Patient Portal">
-            <span class="material-symbols-outlined">person</span>
-            <span class="mob-nav-label">Patient</span>
-        </a>
-        <a href="?view=analyzer" target="_blank" rel="noopener noreferrer" class="mob-nav-btn" id="mob-tab-analyzer" aria-label="AI Lab Analyzer">
-            <span class="material-symbols-outlined">analytics</span>
-            <span class="mob-nav-label">Analyzer</span>
-        </a>
-        <a href="?view=symptoms" target="_blank" rel="noopener noreferrer" class="mob-nav-btn" id="mob-tab-symptoms" aria-label="Symptoms AI">
-            <span class="material-symbols-outlined">psychology</span>
-            <span class="mob-nav-label">Symptoms</span>
-        </a>
-        <a href="?view=admin" target="_blank" rel="noopener noreferrer" class="mob-nav-btn" id="mob-tab-admin" aria-label="Doctor Console">
-            <span class="material-symbols-outlined">stethoscope</span>
-            <span class="mob-nav-label">Doctor</span>
-        </a>
-    </nav>
 
         
         

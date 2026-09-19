@@ -554,7 +554,43 @@ function togglePinVisibility() {
 }
 window.togglePinVisibility = togglePinVisibility;
 
+function toggleMobileNavDrawer() {
+    const drawer = document.getElementById('mobile-nav-drawer');
+    const backdrop = document.getElementById('mobile-nav-backdrop');
+    if (!drawer || !backdrop) return;
+    if (drawer.classList.contains('open')) {
+        closeMobileNavDrawer();
+    } else {
+        openMobileNavDrawer();
+    }
+}
+
+function openMobileNavDrawer() {
+    const drawer = document.getElementById('mobile-nav-drawer');
+    const backdrop = document.getElementById('mobile-nav-backdrop');
+    const icon = document.getElementById('mobile-menu-icon');
+    if (drawer) drawer.classList.add('open');
+    if (backdrop) backdrop.classList.add('open');
+    if (document.body) document.body.style.overflow = 'hidden';
+    if (icon) icon.textContent = 'close';
+}
+
+function closeMobileNavDrawer() {
+    const drawer = document.getElementById('mobile-nav-drawer');
+    const backdrop = document.getElementById('mobile-nav-backdrop');
+    const icon = document.getElementById('mobile-menu-icon');
+    if (drawer) drawer.classList.remove('open');
+    if (backdrop) backdrop.classList.remove('open');
+    if (document.body) document.body.style.overflow = '';
+    if (icon) icon.textContent = 'menu';
+}
+
+window.toggleMobileNavDrawer = toggleMobileNavDrawer;
+window.openMobileNavDrawer = openMobileNavDrawer;
+window.closeMobileNavDrawer = closeMobileNavDrawer;
+
 function openFeatureInNewTab(viewName) {
+    closeMobileNavDrawer();
     if (!viewName) return;
     try {
         const baseUrl = window.location.href.split('#')[0].split('?')[0];
@@ -570,6 +606,7 @@ function openFeatureInNewTab(viewName) {
 window.openFeatureInNewTab = openFeatureInNewTab;
 
 function switchView(viewName) {
+    closeMobileNavDrawer();
     try {
         localStorage.setItem('medlens_active_view', viewName);
         sessionStorage.setItem('nexus_active_view', viewName);
