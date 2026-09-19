@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=20260919_v11">
+    <link rel="stylesheet" href="style.css?v=20260919_v12">
 </head>
 <body>
 
@@ -55,44 +55,14 @@
                 <span class="material-symbols-outlined">badge</span> Staff Operations
             </button>
 
-            
-            <div class="header-right-actions">
-                <div class="header-action-top-row">
-                    
-                    <div class="lang-selector-wrapper">
-                        <select id="global-lang-select" class="lang-selector" onchange="onLanguageChange(this.value)" title="Select AI response language / वाणी भाषा चुनें">
-                            <option value="en-IN">English</option>
-                            <option value="hi-IN">हिन्दी (Hindi)</option>
-                            <option value="te-IN">తెలుగు (Telugu)</option>
-                            <option value="or-IN">ଓଡ଼ିଆ (Odia)</option>
-                            <option value="ta-IN">தமிழ் (Tamil)</option>
-                            <option value="kn-IN">ಕನ್ನಡ (Kannada)</option>
-                            <option value="ml-IN">മലയാളം (Malayalam)</option>
-                            <option value="bn-IN">বাংলা (Bengali)</option>
-                            <option value="mr-IN">मराठी (Marathi)</option>
-                            <option value="gu-IN">ગુજરાતી (Gujarati)</option>
-                            <option value="pa-IN">ਪੰਜਾਬੀ (Punjabi)</option>
-                            <option value="ur-IN">اردو (Urdu)</option>
-                            <option value="as-IN">অসমীয়া (Assamese)</option>
-                            <option value="ks-IN">कश्मीरी (Kashmiri)</option>
-                            <option value="ne-IN">नेपाली (Nepali)</option>
-                            <option value="kok-IN">कोंकणी (Konkani)</option>
-                            <option value="mai-IN">मैथिली (Maithili)</option>
-                            <option value="mni-IN">মৈতৈলোন্ (Manipuri)</option>
-                            <option value="brx-IN">बड़ो (Bodo)</option>
-                            <option value="doi-IN">डोगरी (Dogri)</option>
-                            <option value="sat-IN">ᱥᱟᱱᱛᱟᱲᱤ (Santali)</option>
-                            <option value="sd-IN">سنڌي (Sindhi)</option>
-                            <option value="sa-IN">संस्कृत (Sanskrit)</option>
-                        </select>
-                    </div>
+            <button type="button" class="btn-primary" onclick="openPatientRegistrationModal()" style="background: linear-gradient(135deg, #0284c7, #0369a1); padding: 6px 13px; font-size: 0.81rem; font-weight: 700; border-radius: 8px; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25); display: inline-flex; align-items: center; gap: 5px; border: none; cursor: pointer; color: white; white-space: nowrap; margin-left: 2px;" title="Register new outpatient and get appointment slip">
+                <span class="material-symbols-outlined" style="font-size: 16px;">calendar_month</span> <span class="doc-btn-text">Book Appointment</span>
+            </button>
 
-                    
-                    <button type="button" class="btn-primary" onclick="openPatientRegistrationModal()" style="background: linear-gradient(135deg, #0284c7, #0369a1); padding: 5px 12px; font-size: 0.8rem; font-weight: 700; border-radius: 8px; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25); display: inline-flex; align-items: center; gap: 4px;" title="Register new outpatient and get appointment slip">
-                        <span class="material-symbols-outlined" style="font-size: 16px;">calendar_month</span> <span class="doc-btn-text">Book Appointment</span>
-                    </button>
-                </div>
-            </div>
+            <!-- Hidden language select fallback for background JS compatibility -->
+            <select id="global-lang-select" style="display: none;" aria-hidden="true">
+                <option value="en-IN" selected>English</option>
+            </select>
         </nav>
     </header>
 
@@ -4465,9 +4435,9 @@
         </section><!-- end view-voice-case-taking -->
     </main>
 
-    <script src="app.js?v=20260919_v11"></script>
-    <script src="voice_service.js?v=20260919_v11"></script>
-    <script src="case_taking.js?v=20260919_v11"></script>
-    <script src="voice_case_taking.js?v=20260919_v11"></script>
+    <script src="app.js?v=20260919_v12"></script>
+    <script src="voice_service.js?v=20260919_v12"></script>
+    <script src="case_taking.js?v=20260919_v12"></script>
+    <script src="voice_case_taking.js?v=20260919_v12"></script>
 </body>
 </html>
