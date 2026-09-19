@@ -361,19 +361,16 @@ Generate a structured clinical decision-support analysis adhering strictly to th
     }
 
 
-    preferred_model =os .getenv ("OPENROUTER_MODEL","google/gemma-4-31b-it:free")
-    candidate_models =[
-    preferred_model ,
-    "google/gemma-4-31b-it:free",
-    "minimax/minimax-m3:free",
-    "nvidia/nemotron-3.5-lightning:free",
-    "google/gemma-4-26b-a4b-it:free",
-    "openrouter/free",
-    "openrouter/auto"
+    preferred_model = os.getenv("OPENROUTER_MODEL", "nex-agi/nex-n2.5-mini:free")
+    candidate_models = [
+        preferred_model,
+        "nex-agi/nex-n2.5-mini:free",
+        "deepseek/deepseek-v4-flash-0731:free",
+        "openrouter/free"
     ]
 
-    seen =set ()
-    candidate_models =[m for m in candidate_models if m and not (m in seen or seen .add (m ))]
+    seen = set()
+    candidate_models = [m for m in candidate_models if m and not (m in seen or seen.add(m))]
 
     last_error =None 
     for cand_model in candidate_models :

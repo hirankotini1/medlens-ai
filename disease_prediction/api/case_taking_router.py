@@ -725,6 +725,9 @@ def skip_document_request_endpoint(payload: InterviewSkipDocRequest):
     return {"status": "skipped", "request_id": payload.request_id}
 
 @router.get("/{case_id}/report.pdf")
+@router.get("/{case_id}/pdf-report")
+@router.get("/{case_id}/pdf")
+@router.get("/{case_id}/generate-pdf")
 @router.post("/{case_id}/generate-pdf")
 def get_case_report_pdf_endpoint(case_id: str):
     """
