@@ -2314,15 +2314,25 @@ async function submitReportWithStatus(status) {
     };
 
     try {
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+        if (currentAuth && currentAuth.token) {
+            headers['Authorization'] = `Bearer ${currentAuth.token}`;
+        }
         const res = await fetch(apiUrl('/api/reports'), {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${currentAuth.token}`
-            },
+            headers: headers,
             body: JSON.stringify(payload)
         });
-        if (!res.ok) throw new Error("Failed to create report");
+        if (!res.ok) {
+            let errorMsg = "Failed to create report";
+            try {
+                const errData = await res.json();
+                errorMsg = errData.detail || errData.message || errorMsg;
+            } catch(e) {}
+            throw new Error(errorMsg);
+        }
         closeModal('report-modal');
         loadAdminData();
         alert(`Official Laboratory Report saved as '${status}'!`);

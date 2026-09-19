@@ -29,3 +29,5 @@ live_webhook_url.txt
 local.properties
 *.apk
 .idea/
+scratch/
+

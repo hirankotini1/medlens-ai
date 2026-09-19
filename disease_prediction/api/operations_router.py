@@ -28,6 +28,37 @@ def get_operations_overview (force_refresh :bool =False ):
         return overview .model_dump ()if hasattr (overview ,'model_dump')else overview .dict ()
     except Exception as e :
         raise HTTPException (status_code =500 ,detail =f"Failed to generate operations overview: {str (e )}")
+    
+@router .get ("/supabase/health", tags =["Hospital Operations"])
+def check_supabase_health ():
+    """Checks all active connections and table schemas in Supabase PostgreSQL."""
+    try :
+        from disease_prediction .hospital_operations .supabase_client import SupabaseHospitalClient ,SUPABASE_HOST ,SUPABASE_PORT ,SUPABASE_USER ,SUPABASE_DBNAME 
+        conn =SupabaseHospitalClient .get_connection ()
+        cur =conn .cursor ()
+        tables =['hospital_beds','patient_admissions','lab_order_to_result','billing_invoices','staff_users','his_admissions_discharges','bed_occupancy_manual','reconciliation_conflicts_audit']
+        table_counts ={}
+        for t in tables :
+            try :
+                cur .execute (f"SELECT COUNT(*) FROM {t };")
+                table_counts [t ]=cur .fetchone ()[0 ]
+            except Exception as e :
+                table_counts [t ]=f"Error: {str (e )}"
+                conn .rollback ()
+        conn .close ()
+        return {
+            "status":"connected",
+            "database":"Supabase PostgreSQL",
+            "host":SUPABASE_HOST ,
+            "port":SUPABASE_PORT ,
+            "dbname":SUPABASE_DBNAME ,
+            "table_counts":table_counts 
+        }
+    except Exception as e :
+        return {
+            "status":"disconnected",
+            "error":str (e )
+        }
 
 
 @router .get ("/quality")
