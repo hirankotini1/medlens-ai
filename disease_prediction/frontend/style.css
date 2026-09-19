@@ -173,7 +173,7 @@ h1, h2, h3, h4, h5, h6,
     flex-wrap: nowrap;
 }
 
-.nav-btn {
+.nav-btn, .nav-btn:visited {
     background: #f8fafc;
     border: 1px solid #e2e8f0;
     color: #334155;
@@ -206,7 +206,7 @@ h1, h2, h3, h4, h5, h6,
 }
 
 /* 1. Home - Clinical Sky Blue Highlight */
-#tab-home {
+#tab-home, #tab-home:visited {
     background: #f0f9ff;
     border-color: #bae6fd;
     color: #0369a1;
@@ -220,7 +220,7 @@ h1, h2, h3, h4, h5, h6,
 }
 
 /* 2. Doctor Console - Stethoscope Emerald Highlight */
-#tab-admin {
+#tab-admin, #tab-admin:visited {
     background: #f0fdf4;
     border-color: #bbf7d0;
     color: #15803d;
@@ -234,7 +234,7 @@ h1, h2, h3, h4, h5, h6,
 }
 
 /* 3. Patient Portal - Medical Royal Blue Highlight */
-#tab-patient {
+#tab-patient, #tab-patient:visited {
     background: #eff6ff;
     border-color: #bfdbfe;
     color: #1d4ed8;
@@ -248,7 +248,7 @@ h1, h2, h3, h4, h5, h6,
 }
 
 /* 4. AI Case Taking - Mint Green Highlight */
-#tab-voice-case-taking {
+#tab-voice-case-taking, #tab-voice-case-taking:visited {
     background: #ecfdf5;
     border-color: #a7f3d0;
     color: #047857;
@@ -262,7 +262,7 @@ h1, h2, h3, h4, h5, h6,
 }
 
 /* 5. AI Analyzer - Diagnostic Purple Highlight */
-#tab-analyzer {
+#tab-analyzer, #tab-analyzer:visited {
     background: #faf5ff;
     border-color: #e9d5ff;
     color: #6d28d9;
@@ -276,7 +276,7 @@ h1, h2, h3, h4, h5, h6,
 }
 
 /* 6. Symptoms AI - Clinical Rose Highlight */
-#tab-symptoms {
+#tab-symptoms, #tab-symptoms:visited {
     background: #fff1f2;
     border-color: #fecdd3;
     color: #be123c;
@@ -290,7 +290,7 @@ h1, h2, h3, h4, h5, h6,
 }
 
 /* 7. ML Sandbox - Analytics Cyan Highlight */
-#tab-sandbox {
+#tab-sandbox, #tab-sandbox:visited {
     background: #f0fdfa;
     border-color: #99f6e4;
     color: #0f766e;
@@ -304,7 +304,7 @@ h1, h2, h3, h4, h5, h6,
 }
 
 /* 8. Staff Operations - Hospital Staff Indigo Highlight */
-#tab-operations {
+#tab-operations, #tab-operations:visited {
     background: #eef2ff;
     border-color: #c7d2fe;
     color: #4338ca;

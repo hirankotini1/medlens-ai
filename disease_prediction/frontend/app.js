@@ -554,8 +554,12 @@ function togglePinVisibility() {
 }
 window.togglePinVisibility = togglePinVisibility;
 
-
-
+function openFeatureInNewTab(viewName) {
+    if (!viewName) return;
+    const url = window.location.origin + window.location.pathname + '?view=' + encodeURIComponent(viewName);
+    window.open(url, '_blank');
+}
+window.openFeatureInNewTab = openFeatureInNewTab;
 
 function switchView(viewName) {
     try {

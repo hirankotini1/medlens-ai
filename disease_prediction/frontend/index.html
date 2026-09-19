@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=20260919_v13">
+    <link rel="stylesheet" href="style.css?v=20260919_v14">
 </head>
 <body>
 
@@ -30,30 +30,30 @@
         </div>
 
         <nav class="nav-links">
-            <button type="button" class="nav-btn active" id="tab-home" onclick="switchView('home')">
+            <a href="?view=home" target="_blank" rel="noopener noreferrer" class="nav-btn active" id="tab-home">
                 <span class="material-symbols-outlined">dashboard</span> Home
-            </button>
-            <button type="button" class="nav-btn" id="tab-admin" onclick="switchView('admin')">
+            </a>
+            <a href="?view=admin" target="_blank" rel="noopener noreferrer" class="nav-btn" id="tab-admin">
                 <span class="material-symbols-outlined">stethoscope</span> Doctor Console
-            </button>
-            <button type="button" class="nav-btn" id="tab-patient" onclick="switchView('patient')">
+            </a>
+            <a href="?view=patient" target="_blank" rel="noopener noreferrer" class="nav-btn" id="tab-patient">
                 <span class="material-symbols-outlined">description</span> Patient Portal
-            </button>
-            <button type="button" class="nav-btn" id="tab-voice-case-taking" onclick="launchVoiceCaseTaking()" title="AI Patient Case Taking (Voice + Touch + OCR) — SIH PS 26047">
+            </a>
+            <a href="?view=voice-case-taking" target="_blank" rel="noopener noreferrer" class="nav-btn" id="tab-voice-case-taking" title="AI Patient Case Taking (Voice + Touch + OCR) — SIH PS 26047">
                 <span class="material-symbols-outlined">clinical_notes</span> AI Case Taking
-            </button>
-            <button type="button" class="nav-btn" id="tab-analyzer" onclick="switchView('analyzer')">
+            </a>
+            <a href="?view=analyzer" target="_blank" rel="noopener noreferrer" class="nav-btn" id="tab-analyzer">
                 <span class="material-symbols-outlined">analytics</span> AI Analyzer
-            </button>
-            <button type="button" class="nav-btn" id="tab-symptoms" onclick="switchView('symptoms')">
+            </a>
+            <a href="?view=symptoms" target="_blank" rel="noopener noreferrer" class="nav-btn" id="tab-symptoms">
                 <span class="material-symbols-outlined">psychology</span> Symptoms AI
-            </button>
-            <button type="button" class="nav-btn" id="tab-sandbox" onclick="switchView('sandbox')">
+            </a>
+            <a href="?view=sandbox" target="_blank" rel="noopener noreferrer" class="nav-btn" id="tab-sandbox">
                 <span class="material-symbols-outlined">query_stats</span> ML Sandbox
-            </button>
-            <button type="button" class="nav-btn" id="tab-operations" onclick="switchView('operations')" title="Hospital Staff Operations Hub &amp; Inpatient Management">
+            </a>
+            <a href="?view=operations" target="_blank" rel="noopener noreferrer" class="nav-btn" id="tab-operations" title="Hospital Staff Operations Hub &amp; Inpatient Management">
                 <span class="material-symbols-outlined">badge</span> Staff Operations
-            </button>
+            </a>
 
             <button type="button" class="btn-primary" onclick="openPatientRegistrationModal()" style="background: linear-gradient(135deg, #0284c7, #0369a1); padding: 6px 13px; font-size: 0.81rem; font-weight: 700; border-radius: 8px; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25); display: inline-flex; align-items: center; gap: 5px; border: none; cursor: pointer; color: white; white-space: nowrap; margin-left: 2px;" title="Register new outpatient and get appointment slip">
                 <span class="material-symbols-outlined" style="font-size: 16px;">calendar_month</span> <span class="doc-btn-text">Book Appointment</span>
@@ -205,7 +205,7 @@
                                 <li><span>✓</span> Track longitudinal biomarker trends</li>
                             </ul>
                         </div>
-                        <button type="button" class="ml-role-btn patient" onclick="switchView('patient')">
+                        <button type="button" class="ml-role-btn patient" onclick="openFeatureInNewTab('patient')">
                             <span>Continue as Patient</span> <span class="material-symbols-outlined">arrow_forward</span>
                         </button>
                     </div>
@@ -229,7 +229,7 @@
                                 <li><span>✓</span> Approve lab reports &amp; author digital prescriptions</li>
                             </ul>
                         </div>
-                        <button type="button" class="ml-role-btn doctor" onclick="switchView('admin')">
+                        <button type="button" class="ml-role-btn doctor" onclick="openFeatureInNewTab('admin')">
                             <span>Continue as Doctor</span> <span class="material-symbols-outlined">arrow_forward</span>
                         </button>
                     </div>
@@ -253,7 +253,7 @@
                                 <li><span>✓</span> Inpatient admission &amp; discharge workflows</li>
                             </ul>
                         </div>
-                        <button type="button" class="ml-role-btn staff" onclick="switchView('operations')">
+                        <button type="button" class="ml-role-btn staff" onclick="openFeatureInNewTab('operations')">
                             <span>Continue as Staff</span> <span class="material-symbols-outlined">arrow_forward</span>
                         </button>
                     </div>
@@ -276,7 +276,7 @@
                     </div>
                 </div>
 
-                <div class="ml-action-card analyzer" onclick="switchView('analyzer')" style="cursor: pointer;">
+                <div class="ml-action-card analyzer" onclick="openFeatureInNewTab('analyzer')" style="cursor: pointer;">
                     <div>
                         <div class="ml-action-header">
                             <span class="material-symbols-outlined" style="font-size: 26px; color: #0284c7;">biotech</span>
@@ -289,7 +289,7 @@
                     </button>
                 </div>
 
-                <div class="ml-action-card symptoms" onclick="switchView('symptoms')" style="cursor: pointer;">
+                <div class="ml-action-card symptoms" onclick="openFeatureInNewTab('symptoms')" style="cursor: pointer;">
                     <div>
                         <div class="ml-action-header">
                             <span class="material-symbols-outlined" style="font-size: 26px; color: #7c3aed;">psychology</span>
@@ -3333,30 +3333,30 @@
     
     
     <nav class="mobile-bottom-nav" id="mobile-bottom-bar" aria-label="Mobile Navigation">
-        <button type="button" class="mob-nav-btn active" id="mob-tab-home" onclick="switchView('home')" aria-label="Home Dashboard">
+        <a href="?view=home" target="_blank" rel="noopener noreferrer" class="mob-nav-btn active" id="mob-tab-home" aria-label="Home Dashboard">
             <span class="material-symbols-outlined">dashboard</span>
             <span class="mob-nav-label">Home</span>
-        </button>
-        <button type="button" class="mob-nav-btn" id="mob-tab-operations" onclick="switchView('operations')" aria-label="Hospital Operations">
+        </a>
+        <a href="?view=operations" target="_blank" rel="noopener noreferrer" class="mob-nav-btn" id="mob-tab-operations" aria-label="Hospital Operations">
             <span class="material-symbols-outlined">domain</span>
             <span class="mob-nav-label">Operations</span>
-        </button>
-        <button type="button" class="mob-nav-btn" id="mob-tab-patient" onclick="switchView('patient')" aria-label="Patient Portal">
+        </a>
+        <a href="?view=patient" target="_blank" rel="noopener noreferrer" class="mob-nav-btn" id="mob-tab-patient" aria-label="Patient Portal">
             <span class="material-symbols-outlined">person</span>
             <span class="mob-nav-label">Patient</span>
-        </button>
-        <button type="button" class="mob-nav-btn" id="mob-tab-analyzer" onclick="switchView('analyzer')" aria-label="AI Lab Analyzer">
+        </a>
+        <a href="?view=analyzer" target="_blank" rel="noopener noreferrer" class="mob-nav-btn" id="mob-tab-analyzer" aria-label="AI Lab Analyzer">
             <span class="material-symbols-outlined">analytics</span>
             <span class="mob-nav-label">Analyzer</span>
-        </button>
-        <button type="button" class="mob-nav-btn" id="mob-tab-symptoms" onclick="switchView('symptoms')" aria-label="Symptoms AI">
+        </a>
+        <a href="?view=symptoms" target="_blank" rel="noopener noreferrer" class="mob-nav-btn" id="mob-tab-symptoms" aria-label="Symptoms AI">
             <span class="material-symbols-outlined">psychology</span>
             <span class="mob-nav-label">Symptoms</span>
-        </button>
-        <button type="button" class="mob-nav-btn" id="mob-tab-admin" onclick="switchView('admin')" aria-label="Doctor Console">
+        </a>
+        <a href="?view=admin" target="_blank" rel="noopener noreferrer" class="mob-nav-btn" id="mob-tab-admin" aria-label="Doctor Console">
             <span class="material-symbols-outlined">stethoscope</span>
             <span class="mob-nav-label">Doctor</span>
-        </button>
+        </a>
     </nav>
 
         
@@ -4435,9 +4435,9 @@
         </section><!-- end view-voice-case-taking -->
     </main>
 
-    <script src="app.js?v=20260919_v13"></script>
-    <script src="voice_service.js?v=20260919_v13"></script>
-    <script src="case_taking.js?v=20260919_v13"></script>
-    <script src="voice_case_taking.js?v=20260919_v13"></script>
+    <script src="app.js?v=20260919_v14"></script>
+    <script src="voice_service.js?v=20260919_v14"></script>
+    <script src="case_taking.js?v=20260919_v14"></script>
+    <script src="voice_case_taking.js?v=20260919_v14"></script>
 </body>
 </html>
