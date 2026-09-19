@@ -415,16 +415,24 @@ const clinicalRefRanges = {
 function saveSessionAuth() {
     try {
         const payload = JSON.stringify(currentAuth);
-        localStorage.setItem('medlens_auth', payload);
+        // Store in sessionStorage only so closing the tab/window ends the patient session
+        sessionStorage.setItem('medlens_auth', payload);
         sessionStorage.setItem('nexus_auth', payload);
+        // Ensure no persistent credentials remain in localStorage
+        localStorage.removeItem('medlens_auth');
     } catch (e) {}
 }
 
 function restoreSessionAuth() {
     try {
-        const stored = localStorage.getItem('medlens_auth') || sessionStorage.getItem('nexus_auth');
+        // Always purge any stale persistent credential in localStorage from previous sessions
+        localStorage.removeItem('medlens_auth');
+        // Restore ONLY from current browser session (sessionStorage)
+        const stored = sessionStorage.getItem('medlens_auth') || sessionStorage.getItem('nexus_auth');
         if (stored) {
             currentAuth = JSON.parse(stored);
+        } else {
+            currentAuth = { role: null, token: null, patientId: null, patientName: null, patientAge: null, patientGender: null };
         }
     } catch (e) {}
 }
@@ -432,7 +440,9 @@ function restoreSessionAuth() {
 function clearSessionAuth() {
     try {
         localStorage.removeItem('medlens_auth');
+        sessionStorage.removeItem('medlens_auth');
         sessionStorage.removeItem('nexus_auth');
+        currentAuth = { role: null, token: null, patientId: null, patientName: null, patientAge: null, patientGender: null };
     } catch (e) {}
 }
 
@@ -464,12 +474,15 @@ async function checkBackendHealth(isManualRetry = false) {
 }
 
 async function loadPublicPatients() {
+    if (Array.isArray(allPatients) && allPatients.length > 0) {
+        renderPatientPortalQuickButtons(allPatients);
+    }
     try {
         const res = await fetch(apiUrl('/api/patients/public'), { cache: 'no-store' });
         if (!res.ok) return;
         const patients = await res.json();
-        renderPatientPortalQuickButtons(patients);
         allPatients = patients;
+        renderPatientPortalQuickButtons(patients);
         const banner = document.getElementById('server-status-banner');
         if (banner) banner.style.display = 'none';
     } catch (err) {
@@ -608,7 +621,6 @@ window.openFeatureInNewTab = openFeatureInNewTab;
 function switchView(viewName) {
     closeMobileNavDrawer();
     try {
-        localStorage.setItem('medlens_active_view', viewName);
         sessionStorage.setItem('nexus_active_view', viewName);
     } catch (e) {}
 
@@ -624,8 +636,7 @@ function switchView(viewName) {
     if (tabEl) tabEl.classList.add('active');
     if (mobTabEl) mobTabEl.classList.add('active');
 
-    
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo(0, 0);
 
     if (viewName === 'voice-case-taking' || viewName === 'case-taking') {
         if (typeof launchVoiceCaseTaking === 'function') {
@@ -6158,13 +6169,13 @@ async function submitTestSms(e) {
 // ---------------------------------------------------------
 async function initializeMedlensApp() {
     restoreSessionAuth();
-    await checkBackendHealth();
-    await loadPublicPatients();
+    loadPublicPatients();
+    checkBackendHealth();
 
-    // Check URL query parameter first (?view=operations/admin/patient/etc), then saved, then 'home'
+    // Check URL query parameter first (?view=operations/admin/patient/etc), then session, then 'home'
     const urlParams = new URLSearchParams(window.location.search);
     const viewFromUrl = urlParams.get('view');
-    const savedView = viewFromUrl || localStorage.getItem('medlens_active_view') || sessionStorage.getItem('nexus_active_view') || 'home';
+    const savedView = viewFromUrl || sessionStorage.getItem('nexus_active_view') || 'home';
     switchView(savedView);
 }
 
