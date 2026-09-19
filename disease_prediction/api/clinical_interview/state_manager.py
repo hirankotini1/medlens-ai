@@ -140,14 +140,20 @@ def create_initial_patient_state(
 
         # Provenance & Transcripts
         "documents": [],
+        "document_requests": [],
+        "uploaded_documents": [],
+        "skipped_document_requests": [],
         "timeline": [],
         "source_provenance": [],
         "provenance_log": [],
         "conversation_history": [],
         "conversation_turn_count": 0,
+        "patient_answer_count": 0,
         "max_turns_limit": 14,
+        "max_patient_answers": 16,
         "asked_question_ids": []
     }
+
 
 
 class PatientStateManager:
@@ -311,7 +317,86 @@ class PatientStateManager:
         return state
 
     @classmethod
+    def increment_patient_answer_count(cls, state: Dict[str, Any]) -> int:
+        """Increments and returns the discrete count of patient responses."""
+        state["patient_answer_count"] = state.get("patient_answer_count", 0) + 1
+        return state["patient_answer_count"]
+
+    @classmethod
+    def attach_document_extraction(
+        cls,
+        state: Dict[str, Any],
+        filename: str,
+        document_type: str,
+        extracted_data: Dict[str, Any],
+        confidence: float = 0.90
+    ) -> Dict[str, Any]:
+        """Integrates OCR/parsed document data into patient state with provenance."""
+        if "documents" not in state:
+            state["documents"] = []
+        if "uploaded_documents" not in state:
+            state["uploaded_documents"] = []
+
+        doc_entry = {
+            "filename": filename,
+            "document_type": document_type,
+            "extracted_data": extracted_data,
+            "confidence": confidence,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+        state["documents"].append(doc_entry)
+        state["uploaded_documents"].append(doc_entry)
+
+        # 1. Update medications if present
+        meds = extracted_data.get("medications", [])
+        if isinstance(meds, list) and meds:
+            if "medications" not in state:
+                state["medications"] = []
+            for m in meds:
+                m_name = m if isinstance(m, str) else (m.get("name") or str(m))
+                if m_name:
+                    existing_med_names = [
+                        (x.get("name") if isinstance(x, dict) else str(x)).lower()
+                        for x in state["medications"]
+                    ]
+                    if m_name.lower() not in existing_med_names:
+                        state["medications"].append({
+                            "name": m_name,
+                            "value": m_name,
+                            "dose": m.get("dose", "As prescribed") if isinstance(m, dict) else "As prescribed",
+                            "source": "uploaded_document",
+                            "filename": filename,
+                            "verification_status": "unverified",
+                            "confidence": confidence
+                        })
+
+        # 2. Update allergies if present
+        allergies = extracted_data.get("allergies", [])
+        if isinstance(allergies, list) and allergies:
+            if "allergies" not in state:
+                state["allergies"] = []
+            for a in allergies:
+                a_name = a if isinstance(a, str) else (a.get("name") or str(a))
+                if a_name and a_name not in [str(x) for x in state["allergies"]]:
+                    state["allergies"].append(a_name)
+
+        # 3. Log provenance
+        if "source_provenance" not in state:
+            state["source_provenance"] = []
+        state["source_provenance"].append({
+            "parameter": "document_attachment",
+            "value": filename,
+            "source": "document_ocr",
+            "confidence": confidence,
+            "verification_status": "unverified",
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        })
+        return state
+
+
+    @classmethod
     def sanitize_for_export(cls, state: Dict[str, Any], is_physician_view: bool = False) -> Dict[str, Any]:
+
         clean = dict(state)
         clean.pop("password_hash", None)
         if not is_physician_view:

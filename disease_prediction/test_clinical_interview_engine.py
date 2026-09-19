@@ -760,3 +760,199 @@ def test_scenario_11_complete_interview_review_finalize_doctor_package():
     assert fin_data["status"] == "finalized"
     assert "triage_urgency" in fin_data
 
+
+def test_scenario_12_patient_answer_count_limit():
+    """TEST 12: Reaching max_patient_answers limit safely completes intake without inventing data."""
+    start_resp = client.post("/api/cases/interview/start", json={
+        "patient_id": "P-TEST-LIMIT",
+        "language_code": "en-IN"
+    })
+    case_id = start_resp.json()["case_id"]
+
+    # Directly set a low max_patient_answers to test limit handling
+    state = db.get_case_interview_state(case_id)
+    state["max_patient_answers"] = 3
+    db.save_case_interview_state(case_id, state)
+
+    # 3 answers
+    r1 = client.post("/api/cases/interview/respond", json={"case_id": case_id, "answer_text": "Fever", "language_code": "en-IN"})
+    assert r1.json()["patient_answer_count"] == 1
+    assert r1.json()["is_complete"] is False
+
+    r2 = client.post("/api/cases/interview/respond", json={"case_id": case_id, "answer_text": "3 days", "language_code": "en-IN"})
+    assert r2.json()["patient_answer_count"] == 2
+
+    r3 = client.post("/api/cases/interview/respond", json={"case_id": case_id, "answer_text": "Moderate", "language_code": "en-IN"})
+    data3 = r3.json()
+    assert data3["patient_answer_count"] == 3
+    assert data3["is_complete"] is True
+    assert "limit" in data3["state"].get("limit_reached_note", "").lower()
+
+
+def test_scenario_13_document_request_ecg():
+    """TEST 13: Mentioning ECG triggers intelligent document request with localized prompt."""
+    start_resp = client.post("/api/cases/interview/start", json={
+        "patient_id": "P-TEST-ECG",
+        "language_code": "en-IN"
+    })
+    case_id = start_resp.json()["case_id"]
+
+    resp = client.post("/api/cases/interview/respond", json={
+        "case_id": case_id,
+        "answer_text": "I had chest pain and the clinic took an ECG yesterday.",
+        "language_code": "en-IN"
+    })
+    data = resp.json()
+    assert "document_request" in data
+    doc_req = data["document_request"]
+    assert doc_req is not None
+    assert doc_req["should_request"] is True
+    assert doc_req["request_type"] == "ecg_report"
+    assert "ECG" in doc_req["display_prompt"]
+
+
+def test_scenario_14_document_request_fever_cbc():
+    """TEST 14: Mentioning CBC or blood test triggers lab_report request."""
+    start_resp = client.post("/api/cases/interview/start", json={
+        "patient_id": "P-TEST-CBC",
+        "language_code": "hi-IN"
+    })
+    case_id = start_resp.json()["case_id"]
+
+    resp = client.post("/api/cases/interview/respond", json={
+        "case_id": case_id,
+        "answer_text": "मुझे बुखार है और मैंने खून की जांच (blood test) करवाई थी।",
+        "language_code": "hi-IN"
+    })
+    data = resp.json()
+    doc_req = data.get("document_request")
+    assert doc_req is not None
+    assert doc_req["request_type"] == "lab_report"
+    assert "जांच" in doc_req["display_prompt"]
+
+
+def test_scenario_15_document_request_skip():
+    """TEST 15: Skipping a document request records it and does not repeat prompt."""
+    start_resp = client.post("/api/cases/interview/start", json={
+        "patient_id": "P-TEST-SKIP",
+        "language_code": "en-IN"
+    })
+    case_id = start_resp.json()["case_id"]
+
+    # Trigger ECG request
+    r1 = client.post("/api/cases/interview/respond", json={
+        "case_id": case_id,
+        "answer_text": "I had an ECG yesterday",
+        "language_code": "en-IN"
+    })
+    doc_req = r1.json().get("document_request")
+    assert doc_req is not None
+    req_id = doc_req["request_id"]
+
+    # Skip document request
+    skip_resp = client.post("/api/cases/interview/skip-document-request", json={
+        "case_id": case_id,
+        "request_id": req_id
+    })
+    assert skip_resp.status_code == 200
+    assert skip_resp.json()["status"] == "skipped"
+
+    # Subsequent mention does not re-request the same skipped document
+    r2 = client.post("/api/cases/interview/respond", json={
+        "case_id": case_id,
+        "answer_text": "The ecg showed normal rate",
+        "language_code": "en-IN"
+    })
+    assert r2.json().get("document_request") is None
+
+
+def test_scenario_16_document_upload_ocr_updates_state():
+    """TEST 16: Uploading a prescription via upload endpoint extracts medicines and updates state."""
+    start_resp = client.post("/api/cases/interview/start", json={
+        "patient_id": "P-TEST-UPLOAD",
+        "language_code": "en-IN"
+    })
+    case_id = start_resp.json()["case_id"]
+
+    # Create mock text prescription
+    prescription_text = "Prescription: Tab Metformin 500mg BD. Tab Atorvastatin 20mg OD."
+    files = {"file": ("rx_record.txt", prescription_text.encode("utf-8"), "text/plain")}
+    data = {"document_type": "prescription"}
+
+    upload_resp = client.post(f"/api/cases/{case_id}/upload-and-attach-file", files=files, data=data)
+    assert upload_resp.status_code == 200
+    res_data = upload_resp.json()
+    assert "state" in res_data
+    meds = res_data["state"].get("medications", [])
+    assert any("metformin" in str(m).lower() for m in meds)
+
+
+def test_scenario_17_pdf_generation_endpoint():
+    """TEST 17: GET /api/cases/{case_id}/report.pdf generates clean A4 PDF."""
+    start_resp = client.post("/api/cases/interview/start", json={
+        "patient_id": "P-TEST-PDF",
+        "language_code": "en-IN",
+        "chief_complaint": "Severe persistent headache"
+    })
+    case_id = start_resp.json()["case_id"]
+
+    # Post an answer
+    client.post("/api/cases/interview/respond", json={
+        "case_id": case_id,
+        "answer_text": "Throbbing headache for 3 days, severity 8/10",
+        "language_code": "en-IN"
+    })
+
+    # Request PDF
+    pdf_resp = client.get(f"/api/cases/{case_id}/report.pdf")
+    assert pdf_resp.status_code == 200
+    assert pdf_resp.headers["content-type"] == "application/pdf"
+    assert len(pdf_resp.content) > 500  # Valid binary PDF
+    assert pdf_resp.content.startswith(b"%PDF")
+    assert "attachment" in pdf_resp.headers.get("content-disposition", "")
+
+
+def test_scenario_18_multilingual_pdf_generation():
+    """TEST 18: PDF generator handles multilingual Unicode data (Hindi, Telugu, Odia)."""
+    report_data = {
+        "case": {
+            "case_id": "CASE-MULTI-UNICODE",
+            "created_at": "2026-09-19",
+            "status": "Ready for Physician Review",
+            "language": "Hindi / Telugu / Odia",
+            "input_mode": "Multilingual Voice",
+            "chief_complaint": "छाती में दर्द / గుండె నొప్పి / ଛାତିରେ ଯନ୍ତ୍ରଣା"
+        },
+        "patient": {
+            "name": "राधा शर्मा / రాధా శర్మ",
+            "age": "45",
+            "gender": "Female",
+            "patient_id": "P-UNICODE-99",
+            "abha_id": "91-1234-5678-9999"
+        },
+        "chief_complaints": [
+            "छाती में दर्द (Chest pain)",
+            "తీవ్రమైన దగ్గు (Severe cough)",
+            "ଜ୍ୱର ଏବଂ ଦୁର୍ବଳତା (Fever and weakness)"
+        ],
+        "history": {
+            "hpi": {"onset": "2 days ago", "severity": "7/10"},
+            "past_medical_history": "मधुमेह (Diabetes Mellitus)",
+            "family_history": "హృద్రోగం (Heart Disease)"
+        },
+        "medications": ["Metformin 500mg"],
+        "allergies": ["No known allergies"],
+        "documents": [],
+        "red_flags": [],
+        "information_gaps": ["Blood pressure not recorded"],
+        "contradictions": [],
+        "interview_summary": {"turn_count": 5, "patient_answer_count": 5},
+        "ai_analysis": {"recommended_workup": ["12-Lead ECG", "Blood Glucose Check"]},
+        "doctor_review": {}
+    }
+
+    pdf_bytes = ci.generate_clinical_pdf(report_data)
+    assert len(pdf_bytes) > 500
+    assert pdf_bytes.startswith(b"%PDF")
+
+

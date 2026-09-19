@@ -12,6 +12,8 @@ from .contradiction_engine import ContradictionEngine, ContradictionEngine as Cl
 from .provenance import ProvenanceTracker
 from .confidence import ConfidenceManager, ConfidenceManager as ConfidenceEvaluator
 from .summary_synthesizer import ClinicalSummarySynthesizer
+from .document_request_engine import DocumentRequestEngine
+from .pdf_generator import generate_clinical_pdf
 
 __all__ = [
     "CLINICAL_ONTOLOGY",
@@ -19,6 +21,7 @@ __all__ = [
     "get_generic_pathway",
     "PatientStateManager",
     "create_initial_patient_state",
+    "get_parameter_value",
     "ClinicalAnswerExtractor",
     "ClinicalQuestionEngine",
     "RedFlagEngine",
@@ -29,4 +32,7 @@ __all__ = [
     "ConfidenceManager",
     "ConfidenceEvaluator",
     "ClinicalSummarySynthesizer",
+    "DocumentRequestEngine",
+    "generate_clinical_pdf",
 ]
+

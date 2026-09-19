@@ -23,11 +23,16 @@ class ContradictionEngine:
         """
         contradictions = []
 
-        patient_meds = [m.lower().strip() for m in patient_state.get("medications", [])]
-        patient_allergies = [a.lower().strip() for a in patient_state.get("allergies", [])]
-        doc_meds = [m.lower().strip() for m in document_data.get("medications", [])]
-        doc_allergies = [a.lower().strip() for a in document_data.get("allergies", [])]
-        doc_diagnoses = [d.lower().strip() for d in document_data.get("diagnoses", [])]
+        def _to_str(item):
+            if isinstance(item, dict):
+                return str(item.get("name") or item.get("value") or "").lower().strip()
+            return str(item or "").lower().strip()
+
+        patient_meds = [_to_str(m) for m in patient_state.get("medications", []) if _to_str(m)]
+        patient_allergies = [_to_str(a) for a in patient_state.get("allergies", []) if _to_str(a)]
+        doc_meds = [_to_str(m) for m in document_data.get("medications", []) if _to_str(m)]
+        doc_allergies = [_to_str(a) for a in document_data.get("allergies", []) if _to_str(a)]
+        doc_diagnoses = [_to_str(d) for d in document_data.get("diagnoses", []) if _to_str(d)]
         raw_doc_text = str(document_data.get("raw_text", "")).lower()
 
         # 1. Medication discrepancy: Patient claims no meds, but document lists meds

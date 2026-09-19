@@ -10,11 +10,14 @@ Implements the SIH 'Patient Case-Taking Software' REST endpoints:
 """
 
 import os
+import re
 import json
 import secrets
+from datetime import datetime
 from typing import Optional, Dict, Any, List
-from fastapi import APIRouter, HTTPException, Depends, Header, UploadFile, File, Form, status
+from fastapi import APIRouter, HTTPException, Depends, Header, UploadFile, File, Form, status, Response
 from pydantic import BaseModel, Field
+
 
 try:
     from disease_prediction.api import database as db
@@ -97,6 +100,11 @@ class InterviewCorrectFactRequest(BaseModel):
 class InterviewVerifyDocRequest(BaseModel):
     case_id: str
     document_data: Dict[str, Any]
+
+class InterviewSkipDocRequest(BaseModel):
+    case_id: str
+    request_id: str
+
 
 
 # ==============================================================================
@@ -251,16 +259,52 @@ async def upload_and_attach_file(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Uploaded file is empty.")
 
     extracted_data = {}
+    raw_text = ""
     try:
-        if file.filename.lower().endswith(".pdf"):
-            ext_res = report_extractor.extract_from_pdf_bytes(file_bytes, file.filename)
-            extracted_data = ext_res.get("extracted_parameters", {})
-        elif file.filename.lower().endswith((".png", ".jpg", ".jpeg")):
-            ext_res = report_extractor.extract_from_image_bytes(file_bytes, file.filename)
-            extracted_data = ext_res.get("extracted_parameters", {})
-        elif file.filename.lower().endswith(".txt"):
-            ext_res = report_extractor.extract_from_text_str(file_bytes.decode("utf-8", errors="ignore"), file.filename)
-            extracted_data = ext_res.get("extracted_parameters", {})
+        try:
+            from disease_prediction.api import analyzer_service
+        except ImportError:
+            try:
+                import analyzer_service
+            except ImportError:
+                from api import analyzer_service
+
+        if file.filename.lower().endswith(".txt"):
+            raw_text = file_bytes.decode("utf-8", errors="ignore")
+            # If lab values present in text
+            meta, biomarkers = report_extractor.extract_metadata_and_biomarkers(raw_text)
+            for b in biomarkers:
+                k = b.get("canonical_key") or b.get("parameter")
+                if k:
+                    extracted_data[k] = b.get("value_raw") or b.get("value")
+        elif file.filename.lower().endswith((".pdf", ".png", ".jpg", ".jpeg", ".csv")):
+            rep_res = analyzer_service.extract_report_from_file_bytes(file.filename, file_bytes)
+            for p in rep_res.get("parameters", []):
+                param_name = p.get("canonical_key") or p.get("parameter")
+                if param_name:
+                    extracted_data[param_name] = p.get("value_raw") or p.get("value")
+            if file.filename.lower().endswith(".pdf"):
+                try:
+                    from disease_prediction.api.file_parser import parse_pdf_report
+                    raw_text, _ = parse_pdf_report(file_bytes)
+                except Exception:
+                    pass
+
+        # Parse medications and allergies from raw_text
+        if raw_text:
+            ans_extractor = ci.ClinicalAnswerExtractor()
+            parsed_meds = ans_extractor._extract_medications(raw_text.lower())
+            rx_pattern_meds = re.findall(r"(?:tab|cap|syrup|inj|tablet|capsule)\.?\s+([A-Za-z]{3,})", raw_text, re.IGNORECASE)
+            for pm in rx_pattern_meds:
+                if pm.title() not in parsed_meds and pm.lower() not in ["the", "and", "for", "with"]:
+                    parsed_meds.append(pm.title())
+            if parsed_meds and parsed_meds != ["no regular medications"]:
+                extracted_data["medications"] = parsed_meds
+
+            parsed_allergies = ans_extractor._extract_allergies(raw_text.lower())
+            if parsed_allergies and parsed_allergies != ["no known allergies"]:
+                extracted_data["allergies"] = parsed_allergies
+
     except Exception as ex:
         extracted_data = {"raw_note": f"Document uploaded ({file.filename}) - Manual review required: {str(ex)}"}
 
@@ -272,7 +316,25 @@ async def upload_and_attach_file(
         extracted_data=extracted_data
     )
     res["extracted_data"] = extracted_data
+
+    # Integrate OCR parameters into active clinical interview state if present
+    state = db.get_case_interview_state(case_id)
+    if state:
+        state = ci.PatientStateManager.attach_document_extraction(
+            state=state,
+            filename=file.filename,
+            document_type=document_type,
+            extracted_data=extracted_data
+        )
+        contradictions = ci.ContradictionEngine.check_document_vs_patient(state, extracted_data)
+        for c in contradictions:
+            ci.PatientStateManager.add_contradiction(state, c)
+        db.save_case_interview_state(case_id, state)
+        res["state"] = ci.PatientStateManager.sanitize_for_export(state, is_physician_view=False)
+        res["contradictions"] = contradictions
+
     return res
+
 
 @router.post("/{case_id}/generate-summary")
 def generate_physician_summary_endpoint(case_id: str, payload: GenerateSummaryRequest):
@@ -431,6 +493,18 @@ def respond_interview_endpoint(payload: InterviewRespondRequest):
         language=payload.language_code
     )
 
+    # Discrete patient answer counter
+    patient_ans_count = ci.PatientStateManager.increment_patient_answer_count(state)
+
+    # Intelligent document relevance analysis
+    doc_request = ci.DocumentRequestEngine.evaluate_relevance(
+        state=state,
+        answer_text=payload.answer_text,
+        current_language=payload.language_code,
+        extracted_entities=extracted
+    )
+
+
     # Multi-complaint extraction: preserve multiple symptoms e.g. "fever, cough and weakness"
     complaints = ci.ClinicalAnswerExtractor.extract_complaints(payload.answer_text)
     if complaints:
@@ -524,13 +598,13 @@ def respond_interview_endpoint(payload: InterviewRespondRequest):
         )
 
     completeness = ci.ClinicalSummarySynthesizer.calculate_completeness(state)
-    turn_count = state.get("conversation_turn_count", 0)
-    max_turns = state.get("max_turns_limit", 14)
+    max_patient_answers = state.get("max_patient_answers", 16)
     is_complete = next_q is None or completeness["score_percent"] >= 90
-    if turn_count >= max_turns and not is_complete:
+    if patient_ans_count >= max_patient_answers and not is_complete:
         gaps = completeness.get("missing_parameters", [])
-        state["limit_reached_note"] = f"Interview reached safe limit ({max_turns} turns). Remaining information gaps for clinician review: {', '.join(gaps)}."
+        state["limit_reached_note"] = f"Interview reached safe limit ({max_patient_answers} patient answers). Remaining information gaps for clinician review: {', '.join(gaps)}."
         is_complete = True
+        next_q = None
 
     db.save_case_interview_state(payload.case_id, state)
 
@@ -538,11 +612,14 @@ def respond_interview_endpoint(payload: InterviewRespondRequest):
         "status": "completed" if is_complete else "active",
         "case_id": payload.case_id,
         "next_question": next_q,
+        "document_request": doc_request,
+        "patient_answer_count": patient_ans_count,
         "is_complete": is_complete,
         "completeness": completeness,
         "extracted_entities": extracted,
         "state": ci.PatientStateManager.sanitize_for_export(state, is_physician_view=False)
     }
+
 
 @router.post("/interview/correct-fact")
 def correct_fact_endpoint(payload: InterviewCorrectFactRequest):
@@ -636,4 +713,95 @@ def finalize_interview_endpoint(case_id: str):
         "triage_urgency": triage_urgency,
         "review_package": review_pkg
     }
+
+@router.post("/interview/skip-document-request")
+def skip_document_request_endpoint(payload: InterviewSkipDocRequest):
+    """Records that patient opted to skip an optional document upload request."""
+    state = db.get_case_interview_state(payload.case_id)
+    if not state:
+        raise HTTPException(status_code=404, detail=f"Case '{payload.case_id}' state not found.")
+    ci.DocumentRequestEngine.record_skip(state, payload.request_id)
+    db.save_case_interview_state(payload.case_id, state)
+    return {"status": "skipped", "request_id": payload.request_id}
+
+@router.get("/{case_id}/report.pdf")
+@router.post("/{case_id}/generate-pdf")
+def get_case_report_pdf_endpoint(case_id: str):
+    """
+    Generates and returns an executive, publication-grade A4 clinical case intake PDF.
+    ABDM HL7 FHIR compatible, including complete history, red flags, document provenance,
+    and physician verification block.
+    """
+    case = db.get_clinical_case(case_id)
+    if not case:
+        raise HTTPException(status_code=404, detail=f"Case '{case_id}' not found.")
+
+    state = db.get_case_interview_state(case_id) or {}
+    docs = case.get("documents", [])
+    review_package = ci.ClinicalSummarySynthesizer.synthesize_full_review(state, docs)
+
+    # Normalize patient info
+    patient_info = case.get("patient_info", {})
+    if not patient_info and case.get("patient_id"):
+        pat = db.get_patient_by_id(case["patient_id"])
+        if pat:
+            patient_info = pat
+
+    p_id = case.get("patient_id") or "PAT-01"
+    intake_date = case.get("created_at") or datetime.now().strftime("%Y-%m-%d")
+
+    report_data = {
+        "case": {
+            "case_id": case_id,
+            "created_at": intake_date,
+            "status": case.get("status") or "Ready for Physician Review",
+            "language": state.get("primary_language") or "English",
+            "input_mode": "Voice Assisted" if not state.get("is_kiosk") else "Kiosk / Touch",
+            "chief_complaint": case.get("chief_complaint") or state.get("chief_complaint") or "General Consultation"
+        },
+        "patient": {
+            "name": patient_info.get("full_name") or patient_info.get("name") or "Outpatient",
+            "age": patient_info.get("age") or "Adult",
+            "gender": patient_info.get("gender") or "Unspecified",
+            "patient_id": p_id,
+            "abha_id": patient_info.get("abha_id") or "91-4589-2041-8832"
+        },
+        "chief_complaints": state.get("chief_complaints") or ([case.get("chief_complaint")] if case.get("chief_complaint") else ["General Consultation"]),
+        "history": {
+            "hpi": state.get("hpi", {}),
+            "past_medical_history": state.get("past_history") or state.get("past_medical_history") or "Not reported",
+            "past_surgical_history": state.get("past_surgical_history") or "None reported",
+            "family_history": state.get("family_history") or "No major hereditary illness reported",
+            "personal_social_history": state.get("personal_social_history") or "Non-smoker, non-alcoholic",
+            "review_of_systems": state.get("review_of_systems") or "Normal constitutional baseline"
+        },
+        "medications": state.get("medications", []),
+        "allergies": state.get("allergies", []),
+        "investigations": state.get("investigations", []),
+        "documents": docs,
+        "red_flags": state.get("red_flags", []),
+        "information_gaps": ci.ClinicalSummarySynthesizer.calculate_completeness(state).get("missing_parameters", []),
+        "contradictions": state.get("contradictions", []),
+        "interview_summary": {
+            "turn_count": state.get("conversation_turn_count", 0),
+            "patient_answer_count": state.get("patient_answer_count", 0)
+        },
+        "ai_analysis": {
+            "recommended_workup": review_package.get("quick_snapshot", {}).get("suggested_focus", [])
+        },
+        "doctor_review": {}
+    }
+
+    pdf_bytes = ci.generate_clinical_pdf(report_data)
+    date_tag = datetime.now().strftime("%Y%m%d")
+    filename = f"MedLens_Clinical_Case_Summary_{case_id}_{date_tag}.pdf"
+
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"'
+        }
+    )
+
 

@@ -1003,12 +1003,13 @@ async function _voiceStartClinicalInterview() {
         if (res.ok) {
             const data = await res.json();
             if (data.case_id) _voiceSession.caseId = data.case_id;
-            _voiceSession.backendState = data.patient_state;
+            _voiceSession.backendState = data.state || data.patient_state;
             if (data.current_question) {
                 _voiceRenderBackendQuestion(data.current_question);
                 return;
             }
         }
+
     } catch (e) {
         console.warn('[VoiceCT] Backend interview start deferred or offline, using standard opening:', e);
     }
@@ -1124,9 +1125,23 @@ function _voiceRenderBackendQuestion(q) {
         sectionBadge.className = 'voice-section-badge' + (sectionTitle.includes('AYUSH') ? ' ayush-badge' : '');
     }
 
+    // Unobtrusive '📎 Add Medical Document' button during active intake (Part 18)
+    let addDocBtn = document.getElementById('voice-interview-attach-doc-btn');
+    if (!addDocBtn && sectionBadge && sectionBadge.parentNode) {
+        addDocBtn = document.createElement('label');
+        addDocBtn.id = 'voice-interview-attach-doc-btn';
+        addDocBtn.style.cssText = 'display:inline-flex; align-items:center; gap:4px; font-size:0.75rem; font-weight:600; color:#0369a1; background:#f0f9ff; border:1px solid #bae6fd; border-radius:6px; padding:3px 8px; cursor:pointer; margin-left:8px; vertical-align:middle;';
+        addDocBtn.innerHTML = `
+            <span class="material-symbols-outlined" style="font-size:14px;">attach_file</span> Add Document
+            <input type="file" accept="image/*,.pdf,.txt" style="display:none;" onchange="_voiceHandleSpontaneousDocUpload(event)">
+        `;
+        sectionBadge.parentNode.appendChild(addDocBtn);
+    }
+
     // Quick picks
     const picks = q.quick_picks || q.quickPicks || [];
     _voiceRenderQuickPicks(picks);
+
 
     // Clear previous transcript
     _voiceResetTranscriptUI();
@@ -1388,7 +1403,21 @@ async function voiceConfirmAnswer() {
         } catch (e) {}
     }
 
-    // Authoritative Backend Clinical Interview Engine Integration (CRITICAL BUG #1 & #2 FIX)
+    // Handle verbal responses to an active document request prompt (Part 19)
+    if (_voiceSession.pendingDocRequest) {
+        const lowerAns = answer.trim().toLowerCase();
+        const reqId = _voiceSession.pendingDocRequest.request_id;
+        if (lowerAns.includes('yes') || lowerAns.includes('upload') || lowerAns.includes('i have it') || lowerAns.includes('haan') || lowerAns.includes('sure')) {
+            const fileInput = document.getElementById('voice-inline-doc-input');
+            if (fileInput) fileInput.click();
+            return;
+        } else if (lowerAns.includes('no') || lowerAns.includes('skip') || lowerAns.includes('not now') || lowerAns.includes('continue') || lowerAns.includes('nahi')) {
+            _voiceSkipDocumentRequest(reqId);
+            return;
+        }
+    }
+
+    // Authoritative Backend Clinical Interview Engine Integration
     try {
         const payload = {
             case_id: _voiceSession.caseId,
@@ -1407,10 +1436,14 @@ async function voiceConfirmAnswer() {
 
         if (res.ok) {
             const data = await res.json();
-            _voiceSession.backendState = data.state;
+            _voiceSession.backendState = data.state || data.patient_state;
             if (data.completeness) {
                 _voiceSession.completenessScore = data.completeness.score_percent;
             }
+
+            // Clear any prior network error display
+            const errCard = document.getElementById('voice-network-error-card');
+            if (errCard) errCard.remove();
 
             // 1. Red Flag Interruption: Halt questioning immediately
             if (data.status === 'PAUSED_RED_FLAG') {
@@ -1430,21 +1463,231 @@ async function voiceConfirmAnswer() {
                 return;
             }
 
-            // 4. Authoritative next question selected by ClinicalQuestionEngine
+            // 4. Intelligent Document Request Integration (Parts 10-19)
+            if (data.document_request && data.document_request.should_request) {
+                _voiceHandleDocumentRequest(data.document_request, data.next_question);
+                return;
+            }
+
+            // 5. Authoritative next question selected by ClinicalQuestionEngine
             _voiceRenderBackendQuestion(data.next_question);
             return;
         } else {
             console.warn('[VoiceCT] Backend respond returned status:', res.status);
+            _voiceShowNetworkError(answer.trim(), qKey);
+            return;
         }
     } catch (e) {
         console.error('[VoiceCT] Failed to communicate with Clinical Interview Engine:', e);
+        _voiceShowNetworkError(answer.trim(), qKey);
+        return;
+    }
+}
+
+/* ============================================================================
+   INTELLIGENT DOCUMENT REQUEST & NETWORK ERROR HANDLERS (PARTS 8, 10-19)
+   ============================================================================ */
+function _voiceHandleDocumentRequest(docReq, nextQ) {
+    _voiceSession.pendingDocRequest = docReq;
+    _voiceSession.pendingDocNextQ = nextQ;
+
+    let banner = document.getElementById('voice-doc-request-banner');
+    if (!banner) {
+        banner = document.createElement('div');
+        banner.id = 'voice-doc-request-banner';
+        const parent = document.getElementById('voice-transcript-card') || document.querySelector('.voice-interview-main');
+        if (parent) parent.prepend(banner);
     }
 
-    // Graceful fallback to completion if network fails
-    _voiceComplete();
+    if (banner) {
+        banner.style.display = 'block';
+        banner.style.cssText = 'background:#f0f9ff; border:1.5px solid #7dd3fc; border-radius:10px; padding:16px; margin-bottom:14px; box-shadow:0 2px 8px rgba(2,132,199,0.06);';
+        banner.innerHTML = `
+            <div style="display:flex; align-items:flex-start; gap:12px;">
+                <span class="material-symbols-outlined" style="font-size:28px; color:#0284c7;">attach_file</span>
+                <div style="flex:1;">
+                    <div style="font-size:0.92rem; font-weight:700; color:#0c4a6e;">${escapeHtml(docReq.display_prompt)}</div>
+                    <div style="font-size:0.75rem; color:#0369a1; margin-top:4px;">${escapeHtml(docReq.reason)}</div>
+                    <div style="display:flex; gap:10px; margin-top:12px; align-items:center; flex-wrap:wrap;">
+                        <label class="btn-primary" style="background:#0284c7; color:#fff; font-size:0.8rem; padding:6px 14px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; border-radius:6px; border:none;">
+                            <span class="material-symbols-outlined" style="font-size:16px;">upload_file</span> 📎 Upload Document
+                            <input type="file" id="voice-inline-doc-input" accept="image/*,.pdf,.txt" style="display:none;" onchange="_voiceHandleInlineDocUpload(event, '${docReq.request_id}', '${docReq.request_type}')">
+                        </label>
+                        <button type="button" class="btn-secondary" style="font-size:0.8rem; padding:6px 14px; border-radius:6px; background:#fff; border:1px solid #cbd5e1; cursor:pointer;" onclick="_voiceSkipDocumentRequest('${docReq.request_id}')">
+                            Skip / Continue
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // Speak prompt in selected language if auto-play is enabled
+    const lang = _voiceSession.language || 'en-IN';
+    const autoPlay = document.getElementById('voice-autoplay-toggle');
+    if (!autoPlay || autoPlay.checked) {
+        setTimeout(() => {
+            if (typeof speakText === 'function') speakText(docReq.display_prompt, lang);
+        }, 120);
+    }
+}
+
+async function _voiceSkipDocumentRequest(requestId) {
+    const banner = document.getElementById('voice-doc-request-banner');
+    if (banner) banner.style.display = 'none';
+
+    if (_voiceSession.caseId) {
+        try {
+            fetch(apiUrl('/api/cases/interview/skip-document-request'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ case_id: _voiceSession.caseId, request_id: requestId })
+            }).catch(() => {});
+        } catch (e) {}
+    }
+
+    const nextQ = _voiceSession.pendingDocNextQ;
+    _voiceSession.pendingDocRequest = null;
+    _voiceSession.pendingDocNextQ = null;
+
+    if (nextQ) {
+        _voiceRenderBackendQuestion(nextQ);
+    } else {
+        _voiceComplete();
+    }
+}
+
+async function _voiceHandleInlineDocUpload(event, requestId, docType) {
+    const file = event.target.files && event.target.files[0];
+    if (!file || !_voiceSession.caseId) return;
+
+    const banner = document.getElementById('voice-doc-request-banner');
+    if (banner) {
+        banner.innerHTML = `<div style="font-size:0.85rem; color:#0284c7; font-weight:600;">⏳ Uploading and extracting medical parameters from <strong>${escapeHtml(file.name)}</strong>...</div>`;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('document_type', docType || 'lab_report');
+
+    try {
+        const res = await fetch(apiUrl(`/api/cases/${_voiceSession.caseId}/upload-and-attach-file`), {
+            method: 'POST',
+            body: formData
+        });
+
+        if (res.ok) {
+            const data = await res.json();
+            if (data.state) _voiceSession.backendState = data.state;
+            if (typeof showToast === 'function') {
+                showToast(`✓ Uploaded & OCR analyzed: ${file.name}`, 'success');
+            }
+            if (!_voiceSession.attachedDocuments) _voiceSession.attachedDocuments = [];
+            _voiceSession.attachedDocuments.push({
+                filename: file.name,
+                size: (file.size / 1024).toFixed(1) + ' KB',
+                time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+            });
+        }
+    } catch (e) {
+        console.warn('[VoiceCT] Inline document upload error:', e);
+    }
+
+    if (banner) banner.style.display = 'none';
+    const nextQ = _voiceSession.pendingDocNextQ;
+    _voiceSession.pendingDocRequest = null;
+    _voiceSession.pendingDocNextQ = null;
+
+    if (nextQ) {
+        _voiceRenderBackendQuestion(nextQ);
+    } else {
+        _voiceComplete();
+    }
+}
+
+async function _voiceHandleSpontaneousDocUpload(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file || !_voiceSession.caseId) return;
+
+    if (typeof showToast === 'function') {
+        showToast(`⏳ Uploading & extracting parameters from ${file.name}...`, 'info');
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('document_type', 'medical_report');
+
+    try {
+        const res = await fetch(apiUrl(`/api/cases/${_voiceSession.caseId}/upload-and-attach-file`), {
+            method: 'POST',
+            body: formData
+        });
+
+        if (res.ok) {
+            const data = await res.json();
+            if (data.state) _voiceSession.backendState = data.state;
+            if (typeof showToast === 'function') {
+                showToast(`✓ Document added to case: ${file.name}`, 'success');
+            }
+            if (!_voiceSession.attachedDocuments) _voiceSession.attachedDocuments = [];
+            _voiceSession.attachedDocuments.push({
+                filename: file.name,
+                size: (file.size / 1024).toFixed(1) + ' KB',
+                time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+            });
+        }
+    } catch (e) {
+        console.warn('[VoiceCT] Spontaneous doc upload error:', e);
+    }
+    event.target.value = '';
+}
+window._voiceHandleSpontaneousDocUpload = _voiceHandleSpontaneousDocUpload;
+
+function _voiceShowNetworkError(failedAnswer, qKey) {
+
+    let errCard = document.getElementById('voice-network-error-card');
+    if (!errCard) {
+        errCard = document.createElement('div');
+        errCard.id = 'voice-network-error-card';
+        const parent = document.getElementById('voice-transcript-card') || document.querySelector('.voice-interview-main');
+        if (parent) parent.prepend(errCard);
+    }
+
+    errCard.style.cssText = 'background:#fef2f2; border:1.5px solid #f87171; border-radius:10px; padding:16px; margin:12px 0;';
+    errCard.innerHTML = `
+        <div style="display:flex; align-items:center; gap:10px; color:#991b1b; font-weight:700; font-size:0.95rem;">
+            <span class="material-symbols-outlined">wifi_off</span>
+            We couldn't save your response due to a network connection issue.
+        </div>
+        <div style="font-size:0.82rem; color:#7f1d1d; margin:6px 0 12px 0;">
+            Your response is safely preserved. You can retry sending, enter text manually, or save as an offline draft.
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button type="button" class="btn-primary" style="background:#dc2626; color:#fff; font-size:0.82rem; padding:6px 14px; border:none; border-radius:6px; cursor:pointer;" onclick="voiceConfirmAnswer()">
+                🔄 Retry Sending
+            </button>
+            <button type="button" class="btn-secondary" style="background:#fff; font-size:0.82rem; padding:6px 14px; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer;" onclick="_voiceShowTextInput(true)">
+                ⌨️ Continue with Text
+            </button>
+            <button type="button" class="btn-secondary" style="background:#fff; font-size:0.82rem; padding:6px 14px; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer;" onclick="_voiceSaveDraftLocally()">
+                💾 Save Draft
+            </button>
+        </div>
+    `;
+}
+
+function _voiceSaveDraftLocally() {
+    try {
+        localStorage.setItem(`medlens_draft_${_voiceSession.caseId || 'active'}`, JSON.stringify(_voiceSession));
+        if (typeof showToast === 'function') {
+            showToast('✓ Intake progress saved safely to local storage draft.', 'success');
+        }
+    } catch (e) {}
 }
 
 function voiceConfirmTextInput() {
+
+
     const textInput = document.getElementById('voice-text-input');
     if (!textInput || !textInput.value.trim()) {
         alert('Please type your answer first.');
@@ -1863,10 +2106,70 @@ function _voiceRenderSummaryHighlights() {
         cdsRecommendations.push('Comprehensive organ system physical examination as clinically indicated');
     }
 
+    const bState = _voiceSession.backendState || {};
+    const gapsList = (bState.information_gaps) || [];
+    const contradictionCount = (bState.contradictions || []).length;
+    const gapCount = gapsList.length + contradictionCount;
+
     // Build the executive HTML dossier
     container.innerHTML = `
-        <div class="cs-sheet-wrapper">
+        <!-- Professional Intake Completion Screen (Part 20) -->
+        <div class="cs-complete-banner" style="background:#ffffff; border:2px solid #0284c7; border-radius:12px; padding:20px 24px; margin-bottom:20px; box-shadow:0 4px 14px rgba(2,132,199,0.08);">
+            <div style="display:flex; align-items:center; gap:12px; border-bottom:1.5px solid #e2e8f0; padding-bottom:14px; margin-bottom:16px;">
+                <div style="background:#dcfce7; color:#15803d; width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                    <span class="material-symbols-outlined" style="font-size:26px;">check_circle</span>
+                </div>
+                <div>
+                    <h3 style="margin:0; font-size:1.25rem; font-weight:800; color:#0f172a; letter-spacing:0.02em;">CASE TAKING COMPLETE</h3>
+                    <div style="font-size:0.84rem; color:#059669; font-weight:600; margin-top:2px;">
+                        ✓ Clinical information collected &bull; ✓ Case summary prepared
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:14px; margin-bottom:18px;">
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px;">
+                    <div style="font-size:0.75rem; font-weight:700; color:#64748b; text-transform:uppercase;">Documents</div>
+                    <div style="font-size:1rem; font-weight:700; color:#0f172a; margin-top:3px;">
+                        ${attachedVoiceDocuments.length > 0 ? `${attachedVoiceDocuments.length} relevant document${attachedVoiceDocuments.length > 1 ? 's' : ''} uploaded` : 'No medical documents uploaded'}
+                    </div>
+                    <div style="font-size:0.75rem; color:#64748b; margin-top:2px;">
+                        ${attachedVoiceDocuments.length > 0 ? 'OCR extracted & verified' : 'You may optionally add reports below'}
+                    </div>
+                </div>
+
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px;">
+                    <div style="font-size:0.75rem; font-weight:700; color:#64748b; text-transform:uppercase;">Information Requiring Review</div>
+                    <div style="font-size:1rem; font-weight:700; color:${gapCount > 0 ? '#b45309' : '#059669'}; margin-top:3px;">
+                        ${gapCount > 0 ? `${gapCount} item${gapCount > 1 ? 's' : ''} requiring review` : 'All primary parameters satisfied'}
+                    </div>
+                    <div style="font-size:0.75rem; color:#64748b; margin-top:2px;">Flagged for physician bedside review</div>
+                </div>
+
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px;">
+                    <div style="font-size:0.75rem; font-weight:700; color:#64748b; text-transform:uppercase;">Clinical Report</div>
+                    <div style="font-size:1rem; font-weight:700; color:#0284c7; margin-top:3px;">Ready for physician review</div>
+                    <div style="font-size:0.75rem; color:#64748b; margin-top:2px;">ABDM HL7 FHIR Compatible</div>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                <button type="button" class="btn-primary" onclick="_voiceDownloadClinicalPdf()" style="background:linear-gradient(135deg,#0284c7,#0369a1); font-weight:700; display:inline-flex; align-items:center; gap:8px; padding:10px 20px; border-radius:8px; color:#fff; border:none; cursor:pointer; font-size:0.85rem;">
+                    <span class="material-symbols-outlined">picture_as_pdf</span> Generate PDF
+                </button>
+                <button type="button" class="btn-secondary" onclick="_voiceScrollToPreview()" style="display:inline-flex; align-items:center; gap:6px; padding:9px 16px; border-radius:8px; border:1.5px solid #cbd5e1; background:#fff; cursor:pointer; font-size:0.85rem; font-weight:600;">
+                    <span class="material-symbols-outlined">visibility</span> Preview Clinical Report
+                </button>
+                <label class="btn-secondary" style="display:inline-flex; align-items:center; gap:6px; padding:9px 16px; border-radius:8px; border:1.5px solid #cbd5e1; background:#fff; cursor:pointer; font-size:0.85rem; font-weight:600;">
+                    <span class="material-symbols-outlined">upload_file</span> + Add Medical Document
+                    <input type="file" accept="image/*,.pdf,.txt" style="display:none;" onchange="handleVoiceFileUpload(event)">
+                </label>
+            </div>
+        </div>
+
+        <div id="voice-preview-anchor" class="cs-sheet-wrapper">
             <!-- Official Hospital Header Strip -->
+
             <div class="cs-header-strip">
                 <div class="cs-header-brand">
                     <div class="cs-brand-icon">
@@ -2258,7 +2561,27 @@ function _voiceRenderSummaryHighlights() {
     `;
 }
 
+function _voiceDownloadClinicalPdf() {
+    const caseId = _voiceSession.caseId || (typeof activeClinicalCaseId !== 'undefined' && activeClinicalCaseId);
+    if (!caseId) {
+        alert('Please start or complete an intake session before generating the clinical PDF.');
+        return;
+    }
+    const pdfUrl = apiUrl(`/api/cases/${caseId}/report.pdf`);
+    window.open(pdfUrl, '_blank');
+}
+window._voiceDownloadClinicalPdf = _voiceDownloadClinicalPdf;
+
+function _voiceScrollToPreview() {
+    const el = document.getElementById('voice-preview-anchor') || document.querySelector('.cs-sheet-wrapper');
+    if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+window._voiceScrollToPreview = _voiceScrollToPreview;
+
 function voiceStartNewSession() {
+
     _voiceSession = {
         language: 'en-IN',
         touchOnly: false,
@@ -2305,9 +2628,14 @@ function voiceChangeLanguage(langCode) {
         langDisplay.innerHTML = `${langConfig.flag} ${langConfig.nativeName}`;
     }
 
-    // Reload current question in new language
-    _voiceLoadQuestion(_voiceSession.currentQuestionIndex);
+    // Re-render current question in new language preserving all session state & question ID
+    if (_voiceSession.currentQuestion) {
+        _voiceRenderBackendQuestion(_voiceSession.currentQuestion);
+    } else if (_voiceSession.activeQuestions && _voiceSession.activeQuestions[_voiceSession.currentQuestionIndex]) {
+        _voiceRenderBackendQuestion(_voiceSession.activeQuestions[_voiceSession.currentQuestionIndex]);
+    }
 }
+
 
 function updateSpeedDisplay(speed) {
     document.querySelectorAll('.voice-speed-btns button').forEach(b => b.classList.remove('active-speed'));
