@@ -4631,7 +4631,7 @@ const BIOMARKER_DB = {
 
 function selectBiomarker(bioKey) {
     const data = BIOMARKER_DB[bioKey];
-    if (!data) return;
+    if (!data || !document.getElementById('bio-name')) return;
 
     document.querySelectorAll('.bio-chip-btn').forEach(btn => btn.classList.remove('active'));
     const activeBtn = document.getElementById(`bio-btn-${bioKey}`);

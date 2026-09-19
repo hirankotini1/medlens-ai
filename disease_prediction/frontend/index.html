@@ -115,148 +115,263 @@
         <section id="view-home" class="section-view active">
             
             
-            <div class="patient-welcome-hero">
-                <div class="patient-hero-badge">
-                    <span class="material-symbols-outlined" style="font-size: 16px;">waving_hand</span> Welcome Patient &bull; Medicover Digital Healthcare Hub
-                </div>
-                <h1 class="patient-hero-title">
-                    Welcome to <span class="highlight">MEDLENS AI</span> Health Portal
-                </h1>
-                <p class="patient-hero-subtitle">
-                    Experience state-of-the-art pathology care: instant confidential lab report lookup with PIN verification, certified PDF downloads, and real-time evidence-informed AI guidance for symptoms and remedies.
-                </p>
-
-                
-                <div class="patient-quick-lookup">
-                    <div style="font-size: 0.82rem; font-weight: 800; color: #005e66; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
-                        <span class="material-symbols-outlined" style="font-size: 16px; color: var(--primary);">search</span> Instant Patient Report Access &bull; Enter Credentials:
-                    </div>
-                    <div class="patient-lookup-inputs">
-                        <input type="text" id="hero-pat-id" class="patient-lookup-input" placeholder="Enter Patient ID (e.g. PAT-1001)" value="" style="flex: 1.2;" autocomplete="username">
-                        <input type="password" id="hero-pat-pin" class="patient-lookup-input" placeholder="Enter Security PIN" value="" style="flex: 1.2;" autocomplete="current-password">
-                        <button type="button" class="btn-primary" style="background: linear-gradient(135deg, #005e66, #0284c7); padding: 11px 24px; font-weight: 700; flex: 0.8; justify-content: center;" onclick="handleHeroPatientLogin()">
-                            <span class="material-symbols-outlined" style="font-size: 18px;">lock_open</span> View My Report Now →
-                        </button>
-                    </div>
-                    <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
-                        <button type="button" class="btn-secondary" onclick="openPatientRegistrationModal()" style="background: #ffffff; color: #0284c7; border: 1.5px solid #38bdf8; font-weight: 700; font-size: 0.82rem; padding: 7px 16px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(2,132,199,0.12); cursor: pointer;">
-                            <span class="material-symbols-outlined" style="font-size: 18px; color: #0284c7;">how_to_reg</span> New Patient? Register &amp; Book Doctor Appointment Slip →
-                        </button>
-                    </div>
-
-                    
-                    <div class="hero-ai-split-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-top: 18px;">
-                        
-                        <div class="hero-ai-card" onclick="switchView('analyzer')" style="background: linear-gradient(135deg, #ffffff 0%, #f5f3ff 100%); border: 1.5px solid #c7d2fe; border-radius: 14px; padding: 18px 20px; cursor: pointer; transition: all 0.25s ease; display: flex; flex-direction: column; justify-content: space-between; gap: 14px; box-shadow: 0 4px 14px rgba(79, 70, 229, 0.08);">
-                            <div>
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                                    <span class="material-symbols-outlined" style="font-size: 28px; color: var(--primary);">analytics</span>
-                                    <span style="background: #e0e7ff; color: #4338ca; font-size: 0.72rem; font-weight: 800; padding: 3px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.04em;">PDF &bull; IMAGE &bull; CSV</span>
-                                </div>
-                                <h3 style="font-size: 1.15rem; font-weight: 800; color: #1e1b4b; margin: 0 0 6px 0;">
-                                    AI Health Report Analyzer
-                                </h3>
-                                <p style="font-size: 0.83rem; color: #475569; margin: 0; line-height: 1.45;">
-                                    Upload any lab report for instant biomarker extraction, simple explanations, abnormal flags &amp; Medicover Vizag doctor referrals.
-                                </p>
-                            </div>
-                            <button type="button" class="btn-primary" style="background: linear-gradient(135deg, #4f46e5, #7c3aed); padding: 10px 16px; font-size: 0.86rem; font-weight: 700; width: 100%; justify-content: center; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);">
-                                <span>📑</span> Open AI Report Analyzer →
+            <!-- 1. MODERN CLINICAL HERO SECTION -->
+            <div class="ml-hero-section">
+                <div class="ml-hero-grid">
+                    <div>
+                        <div class="ml-tagline">
+                            <span class="material-symbols-outlined" style="font-size: 16px;">health_and_safety</span>
+                            Smart Healthcare. Connected People.
+                        </div>
+                        <h1 class="ml-hero-title">
+                            Better Conversations <br>for <span>Better Care</span>
+                        </h1>
+                        <p class="ml-hero-desc">
+                            AI-powered case taking, document analysis, and clinical decision support designed for patients, doctors, and healthcare teams — unified in one trustworthy platform.
+                        </p>
+                        <div class="ml-hero-buttons">
+                            <button type="button" class="ml-btn-primary" onclick="document.getElementById('ml-roles-gateway').scrollIntoView({behavior: 'smooth'})">
+                                <span>Get Started</span> <span class="material-symbols-outlined" style="font-size: 18px;">arrow_forward</span>
+                            </button>
+                            <button type="button" class="ml-btn-outline" onclick="launchVoiceCaseTaking()">
+                                <span class="material-symbols-outlined" style="font-size: 18px; color: #0284c7;">mic</span>
+                                <span>Try Voice Case-Taking</span>
                             </button>
                         </div>
-
-                        
-                        <div class="hero-ai-card" onclick="switchView('symptoms')" style="background: linear-gradient(135deg, #ffffff 0%, #f0fdfa 100%); border: 1.5px solid #99f6e4; border-radius: 14px; padding: 18px 20px; cursor: pointer; transition: all 0.25s ease; display: flex; flex-direction: column; justify-content: space-between; gap: 14px; box-shadow: 0 4px 14px rgba(13, 148, 136, 0.08);">
-                            <div>
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                                    <span class="material-symbols-outlined" style="font-size: 28px; color: var(--primary-light);">psychology</span>
-                                    <span style="background: #ccfbf1; color: #0f766e; font-size: 0.72rem; font-weight: 800; padding: 3px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.04em;">REAL-TIME AI GUIDANCE</span>
-                                </div>
-                                <h3 style="font-size: 1.15rem; font-weight: 800; color: #0f172a; margin: 0 0 6px 0;">
-                                    Symptoms to AI Guidance
-                                </h3>
-                                <p style="font-size: 0.83rem; color: #475569; margin: 0; line-height: 1.45;">
-                                    Describe symptoms in plain words to get real-time precautions, home remedies, triage advice &amp; Medicover Vizag doctor recommendations.
-                                </p>
+                        <div class="ml-stats-strip">
+                            <div class="ml-stat-item">
+                                <span class="ml-stat-number">10K+</span>
+                                <span class="ml-stat-label">Patients Served</span>
                             </div>
-                            <button type="button" class="btn-primary" style="background: linear-gradient(135deg, #0d9488, #0284c7); padding: 10px 16px; font-size: 0.86rem; font-weight: 700; width: 100%; justify-content: center; box-shadow: 0 4px 12px rgba(13, 148, 136, 0.25);">
-                                <span>💬</span> Consult Symptoms AI Assistant →
+                            <div class="ml-stat-item">
+                                <span class="ml-stat-number">50+</span>
+                                <span class="ml-stat-label">Healthcare Partners</span>
+                            </div>
+                            <div class="ml-stat-item">
+                                <span class="ml-stat-number">95%</span>
+                                <span class="ml-stat-label">Satisfaction Rate</span>
+                            </div>
+                            <div class="ml-stat-item">
+                                <span class="ml-stat-number">4</span>
+                                <span class="ml-stat-label">Languages Supported</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Quick Report Access Card -->
+                    <div style="background: white; border-radius: 20px; padding: 26px; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+                            <span class="material-symbols-outlined" style="font-size: 24px; color: #0284c7;">pin</span>
+                            <div>
+                                <h3 style="font-size: 1.15rem; font-weight: 800; color: #0f2744; margin: 0;">Instant Patient Access</h3>
+                                <div style="font-size: 0.78rem; color: #64748b;">Enter your credentials to view certified reports</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            <input type="text" id="hero-pat-id" class="patient-lookup-input" placeholder="Enter Patient ID (e.g. PAT-1001)" autocomplete="username" style="width: 100%;">
+                            <input type="password" id="hero-pat-pin" class="patient-lookup-input" placeholder="Enter Security PIN (e.g. 123456)" autocomplete="current-password" style="width: 100%;">
+                            <button type="button" class="ml-btn-primary" style="width: 100%; justify-content: center; padding: 12px;" onclick="handleHeroPatientLogin()">
+                                <span class="material-symbols-outlined" style="font-size: 18px;">lock_open</span> Access My Health Records
                             </button>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+                                <a href="javascript:void(0)" onclick="openPatientRegistrationModal()" style="font-size: 0.82rem; font-weight: 700; color: #0284c7; text-decoration: none;">New Patient? Register here →</a>
+                                <span style="font-size: 0.78rem; color: #94a3b8;">🔒 256-bit Encrypted</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            
-            <div class="biomarker-explorer-card">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+            <!-- FEATURE HIGHLIGHT PILLS -->
+            <div class="ml-pills-strip">
+                <div class="ml-feature-pill">
+                    <div class="ml-pill-icon blue"><span class="material-symbols-outlined">record_voice_over</span></div>
                     <div>
-                        <div style="display: inline-flex; align-items: center; gap: 6px; background: var(--primary-surface); color: var(--primary); border: 1px solid var(--primary-border); padding: 4px 12px; border-radius: 999px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">
-                            <span class="material-symbols-outlined" style="font-size: 16px; color: var(--primary);">biotech</span> Interactive Biological Reference Explorer
-                        </div>
-                        <h2 style="font-size: 1.45rem; font-weight: 800; color: var(--text-main);">
-                            Explore Clinical Biomarkers &amp; Reference Ranges
-                        </h2>
-                        <p style="color: var(--text-muted); font-size: 0.86rem; margin-top: 4px;">
-                            Click any key blood parameter below to view biological intervals, clinical interpretations, and what out-of-range findings indicate.
-                        </p>
+                        <div class="ml-pill-title">Talk Naturally</div>
+                        <div class="ml-pill-desc">Voice or text in your language</div>
                     </div>
                 </div>
-
-                
-                <div class="biomarker-chips-container">
-                    <button type="button" class="bio-chip-btn active" id="bio-btn-hb" onclick="selectBiomarker('hb')">🩸 Hemoglobin (Hb)</button>
-                    <button type="button" class="bio-chip-btn" id="bio-btn-plt" onclick="selectBiomarker('plt')">🦟 Platelet Count (PLT)</button>
-                    <button type="button" class="bio-chip-btn" id="bio-btn-wbc" onclick="selectBiomarker('wbc')">🛡️ WBC / Leukocytes</button>
-                    <button type="button" class="bio-chip-btn" id="bio-btn-bili" onclick="selectBiomarker('bili')">🫁 Total Bilirubin</button>
-                    <button type="button" class="bio-chip-btn" id="bio-btn-tsh" onclick="selectBiomarker('tsh')">🦋 TSH (Thyroid)</button>
-                    <button type="button" class="bio-chip-btn" id="bio-btn-alt" onclick="selectBiomarker('alt')">🧪 ALT / SGPT (Liver)</button>
-                    <button type="button" class="bio-chip-btn" id="bio-btn-glucose" onclick="selectBiomarker('glucose')">🔬 Fasting Glucose</button>
-                    <button type="button" class="bio-chip-btn" id="bio-btn-creat" onclick="selectBiomarker('creat')">🧬 Serum Creatinine</button>
-                </div>
-
-                
-                <div class="biomarker-display-grid">
+                <div class="ml-feature-pill">
+                    <div class="ml-pill-icon green"><span class="material-symbols-outlined">upload_file</span></div>
                     <div>
-                        <div style="font-size: 0.75rem; color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;" id="bio-category">Hematology &amp; Oxygen Transport</div>
-                        <h3 style="font-size: 1.35rem; font-weight: 800; color: var(--text-main); margin: 2px 0 8px 0;" id="bio-name">Hemoglobin (Hb)</h3>
-                        <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 14px;" id="bio-desc">
-                            Iron-rich protein in red blood cells that carries oxygen from the lungs to tissues throughout the body.
-                        </p>
-
-                        
-                        <div style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 12px; padding: 14px 16px;">
-                            <div style="display: flex; justify-content: space-between; font-size: 0.76rem; font-weight: 700; color: var(--text-muted);">
-                                <span>Low / Deficiency</span>
-                                <span style="color: var(--success); font-weight: 800;">Target Normal Range</span>
-                                <span>Elevated / High</span>
-                            </div>
-                            <div class="gauge-track">
-                                <div class="gauge-pointer" id="bio-pointer" style="left: 50%;">✓</div>
-                            </div>
-                            <div style="font-size: 0.84rem; font-weight: 800; color: var(--primary); text-align: center; margin-top: 6px;" id="bio-range">
-                                13.0 – 17.0 g/dL (Male) | 12.0 – 15.5 g/dL (Female)
-                            </div>
-                        </div>
+                        <div class="ml-pill-title">Share Reports</div>
+                        <div class="ml-pill-desc">Upload documents securely</div>
                     </div>
-
-                    
-                    <div style="display: flex; flex-direction: column; gap: 10px; justify-content: center;">
-                        <div style="background: #ffffff; border: 1px solid #fee2e2; border-left: 4px solid #ef4444; border-radius: 10px; padding: 12px 14px;">
-                            <strong style="color: #991b1b; font-size: 0.82rem; text-transform: uppercase;">⚠️ If Elevated:</strong>
-                            <div style="font-size: 0.82rem; color: var(--text-main); margin-top: 2px;" id="bio-high">Dehydration, chronic hypoxia, polycythemia vera, or high altitude living.</div>
-                        </div>
-                        <div style="background: #ffffff; border: 1px solid #fef3c7; border-left: 4px solid #f59e0b; border-radius: 10px; padding: 12px 14px;">
-                            <strong style="color: #92400e; font-size: 0.82rem; text-transform: uppercase;">🔻 If Low:</strong>
-                            <div style="font-size: 0.82rem; color: var(--text-main); margin-top: 2px;" id="bio-low">Iron deficiency anemia, blood loss, chronic kidney disease, or nutritional deficiencies.</div>
-                        </div>
-                        <div style="background: #ffffff; border: 1px solid #e0e7ff; border-left: 4px solid #6366f1; border-radius: 10px; padding: 12px 14px;">
-                            <strong style="color: #3730a3; font-size: 0.82rem; text-transform: uppercase;">🧪 Matching Lab Tests:</strong>
-                            <div style="font-size: 0.82rem; color: var(--text-main); margin-top: 2px;" id="bio-tests">Complete Blood Count (CBC), Serum Ferritin, Total Iron Binding Capacity (TIBC)</div>
-                        </div>
+                </div>
+                <div class="ml-feature-pill">
+                    <div class="ml-pill-icon purple"><span class="material-symbols-outlined">insights</span></div>
+                    <div>
+                        <div class="ml-pill-title">Get Clinical Insights</div>
+                        <div class="ml-pill-desc">AI-assisted differential diagnosis</div>
+                    </div>
+                </div>
+                <div class="ml-feature-pill">
+                    <div class="ml-pill-icon amber"><span class="material-symbols-outlined">groups</span></div>
+                    <div>
+                        <div class="ml-pill-title">Connected Care</div>
+                        <div class="ml-pill-desc">Patients, doctors & hospital staff</div>
                     </div>
                 </div>
             </div>
+
+            <!-- 2. ROLE SELECTION GATEWAY (Screen 2) -->
+            <div class="ml-role-section" id="ml-roles-gateway">
+                <div class="ml-section-header">
+                    <h2 class="ml-section-title">Choose Your Role</h2>
+                    <p class="ml-section-subtitle">Different people. A shared purpose. Better care for everyone.</p>
+                </div>
+
+                <div class="ml-role-grid">
+                    <!-- Card 1: Patient -->
+                    <div class="ml-role-card patient">
+                        <div>
+                            <div class="ml-role-header">
+                                <div class="ml-role-icon patient">
+                                    <span class="material-symbols-outlined">person</span>
+                                </div>
+                                <div>
+                                    <div class="ml-role-badge-tag">Self-Service Care</div>
+                                    <div class="ml-role-title">I am a Patient</div>
+                                </div>
+                            </div>
+                            <ul class="ml-role-list">
+                                <li><span>✓</span> Access certified lab reports &amp; timeline</li>
+                                <li><span>✓</span> Interactive voice case-taking in your language</li>
+                                <li><span>✓</span> Instant 6-digit PIN doctor sharing</li>
+                                <li><span>✓</span> Track longitudinal biomarker trends</li>
+                            </ul>
+                        </div>
+                        <button type="button" class="ml-role-btn patient" onclick="switchView('patient')">
+                            <span>Continue as Patient</span> <span class="material-symbols-outlined">arrow_forward</span>
+                        </button>
+                    </div>
+
+                    <!-- Card 2: Doctor -->
+                    <div class="ml-role-card doctor">
+                        <div>
+                            <div class="ml-role-header">
+                                <div class="ml-role-icon doctor">
+                                    <span class="material-symbols-outlined">stethoscope</span>
+                                </div>
+                                <div>
+                                    <div class="ml-role-badge-tag">Clinical Intelligence</div>
+                                    <div class="ml-role-title">I am a Doctor</div>
+                                </div>
+                            </div>
+                            <ul class="ml-role-list">
+                                <li><span>✓</span> SIH PS 26047 clinical case triage queue</li>
+                                <li><span>✓</span> Automated differential diagnosis probabilities</li>
+                                <li><span>✓</span> Review voice transcripts &amp; clinical summaries</li>
+                                <li><span>✓</span> Approve lab reports &amp; author digital prescriptions</li>
+                            </ul>
+                        </div>
+                        <button type="button" class="ml-role-btn doctor" onclick="switchView('admin')">
+                            <span>Continue as Doctor</span> <span class="material-symbols-outlined">arrow_forward</span>
+                        </button>
+                    </div>
+
+                    <!-- Card 3: Healthcare Staff -->
+                    <div class="ml-role-card staff">
+                        <div>
+                            <div class="ml-role-header">
+                                <div class="ml-role-icon staff">
+                                    <span class="material-symbols-outlined">local_hospital</span>
+                                </div>
+                                <div>
+                                    <div class="ml-role-badge-tag">Hospital Operations</div>
+                                    <div class="ml-role-title">I am Healthcare Staff</div>
+                                </div>
+                            </div>
+                            <ul class="ml-role-list">
+                                <li><span>✓</span> Outpatient registration &amp; appointment slips</li>
+                                <li><span>✓</span> Pathology accessioning &amp; report generation</li>
+                                <li><span>✓</span> Real-time Supabase ERP bed occupancy</li>
+                                <li><span>✓</span> Inpatient admission &amp; discharge workflows</li>
+                            </ul>
+                        </div>
+                        <button type="button" class="ml-role-btn staff" onclick="switchView('operations')">
+                            <span>Continue as Staff</span> <span class="material-symbols-outlined">arrow_forward</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QUICK ACTIONS ROW (Screen 1 Bottom) -->
+            <div class="ml-actions-grid">
+                <div class="ml-action-card search">
+                    <div>
+                        <div class="ml-action-header">
+                            <span class="material-symbols-outlined" style="font-size: 26px; color: #0f766e;">description</span>
+                            <h3>Find Your Reports</h3>
+                        </div>
+                        <p class="ml-action-desc">Already registered or submitted a case? Look up your reports and clinical updates instantly.</p>
+                    </div>
+                    <div class="ml-search-bar">
+                        <input type="text" id="quick-case-search" placeholder="Enter Patient ID (PAT-1001)" onkeydown="if(event.key==='Enter') { document.getElementById('hero-pat-id').value=this.value; handleHeroPatientLogin(); }">
+                        <button type="button" onclick="document.getElementById('hero-pat-id').value=document.getElementById('quick-case-search').value; handleHeroPatientLogin();">Search</button>
+                    </div>
+                </div>
+
+                <div class="ml-action-card analyzer" onclick="switchView('analyzer')" style="cursor: pointer;">
+                    <div>
+                        <div class="ml-action-header">
+                            <span class="material-symbols-outlined" style="font-size: 26px; color: #0284c7;">biotech</span>
+                            <h3>Medical Report Analyzer</h3>
+                        </div>
+                        <p class="ml-action-desc">Upload lab slips (PDF, JPG, PNG) for automated biomarker extraction and plain-language interpretation.</p>
+                    </div>
+                    <button type="button" class="ml-btn-primary" style="width: 100%; justify-content: center;">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">upload_file</span> Upload Report
+                    </button>
+                </div>
+
+                <div class="ml-action-card symptoms" onclick="switchView('symptoms')" style="cursor: pointer;">
+                    <div>
+                        <div class="ml-action-header">
+                            <span class="material-symbols-outlined" style="font-size: 26px; color: #7c3aed;">psychology</span>
+                            <h3>Clinical Symptom Checker</h3>
+                        </div>
+                        <p class="ml-action-desc">Describe your symptoms in simple everyday language to receive immediate precautions, home remedies, and triage advice.</p>
+                    </div>
+                    <button type="button" class="ml-btn-primary" style="background: linear-gradient(135deg, #7c3aed, #6d28d9); width: 100%; justify-content: center;">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">forum</span> Check Symptoms
+                    </button>
+                </div>
+            </div>
+
+            <!-- TRUST BADGES STRIP -->
+            <div class="ml-trust-strip">
+                <div class="ml-trust-item">
+                    <span class="material-symbols-outlined icon">verified_user</span>
+                    <div>
+                        <div class="title">Secure &amp; Private</div>
+                        <div class="sub">HIPAA &amp; clinical data privacy</div>
+                    </div>
+                </div>
+                <div class="ml-trust-item">
+                    <span class="material-symbols-outlined icon">language</span>
+                    <div>
+                        <div class="title">Multiple Languages</div>
+                        <div class="sub">English, Hindi, Telugu, Odia</div>
+                    </div>
+                </div>
+                <div class="ml-trust-item">
+                    <span class="material-symbols-outlined icon">admin_panel_settings</span>
+                    <div>
+                        <div class="title">Role-Based Access</div>
+                        <div class="sub">Patients, Doctors, and Staff</div>
+                    </div>
+                </div>
+                <div class="ml-trust-item">
+                    <span class="material-symbols-outlined icon">favorite</span>
+                    <div>
+                        <div class="title">Supporting Better Care</div>
+                        <div class="sub">Bridging patients &amp; clinicians</div>
+                    </div>
+                </div>
+            </div>
+
+
 
             
             <div class="disclaimer-box" style="margin-top: 16px;">
@@ -285,76 +400,184 @@
             </div>
 
             
-            <div id="patient-login-container" class="card" style="max-width: 550px; margin: 20px auto;">
-                <div class="card-header">
-                    <h2><span class="material-symbols-outlined" style="font-size: 22px; color: var(--primary);">lock</span> Patient Portal Authentication</h2>
-                </div>
-                <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 20px;">
-                    Please enter your Patient ID and Security PIN provided on your pathology receipt.
-                </p>
-                <div style="display: flex; flex-direction: column; gap: 14px;">
-                    <div class="form-group">
-                        <label>Patient ID</label>
-                        <input type="text" id="patient-id-input" class="search-input" placeholder="Enter Patient ID (e.g. PAT-1001)" value="" autocomplete="username">
+            <!-- SCREEN 3: PATIENT PORTAL LOGIN -->
+            <div id="patient-login-container" style="max-width: 900px; margin: 30px auto; background: white; border-radius: 24px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 12px 36px rgba(15, 23, 42, 0.06); display: grid; grid-template-columns: 1fr 1.2fr;">
+                <!-- Left side: Value proposition -->
+                <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); padding: 36px; display: flex; flex-direction: column; justify-content: space-between; border-right: 1px solid #bae6fd;">
+                    <div>
+                        <div style="display: inline-flex; align-items: center; gap: 6px; background: white; padding: 4px 12px; border-radius: 999px; font-size: 0.74rem; font-weight: 800; color: #0284c7; margin-bottom: 16px;">
+                            <span>🔐</span> Secure Patient Access
+                        </div>
+                        <h2 style="font-size: 2rem; font-weight: 800; color: #0c4a6e; line-height: 1.2; margin-bottom: 12px;">
+                            Your Health Journey <br><span style="color: #0284c7;">Starts Here</span>
+                        </h2>
+                        <p style="font-size: 0.92rem; color: #475569; line-height: 1.6; margin-bottom: 24px;">
+                            Access your certified lab reports, review doctor care directives, and engage with multilingual AI clinical case taking.
+                        </p>
+                        <div style="display: flex; flex-direction: column; gap: 14px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span class="material-symbols-outlined" style="color: #0284c7; font-size: 20px;">verified_user</span>
+                                <div style="font-size: 0.85rem; color: #1e293b; font-weight: 600;">Secure &amp; Private — HIPAA-compliant encryption</div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span class="material-symbols-outlined" style="color: #0284c7; font-size: 20px;">receipt_long</span>
+                                <div style="font-size: 0.85rem; color: #1e293b; font-weight: 600;">Easy Access — Digital reports available 24/7</div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span class="material-symbols-outlined" style="color: #0284c7; font-size: 20px;">psychology</span>
+                                <div style="font-size: 0.85rem; color: #1e293b; font-weight: 600;">Clinical AI Insights — Plain language explanations</div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Security PIN</label>
-                        <input type="password" id="patient-pin-input" class="search-input" placeholder="Enter Security PIN (e.g. PIN-1001)" value="" autocomplete="current-password">
+                    <div style="font-size: 0.76rem; color: #64748b; margin-top: 24px;">
+                        Need assistance? Ask at the reception desk or call hospital support.
                     </div>
-                    <button type="button" class="btn-primary" style="justify-content: center; margin-top: 6px;" onclick="handlePatientLogin()">
-                        <span class="material-symbols-outlined" style="font-size: 18px;">key</span> Authenticate &amp; Access Dashboard
-                    </button>
                 </div>
 
-                <div style="margin-top: 14px; padding: 12px 14px; background: #f0f9ff; border: 1.5px solid #bae6fd; border-radius: 10px; text-align: center;">
-                    <div style="font-size: 0.82rem; font-weight: 700; color: #0369a1; margin-bottom: 8px;">New Outpatient or First Consultation?</div>
-                    <button type="button" class="btn-primary" onclick="openPatientRegistrationModal()" style="width: 100%; justify-content: center; font-size: 0.84rem; font-weight: 700; background: linear-gradient(135deg, #0284c7, #0369a1);">
-                        <span class="material-symbols-outlined" style="font-size: 18px;">how_to_reg</span> Register New Patient &amp; Book Appointment
-                    </button>
-                </div>
-
-                <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--card-border);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <span style="font-size: 0.8rem; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;">Latest Registered Patients (Quick Select):</span>
-                        <button type="button" class="btn-secondary" style="padding: 2px 8px; font-size: 0.72rem;" onclick="loadPublicPatients()"><span>🔄</span> Refresh</button>
+                <!-- Right side: Login Form -->
+                <div style="padding: 36px 40px; display: flex; flex-direction: column; justify-content: center;">
+                    <div style="text-align: center; margin-bottom: 24px;">
+                        <h3 style="font-size: 1.45rem; font-weight: 800; color: #0f2744;">Patient Portal</h3>
+                        <p style="font-size: 0.84rem; color: #64748b; margin-top: 4px;">Login using your Patient ID and Security PIN</p>
                     </div>
-                    <div id="patient-quick-login-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px;">
+
+                    <div style="display: flex; flex-direction: column; gap: 14px;">
+                        <div class="form-group">
+                            <label style="font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 4px; display: block;">Patient ID</label>
+                            <div style="position: relative;">
+                                <input type="text" id="patient-id-input" class="search-input" placeholder="e.g. PAT-1001" style="width: 100%; padding: 11px 14px; border-radius: 10px; border: 1.5px solid #cbd5e1; font-size: 0.9rem;" autocomplete="username">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label style="font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 4px; display: block;">Security PIN</label>
+                            <div style="position: relative;">
+                                <input type="password" id="patient-pin-input" class="search-input" placeholder="e.g. 123456" style="width: 100%; padding: 11px 14px; border-radius: 10px; border: 1.5px solid #cbd5e1; font-size: 0.9rem;" autocomplete="current-password">
+                            </div>
+                        </div>
+                        <button type="button" class="ml-btn-primary" style="width: 100%; justify-content: center; padding: 13px; font-size: 0.95rem; margin-top: 6px;" onclick="handlePatientLogin()">
+                            <span>Access My Health Record</span> <span class="material-symbols-outlined" style="font-size: 18px;">arrow_forward</span>
+                        </button>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px; font-size: 0.82rem;">
+                        <a href="javascript:void(0)" onclick="openPatientRegistrationModal()" style="color: #0284c7; font-weight: 700; text-decoration: none;">New Patient? Register here →</a>
+                        <span style="color: #94a3b8;">🔒 Receipt PIN</span>
+                    </div>
+
+                    <div style="margin-top: 24px; padding-top: 18px; border-top: 1px solid #f1f5f9;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <span style="font-size: 0.74rem; color: #64748b; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Quick Demo Patients:</span>
+                            <button type="button" class="btn-secondary" style="padding: 2px 8px; font-size: 0.72rem;" onclick="loadPublicPatients()"><span>🔄</span> Refresh</button>
+                        </div>
+                        <div id="patient-quick-login-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 6px;"></div>
                     </div>
                 </div>
             </div>
 
             
+            <!-- SCREEN 4: PATIENT DASHBOARD -->
             <div id="patient-dashboard-container" style="display: none;">
-                
-                <div class="card card-accent-teal">
-                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
-                        <div>
-                            <div style="font-size: 0.75rem; color: var(--primary); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Authenticated Patient Portal</div>
-                            <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--text-main); margin-top: 2px;" id="dash-patient-name">Welcome, Priya Sharma</h2>
-                            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;" id="dash-patient-meta">
-                                Patient ID: <strong>PAT-1001</strong> &bull; Age: <strong>28 Yrs</strong> &bull; Gender: <strong>Female</strong>
-                            </div>
+                <!-- Patient Greeting Banner -->
+                <div style="background: white; border-radius: 20px; padding: 24px 28px; border: 1px solid #e2e8f0; margin-bottom: 22px; box-shadow: 0 4px 16px rgba(15, 23, 42, 0.03); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                    <div>
+                        <div style="font-size: 0.76rem; color: #0284c7; text-transform: uppercase; font-weight: 800; letter-spacing: 0.06em; margin-bottom: 2px;">Patient Care Portal</div>
+                        <h2 style="font-size: 1.85rem; font-weight: 800; color: #0f2744; margin: 0;" id="dash-patient-name">Welcome Back!</h2>
+                        <div style="font-size: 0.88rem; color: #64748b; margin-top: 4px;" id="dash-patient-meta">
+                            Patient ID: <strong>PAT-1001</strong> &bull; Age: <strong>28 Yrs</strong> &bull; Gender: <strong>Female</strong>
                         </div>
-                        <div style="display: flex; gap: 10px;">
-                            <button type="button" class="btn-secondary" onclick="handlePatientLogout()"><span>🚪</span> Logout</button>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <button type="button" class="ml-btn-outline" style="padding: 8px 16px; font-size: 0.84rem; border-color: #0284c7; color: #0284c7;" onclick="shareCurrentReport('')" title="Generate secure 6-digit Doctor Access PIN">
+                            <span class="material-symbols-outlined" style="font-size: 18px;">share</span> Share with Doctor (PIN)
+                        </button>
+                        <button type="button" class="btn-secondary" style="padding: 8px 16px; font-size: 0.84rem;" onclick="handlePatientLogout()">
+                            <span>🚪</span> Logout
+                        </button>
+                    </div>
+                </div>
+
+                <!-- SCREEN 4: 4 METRIC TILES -->
+                <div class="ml-kpi-grid">
+                    <div class="ml-kpi-card" style="background: #f0f9ff; border-color: #bae6fd; cursor: pointer;" onclick="document.getElementById('patient-reports-list-container').scrollIntoView({behavior: 'smooth'})">
+                        <div class="ml-kpi-icon" style="background: #0284c7; color: white;">
+                            <span class="material-symbols-outlined">description</span>
+                        </div>
+                        <div>
+                            <div class="ml-kpi-num" id="pstat-total-reports">1</div>
+                            <div class="ml-kpi-label">Reports on File &bull; View →</div>
+                        </div>
+                    </div>
+
+                    <div class="ml-kpi-card" style="background: #ecfdf5; border-color: #a7f3d0;">
+                        <div class="ml-kpi-icon" style="background: #10b981; color: white;">
+                            <span class="material-symbols-outlined">calendar_month</span>
+                        </div>
+                        <div>
+                            <div class="ml-kpi-num" id="pstat-appointments">1</div>
+                            <div class="ml-kpi-label">Upcoming Appointment</div>
+                        </div>
+                    </div>
+
+                    <div class="ml-kpi-card" style="background: #faf5ff; border-color: #e9d5ff; cursor: pointer;" onclick="document.getElementById('patient-reminders-card').scrollIntoView({behavior: 'smooth'})">
+                        <div class="ml-kpi-icon" style="background: #8b5cf6; color: white;">
+                            <span class="material-symbols-outlined">notifications_active</span>
+                        </div>
+                        <div>
+                            <div class="ml-kpi-num" id="pstat-reminders">2</div>
+                            <div class="ml-kpi-label">Care Reminders &bull; Pending →</div>
+                        </div>
+                    </div>
+
+                    <div class="ml-kpi-card" style="background: #f8fafc; border-color: #e2e8f0;">
+                        <div class="ml-kpi-icon" style="background: #059669; color: white;">
+                            <span class="material-symbols-outlined">verified</span>
+                        </div>
+                        <div>
+                            <div class="ml-kpi-num" id="pstat-finalized-reports">1</div>
+                            <div class="ml-kpi-label">Finalized Official Reports</div>
                         </div>
                     </div>
                 </div>
 
-                
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px;">
-                    <div class="card" style="padding: 16px; margin-bottom: 0;">
-                        <div style="font-size: 0.74rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700;">Total Reports on File</div>
-                        <div style="font-size: 1.8rem; font-weight: 800; color: var(--primary); margin-top: 4px;" id="pstat-total-reports">1</div>
+                <!-- LATEST REPORT & UPCOMING APPOINTMENT ROW (Screen 4) -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px; margin-bottom: 22px;">
+                    <div style="background: white; border-radius: 18px; padding: 22px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);">
+                        <div>
+                            <div style="font-size: 0.74rem; font-weight: 800; color: #0284c7; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">Latest Certified Report</div>
+                            <h4 style="font-size: 1.12rem; font-weight: 800; color: #0f2744; margin: 0 0 6px;" id="p-dash-latest-test">Complete Blood Count (CBC)</h4>
+                            <div style="font-size: 0.82rem; color: #64748b;" id="p-dash-latest-meta">Verified by Clinical Pathology Department</div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 12px; border-top: 1px solid #f1f5f9;">
+                            <span class="flag-badge flag-normal" style="font-size: 0.76rem;">Finalized</span>
+                            <button type="button" class="ml-btn-outline" style="padding: 6px 14px; font-size: 0.8rem;" onclick="document.getElementById('patient-reports-list-container').scrollIntoView({behavior: 'smooth'})">View Details →</button>
+                        </div>
                     </div>
-                    <div class="card" style="padding: 16px; margin-bottom: 0;">
-                        <div style="font-size: 0.74rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700;">Finalized Reports</div>
-                        <div style="font-size: 1.8rem; font-weight: 800; color: var(--success); margin-top: 4px;" id="pstat-finalized-reports">1</div>
+
+                    <div style="background: white; border-radius: 18px; padding: 22px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);">
+                        <div>
+                            <div style="font-size: 0.74rem; font-weight: 800; color: #10b981; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">Upcoming Clinical Consultation</div>
+                            <h4 style="font-size: 1.12rem; font-weight: 800; color: #0f2744; margin: 0 0 6px;">General Medicine Follow-Up</h4>
+                            <div style="font-size: 0.82rem; color: #64748b;">Medicover Hospital &bull; OPD Clinic Room 204</div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 12px; border-top: 1px solid #f1f5f9;">
+                            <span style="font-size: 0.82rem; font-weight: 700; color: #1e293b;">📅 Scheduled</span>
+                            <button type="button" class="ml-btn-outline" style="padding: 6px 14px; font-size: 0.8rem;" onclick="openPatientRegistrationModal()">Manage →</button>
+                        </div>
                     </div>
-                    <div class="card" style="padding: 16px; margin-bottom: 0;">
-                        <div style="font-size: 0.74rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700;">Security Status</div>
-                        <div style="font-size: 1.05rem; font-weight: 700; color: var(--primary-light); margin-top: 8px;">✓ Isolated Session</div>
+                </div>
+
+                <!-- SYMPTOM GUIDANCE PROMPT STRIP (Screen 4 Bottom Banner) -->
+                <div style="background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%); border-radius: 18px; padding: 20px 24px; border: 1.5px solid #e9d5ff; margin-bottom: 22px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+                    <div style="display: flex; align-items: center; gap: 14px;">
+                        <span class="material-symbols-outlined" style="font-size: 32px; color: #8b5cf6;">psychology</span>
+                        <div>
+                            <h4 style="font-size: 1.05rem; font-weight: 800; color: #4c1d95; margin: 0;">Need clinical triage? Try AI Symptom Guidance</h4>
+                            <p style="font-size: 0.83rem; color: #6b21a8; margin: 2px 0 0;">Describe how you are feeling in your language to get immediate evidence-based precautions and remedies.</p>
+                        </div>
                     </div>
+                    <button type="button" class="ml-btn-primary" style="background: #7c3aed; padding: 10px 20px; font-size: 0.86rem;" onclick="switchView('symptoms')">
+                        <span>Check Symptoms</span> <span class="material-symbols-outlined" style="font-size: 16px;">arrow_forward</span>
+                    </button>
                 </div>
 
 
@@ -485,39 +708,83 @@
             </div>
 
             
+            <!-- SCREEN 5: DOCTOR & CLINICAL MANAGEMENT DASHBOARD -->
             <div id="admin-dashboard-box" style="display: none;">
-                
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px;">
-                    <div class="card" style="padding: 16px; margin-bottom: 0;">
-                        <div style="font-size: 0.78rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Total Registered Patients</div>
-                        <div style="font-size: 1.8rem; font-weight: 800; color: #38bdf8; margin-top: 4px;" id="stat-patients-count">4</div>
+                <!-- Doctor Greeting Banner -->
+                <div style="background: white; border-radius: 20px; padding: 24px 28px; border: 1px solid #e2e8f0; margin-bottom: 22px; box-shadow: 0 4px 16px rgba(15, 23, 42, 0.03); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                    <div>
+                        <div style="font-size: 0.76rem; color: #10b981; text-transform: uppercase; font-weight: 800; letter-spacing: 0.06em; margin-bottom: 2px;">Clinical Decision Support</div>
+                        <h2 style="font-size: 1.85rem; font-weight: 800; color: #0f2744; margin: 0;">Good morning, Dr. Sharma!</h2>
+                        <div style="font-size: 0.88rem; color: #64748b; margin-top: 4px;">
+                            Here's your clinical queue, SIH PS 26047 cases, and laboratory accessioning for today.
+                        </div>
                     </div>
-                    <div class="card" style="padding: 16px; margin-bottom: 0;">
-                        <div style="font-size: 0.78rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Total Lab Reports</div>
-                        <div style="font-size: 1.8rem; font-weight: 800; color: #818cf8; margin-top: 4px;" id="stat-reports-count">4</div>
-                    </div>
-                    <div class="card" style="padding: 16px; margin-bottom: 0;">
-                        <div style="font-size: 0.78rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Finalized Reports</div>
-                        <div style="font-size: 1.8rem; font-weight: 800; color: #34d399; margin-top: 4px;" id="stat-finalized-count">4</div>
-                    </div>
-                    <div class="card" style="padding: 16px; margin-bottom: 0;">
-                        <div style="font-size: 0.78rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Validated ML Pipelines</div>
-                        <div style="font-size: 1.8rem; font-weight: 800; color: #a7f3d0; margin-top: 4px;">5 / 5 Active</div>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button type="button" class="ml-btn-primary" style="padding: 8px 16px; font-size: 0.85rem;" onclick="openNewReportModal()">
+                            <span class="material-symbols-outlined" style="font-size: 18px;">note_add</span> + Create Lab Report
+                        </button>
+                        <button type="button" class="ml-btn-outline" style="padding: 8px 14px; font-size: 0.85rem;" onclick="openNewPatientModal()">
+                            <span class="material-symbols-outlined" style="font-size: 18px; color: #0284c7;">person_add</span> + Patient
+                        </button>
+                        <button type="button" class="btn-secondary" style="padding: 8px 14px; font-size: 0.85rem;" onclick="switchView('analyzer')">
+                            <span>🤖</span> Analyzer
+                        </button>
+                        <button type="button" class="btn-secondary" style="padding: 8px 14px; font-size: 0.85rem;" onclick="switchView('sandbox')">
+                            <span>⚡</span> ML
+                        </button>
+                        <button type="button" class="btn-danger" style="padding: 8px 14px; font-size: 0.85rem;" onclick="handleAdminLogout()">
+                            <span>🚪</span> Logout
+                        </button>
                     </div>
                 </div>
 
-                
+                <!-- 4 CLINICAL KPI TILES (Screen 5) -->
+                <div class="ml-kpi-grid">
+                    <div class="ml-kpi-card" style="background: #f0f9ff; border-color: #bae6fd;">
+                        <div class="ml-kpi-icon" style="background: #0284c7; color: white;">
+                            <span class="material-symbols-outlined">group</span>
+                        </div>
+                        <div>
+                            <div class="ml-kpi-num" id="stat-patients-count">28</div>
+                            <div class="ml-kpi-label">Active Registered Patients</div>
+                        </div>
+                    </div>
+
+                    <div class="ml-kpi-card" style="background: #ecfdf5; border-color: #a7f3d0;">
+                        <div class="ml-kpi-icon" style="background: #10b981; color: white;">
+                            <span class="material-symbols-outlined">assignment</span>
+                        </div>
+                        <div>
+                            <div class="ml-kpi-num" id="stat-reports-count">15</div>
+                            <div class="ml-kpi-label">Total Lab Reports</div>
+                        </div>
+                    </div>
+
+                    <div class="ml-kpi-card" style="background: #faf5ff; border-color: #e9d5ff;">
+                        <div class="ml-kpi-icon" style="background: #8b5cf6; color: white;">
+                            <span class="material-symbols-outlined">task_alt</span>
+                        </div>
+                        <div>
+                            <div class="ml-kpi-num" id="stat-finalized-count">12</div>
+                            <div class="ml-kpi-label">Finalized &amp; Certified</div>
+                        </div>
+                    </div>
+
+                    <div class="ml-kpi-card" style="background: #fef2f2; border-color: #fecaca;">
+                        <div class="ml-kpi-icon" style="background: #ef4444; color: white;">
+                            <span class="material-symbols-outlined">crisis_alert</span>
+                        </div>
+                        <div>
+                            <div class="ml-kpi-num" style="color: #b91c1c;">5 / 5</div>
+                            <div class="ml-kpi-label" style="color: #991b1b;">Active ML Decision Pipelines</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CLINICAL QUEUE & ACCESSIONING CONTAINER -->
                 <div class="card">
                     <div class="card-header">
-                        <h2><span class="material-symbols-outlined" style="color: var(--primary);">medical_services</span> Pathology Management &amp; Laboratory Operations</h2>
-                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                            <button type="button" class="btn-secondary" onclick="openNewPatientModal()"><span>👤</span> + Register Patient</button>
-                            <button type="button" class="btn-primary" onclick="openNewReportModal()"><span>📄</span> + Create Lab Report</button>
-                            <button type="button" class="btn-secondary" onclick="switchView('sandbox')"><span>⚡</span> ML Sandbox</button>
-                            <button type="button" class="btn-secondary" onclick="switchView('analyzer')"><span>🤖</span> AI Analyzer</button>
-                            <button type="button" class="btn-secondary" onclick="adminResetDemoData()" style="color: #38bdf8; border-color: rgba(56,189,248,0.4);" title="Reset to 4 Clean Demo Reports"><span>🔄</span> Reset Demo</button>
-                            <button type="button" class="btn-danger" onclick="handleAdminLogout()"><span>🚪</span> Logout</button>
-                        </div>
+                        <h2><span class="material-symbols-outlined" style="color: var(--primary);">medical_services</span> Clinical Triage &amp; Pathology Operations</h2>
                     </div>
 
                     
