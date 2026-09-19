@@ -9,6 +9,8 @@ Transforms clinical case taking into an adaptive, conversational interview:
 - Maximum turns safety cap (12-14 questions max) and intelligent completion criteria
 """
 
+import os
+import logging
 from typing import Dict, Any, List, Optional
 from .ontology import (
     CLINICAL_ONTOLOGY,
@@ -177,9 +179,20 @@ class ClinicalQuestionEngine:
         raw_translations = {}
         if raw_text_dict:
             for l_code, l_txt in raw_text_dict.items():
-                raw_translations[l_code] = f"{memory_prefix}{l_txt}"
+                pfx = self.extractor.build_contextual_conversation_prefix(state, chosen_id, l_code)
+                raw_translations[l_code] = f"{pfx}{l_txt}"
         else:
             raw_translations["en-IN"] = final_text
+
+        chosen_picks = chosen.get("quick_picks", [])
+
+        # 7. Dynamic AI Rephraser (Augments question with deep context if online)
+        ai_res = self._attempt_ai_rephrase(chosen, state, final_text, language_code)
+        if ai_res and ai_res.get("text"):
+            final_text = ai_res["text"]
+            raw_translations[language_code] = final_text
+            if ai_res.get("quick_picks") and len(ai_res["quick_picks"]) >= 2:
+                chosen_picks = ai_res["quick_picks"]
 
         section_name = chosen.get("section") or chosen.get("category") or candidate_questions[0]["domain"].replace("_", " ").title()
 
@@ -192,10 +205,100 @@ class ClinicalQuestionEngine:
             "text": final_text,
             "question": raw_translations,
             "raw_q": chosen,
-            "quick_picks": chosen.get("quick_picks", []),
+            "quick_picks": chosen_picks,
             "red_flag_triggers": chosen.get("red_flag_triggers", []),
-            "domain": candidate_questions[0]["domain"]
+            "domain": candidate_questions[0]["domain"],
+            "is_followup": True
         }
+
+    def _attempt_ai_rephrase(self, chosen: Dict[str, Any], state: Dict[str, Any], base_text: str, language_code: str) -> Optional[Dict[str, Any]]:
+        """
+        Attempts to use OpenRouter AI API to rephrase the question naturally based on
+        the patient's exact previous utterance, with a fast timeout.
+        Returns dict with "text" and "quick_picks" or None on timeout/error.
+        """
+        try:
+            from disease_prediction.api.openrouter_service import get_api_key, OPENROUTER_API_URL, SITE_URL, APP_NAME
+            import requests
+            import json
+            import re
+            
+            api_key = get_api_key()
+            if not api_key:
+                return None
+
+            transcript = state.get("conversation_transcript", [])
+            patient_turns = [t.get("text") for t in transcript if t.get("speaker") == "patient" and t.get("text")]
+            last_stmt = patient_turns[-1] if patient_turns else ""
+            if not last_stmt or len(last_stmt.strip()) < 3:
+                return None
+
+            complaints = state.get("chief_complaints", [])
+            primary_complaint = complaints[0] if complaints else "symptoms"
+
+            candidate_models = [
+                "nex-agi/nex-n2.5-mini:free",
+                "deepseek/deepseek-v4-flash-0731:free",
+                os.getenv("OPENROUTER_FOLLOWUP_MODEL", "openrouter/free")
+            ]
+
+            prompt = (
+                f"You are an empathetic, highly skilled doctor/nurse taking patient history in an outpatient hospital clinic.\n"
+                f"Patient's recent statement: \"{last_stmt}\"\n"
+                f"Reported complaint: \"{primary_complaint}\"\n"
+                f"Clinical objective you need to ask: \"{base_text}\"\n"
+                f"Target Language: {language_code}\n\n"
+                f"Instructions:\n"
+                f"1. Acknowledge what the patient shared with clinical empathy and warmth, and smoothly ask the clinical objective in {language_code}.\n"
+                f"2. Provide 3 to 4 concise quick-pick answer choices in the same language.\n"
+                f"3. Strict rule: DO NOT diagnose, advise, or prescribe.\n"
+                f"4. Do NOT output thought/reasoning text. Output ONLY the raw JSON object.\n\n"
+                f'{{"question": "Warm empathetic question here", "quick_picks": ["Option 1", "Option 2", "Option 3"]}}'
+            )
+
+            headers = {
+                "Authorization": f"Bearer {api_key}",
+                "HTTP-Referer": SITE_URL,
+                "X-Title": APP_NAME,
+                "Content-Type": "application/json"
+            }
+
+            for model_name in candidate_models:
+                try:
+                    payload = {
+                        "model": model_name,
+                        "messages": [
+                            {"role": "system", "content": "You are a clinical inquiry rephraser. Return ONLY the JSON object. No reasoning or thoughts."},
+                            {"role": "user", "content": prompt}
+                        ],
+                        "temperature": 0.2,
+                        "max_tokens": 300
+                    }
+                    resp = requests.post(OPENROUTER_API_URL, headers=headers, json=payload, timeout=(1.5, 4.5))
+                    if resp.status_code == 200:
+                        choice = resp.json().get("choices", [{}])[0]
+                        msg = choice.get("message", {})
+                        raw_c = (msg.get("content") or msg.get("reasoning") or "").strip()
+                        # Clean common quote encoding glitches
+                        raw_c = raw_c.replace("\ufffd", "'").replace("‘", "'").replace("’", "'").replace("“", '"').replace("”", '"')
+                        m = re.search(r'(\{[\s\S]*\})', raw_c)
+                        if m:
+                            parsed = json.loads(m.group(1))
+                            q_txt = str(parsed.get("question") or "").strip()
+                            if q_txt and len(q_txt) > 8 and "..." not in q_txt and "Warm empathetic question" not in q_txt:
+                                q_picks = [str(x).strip().replace("\ufffd", "'") for x in parsed.get("quick_picks", []) if str(x).strip() and "Option" not in str(x)][:4]
+                                return {
+                                    "text": q_txt,
+                                    "quick_picks": q_picks if len(q_picks) >= 2 else (chosen.get("quick_picks") or [])
+                                }
+                except Exception as e:
+                    import logging
+                    logging.getLogger("clinical_interview").warning(f"AI Rephrase attempt failed on {model_name}: {e}")
+                    continue
+        except Exception as e:
+            import logging
+            logging.getLogger("clinical_interview").warning(f"AI Rephrase outer error: {e}")
+        return None
 
     def _is_parameter_already_known(self, state_or_hpi: Dict[str, Any], state_key: str) -> bool:
         """

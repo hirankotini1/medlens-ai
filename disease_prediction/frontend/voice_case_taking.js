@@ -1495,26 +1495,34 @@ function _voiceHandleDocumentRequest(docReq, nextQ) {
     if (!banner) {
         banner = document.createElement('div');
         banner.id = 'voice-doc-request-banner';
-        const parent = document.getElementById('voice-transcript-card') || document.querySelector('.voice-interview-main');
-        if (parent) parent.prepend(banner);
+        const target = document.getElementById('voice-touch-options') || document.querySelector('.voice-ai-bubble') || document.getElementById('voice-step-interview');
+        if (target && target.id === 'voice-touch-options' && target.parentNode) {
+            target.parentNode.insertBefore(banner, target);
+        } else if (target) {
+            target.prepend(banner);
+        }
     }
 
     if (banner) {
         banner.style.display = 'block';
-        banner.style.cssText = 'background:#f0f9ff; border:1.5px solid #7dd3fc; border-radius:10px; padding:16px; margin-bottom:14px; box-shadow:0 2px 8px rgba(2,132,199,0.06);';
+        banner.style.cssText = 'background: linear-gradient(135deg, #f0fdf4, #e0f2fe); border: 2px solid #0284c7; border-radius: 12px; padding: 16px 20px; margin: 14px 0; box-shadow: 0 4px 14px rgba(2,132,199,0.12); text-align: left;';
         banner.innerHTML = `
-            <div style="display:flex; align-items:flex-start; gap:12px;">
-                <span class="material-symbols-outlined" style="font-size:28px; color:#0284c7;">attach_file</span>
+            <div style="display:flex; align-items:flex-start; gap:14px;">
+                <span class="material-symbols-outlined" style="font-size:32px; color:#0284c7; background:#fff; padding:6px; border-radius:50%; box-shadow:0 2px 6px rgba(0,0,0,0.06);">attach_file</span>
                 <div style="flex:1;">
-                    <div style="font-size:0.92rem; font-weight:700; color:#0c4a6e;">${escapeHtml(docReq.display_prompt)}</div>
-                    <div style="font-size:0.75rem; color:#0369a1; margin-top:4px;">${escapeHtml(docReq.reason)}</div>
-                    <div style="display:flex; gap:10px; margin-top:12px; align-items:center; flex-wrap:wrap;">
-                        <label class="btn-primary" style="background:#0284c7; color:#fff; font-size:0.8rem; padding:6px 14px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; border-radius:6px; border:none;">
-                            <span class="material-symbols-outlined" style="font-size:16px;">upload_file</span> 📎 Upload Document
-                            <input type="file" id="voice-inline-doc-input" accept="image/*,.pdf,.txt" style="display:none;" onchange="_voiceHandleInlineDocUpload(event, '${docReq.request_id}', '${docReq.request_type}')">
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                        <span style="font-size:0.72rem; font-weight:800; background:#0284c7; color:#fff; padding:2px 8px; border-radius:999px; text-transform:uppercase;">Contextual Document Upload</span>
+                        <span style="font-size:0.75rem; color:#0369a1; font-weight:600;">Optional</span>
+                    </div>
+                    <div style="font-size:1.02rem; font-weight:800; color:#0c4a6e;">${escapeHtml(docReq.display_prompt)}</div>
+                    <div style="font-size:0.82rem; color:#334155; margin-top:6px; line-height:1.4;">${escapeHtml(docReq.reason)}</div>
+                    <div style="display:flex; gap:12px; margin-top:14px; align-items:center; flex-wrap:wrap;">
+                        <label class="btn-primary" style="background:#0284c7; color:#fff; font-size:0.85rem; font-weight:700; padding:8px 18px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; border-radius:8px; border:none; box-shadow:0 2px 6px rgba(2,132,199,0.25);">
+                            <span class="material-symbols-outlined" style="font-size:18px;">upload_file</span> 📤 Upload PDF / Image
+                            <input type="file" id="voice-inline-doc-input" accept="image/*,.pdf,.txt" style="display:none;" onchange="_voiceHandleInlineDocUpload(event, '${docReq.request_id}', '${docReq.document_type || docReq.request_type}')">
                         </label>
-                        <button type="button" class="btn-secondary" style="font-size:0.8rem; padding:6px 14px; border-radius:6px; background:#fff; border:1px solid #cbd5e1; cursor:pointer;" onclick="_voiceSkipDocumentRequest('${docReq.request_id}')">
-                            Skip / Continue
+                        <button type="button" class="btn-secondary" style="font-size:0.82rem; padding:8px 16px; border-radius:8px; background:#fff; border:1.5px solid #cbd5e1; color:#475569; font-weight:600; cursor:pointer;" onclick="_voiceSkipDocumentRequest('${docReq.request_id}')">
+                            Skip / Don't Have It →
                         </button>
                     </div>
                 </div>
@@ -1629,12 +1637,34 @@ async function _voiceHandleSpontaneousDocUpload(event) {
             if (typeof showToast === 'function') {
                 showToast(`✓ Document added to case: ${file.name}`, 'success');
             }
-            if (!_voiceSession.attachedDocuments) _voiceSession.attachedDocuments = [];
-            _voiceSession.attachedDocuments.push({
+            const docObj = {
                 filename: file.name,
                 size: (file.size / 1024).toFixed(1) + ' KB',
                 time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
-            });
+            };
+            if (!_voiceSession.attachedDocuments) _voiceSession.attachedDocuments = [];
+            _voiceSession.attachedDocuments.push(docObj);
+
+            if (typeof attachedVoiceDocuments !== 'undefined') {
+                attachedVoiceDocuments.push(docObj);
+                if (typeof renderVoiceAttachedBadges === 'function') renderVoiceAttachedBadges();
+            }
+
+            // Show immediate in-chat visual acknowledgment banner
+            const fuBadge = document.getElementById('voice-followup-badge');
+            const fuText = document.getElementById('voice-followup-text');
+            if (fuBadge && fuText) {
+                fuBadge.style.display = 'inline-flex';
+                fuBadge.style.background = '#f0fdf4';
+                fuBadge.style.borderColor = '#86efac';
+                fuBadge.style.color = '#15803d';
+                fuText.innerHTML = `<strong>✓ Document Attached:</strong> ${escapeHtml(file.name)} — OCR extracted findings incorporated.`;
+            }
+
+            const statusTextEl = document.getElementById('voice-mic-status-text');
+            if (statusTextEl) {
+                statusTextEl.textContent = `✓ Document attached (${file.name}). Tap mic or options to continue.`;
+            }
         }
     } catch (e) {
         console.warn('[VoiceCT] Spontaneous doc upload error:', e);

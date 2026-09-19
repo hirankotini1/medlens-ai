@@ -223,23 +223,102 @@ class ClinicalAnswerExtractor:
 
     def build_contextual_conversation_prefix(self, state: Dict[str, Any], question_id: str, lang_code: str = "en-IN") -> str:
         """
-        Creates natural conversation memory:
-        e.g., 'You mentioned the fever started 3 days ago. Has it been continuous or coming and going?'
+        Creates natural, empathetic conversation memory acknowledging previous patient statements.
+        Supports multi-parameter contextual memory across en, hi, te, and or.
         """
         hpi = state.get("hpi", {})
         complaints = state.get("chief_complaints", [])
-        primary_complaint = complaints[0] if complaints else "problem"
+        primary = complaints[0] if complaints else "problem"
+        clean_primary = primary.replace("_", " ")
 
-        duration = hpi.get("duration")
-        if duration and "pattern" in question_id:
+        def get_val(key):
+            item = hpi.get(key)
+            if isinstance(item, dict):
+                return item.get("value")
+            return item
+
+        duration = get_val("duration")
+        location = get_val("location")
+        severity = get_val("severity")
+
+        # 1. Questions regarding Radiation / Spreading
+        if "radiation" in question_id or "spread" in question_id:
+            if location and duration:
+                if lang_code == "hi-IN":
+                    return f"समझ गया, आपको {duration} से {location} में दर्द है। "
+                elif lang_code == "te-IN":
+                    return f"అర్థమైంది, మీకు {duration} నుండి {location}లో అసౌకర్యంగా ఉంది. "
+                elif lang_code == "or-IN":
+                    return f"ବୁଝିପାରିଲି, ଆପଣଙ୍କୁ {duration} ଧରି {location}ରେ ଯନ୍ତ୍ରଣା ହେଉଛି। "
+                return f"Understood. Since this {clean_primary} has been present for {duration} in your {location}: "
+            elif duration:
+                if lang_code == "hi-IN":
+                    return f"जैसा कि आपने बताया कि यह {duration} से है, "
+                elif lang_code == "te-IN":
+                    return f"మీరు చెప్పినట్లు ఇది {duration} నుండి ఉంది, "
+                elif lang_code == "or-IN":
+                    return f"ଆପଣ କହିବା ଅନୁସାରେ ଏହା {duration} ଧରି ହେଉଛି, "
+                return f"Noted that this began {duration} ago. "
+
+        # 2. Questions regarding Severity / Intensity
+        if "severity" in question_id or "scale" in question_id:
+            if lang_code == "hi-IN":
+                return f"इस {clean_primary} की गंभीरता समझने के लिए: "
+            elif lang_code == "te-IN":
+                return f"ఈ {clean_primary} తీవ్రతను అర్థం చేసుకోవడానికి: "
+            elif lang_code == "or-IN":
+                return f"ଏହି {clean_primary}ର ତୀବ୍ରତା ବୁଝିବା ପାଇଁ: "
+            return f"To gauge how intense this {clean_primary} is right now: "
+
+        # 3. Questions regarding Triggers & Relieving Factors
+        if "trigger" in question_id or "aggravat" in question_id or "reliev" in question_id:
+            if lang_code == "hi-IN":
+                return f"यह जानने के लिए कि क्या चीज इसे बढ़ाती या घटाती है: "
+            elif lang_code == "te-IN":
+                return f"ఏది దీన్ని పెంచుతుందో లేదా తగ్గిస్తుందో తెలుసుకోవడానికి: "
+            elif lang_code == "or-IN":
+                return f"କେଉଁ କାରଣରୁ ଏହା ବଢ଼ୁଛି ବା କମୁଛି ଜାଣିବା ପାଇଁ: "
+            return f"Regarding your {clean_primary}, to see what brings it on or eases it: "
+
+        # 4. Questions regarding Pain Character / Quality
+        if "character" in question_id or "type" in question_id:
+            if lang_code == "hi-IN":
+                return f"दर्द का स्वरूप समझने के लिए: "
+            elif lang_code == "te-IN":
+                return f"నొప్పి రకాన్ని స్పష్టంగా అర్థం చేసుకోవడానికి: "
+            elif lang_code == "or-IN":
+                return f"ଯନ୍ତ୍ରଣାର ପ୍ରକାର ବୁଝିବା ପାଇଁ: "
+            return f"To understand the exact sensation of this {clean_primary}: "
+
+        # 5. Questions regarding Medication History
+        if "medication" in question_id or "med." in question_id or "drug" in question_id:
+            if lang_code == "hi-IN":
+                return f"डॉक्टर द्वारा सुरक्षित परामर्श और दवा समीक्षा के लिए: "
+            elif lang_code == "te-IN":
+                return f"వైద్యుల సురక్షిత చికిత్స మరియు ఔషధ సమీక్ష కోసం: "
+            elif lang_code == "or-IN":
+                return f"ଡାକ୍ତରଙ୍କ ସଠିକ୍ ପରାମର୍ଶ ଏବଂ ଔଷଧ ଯାଞ୍ଚ ପାଇଁ: "
+            return f"For your attending physician to safely review your treatment profile: "
+
+        # 6. Questions regarding Allergies
+        if "allergy" in question_id:
+            if lang_code == "hi-IN":
+                return f"आपकी सुरक्षा और सही दवा चयन के लिए: "
+            elif lang_code == "te-IN":
+                return f"మీ భద్రత మరియు సరైన ఔషధ ఎంపిక కోసం: "
+            elif lang_code == "or-IN":
+                return f"ଆପଣଙ୍କ ସୁରକ୍ଷା ଏବଂ ସଠିକ୍ ଔଷଧ ନିର୍ଦ୍ଧାରଣ ପାଇଁ: "
+            return f"To prevent any adverse reactions with prescribed treatments: "
+
+        # Default Duration Memory
+        if duration and ("pattern" in question_id or "onset" in question_id):
             if lang_code == "hi-IN":
                 return f"जैसा कि आपने बताया कि यह {duration} से है: "
             elif lang_code == "te-IN":
                 return f"మీరు పేర్కొన్నట్లు ఇది {duration} నుండి ఉంది: "
             elif lang_code == "or-IN":
                 return f"ଆପଣ କହିବା ଅନୁଯାୟୀ ଏହା {duration} ଧରି ହେଉଛି: "
-            else:
-                return f"You mentioned this has been present for {duration}: "
+            return f"You mentioned this has been present for {duration}: "
 
         return ""
 

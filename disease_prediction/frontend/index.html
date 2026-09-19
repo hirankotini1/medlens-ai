@@ -2851,6 +2851,9 @@
                     <span style="font-size: 0.74rem; color: #64748b; background: #ffffff; padding: 3px 8px; border-radius: 6px; border: 1px solid #e2e8f0;">🎙️ Speech-to-Text &bull; Instant Text Edit</span>
                 </div>
 
+                <!-- Contextual Section Document Upload (Prescription, Lab Report, Discharge Summary) -->
+                <div id="case-section-contextual-upload" style="margin-bottom: 12px;"></div>
+
                 <!-- Main Textarea Input -->
                 <div class="form-group" style="margin-bottom: 12px;">
                     <textarea id="case-section-input" class="search-input" rows="4" placeholder="Speak or type your clinical details here..."></textarea>
@@ -3930,10 +3933,16 @@
                             </button>
                         </div>
 
-                        <!-- Type Instead Button -->
-                        <button type="button" class="voice-type-instead-btn" id="voice-type-instead-btn" onclick="voiceToggleTextFallback()">
-                            <span class="material-symbols-outlined">keyboard</span> ⌨️ Type Instead
-                        </button>
+                        <!-- Type Instead & Upload Document Row -->
+                        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 8px;">
+                            <button type="button" class="voice-type-instead-btn" id="voice-type-instead-btn" onclick="voiceToggleTextFallback()">
+                                <span class="material-symbols-outlined">keyboard</span> ⌨️ Type Instead
+                            </button>
+                            <label class="voice-type-instead-btn" id="voice-perm-upload-btn" style="cursor: pointer; display: inline-flex; align-items: center; gap: 6px; background: #f0f9ff; color: #0284c7; border: 1.5px solid #bae6fd; font-weight: 700;">
+                                <span class="material-symbols-outlined" style="font-size: 16px;">upload_file</span> 📎 Upload Record / Prescription
+                                <input type="file" accept="image/*,.pdf,.txt" style="display: none;" onchange="_voiceHandleSpontaneousDocUpload(event)">
+                            </label>
+                        </div>
                     </div>
 
                     <!-- Navigation -->

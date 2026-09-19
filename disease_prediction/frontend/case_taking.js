@@ -295,9 +295,146 @@ function renderCurrentSection() {
         textarea.focus();
     }
 
+    // Render Contextual Document Upload where needed (Rx for meds, Lab Report for investigations, Discharge Card for past history)
+    renderContextualSectionUpload(sec.id);
+
     // Fetch Adaptive Questions for HPI or Chief Complaint
     fetchAndRenderAdaptiveQuestions(sec.id);
 }
+
+function renderContextualSectionUpload(sectionId) {
+    const uploadContainer = document.getElementById('case-section-contextual-upload');
+    if (!uploadContainer) return;
+
+    if (sectionId === 'drug_history') {
+        uploadContainer.style.display = 'block';
+        uploadContainer.innerHTML = `
+            <div style="background: linear-gradient(135deg, #f0fdf4, #dcfce7); border: 1.5px solid #86efac; border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 38px; height: 38px; border-radius: 10px; background: #22c55e; color: #ffffff; display: flex; align-items: center; justify-content: center;">
+                        <span class="material-symbols-outlined" style="font-size: 22px;">prescriptions</span>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.88rem; font-weight: 800; color: #15803d;">Upload Prescription / Medicine Photo</div>
+                        <div style="font-size: 0.76rem; color: #166534;">Have an Rx slip or medication box? Upload here to extract drugs, strengths, and dosages automatically.</div>
+                    </div>
+                </div>
+                <label class="btn-primary" style="font-size: 0.78rem; font-weight: 700; padding: 7px 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; background: #16a34a; border-color: #16a34a; border-radius: 8px;">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">upload_file</span> 📤 Upload Prescription
+                    <input type="file" accept="image/*,.pdf,.txt" style="display: none;" onchange="handleContextualSectionUpload(event, 'prescription', 'drug_history')">
+                </label>
+            </div>
+        `;
+    } else if (sectionId === 'previous_investigations') {
+        uploadContainer.style.display = 'block';
+        uploadContainer.innerHTML = `
+            <div style="background: linear-gradient(135deg, #eff6ff, #dbeafe); border: 1.5px solid #93c5fd; border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 38px; height: 38px; border-radius: 10px; background: #2563eb; color: #ffffff; display: flex; align-items: center; justify-content: center;">
+                        <span class="material-symbols-outlined" style="font-size: 22px;">biotech</span>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.88rem; font-weight: 800; color: #1d4ed8;">Upload Lab Report, Blood Test or ECG</div>
+                        <div style="font-size: 0.76rem; color: #1e40af;">Attach your diagnostic PDF or photo — MedLens will extract all biomarkers and lab values into this case.</div>
+                    </div>
+                </div>
+                <label class="btn-primary" style="font-size: 0.78rem; font-weight: 700; padding: 7px 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; background: #2563eb; border-color: #2563eb; border-radius: 8px;">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">upload_file</span> 📤 Upload Lab Report / ECG
+                    <input type="file" accept="image/*,.pdf,.txt" style="display: none;" onchange="handleContextualSectionUpload(event, 'lab_report', 'previous_investigations')">
+                </label>
+            </div>
+        `;
+    } else if (sectionId === 'past_medical' || sectionId === 'past_surgical') {
+        uploadContainer.style.display = 'block';
+        uploadContainer.innerHTML = `
+            <div style="background: linear-gradient(135deg, #fdf4ff, #fae8ff); border: 1.5px solid #f0abfc; border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 38px; height: 38px; border-radius: 10px; background: #9333ea; color: #ffffff; display: flex; align-items: center; justify-content: center;">
+                        <span class="material-symbols-outlined" style="font-size: 22px;">clinical_notes</span>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.88rem; font-weight: 800; color: #7e22ce;">Upload Hospital Discharge Summary / Records</div>
+                        <div style="font-size: 0.76rem; color: #6b21a8;">Attach your previous discharge summary card to auto-fill hospital history and past procedures.</div>
+                    </div>
+                </div>
+                <label class="btn-primary" style="font-size: 0.78rem; font-weight: 700; padding: 7px 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; background: #9333ea; border-color: #9333ea; border-radius: 8px;">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">upload_file</span> 📤 Upload Discharge Card
+                    <input type="file" accept="image/*,.pdf,.txt" style="display: none;" onchange="handleContextualSectionUpload(event, 'discharge_summary', '${sectionId}')">
+                </label>
+            </div>
+        `;
+    } else {
+        uploadContainer.style.display = 'none';
+        uploadContainer.innerHTML = '';
+    }
+}
+
+async function handleContextualSectionUpload(event, docType, sectionId) {
+    const file = event.target.files && event.target.files[0];
+    if (!file || !activeCaseId) {
+        if (!activeCaseId) showToast('Please start the clinical case session first before attaching documents.', 'warning');
+        return;
+    }
+
+    showToast(`⏳ Uploading & OCR scanning ${file.name}...`, 'info');
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('document_type', docType || 'medical_report');
+
+    try {
+        const res = await fetch(apiUrl(`/api/cases/${activeCaseId}/upload-and-attach-file`), {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!res.ok) {
+            const err = await safeJson(res);
+            throw new Error(err.detail || 'Upload failed');
+        }
+
+        const data = await res.json();
+        showToast(`✓ Document processed & attached: ${file.name}`, 'success');
+
+        // Extract findings to append into current section textarea
+        const textarea = document.getElementById('case-section-input');
+        if (textarea) {
+            let extractedSummary = '';
+            if (data.extracted_medications && data.extracted_medications.length > 0) {
+                extractedSummary = data.extracted_medications.map(m => `${m.name || m} (${m.dose || 'As prescribed'})`).join(', ');
+            } else if (data.extracted_biomarkers && data.extracted_biomarkers.length > 0) {
+                extractedSummary = data.extracted_biomarkers.map(b => `${b.parameter}: ${b.value} ${b.unit || ''} (${b.status})`).join('; ');
+            } else if (data.extracted_text) {
+                extractedSummary = data.extracted_text.slice(0, 300);
+            } else if (data.summary) {
+                extractedSummary = data.summary;
+            }
+
+            if (extractedSummary) {
+                const curVal = textarea.value.trim();
+                textarea.value = curVal ? `${curVal}\n[Attached from ${file.name}]: ${extractedSummary}` : `[Attached from ${file.name}]: ${extractedSummary}`;
+                recordedCaseAnswers[sectionId] = {
+                    raw: textarea.value.trim(),
+                    mode: 'document_ocr'
+                };
+            }
+        }
+
+        // Add to attached badges
+        attachedCaseDocuments.push({
+            filename: file.name,
+            size: (file.size / 1024).toFixed(1) + ' KB',
+            time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+        });
+        renderAttachedBadges();
+
+    } catch (err) {
+        showModalAlert(`Could not process document: ${err.message}`, 'Upload Notice');
+    }
+}
+
+window.handleContextualSectionUpload = handleContextualSectionUpload;
+
 
 function addChipToCurrentInput(chipText) {
     const textarea = document.getElementById('case-section-input');
