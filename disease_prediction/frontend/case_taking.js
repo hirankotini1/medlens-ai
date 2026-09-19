@@ -44,15 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // 2. MOCK ABHA / ABDM GENERATOR
 // ==============================================================================
 function generateMockAbhaNumber() {
-    const p1 = Math.floor(1000 + Math.random() * 9000);
-    const p2 = Math.floor(1000 + Math.random() * 9000);
-    const p3 = Math.floor(1000 + Math.random() * 9000);
-    const abhaNum = `91-${p1}-${p2}-${p3}`;
-    const abhaInput = document.getElementById('case-abha-input');
-    const abhaAddress = document.getElementById('case-abha-address');
-    if (abhaInput) abhaInput.value = abhaNum;
-    if (abhaAddress) abhaAddress.value = `patient.${p1}@abdm`;
-    showToast(`✓ Generated Mock ABHA ID: ${abhaNum}`, 'success');
+    showToast('Notice: Synthetic ABHA generation is disabled. Please enter the patient’s verified 14-digit ABHA ID or proceed without ABHA.', 'info');
 }
 
 
@@ -852,7 +844,7 @@ function renderSummarySheet(summary) {
         `;
     }
 
-    const hasAllergies = secs.allergy_history && !secs.allergy_history.includes('NKDA') && !secs.allergy_history.toLowerCase().includes('no known');
+    const hasAllergies = secs.allergy_history && !secs.allergy_history.includes('NKDA') && !secs.allergy_history.toLowerCase().includes('no known') && secs.allergy_history !== 'Not reported';
 
     container.innerHTML = `
         ${redFlagHtml}
@@ -923,7 +915,7 @@ function renderSummarySheet(summary) {
                             <span class="sec-num-badge">1</span>
                             <span>CHIEF COMPLAINT (CC)</span>
                         </div>
-                        <div class="case-sec-val">${escapeHtml(secs.chief_complaint || 'None reported')}</div>
+                        <div class="case-sec-val">${escapeHtml(secs.chief_complaint || 'Not reported')}</div>
                     </div>
 
                     <div class="case-sec-box sec-accent-primary">
@@ -931,7 +923,7 @@ function renderSummarySheet(summary) {
                             <span class="sec-num-badge">2</span>
                             <span>HISTORY OF PRESENT ILLNESS (HPI)</span>
                         </div>
-                        <div class="case-sec-val">${escapeHtml(secs.hpi || 'None reported')}</div>
+                        <div class="case-sec-val">${escapeHtml(secs.hpi || 'Not reported')}</div>
                     </div>
 
                     <div class="case-sec-box">
@@ -939,7 +931,7 @@ function renderSummarySheet(summary) {
                             <span class="sec-num-badge">3</span>
                             <span>PAST MEDICAL HISTORY (PMHx)</span>
                         </div>
-                        <div class="case-sec-val">${escapeHtml(secs.past_medical || 'None reported')}</div>
+                        <div class="case-sec-val">${escapeHtml(secs.past_medical || 'Not reported')}</div>
                     </div>
 
                     <div class="case-sec-box">
@@ -947,7 +939,7 @@ function renderSummarySheet(summary) {
                             <span class="sec-num-badge">4</span>
                             <span>PAST SURGICAL HISTORY (PSHx)</span>
                         </div>
-                        <div class="case-sec-val">${escapeHtml(secs.past_surgical || 'None reported')}</div>
+                        <div class="case-sec-val">${escapeHtml(secs.past_surgical || 'Not reported')}</div>
                     </div>
 
                     <div class="case-sec-box">
@@ -955,16 +947,16 @@ function renderSummarySheet(summary) {
                             <span class="sec-num-badge">5</span>
                             <span>DRUG &amp; MEDICATION HISTORY (Rx)</span>
                         </div>
-                        <div class="case-sec-val">${escapeHtml(secs.drug_history || 'No current routine medications')}</div>
+                        <div class="case-sec-val">${escapeHtml(secs.drug_history || 'Not reported')}</div>
                     </div>
 
-                    <div class="case-sec-box ${hasAllergies ? 'sec-accent-danger' : 'sec-accent-success'}">
+                    <div class="case-sec-box ${hasAllergies ? 'sec-accent-danger' : (secs.allergy_history && secs.allergy_history !== 'Not reported' ? 'sec-accent-success' : '')}">
                         <div class="case-sec-lbl">
-                            <span class="sec-num-badge ${hasAllergies ? 'badge-danger' : 'badge-success'}">6</span>
+                            <span class="sec-num-badge ${hasAllergies ? 'badge-danger' : (secs.allergy_history && secs.allergy_history !== 'Not reported' ? 'badge-success' : '')}">6</span>
                             <span>ALLERGIES &amp; ADVERSE REACTIONS</span>
                         </div>
                         <div class="case-sec-val ${hasAllergies ? 'text-danger-bold' : ''}">
-                            ${hasAllergies ? '⚠️ ' : '✓ '}${escapeHtml(secs.allergy_history || 'No Known Drug Allergies (NKDA)')}
+                            ${hasAllergies ? '⚠️ ' : (secs.allergy_history && secs.allergy_history !== 'Not reported' ? '✓ ' : '')}${escapeHtml(secs.allergy_history || 'Not reported')}
                         </div>
                     </div>
 
@@ -973,7 +965,7 @@ function renderSummarySheet(summary) {
                             <span class="sec-num-badge">7</span>
                             <span>FAMILY HISTORY (FHx)</span>
                         </div>
-                        <div class="case-sec-val">${escapeHtml(secs.family_history || 'Non-contributory / No significant hereditary illness')}</div>
+                        <div class="case-sec-val">${escapeHtml(secs.family_history || 'Not reported')}</div>
                     </div>
 
                     <div class="case-sec-box">
@@ -981,7 +973,7 @@ function renderSummarySheet(summary) {
                             <span class="sec-num-badge">8</span>
                             <span>PERSONAL &amp; SOCIAL HISTORY (SHx)</span>
                         </div>
-                        <div class="case-sec-val">${escapeHtml(secs.personal_history || 'Standard routine')}</div>
+                        <div class="case-sec-val">${escapeHtml(secs.personal_history || 'Not reported')}</div>
                     </div>
 
                     <div class="case-sec-box">
@@ -989,7 +981,7 @@ function renderSummarySheet(summary) {
                             <span class="sec-num-badge">9</span>
                             <span>REVIEW OF SYSTEMS (ROS)</span>
                         </div>
-                        <div class="case-sec-val">${escapeHtml(secs.ros || 'Systemic review non-contributory')}</div>
+                        <div class="case-sec-val">${escapeHtml(secs.ros || 'Not reported')}</div>
                     </div>
 
                     <div class="case-sec-box">
@@ -997,7 +989,7 @@ function renderSummarySheet(summary) {
                             <span class="sec-num-badge">10</span>
                             <span>PREVIOUS INVESTIGATIONS &amp; LABS</span>
                         </div>
-                        <div class="case-sec-val">${escapeHtml(secs.previous_investigations || 'No prior investigations attached')}</div>
+                        <div class="case-sec-val">${escapeHtml(secs.previous_investigations || 'Not reported')}</div>
                     </div>
                 </div>
 
@@ -1229,28 +1221,28 @@ async function openDoctorCaseReviewModal(caseId) {
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.82rem;">
                 <div class="case-sec-box" style="margin: 0; padding: 10px 12px;">
                     <div class="case-sec-lbl" style="font-size: 0.74rem;"><span class="sec-num-badge" style="width: 16px; height: 16px; font-size: 0.65rem;">1</span> Chief Complaint</div>
-                    <div style="color: #334155; font-weight: 600;">${escapeHtml(secs.chief_complaint || caseData.chief_complaint || 'None')}</div>
+                    <div style="color: #334155; font-weight: 600;">${escapeHtml(secs.chief_complaint || caseData.chief_complaint || 'Not reported')}</div>
                 </div>
                 <div class="case-sec-box" style="margin: 0; padding: 10px 12px;">
                     <div class="case-sec-lbl" style="font-size: 0.74rem;"><span class="sec-num-badge" style="width: 16px; height: 16px; font-size: 0.65rem;">2</span> HPI</div>
-                    <div style="color: #334155;">${escapeHtml(secs.hpi || 'None')}</div>
+                    <div style="color: #334155;">${escapeHtml(secs.hpi || 'Not reported')}</div>
                 </div>
                 <div class="case-sec-box" style="margin: 0; padding: 10px 12px;">
                     <div class="case-sec-lbl" style="font-size: 0.74rem;"><span class="sec-num-badge" style="width: 16px; height: 16px; font-size: 0.65rem;">3</span> Past Medical</div>
-                    <div style="color: #334155;">${escapeHtml(secs.past_medical || 'None')}</div>
+                    <div style="color: #334155;">${escapeHtml(secs.past_medical || 'Not reported')}</div>
                 </div>
                 <div class="case-sec-box" style="margin: 0; padding: 10px 12px;">
                     <div class="case-sec-lbl" style="font-size: 0.74rem;"><span class="sec-num-badge" style="width: 16px; height: 16px; font-size: 0.65rem;">4</span> Past Surgical</div>
-                    <div style="color: #334155;">${escapeHtml(secs.past_surgical || 'None')}</div>
+                    <div style="color: #334155;">${escapeHtml(secs.past_surgical || 'Not reported')}</div>
                 </div>
                 <div class="case-sec-box" style="margin: 0; padding: 10px 12px;">
                     <div class="case-sec-lbl" style="font-size: 0.74rem;"><span class="sec-num-badge" style="width: 16px; height: 16px; font-size: 0.65rem;">5</span> Medications</div>
-                    <div style="color: #334155;">${escapeHtml(secs.drug_history || 'None')}</div>
+                    <div style="color: #334155;">${escapeHtml(secs.drug_history || 'Not reported')}</div>
                 </div>
-                <div class="case-sec-box" style="margin: 0; padding: 10px 12px; border-left-color: ${secs.allergy_history && !secs.allergy_history.includes('NKDA') ? '#ef4444' : '#10b981'};">
+                <div class="case-sec-box" style="margin: 0; padding: 10px 12px; border-left-color: ${secs.allergy_history && !secs.allergy_history.includes('NKDA') && secs.allergy_history !== 'Not reported' ? '#ef4444' : '#10b981'};">
                     <div class="case-sec-lbl" style="font-size: 0.74rem;"><span class="sec-num-badge" style="width: 16px; height: 16px; font-size: 0.65rem;">6</span> Allergies</div>
-                    <div style="color: ${secs.allergy_history && !secs.allergy_history.includes('NKDA') ? '#b91c1c' : '#047857'}; font-weight: 700;">
-                        ${escapeHtml(secs.allergy_history || 'No Known Drug Allergies (NKDA)')}
+                    <div style="color: ${secs.allergy_history && !secs.allergy_history.includes('NKDA') && secs.allergy_history !== 'Not reported' ? '#b91c1c' : '#047857'}; font-weight: 700;">
+                        ${escapeHtml(secs.allergy_history || 'Not reported')}
                     </div>
                 </div>
             </div>

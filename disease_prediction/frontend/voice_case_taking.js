@@ -719,7 +719,7 @@ async function populateVoicePatientSelector(forceReload = false) {
             return `<option value="${pid}" ${isSel}>${escapeHtml(p.name || 'Patient')} (ID: ${escapeHtml(pid)} &bull; Age: ${escapeHtml(p.age || '—')} &bull; ${escapeHtml(p.gender || '—')})</option>`;
         }).join('');
     } else {
-        html = `<option value="P-MEDICOVER-01">Default Medicover Outpatient (P-MEDICOVER-01)</option>`;
+        html = `<option value="UNREGISTERED">Walk-in Outpatient (Unregistered)</option>`;
     }
     html += `<option value="GUEST_PATIENT">Walk-in Outpatient (Guest)</option>`;
 
@@ -736,23 +736,14 @@ function onVoicePatientSelectChange(val) {
         if (pat) {
             metaEl.innerHTML = `<span class="material-symbols-outlined" style="font-size: 15px; color:#059669;">check_circle</span> Active Record: <strong>${escapeHtml(pat.name || 'Patient')}</strong> (Age: ${escapeHtml(pat.age || '—')}, Gender: ${escapeHtml(pat.gender || '—')})`;
         } else {
-            metaEl.innerHTML = `<span class="material-symbols-outlined" style="font-size: 15px; color:#0284c7;">person</span> Active Patient ID: <strong>${escapeHtml(val || 'Walk-in')}</strong>`;
+            metaEl.innerHTML = `<span class="material-symbols-outlined" style="font-size: 15px; color:#0284c7;">person</span> Active Patient ID: <strong>${escapeHtml(val || 'Unregistered Walk-in')}</strong>`;
         }
     }
 }
 
 function generateMockVoiceAbha() {
-    const p1 = Math.floor(1000 + Math.random() * 9000);
-    const p2 = Math.floor(1000 + Math.random() * 9000);
-    const p3 = Math.floor(1000 + Math.random() * 9000);
-    const abhaNum = `91-${p1}-${p2}-${p3}`;
-    const abhaInput = document.getElementById('voice-abha-input');
-    const abhaAddress = document.getElementById('voice-abha-address');
-    if (abhaInput) abhaInput.value = abhaNum;
-    if (abhaAddress) abhaAddress.value = `patient.${p1}@abdm`;
-    _voiceSession.abhaId = abhaNum;
     if (typeof showToast === 'function') {
-        showToast(`✓ Generated ABDM Mock ABHA ID: ${abhaNum}`, 'success');
+        showToast('Notice: Synthetic ABHA generation is disabled. Please enter the patient’s verified 14-digit ABHA ID or proceed without ABHA.', 'info');
     }
 }
 
@@ -826,7 +817,11 @@ function printVoiceCaseSheet() {
    ============================================================================ */
 function voiceProceedToConsent() {
     if (!_voiceSession.language) {
-        alert('Please select a language to continue.');
+        if (typeof showToast === 'function') {
+            showToast('Please select a consultation language to continue.', 'warning');
+        } else {
+            alert('Please select a consultation language to continue.');
+        }
         return;
     }
     populateVoicePatientSelector();
@@ -839,18 +834,28 @@ async function voiceProceedToSession(touchOnly = false) {
     // Read patient ID and ABHA ID from inputs
     const patSelect = document.getElementById('voice-patient-select');
     const abhaInput = document.getElementById('voice-abha-input');
-    if (patSelect && patSelect.value) _voiceSession.patientId = patSelect.value;
-    if (abhaInput && abhaInput.value) _voiceSession.abhaId = abhaInput.value;
+    const caseTypeEl = document.getElementById('voice-case-type-select');
+    const participantEl = document.getElementById('voice-participant-role-select');
+    const easyModeEl = document.getElementById('voice-easy-mode-checkbox');
 
-    // Start backend case in parallel
+    if (patSelect && patSelect.value) _voiceSession.patientId = patSelect.value;
+    if (abhaInput && abhaInput.value && !abhaInput.value.includes('Demo')) {
+        _voiceSession.abhaId = abhaInput.value.trim();
+    }
+    if (caseTypeEl) _voiceSession.caseType = caseTypeEl.value || 'general';
+    if (participantEl) _voiceSession.participantRole = participantEl.value || 'patient';
+    if (easyModeEl) _voiceSession.easyMode = easyModeEl.checked || false;
+
+    // Pre-create the clinical case in the database for reference
     try {
         const payload = {
-            patient_id: _voiceSession.patientId || 'P-MEDICOVER-01',
-            chief_complaint: 'Voice guided patient case intake',
+            patient_id: _voiceSession.patientId || 'UNREGISTERED',
+            chief_complaint: '',
             language_code: _voiceSession.language || 'en-IN',
-            abha_id: _voiceSession.abhaId || '91-4589-2041-8832',
+            abha_id: _voiceSession.abhaId || '',
+            consent_given: true,
             source: 'voice_guided_case_taking',
-            ayush_enabled: _voiceSession.ayushMode || false
+            ayush_enabled: (_voiceSession.caseType === 'ayurveda') || _voiceSession.ayushMode || false
         };
         const res = await fetch(apiUrl('/api/cases/start'), {
             method: 'POST',
@@ -1020,12 +1025,18 @@ function _voiceInitSession() {
 
 async function _voiceStartClinicalInterview() {
     try {
+        const caseType = _voiceSession.caseType || (_voiceSession.ayushMode ? 'ayurveda' : 'general');
         const payload = {
             case_id: _voiceSession.caseId,
-            patient_id: _voiceSession.patientId || 'P-MEDICOVER-01',
+            patient_id: _voiceSession.patientId || 'UNREGISTERED',
             language_code: _voiceSession.language || 'en-IN',
-            consent_obtained: true,
-            ayush_enabled: _voiceSession.ayushMode || false
+            consent_given: true,
+            consent_version: 'v2.0',
+            case_type: caseType,
+            participant_role: _voiceSession.participantRole || 'patient',
+            participant_name: _voiceSession.participantName || '',
+            easy_mode: _voiceSession.easyMode || false,
+            is_kiosk: _voiceSession.touchOnly || false
         };
 
         const res = await fetch(apiUrl('/api/cases/interview/start'), {
@@ -1038,10 +1049,15 @@ async function _voiceStartClinicalInterview() {
             const data = await res.json();
             if (data.case_id) _voiceSession.caseId = data.case_id;
             _voiceSession.backendState = data.state || data.patient_state;
+            _voiceSession.caseType = data.case_type || caseType;
+            _voiceSession.participantRole = data.participant_role || 'patient';
             if (data.current_question) {
                 _voiceRenderBackendQuestion(data.current_question);
                 return;
             }
+        } else {
+            const errData = await res.json().catch(() => ({}));
+            console.warn('[VoiceCT] Interview start error:', errData.detail || res.status);
         }
 
     } catch (e) {
@@ -1093,7 +1109,48 @@ function _voiceEvaluateFollowUps(answerText, questionKey) {
    QUESTION LOADING AND DISPLAY (CRITICAL BUG #1 & BUG #4 FIX)
    Backend Clinical Interview Engine provides authoritative questions.
    ============================================================================ */
+function _voiceApplyEasyModeStyles() {
+    if (!document.getElementById('voice-easy-mode-css')) {
+        const style = document.createElement('style');
+        style.id = 'voice-easy-mode-css';
+        style.textContent = `
+            #voice-step-interview.voice-easy-mode #voice-ai-question {
+                font-size: 1.55rem !important;
+                line-height: 1.5 !important;
+                font-weight: 700 !important;
+            }
+            #voice-step-interview.voice-easy-mode .voice-touch-chip {
+                font-size: 1.15rem !important;
+                min-height: 52px !important;
+                padding: 12px 20px !important;
+            }
+            #voice-step-interview.voice-easy-mode .voice-mic-btn {
+                transform: scale(1.18) !important;
+                margin: 16px auto !important;
+            }
+            #voice-step-interview.voice-easy-mode #voice-mic-status-text {
+                font-size: 1.1rem !important;
+                font-weight: 600 !important;
+            }
+            #voice-step-interview.voice-easy-mode .voice-action-btn {
+                font-size: 1.05rem !important;
+                padding: 10px 18px !important;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    const panel = document.getElementById('voice-step-interview');
+    if (panel) {
+        if (_voiceSession.easyMode) {
+            panel.classList.add('voice-easy-mode');
+        } else {
+            panel.classList.remove('voice-easy-mode');
+        }
+    }
+}
+
 function _voiceRenderBackendQuestion(q) {
+    _voiceApplyEasyModeStyles();
     if (!q) {
         _voiceComplete();
         return;
@@ -1313,7 +1370,8 @@ async function voiceToggleListening() {
             _voiceUpdateMicState('idle');
             if (errorType !== 'aborted') {
                 const statusEl = document.getElementById('voice-mic-status-text');
-                if (statusEl) statusEl.textContent = errorMsg;
+                if (statusEl) statusEl.textContent = errorMsg || 'Speech recognition encountered an issue.';
+                _voiceShowRecognitionErrorActions(errorType, errorMsg);
             }
             if (errorType === 'not_supported' || errorType === 'not-allowed') {
                 _voiceShowTextInput(true);
@@ -1344,6 +1402,60 @@ async function voiceToggleListening() {
     if (!started) {
         _voiceShowTextInput(true);
         _voiceUpdateMicState('idle');
+    }
+}
+
+function _voiceShowRecognitionErrorActions(errorType, errorMsg) {
+    let container = document.getElementById('voice-mic-error-actions');
+    if (!container) {
+        const bar = document.getElementById('voice-mic-status-bar');
+        if (bar && bar.parentNode) {
+            container = document.createElement('div');
+            container.id = 'voice-mic-error-actions';
+            container.style.cssText = 'display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin:10px auto; max-width:480px;';
+            bar.parentNode.insertBefore(container, bar.nextSibling);
+        }
+    }
+    if (!container) return;
+
+    container.innerHTML = `
+        <button type="button" class="btn-voice-err" onclick="voiceRetryRecognition()" style="background:#f0fdf4; border:1.5px solid #16a34a; color:#15803d; padding:6px 12px; border-radius:6px; font-weight:700; font-size:0.82rem; cursor:pointer;">
+            🔄 Try Again
+        </button>
+        <button type="button" class="btn-voice-err" onclick="_voiceShowTextInput(true)" style="background:#f8fafc; border:1.5px solid #64748b; color:#334155; padding:6px 12px; border-radius:6px; font-weight:700; font-size:0.82rem; cursor:pointer;">
+            ⌨️ Type Instead
+        </button>
+        <button type="button" class="btn-voice-err" onclick="voiceReplayQuestion()" style="background:#f0f9ff; border:1.5px solid #0284c7; color:#0369a1; padding:6px 12px; border-radius:6px; font-weight:700; font-size:0.82rem; cursor:pointer;">
+            🔊 Repeat Question
+        </button>
+        <button type="button" class="btn-voice-err" onclick="voiceSkipOrSaveQuestion()" style="background:#fffbeb; border:1.5px solid #d97706; color:#b45309; padding:6px 12px; border-radius:6px; font-weight:700; font-size:0.82rem; cursor:pointer;">
+            ⏩ Save / Continue
+        </button>
+    `;
+    container.style.display = 'flex';
+}
+
+function _voiceHideRecognitionErrorActions() {
+    const container = document.getElementById('voice-mic-error-actions');
+    if (container) container.style.display = 'none';
+}
+
+function voiceRetryRecognition() {
+    _voiceHideRecognitionErrorActions();
+    voiceToggleListening();
+}
+
+function voiceSkipOrSaveQuestion() {
+    _voiceHideRecognitionErrorActions();
+    const textInput = document.getElementById('voice-text-input');
+    if (textInput && textInput.value && textInput.value.trim()) {
+        voiceConfirmAnswer();
+    } else if (_voiceSession.pendingTranscript && _voiceSession.pendingTranscript.trim()) {
+        voiceConfirmAnswer();
+    } else {
+        if (textInput) textInput.value = 'Not reported';
+        _voiceSession.pendingTranscript = 'Not reported';
+        voiceConfirmAnswer();
     }
 }
 
@@ -1387,7 +1499,11 @@ async function voiceConfirmAnswer() {
         answer = textInput.value.trim();
     }
     if (!answer || !answer.trim()) {
-        alert('Please speak or tap an option first.');
+        if (typeof showToast === 'function') {
+            showToast('Please speak or tap an option first.', 'warning');
+        } else {
+            alert('Please speak or tap an option first.');
+        }
         return;
     }
 
@@ -1796,6 +1912,7 @@ function voiceRetryRecording() {
 
 function _voiceResetTranscriptUI() {
     _voiceSession.pendingTranscript = '';
+    _voiceHideRecognitionErrorActions();
     const el = document.getElementById('voice-transcript-text');
     if (el) el.innerHTML = '&nbsp;';
     const box = document.getElementById('voice-transcript-box');
@@ -1858,6 +1975,12 @@ function voiceReplayQuestion() {
    ============================================================================ */
 function voiceToggleAyushMode() {
     _voiceSession.ayushMode = !_voiceSession.ayushMode;
+    // Sync the new case-type selector if present
+    const caseTypeEl = document.getElementById('voice-case-type-select');
+    if (caseTypeEl) {
+        caseTypeEl.value = _voiceSession.ayushMode ? 'ayurveda' : 'general';
+        _voiceSession.caseType = caseTypeEl.value;
+    }
     const toggle = document.getElementById('voice-ayush-toggle');
     const badge = document.getElementById('voice-ayush-badge');
     if (toggle) toggle.classList.toggle('ayush-active', _voiceSession.ayushMode);
@@ -1872,6 +1995,36 @@ function voiceToggleAyushMode() {
         : `Allopathic mode — ${total} questions`;
 }
 window.voiceToggleAyushMode = voiceToggleAyushMode;
+
+/**
+ * voiceOnCaseTypeChange — handles the new Case Type selector.
+ * Keeps legacy _voiceSession.ayushMode in sync and rebuilds question list.
+ */
+function voiceOnCaseTypeChange(val) {
+    _voiceSession.caseType = val || 'general';
+    _voiceSession.ayushMode = (val === 'ayurveda');
+
+    const badge = document.getElementById('voice-ayush-badge');
+    if (badge) badge.style.display = _voiceSession.ayushMode ? 'inline-flex' : 'none';
+
+    // Sync legacy hidden checkbox
+    const legacyCb = document.getElementById('voice-ayush-setup-checkbox');
+    if (legacyCb) legacyCb.checked = _voiceSession.ayushMode;
+
+    // Show visual cue about selected pathway
+    const badgeEl = document.getElementById('voice-ayush-toggle-btn');
+    if (badgeEl) {
+        badgeEl.textContent = val === 'ayurveda'
+            ? '🌿 Ayurveda Mode'
+            : val === 'homeopathy'
+            ? '💊 Homeopathy Mode'
+            : '🏥 General Mode';
+    }
+
+    // Rebuild the question set for the new pathway
+    _voiceBuildActiveQuestions();
+}
+window.voiceOnCaseTypeChange = voiceOnCaseTypeChange;
 
 /* ============================================================================
    RED FLAG ENGINE — deterministic emergency detection
@@ -1923,14 +2076,26 @@ function _voiceCheckRedFlags(text) {
 
 function _voiceHandleRedFlagInterruption(rfData) {
     _voiceSession.hasRedFlag = true;
+    _voiceSession.lastRedFlagData = rfData;
     const banner = document.getElementById('voice-red-flag-banner');
     if (banner) {
         banner.style.display = 'flex';
         banner.innerHTML = `
-            <div style="font-size:1.4rem; margin-right:10px;">🚨</div>
-            <div>
-                <strong style="color:#b91c1c;">PRIORITY CLINICAL ATTENTION REQUIRED</strong>
-                <p style="margin:4px 0 0; font-size:0.9rem; color:#7f1d1d;">${escapeHtml(rfData.message || 'Urgent symptom reported. Please sit down, rest, and alert hospital staff immediately.')}</p>
+            <div style="font-size:1.6rem; margin-right:12px;">🚨</div>
+            <div style="flex:1;">
+                <strong style="color:#b91c1c; font-size:1rem;">PRIORITY CLINICAL ATTENTION REQUIRED</strong>
+                <p style="margin:4px 0 10px; font-size:0.9rem; color:#7f1d1d;">${escapeHtml(rfData.message || 'Urgent symptom reported. Please sit down, rest, and alert hospital staff immediately.')}</p>
+                <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                    <button type="button" onclick="voiceDismissRedFlagAndContinue()" style="background:#fff; border:1.5px solid #dc2626; color:#dc2626; padding:5px 12px; border-radius:6px; font-weight:700; font-size:0.82rem; cursor:pointer;">
+                        Continue Case
+                    </button>
+                    <button type="button" onclick="voiceContactHealthcareTeam()" style="background:#dc2626; border:none; color:#fff; padding:5px 12px; border-radius:6px; font-weight:700; font-size:0.82rem; cursor:pointer;">
+                        Contact Healthcare Team
+                    </button>
+                    <button type="button" onclick="voiceViewRedFlagInfo()" style="background:#f8fafc; border:1px solid #94a3b8; color:#334155; padding:5px 12px; border-radius:6px; font-weight:600; font-size:0.82rem; cursor:pointer;">
+                        View Information
+                    </button>
+                </div>
             </div>
         `;
     }
@@ -1944,6 +2109,38 @@ function _voiceHandleRedFlagInterruption(rfData) {
         showToast('🚨 Critical Clinical Alert: Attending physician notified.', 'error');
     }
 }
+
+function voiceDismissRedFlagAndContinue() {
+    const banner = document.getElementById('voice-red-flag-banner');
+    if (banner) banner.style.display = 'none';
+    if (typeof showToast === 'function') {
+        showToast('Red flag acknowledged. Continuing case-taking.', 'info');
+    }
+    if (_voiceSession.currentQuestion) {
+        _voiceRenderBackendQuestion(_voiceSession.currentQuestion);
+    }
+}
+
+function voiceContactHealthcareTeam() {
+    if (typeof showToast === 'function') {
+        showToast('📞 Hospital triage nurse and emergency team alerted.', 'error');
+    } else {
+        alert('Hospital emergency response team alerted.');
+    }
+}
+
+function voiceViewRedFlagInfo() {
+    const msg = _voiceSession.lastRedFlagData?.message || 'High-risk clinical symptoms detected requiring priority triage.';
+    if (typeof showToast === 'function') {
+        showToast(`Clinical Guidance: ${msg}`, 'warning');
+    } else {
+        alert(`Clinical Guidance:\n${msg}`);
+    }
+}
+
+window.voiceDismissRedFlagAndContinue = voiceDismissRedFlagAndContinue;
+window.voiceContactHealthcareTeam = voiceContactHealthcareTeam;
+window.voiceViewRedFlagInfo = voiceViewRedFlagInfo;
 
 function _voiceRenderLiveEntityTags(entities, completeness) {
     let tagContainer = document.getElementById('voice-live-extracted-tags');
@@ -1995,8 +2192,9 @@ async function _voiceComplete() {
     const patientMetaEl = document.getElementById('voice-summary-patient-meta');
     if (patientMetaEl) {
         const pId = _voiceSession.patientId || 'Outpatient';
-        const abha = _voiceSession.abhaId || '91-4589-2041-8832';
-        patientMetaEl.innerHTML = `Patient ID: <strong>${escapeHtml(pId)}</strong> &bull; ABHA: <strong>${escapeHtml(abha)}</strong> &bull; Mode: <strong>${_voiceSession.touchOnly ? 'Touch/Text' : 'Voice Assisted'}</strong>`;
+        const abha = _voiceSession.abhaId || 'Not linked';
+        const roleLabel = _voiceSession.participantRole ? ` &bull; Role: <strong>${escapeHtml(_voiceSession.participantRole)}</strong>` : '';
+        patientMetaEl.innerHTML = `Patient ID: <strong>${escapeHtml(pId)}</strong> &bull; ABHA: <strong>${escapeHtml(abha)}</strong> &bull; Mode: <strong>${_voiceSession.touchOnly ? 'Touch/Text' : 'Voice Assisted'}</strong>${roleLabel}`;
     }
 
     // Submit case responses and generate structured summary in backend
@@ -2090,8 +2288,8 @@ function _voiceRenderSummaryHighlights() {
     const container = document.getElementById('voice-summary-highlights');
     if (!container) return;
 
-    const pId = _voiceSession.patientId || 'P-MEDICOVER-01';
-    const abha = _voiceSession.abhaId || '91-4589-2041-8832';
+    const pId = _voiceSession.patientId || 'UNREGISTERED';
+    const abha = _voiceSession.abhaId || 'Not linked';
     const caseRef = _voiceSession.caseId || _voiceSession.sessionId || `CASE-${Date.now()}`;
     const intakeDate = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
     const intakeTime = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
@@ -2152,9 +2350,9 @@ function _voiceRenderSummaryHighlights() {
     });
 
     // Medications extraction & chips
-    const medAnswer = _voiceSession.answers['current_medications']?.answer || 'None reported';
-    const hasMed = medAnswer.toLowerCase() !== 'none' && !medAnswer.toLowerCase().includes('no medicines');
-    const medList = hasMed ? medAnswer.split(/[,;\n+]+|\band\b/i).map(s => s.trim()).filter(Boolean) : ['No regular medications reported'];
+    const medAnswer = _voiceSession.answers['current_medications']?.answer || 'Not reported';
+    const hasMed = medAnswer.toLowerCase() !== 'none' && !medAnswer.toLowerCase().includes('no medicines') && medAnswer.toLowerCase() !== 'not reported';
+    const medList = hasMed ? medAnswer.split(/[,;\n+]+|\band\b/i).map(s => s.trim()).filter(Boolean) : ['Not reported'];
 
     // Allergy detection
     const allergyText = (_voiceSession.answers['current_medications']?.answer || '') + ' ' + (_voiceSession.answers['additional_info']?.answer || '');
@@ -2425,11 +2623,11 @@ function _voiceRenderSummaryHighlights() {
                             </div>
                             <div class="cs-entry-row">
                                 <div class="cs-entry-label">Associated Symptoms &amp; Systemic Features</div>
-                                <div class="cs-entry-value">${escapeHtml(_voiceSession.answers['associated_symptoms']?.answer || 'None reported')}</div>
+                                <div class="cs-entry-value">${escapeHtml(_voiceSession.answers['associated_symptoms']?.answer || 'Not reported')}</div>
                             </div>
                             <div class="cs-entry-row">
                                 <div class="cs-entry-label">Reported Pain &amp; Acuity</div>
-                                <div class="cs-entry-value">${escapeHtml(painRaw || 'Mild/Moderate')}</div>
+                                <div class="cs-entry-value">${escapeHtml(painRaw || 'Not rated')}</div>
                             </div>
                         </div>
                     </div>
@@ -2467,12 +2665,17 @@ function _voiceRenderSummaryHighlights() {
                                         <strong>ALLERGY ALERT:</strong> ${escapeHtml(medAnswer)}
                                     </div>
                                 </div>
-                            ` : `
+                            ` : (medAnswer && medAnswer !== 'Not reported' ? `
                                 <div style="display:flex; align-items:center; gap:8px; color:#15803d; font-size:0.85rem; font-weight:700;">
                                     <span class="material-symbols-outlined" style="color:#16a34a;">check_circle</span>
-                                    <span>No Known Drug Allergies (NKDA) Reported by Patient</span>
+                                    <span>${escapeHtml(medAnswer)}</span>
                                 </div>
-                            `}
+                            ` : `
+                                <div style="display:flex; align-items:center; gap:8px; color:#64748b; font-size:0.85rem; font-weight:500;">
+                                    <span class="material-symbols-outlined" style="color:#94a3b8;">info</span>
+                                    <span>Not reported (Pending clinician verification)</span>
+                                </div>
+                            `)}
                         </div>
                     </div>
 
@@ -2485,7 +2688,7 @@ function _voiceRenderSummaryHighlights() {
                         <div class="cs-card-content">
                             <div class="cs-entry-row">
                                 <div class="cs-entry-label">Chronic Illnesses (DM, HTN, IHD, Asthma)</div>
-                                <div class="cs-entry-value">${escapeHtml(_voiceSession.answers['past_medical_history']?.answer || 'No major pre-existing illnesses recorded')}</div>
+                                <div class="cs-entry-value">${escapeHtml(_voiceSession.answers['past_medical_history']?.answer || 'Not reported')}</div>
                             </div>
                         </div>
                     </div>
@@ -2499,7 +2702,7 @@ function _voiceRenderSummaryHighlights() {
                         <div class="cs-card-content">
                             <div class="cs-entry-row">
                                 <div class="cs-entry-label">Hereditary &amp; Familial Conditions</div>
-                                <div class="cs-entry-value">${escapeHtml(_voiceSession.answers['family_history']?.answer || 'No hereditary disease reported in immediate relatives')}</div>
+                                <div class="cs-entry-value">${escapeHtml(_voiceSession.answers['family_history']?.answer || 'Not reported')}</div>
                             </div>
                         </div>
                     </div>
@@ -2513,7 +2716,7 @@ function _voiceRenderSummaryHighlights() {
                         <div class="cs-card-content">
                             <div class="cs-entry-row">
                                 <div class="cs-entry-label">Occupation &amp; Substance Use (Tobacco/Alcohol)</div>
-                                <div class="cs-entry-value">${escapeHtml(_voiceSession.answers['social_history']?.answer || 'Non-smoker, non-alcoholic')}</div>
+                                <div class="cs-entry-value">${escapeHtml(_voiceSession.answers['social_history']?.answer || 'Not reported')}</div>
                             </div>
                         </div>
                     </div>
@@ -2527,11 +2730,11 @@ function _voiceRenderSummaryHighlights() {
                         <div class="cs-card-content" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:12px;">
                             <div class="cs-entry-row">
                                 <div class="cs-entry-label">Constitutional (Weight / Appetite / Sleep / Bowel)</div>
-                                <div class="cs-entry-value">${escapeHtml(_voiceSession.answers['review_of_systems']?.answer || 'Normal')}</div>
+                                <div class="cs-entry-value">${escapeHtml(_voiceSession.answers['review_of_systems']?.answer || 'Not reported')}</div>
                             </div>
                             <div class="cs-entry-row">
                                 <div class="cs-entry-label">Additional Patient Remarks for Doctor</div>
-                                <div class="cs-entry-value">${escapeHtml(_voiceSession.answers['additional_info']?.answer || 'None')}</div>
+                                <div class="cs-entry-value">${escapeHtml(_voiceSession.answers['additional_info']?.answer || 'Not reported')}</div>
                             </div>
                         </div>
                     </div>

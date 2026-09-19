@@ -46,7 +46,7 @@ class CaseStartRequest(BaseModel):
     patient_id: str
     chief_complaint: str = ""
     abha_id: Optional[str] = None
-    consent_given: bool = True
+    consent_given: bool = False
     consent_text: str = "Standard SIH Patient Consent for Digital Clinical Case-Taking & Medical Records Processing"
 
 class SaveSectionRequest(BaseModel):
@@ -66,7 +66,7 @@ class GenerateSummaryRequest(BaseModel):
     ayush_data: Optional[Dict[str, Any]] = None
 
 class DoctorReviewRequest(BaseModel):
-    doctor_id: str = "Dr. Medicover Clinical Desk"
+    doctor_id: str  # required — must be a real practitioner ID
     doctor_notes: str = ""
     updated_summary: Optional[Dict[str, Any]] = None
     status: str = "confirmed"
@@ -83,6 +83,13 @@ class InterviewStartRequest(BaseModel):
     language_code: str = "en-IN"
     chief_complaint: Optional[str] = None
     is_kiosk: bool = False
+    case_type: str = "general"  # 'general', 'ayurveda', 'homeopathy'
+    consent_given: bool = True
+    consent_timestamp: Optional[str] = None
+    consent_version: str = "v2.0"
+    participant_role: str = "patient"  # 'patient', 'relative', 'caregiver', 'asha_worker'
+    participant_name: Optional[str] = None
+    easy_mode: bool = False
 
 class InterviewRespondRequest(BaseModel):
     case_id: str
@@ -105,6 +112,13 @@ class InterviewVerifyDocRequest(BaseModel):
 class InterviewSkipDocRequest(BaseModel):
     case_id: str
     request_id: str
+
+class InterviewResolveConflictRequest(BaseModel):
+    case_id: str
+    conflict_id: str
+    resolution_status: str = "PATIENT_CONFIRMED"  # 'UNRESOLVED', 'PATIENT_CONFIRMED', 'DOCUMENT_CONFIRMED', 'DOCTOR_RESOLVED'
+    resolution_notes: Optional[str] = "Resolved during clinical evaluation"
+    resolved_by: Optional[str] = "doctor"
 
 
 
@@ -133,26 +147,28 @@ def start_case_session(payload: CaseStartRequest):
 
     patient = db.get_patient_by_id(payload.patient_id)
     if not patient:
-        try:
-            db.create_patient(
-                patient_id=payload.patient_id,
-                name="Clinical Case Patient",
-                age=32,
-                gender="Male",
-                contact="+91-9876543210",
-                email="patient@medlens.org",
-                access_pin="PIN-1000"
-            )
-            patient = db.get_patient_by_id(payload.patient_id)
-        except Exception:
-            all_p = db.get_all_patients()
-            patient = all_p[0] if all_p else None
+        p_upper = str(payload.patient_id).strip().upper()
+        is_unreg_id = p_upper in ["UNREGISTERED", "GUEST", "GUEST_PATIENT"] or p_upper.startswith(("UNREG-", "WALKIN-", "NEW-", "TEMP-"))
+        if is_unreg_id:
+            try:
+                db.create_patient(
+                    patient_id=payload.patient_id,
+                    name="Unregistered Patient",
+                    age=0,
+                    gender="Not provided",
+                    contact="Not provided",
+                    email="Not provided",
+                    access_pin="PIN-0000"
+                )
+                patient = db.get_patient_by_id(payload.patient_id)
+            except Exception:
+                pass
 
-    if not patient:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Patient ID '{payload.patient_id}' could not be registered or found."
-        )
+        if not patient:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Patient Not Found for ID '{payload.patient_id}'. Actions: Register Patient, Try Another Patient ID, or Continue as New/Unregistered Patient."
+            )
 
     target_patient_id = patient["patient_id"]
     case_row = db.create_clinical_case(
@@ -403,6 +419,16 @@ def doctor_review_endpoint(case_id: str, payload: DoctorReviewRequest):
         updated_summary=payload.updated_summary,
         status=payload.status
     )
+    
+    state = db.get_case_interview_state(case_id)
+    if state:
+        ci.PatientStateManager.verify_doctor_signoff(
+            state=state,
+            doctor_id=payload.doctor_id,
+            doctor_notes=payload.doctor_notes,
+            updated_summary=payload.updated_summary
+        )
+        db.save_case_interview_state(case_id, state)
     return res
 
 
@@ -414,31 +440,50 @@ def doctor_review_endpoint(case_id: str, payload: DoctorReviewRequest):
 def start_interview_endpoint(payload: InterviewStartRequest):
     """
     Initializes a structured conversational clinical interview session.
+    Enforces mandatory informed patient consent before beginning.
     Always starts with the required open-ended prompt:
     'Please tell me in your own words what is bothering you today.'
     """
+    if not payload.consent_given:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Informed patient consent is mandatory to initiate clinical case-taking."
+        )
+
     case_id = payload.case_id
     if not case_id:
         case_data = db.create_clinical_case(
             patient_id=payload.patient_id,
             chief_complaint=payload.chief_complaint or "",
             abha_id=None,
-            consent_text="Digital Clinical Interview Consent"
+            consent_text=f"Digital Clinical Interview Consent ({payload.consent_version})"
         )
         case_id = case_data["case_id"]
 
     state = db.get_case_interview_state(case_id)
     if not state:
+        patient_rec = db.get_patient_by_id(payload.patient_id)
+        demo_dict = dict(patient_rec) if patient_rec else {}
         state = ci.create_initial_patient_state(
             case_id=case_id,
             patient_id=payload.patient_id,
+            demographics=demo_dict,
             primary_language=payload.language_code,
-            is_kiosk=payload.is_kiosk
+            is_kiosk=payload.is_kiosk,
+            case_type=payload.case_type,
+            consent_given=payload.consent_given,
+            consent_timestamp=payload.consent_timestamp,
+            consent_version=payload.consent_version,
+            participant_role=payload.participant_role,
+            participant_name=payload.participant_name,
+            easy_mode=payload.easy_mode
         )
         if payload.chief_complaint:
             state = ci.PatientStateManager.set_chief_complaint(state, payload.chief_complaint, source="pre_registration")
 
     first_q = ci.ClinicalQuestionEngine.generate_open_ended_first_question(payload.language_code)
+    if "why_asking" not in first_q:
+        first_q["why_asking"] = "Helps identify the primary reason for your medical consultation in your own words."
     ci.PatientStateManager.record_asked_question(state, first_q["id"])
     db.save_case_interview_state(case_id, state)
 
@@ -447,6 +492,9 @@ def start_interview_endpoint(payload: InterviewStartRequest):
         "case_id": case_id,
         "patient_id": payload.patient_id,
         "language_code": payload.language_code,
+        "case_type": state.get("case_type", payload.case_type or "general"),
+        "participant_role": state.get("participant_role", payload.participant_role or "patient"),
+        "easy_mode": state.get("easy_mode", payload.easy_mode or False),
         "current_question": first_q,
         "completeness": ci.ClinicalSummarySynthesizer.calculate_completeness(state),
         "state": ci.PatientStateManager.sanitize_for_export(state, is_physician_view=False)
@@ -464,13 +512,9 @@ def respond_interview_endpoint(payload: InterviewRespondRequest):
     """
     state = db.get_case_interview_state(payload.case_id)
     if not state:
-        case = db.get_clinical_case(payload.case_id)
-        if not case:
-            raise HTTPException(status_code=404, detail=f"Case '{payload.case_id}' not found.")
-        state = ci.create_initial_patient_state(
-            case_id=payload.case_id,
-            patient_id=case["patient_id"],
-            primary_language=payload.language_code
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Interview session for case '{payload.case_id}' not found or not initialized. Informed consent and start required."
         )
 
     # Record current question as asked
@@ -510,6 +554,22 @@ def respond_interview_endpoint(payload: InterviewRespondRequest):
         extracted_entities=extracted
     )
 
+    # 2b. Check for patient "I don't know" / "Not sure" / "Skip for now" gap expressions
+    ans_lower = payload.answer_text.strip().lower()
+    is_gap_answer = any(phrase in ans_lower for phrase in [
+        "don't know", "dont know", "do not know", "not sure", "skip",
+        "skip for now", "can't recall", "cant recall", "no idea", "unsure",
+        "don't remember", "dont remember", "not aware",
+        "ପତା ନାହିଁ", "ଜାଣି ନାହିଁ", "ମନେ ନାହିଁ",
+        "पता नहीं", "मालूम नहीं", "याद नहीं",
+        "తెలియదు", "గుర్తు లేదు", "தெரியாது"
+    ])
+    if is_gap_answer and payload.current_question_id:
+        ci.PatientStateManager.record_information_gap(
+            state,
+            parameter_name=payload.current_question_id,
+            reason=f"Patient responded: '{payload.answer_text}'"
+        )
 
     # Multi-complaint extraction: preserve multiple symptoms e.g. "fever, cough and weakness"
     complaints = ci.ClinicalAnswerExtractor.extract_complaints(payload.answer_text)
@@ -521,21 +581,32 @@ def respond_interview_endpoint(payload: InterviewRespondRequest):
         if symptoms and isinstance(symptoms, list):
             for s in symptoms:
                 ci.PatientStateManager.add_chief_complaint(state, s, source=payload.input_mode)
-        elif payload.answer_text:
+        elif payload.answer_text and not is_gap_answer:
             ci.PatientStateManager.set_chief_complaint(state, payload.answer_text[:80], source=payload.input_mode)
 
     # 3. Update state with extracted parameters
     source_name = "patient_voice" if payload.input_mode == "voice" else "patient_text"
-    for param_name, param_obj in extracted.items():
-        if param_obj.get("value") is not None:
-            state = ci.PatientStateManager.update_hpi_parameter(
-                state=state,
-                parameter_name=param_name,
-                value=param_obj["value"],
-                source=source_name,
-                confidence=param_obj.get("confidence", 0.85),
-                raw_text=param_obj.get("raw_text", payload.answer_text)
-            )
+    if not is_gap_answer:
+        for param_name, param_obj in extracted.items():
+            if param_obj.get("value") is not None:
+                state = ci.PatientStateManager.update_hpi_parameter(
+                    state=state,
+                    parameter_name=param_name,
+                    value=param_obj["value"],
+                    source=source_name,
+                    confidence=param_obj.get("confidence", 0.85),
+                    raw_text=param_obj.get("raw_text", payload.answer_text)
+                )
+
+        # AYUSH / Homeopathy specific state recording
+        case_type = state.get("case_type", "general")
+        q_id = payload.current_question_id or ""
+        if case_type == "ayurveda" and (q_id.startswith("ayur.") or "ayurveda" in q_id or any(k in q_id for k in ["prakriti", "agni", "koshtha", "ahara", "vihara", "nidra", "bala"])):
+            clean_k = q_id.replace("ayur.", "").replace("ayurveda.", "")
+            ci.PatientStateManager.update_ayush_parameter(state, clean_k, payload.answer_text, source=source_name)
+        elif case_type == "homeopathy" and (q_id.startswith("homeo.") or "homeopathy" in q_id or any(k in q_id for k in ["location", "modalities", "thermal", "craving", "mental", "concomitant"])):
+            clean_k = q_id.replace("homeo.", "").replace("homeopathy.", "")
+            ci.PatientStateManager.update_homeopathy_parameter(state, clean_k, payload.answer_text, source=source_name)
 
     # 4. Check for internal self-contradictions
     for p_name, p_obj in extracted.items():
@@ -569,6 +640,7 @@ def respond_interview_endpoint(payload: InterviewRespondRequest):
                 "id": f"CLARIFY_{p_name.upper()}",
                 "parameter": p_name,
                 "priority": "P1",
+                "why_asking": "Clarifies your previous statement so the physician has an exact record.",
                 "question": {payload.language_code: conf_eval["clarification_prompt"]},
                 "quick_picks": {payload.language_code: ["Not sure", "Mild", "Severe"]}
             }
@@ -605,12 +677,13 @@ def respond_interview_endpoint(payload: InterviewRespondRequest):
 
     completeness = ci.ClinicalSummarySynthesizer.calculate_completeness(state)
     max_patient_answers = state.get("max_patient_answers", 16)
-    is_complete = next_q is None or completeness["score_percent"] >= 90
-    if patient_ans_count >= max_patient_answers and not is_complete:
+    if patient_ans_count >= max_patient_answers:
         gaps = completeness.get("missing_parameters", [])
         state["limit_reached_note"] = f"Interview reached safe limit ({max_patient_answers} patient answers). Remaining information gaps for clinician review: {', '.join(gaps)}."
         is_complete = True
         next_q = None
+    else:
+        is_complete = next_q is None or completeness["score_percent"] >= 90
 
     db.save_case_interview_state(payload.case_id, state)
 
@@ -649,6 +722,74 @@ def correct_fact_endpoint(payload: InterviewCorrectFactRequest):
         "parameter_name": payload.parameter_name,
         "new_value": payload.corrected_value,
         "completeness": ci.ClinicalSummarySynthesizer.calculate_completeness(state)
+    }
+
+@router.post("/interview/resolve-conflict")
+def resolve_conflict_endpoint(payload: InterviewResolveConflictRequest):
+    """
+    Updates the lifecycle status of a contradiction/conflict:
+    UNRESOLVED, PATIENT_CONFIRMED, DOCUMENT_CONFIRMED, DOCTOR_RESOLVED.
+    """
+    state = db.get_case_interview_state(payload.case_id)
+    if not state:
+        raise HTTPException(status_code=404, detail=f"Case '{payload.case_id}' state not found.")
+
+    ci.PatientStateManager.update_contradiction_status(
+        state=state,
+        conflict_id=payload.conflict_id,
+        status=payload.resolution_status,
+        notes=payload.resolution_notes or "",
+        resolved_by=payload.resolved_by or "doctor"
+    )
+
+    db.save_case_interview_state(payload.case_id, state)
+    return {
+        "status": "conflict_updated",
+        "case_id": payload.case_id,
+        "conflict_id": payload.conflict_id,
+        "resolution_status": payload.resolution_status,
+        "contradictions": state.get("contradictions", [])
+    }
+
+@router.post("/interview/{case_id}/doctor-signoff")
+@router.post("/{case_id}/doctor-signoff")
+def doctor_signoff_endpoint(case_id: str, payload: DoctorReviewRequest):
+    """
+    Records formal attending physician review, clinical verification,
+    and transitions case status from AI-ASSISTED DRAFT to DOCTOR VERIFIED.
+    """
+    state = db.get_case_interview_state(case_id)
+    if not state:
+        raise HTTPException(status_code=404, detail=f"Case '{case_id}' state not found.")
+
+    ci.PatientStateManager.verify_doctor_signoff(
+        state=state,
+        doctor_id=payload.doctor_id,
+        doctor_notes=payload.doctor_notes,
+        updated_summary=payload.updated_summary
+    )
+
+    case = db.get_clinical_case(case_id)
+    docs = case.get("documents", []) if case else []
+    review_package = ci.ClinicalSummarySynthesizer.synthesize_full_review(state, docs)
+    if payload.updated_summary and isinstance(payload.updated_summary, dict):
+        review_package.update(payload.updated_summary)
+
+    db.save_case_interview_state(case_id, state)
+    db.update_case_summary_and_triage(
+        case_id=case_id,
+        summary_data=review_package,
+        triage_urgency=state.get("triage_urgency", "routine").lower(),
+        red_flags=[rf.get("flag_id", str(rf)) for rf in state.get("red_flags_detected", [])],
+        ayush_data=state.get("ayush_parameters"),
+        chief_complaint=state.get("chief_complaint", "")
+    )
+
+    return {
+        "status": "verified",
+        "case_id": case_id,
+        "doctor_review": state.get("doctor_review"),
+        "review_package": review_package
     }
 
 @router.post("/interview/verify-document")
@@ -766,6 +907,8 @@ def get_case_report_pdf_endpoint(case_id: str):
             "status": case.get("status") or "Ready for Physician Review",
             "language": state.get("primary_language") or "English",
             "input_mode": "Voice Assisted" if not state.get("is_kiosk") else "Kiosk / Touch",
+            "case_type": state.get("case_type", "general"),
+            "participant_role": state.get("participant_role", "patient"),
             "chief_complaint": case.get("chief_complaint") or state.get("chief_complaint") or "General Consultation"
         },
         "patient": {
@@ -773,17 +916,19 @@ def get_case_report_pdf_endpoint(case_id: str):
             "age": patient_info.get("age") or "Adult",
             "gender": patient_info.get("gender") or "Unspecified",
             "patient_id": p_id,
-            "abha_id": patient_info.get("abha_id") or "91-4589-2041-8832"
+            "abha_id": patient_info.get("abha_id") or "Not linked"
         },
         "chief_complaints": state.get("chief_complaints") or ([case.get("chief_complaint")] if case.get("chief_complaint") else ["General Consultation"]),
         "history": {
             "hpi": state.get("hpi", {}),
             "past_medical_history": state.get("past_history") or state.get("past_medical_history") or "Not reported",
             "past_surgical_history": state.get("past_surgical_history") or "None reported",
-            "family_history": state.get("family_history") or "No major hereditary illness reported",
-            "personal_social_history": state.get("personal_social_history") or "Non-smoker, non-alcoholic",
-            "review_of_systems": state.get("review_of_systems") or "Normal constitutional baseline"
+            "family_history": state.get("family_history") or "Not reported",
+            "personal_social_history": state.get("personal_social_history") or "Not provided",
+            "review_of_systems": state.get("review_of_systems") or "Not reported"
         },
+        "ayurveda_parameters": state.get("ayush_parameters", {}),
+        "homeopathy_parameters": state.get("homeopathy_parameters", {}),
         "medications": state.get("medications", []),
         "allergies": state.get("allergies", []),
         "investigations": state.get("investigations", []),
@@ -798,7 +943,7 @@ def get_case_report_pdf_endpoint(case_id: str):
         "ai_analysis": {
             "recommended_workup": review_package.get("quick_snapshot", {}).get("suggested_focus", [])
         },
-        "doctor_review": {}
+        "doctor_review": state.get("doctor_review", {})
     }
 
     pdf_bytes = ci.generate_clinical_pdf(report_data)

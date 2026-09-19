@@ -44,6 +44,7 @@ class ContradictionEngine:
         if has_negative_med_statement and doc_meds:
             contradictions.append({
                 "id": "CONTRADICTION_MED_DENIAL",
+                "status": "UNRESOLVED",
                 "category": "medications",
                 "severity": "HIGH",
                 "patient_claim": "Patient reported not taking any regular medications.",
@@ -51,6 +52,9 @@ class ContradictionEngine:
                 "document_evidence": f"Uploaded records indicate active prescriptions: {', '.join(doc_meds)}.",
                 "discrepancy_description": f"Patient reported no medications, but document indicates active prescriptions: {', '.join(doc_meds)}.",
                 "doctor_probe_question": f"Patient stated no current medications, but records show prior prescription for {', '.join(doc_meds)}. Confirm compliance or discontinuation.",
+                "resolution_notes": "",
+                "resolved_by": None,
+                "resolved_at": None,
                 "provenance": "document_crosscheck"
             })
 
@@ -59,11 +63,17 @@ class ContradictionEngine:
             if dm and not any(dm in pm for pm in patient_meds) and not has_negative_med_statement and patient_meds:
                 contradictions.append({
                     "id": f"CONTRADICTION_MED_OMISSION_{dm[:10].upper()}",
+                    "status": "UNRESOLVED",
                     "category": "medications",
                     "severity": "MEDIUM",
                     "patient_claim": f"Reported medications: {', '.join(patient_meds)}.",
+                    "document_claim": f"Document lists {dm}",
                     "document_evidence": f"Document lists {dm} which was not mentioned by patient.",
+                    "discrepancy_description": f"Document lists {dm} which was not reported in verbal medication history.",
                     "doctor_probe_question": f"Uploaded record lists '{dm}'. Ask patient if they are currently taking this.",
+                    "resolution_notes": "",
+                    "resolved_by": None,
+                    "resolved_at": None,
                     "provenance": "document_crosscheck"
                 })
 
@@ -75,11 +85,17 @@ class ContradictionEngine:
         if has_negative_allergy and doc_allergies:
             contradictions.append({
                 "id": "CONTRADICTION_ALLERGY_DENIAL",
+                "status": "UNRESOLVED",
                 "category": "allergies",
                 "severity": "CRITICAL",
                 "patient_claim": "Patient denied having any known drug allergies.",
+                "document_claim": f"Documented allergy: {', '.join(doc_allergies)}",
                 "document_evidence": f"Medical records flag known allergy: {', '.join(doc_allergies)}.",
+                "discrepancy_description": f"High Alert: Patient denied allergies, but medical records flag allergy to {', '.join(doc_allergies)}.",
                 "doctor_probe_question": f"High Alert: Record notes allergy to {', '.join(doc_allergies)}. Re-verify before prescribing.",
+                "resolution_notes": "",
+                "resolved_by": None,
+                "resolved_at": None,
                 "provenance": "document_crosscheck"
             })
 
@@ -88,16 +104,21 @@ class ContradictionEngine:
         chief_complaint = str(patient_state.get("chief_complaint", "")).lower()
 
         if "diabet" in raw_doc_text or any("diabet" in d for d in doc_diagnoses):
-            # If patient said "no health problems" or denied diabetes
             past_history = str(patient_state.get("past_history", "")).lower()
             if "no diabetes" in past_history or "no illness" in past_history or "never had sugar" in past_history:
                 contradictions.append({
                     "id": "CONTRADICTION_DIABETES_DENIAL",
+                    "status": "UNRESOLVED",
                     "category": "diagnoses",
                     "severity": "HIGH",
                     "patient_claim": "Patient stated no history of diabetes/blood sugar.",
+                    "document_claim": "Clinical document indicates Diabetes history / markers",
                     "document_evidence": "Uploaded clinical document indicates Diabetes Mellitus history / elevated glycemic markers.",
+                    "discrepancy_description": "Patient stated no history of diabetes, but uploaded record indicates prior diabetes diagnosis or testing.",
                     "doctor_probe_question": "Clarify diabetes history and recent fasting glucose / HbA1c status.",
+                    "resolution_notes": "",
+                    "resolved_by": None,
+                    "resolved_at": None,
                     "provenance": "document_crosscheck"
                 })
 
@@ -109,11 +130,17 @@ class ContradictionEngine:
                 if val >= 8.0:
                     contradictions.append({
                         "id": "CONTRADICTION_HBA1C_ELEVATED",
+                        "status": "UNRESOLVED",
                         "category": "labs",
                         "severity": "MEDIUM",
-                        "patient_claim": "Patient reported general mild symptoms.",
+                        "patient_claim": "Patient reported general mild symptoms / stable health.",
+                        "document_claim": f"HbA1c test result: {val}%",
                         "document_evidence": f"Document shows markedly elevated HbA1c of {val}%.",
+                        "discrepancy_description": f"Uploaded lab report shows uncontrolled HbA1c ({val}%).",
                         "doctor_probe_question": f"Uncontrolled HbA1c ({val}%). Review glycemic management and medication adherence.",
+                        "resolution_notes": "",
+                        "resolved_by": None,
+                        "resolved_at": None,
                         "provenance": "document_crosscheck"
                     })
             except ValueError:
@@ -136,16 +163,21 @@ class ContradictionEngine:
         if new_parameter == "duration":
             existing_dur = hpi.get("duration", {}).get("value")
             if existing_dur and str(existing_dur).lower() != str(new_value).lower():
-                # Check for major conflict (e.g., today vs 2 months)
                 if ("today" in str(existing_dur).lower() and ("month" in str(new_value).lower() or "year" in str(new_value).lower())) or \
                    ("today" in str(new_value).lower() and ("month" in str(existing_dur).lower() or "year" in str(existing_dur).lower())):
                     return {
                         "id": "INTERNAL_CONFLICT_DURATION",
+                        "status": "UNRESOLVED",
                         "category": "timeline",
                         "severity": "MEDIUM",
-                        "patient_claim": f"Changed duration from '{existing_dur}' to '{new_value}'.",
+                        "patient_claim": f"Later reported '{new_value}'.",
+                        "document_claim": f"Earlier reported '{existing_dur}'.",
                         "document_evidence": "Self-reported conflict during same interview session.",
+                        "discrepancy_description": f"Patient reported duration as '{existing_dur}' earlier, but later stated '{new_value}'.",
                         "doctor_probe_question": f"Patient mentioned symptoms began '{existing_dur}' earlier, then reported '{new_value}'. Clarify if acute flare on chronic issue.",
+                        "resolution_notes": "",
+                        "resolved_by": None,
+                        "resolved_at": None,
                         "provenance": "interview_transcript"
                     }
 
@@ -158,14 +190,70 @@ class ContradictionEngine:
                     if abs(e_num - n_num) >= 5:
                         return {
                             "id": "INTERNAL_CONFLICT_SEVERITY",
+                            "status": "UNRESOLVED",
                             "category": "severity",
                             "severity": "LOW",
-                            "patient_claim": f"Severity rated both as {e_num}/10 and {n_num}/10.",
+                            "patient_claim": f"Severity rated as {n_num}/10.",
+                            "document_claim": f"Previously rated as {e_num}/10.",
                             "document_evidence": "Discrepancy in pain scale ratings during session.",
+                            "discrepancy_description": f"Pain scale rating fluctuated significantly from {e_num}/10 to {n_num}/10.",
                             "doctor_probe_question": "Clarify whether pain fluctuates between mild and severe.",
+                            "resolution_notes": "",
+                            "resolved_by": None,
+                            "resolved_at": None,
                             "provenance": "interview_transcript"
                         }
                 except (ValueError, TypeError):
                     pass
 
         return None
+
+    @classmethod
+    def check_document_vs_document(
+        cls,
+        documents: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
+        """
+        Cross-checks multiple uploaded documents for conflicting parameters
+        (e.g., conflicting dosages or divergent test results).
+        """
+        conflicts = []
+        if not documents or len(documents) < 2:
+            return conflicts
+
+        extracted_list = [d.get("extracted_data", {}) for d in documents if isinstance(d, dict)]
+
+        # Check for medication dose differences across documents
+        med_map = {}
+        for idx, ext in enumerate(extracted_list):
+            doc_name = documents[idx].get("filename", f"Doc {idx+1}")
+            for med in ext.get("medications", []):
+                m_str = str(med).strip().lower()
+                m_base = re.sub(r"\b\d+\s*(?:mg|mcg|g|ml)\b", "", m_str).strip()
+                if m_base:
+                    if m_base not in med_map:
+                        med_map[m_base] = []
+                    med_map[m_base].append((doc_name, m_str))
+
+        for base_med, occurrences in med_map.items():
+            if len(occurrences) >= 2:
+                distinct_versions = set(o[1] for o in occurrences)
+                if len(distinct_versions) >= 2:
+                    conflicts.append({
+                        "id": f"DOC_CONFLICT_MED_{base_med[:10].upper()}",
+                        "status": "UNRESOLVED",
+                        "category": "medications",
+                        "severity": "MEDIUM",
+                        "patient_claim": "Document discrepancy detected between uploaded records.",
+                        "document_claim": "; ".join(f"{doc}: {val}" for doc, val in occurrences),
+                        "document_evidence": "Multiple uploaded records show divergent formulations or dosages.",
+                        "discrepancy_description": f"Divergent prescriptions found for '{base_med}': {'; '.join(f'{doc}: {val}' for doc, val in occurrences)}",
+                        "doctor_probe_question": f"Review active dosage for '{base_med}' as multiple records show different instructions.",
+                        "resolution_notes": "",
+                        "resolved_by": None,
+                        "resolved_at": None,
+                        "provenance": "document_crosscheck"
+                    })
+
+        return conflicts
+

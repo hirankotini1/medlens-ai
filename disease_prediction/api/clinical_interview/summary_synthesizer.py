@@ -18,49 +18,104 @@ class ClinicalSummarySynthesizer:
 
     @classmethod
     def calculate_completeness(cls, state: Dict[str, Any]) -> Dict[str, Any]:
-        """Calculates completeness score (0-100%) and missing essential items."""
+        """Calculates completeness score (0-100%) and missing essential items dynamically based on case type."""
         hpi = state.get("hpi", {})
-        core_params = ["duration", "severity", "location", "character", "onset", "triggers", "relievers"]
+        case_type = state.get("case_type", "general")
 
         completed = []
         missing = []
 
-        for p in core_params:
-            p_obj = hpi.get(p)
-            val = p_obj.get("value") if isinstance(p_obj, dict) else p_obj
-            if val is not None and str(val).strip():
-                completed.append(p)
+        if case_type == "ayurveda":
+            ayush = state.get("ayush_parameters", {})
+            core_params = ["duration", "severity"]
+            for p in core_params:
+                p_obj = hpi.get(p)
+                val = p_obj.get("value") if isinstance(p_obj, dict) else p_obj
+                if val is not None and str(val).strip(): completed.append(p)
+                else: missing.append(p)
+            for ay_key in ["prakriti", "agni", "koshtha", "ahara", "vihara"]:
+                ay_val = ayush.get(ay_key)
+                val = ay_val.get("value") if isinstance(ay_val, dict) else ay_val
+                if val is not None and str(val).strip(): completed.append(f"ayush_{ay_key}")
+                else: missing.append(f"ayush_{ay_key}")
+            if state.get("chief_complaint"): completed.append("chief_complaint")
+            else: missing.append("chief_complaint")
+            total = len(core_params) + 5 + 1
+            score = int((len(completed) / total) * 100)
+            return {
+                "score_percent": score,
+                "completed_count": len(completed),
+                "total_count": total,
+                "completed_parameters": completed,
+                "missing_parameters": missing,
+                "status": "COMPREHENSIVE" if score >= 80 else ("ADEQUATE" if score >= 50 else "INITIAL")
+            }
+
+        elif case_type == "homeopathy":
+            homeo = state.get("homeopathy_parameters", {})
+            core_params = ["duration", "severity"]
+            for p in core_params:
+                p_obj = hpi.get(p)
+                val = p_obj.get("value") if isinstance(p_obj, dict) else p_obj
+                if val is not None and str(val).strip(): completed.append(p)
+                else: missing.append(p)
+            for hm_key in ["sensation", "modalities", "thermal_and_thirst", "cravings_aversions", "mental_emotional"]:
+                hm_val = homeo.get(hm_key)
+                val = hm_val.get("value") if isinstance(hm_val, dict) else hm_val
+                if val is not None and str(val).strip(): completed.append(f"homeo_{hm_key}")
+                else: missing.append(f"homeo_{hm_key}")
+            if state.get("chief_complaint"): completed.append("chief_complaint")
+            else: missing.append("chief_complaint")
+            total = len(core_params) + 5 + 1
+            score = int((len(completed) / total) * 100)
+            return {
+                "score_percent": score,
+                "completed_count": len(completed),
+                "total_count": total,
+                "completed_parameters": completed,
+                "missing_parameters": missing,
+                "status": "COMPREHENSIVE" if score >= 80 else ("ADEQUATE" if score >= 50 else "INITIAL")
+            }
+
+        else:
+            # General Clinical
+            core_params = ["duration", "severity", "location", "character", "onset", "triggers", "relievers"]
+            for p in core_params:
+                p_obj = hpi.get(p)
+                val = p_obj.get("value") if isinstance(p_obj, dict) else p_obj
+                if val is not None and str(val).strip():
+                    completed.append(p)
+                else:
+                    missing.append(p)
+
+            # Check chief complaint
+            if state.get("chief_complaint"):
+                completed.append("chief_complaint")
             else:
-                missing.append(p)
+                missing.append("chief_complaint")
 
-        # Check chief complaint
-        if state.get("chief_complaint"):
-            completed.append("chief_complaint")
-        else:
-            missing.append("chief_complaint")
+            # Check medications & allergies
+            if state.get("medications_queried") or state.get("medications"):
+                completed.append("medications")
+            else:
+                missing.append("medications")
 
-        # Check medications & allergies
-        if state.get("medications_queried") or state.get("medications"):
-            completed.append("medications")
-        else:
-            missing.append("medications")
+            if state.get("allergies_queried") or state.get("allergies"):
+                completed.append("allergies")
+            else:
+                missing.append("allergies")
 
-        if state.get("allergies_queried") or state.get("allergies"):
-            completed.append("allergies")
-        else:
-            missing.append("allergies")
+            total = len(core_params) + 3
+            score = int((len(completed) / total) * 100)
 
-        total = len(core_params) + 3
-        score = int((len(completed) / total) * 100)
-
-        return {
-            "score_percent": score,
-            "completed_count": len(completed),
-            "total_count": total,
-            "completed_parameters": completed,
-            "missing_parameters": missing,
-            "status": "COMPREHENSIVE" if score >= 80 else ("ADEQUATE" if score >= 50 else "INITIAL")
-        }
+            return {
+                "score_percent": score,
+                "completed_count": len(completed),
+                "total_count": total,
+                "completed_parameters": completed,
+                "missing_parameters": missing,
+                "status": "COMPREHENSIVE" if score >= 80 else ("ADEQUATE" if score >= 50 else "INITIAL")
+            }
 
     @classmethod
     def generate_quick_snapshot(cls, state: Dict[str, Any]) -> Dict[str, Any]:
@@ -96,13 +151,14 @@ class ClinicalSummarySynthesizer:
         meds = state.get("medications", [])
         allergies = state.get("allergies", [])
 
-        # Differential suggestions base
         diff_suggestions = cls._generate_differentials(chief, hpi, red_flags)
 
         return {
             "title": "Quick Consultation Snapshot (OPD Rapid Read)",
-            "disclaimer": "DRAFT — For physician clinical evaluation only. AI is an assistive history tool, not a diagnostic authority.",
+            "disclaimer": "AI-assisted clinical intake DRAFT for registered healthcare practitioner review only. Does not constitute a clinical diagnosis or treatment prescription.",
             "chief_complaint": f"{chief} ({duration})",
+            "case_type": state.get("case_type", "general"),
+            "participant_role": state.get("participant_role", "patient"),
             "triage_urgency": urgency,
             "severity": severity_str,
             "red_flags": red_flags,
@@ -115,9 +171,10 @@ class ClinicalSummarySynthesizer:
 
     @classmethod
     def generate_detailed_history(cls, state: Dict[str, Any], documents: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
-        """Generates comprehensive structured clinical history."""
+        """Generates comprehensive structured clinical history adhering to zero fake data rules."""
         hpi = state.get("hpi", {})
         chief = state.get("chief_complaint", "Not specified")
+        case_type = state.get("case_type", "general")
 
         def _get_val(key: str, default: str = "Not elicited") -> Any:
             item = hpi.get(key)
@@ -139,21 +196,46 @@ class ClinicalSummarySynthesizer:
             "Timing / Duration": _get_val("duration", "Not elicited")
         }
 
-        # Review of Systems
         ros = state.get("review_of_systems", {})
 
-        # Timeline
         from .provenance import ProvenanceTracker
         timeline = ProvenanceTracker.synthesize_timeline(state, documents)
 
+        # Build Ayurvedic assessment block
+        ayush_data = state.get("ayush_parameters", {})
+        ayurveda_section = {
+            "Prakriti (Constitutional Baseline)": ayush_data.get("prakriti", {}).get("value") if isinstance(ayush_data.get("prakriti"), dict) else (ayush_data.get("prakriti") or "Not evaluated"),
+            "Agni (Digestive Fire)": ayush_data.get("agni", {}).get("value") if isinstance(ayush_data.get("agni"), dict) else (ayush_data.get("agni") or "Not evaluated"),
+            "Koshtha (Bowel Habit)": ayush_data.get("koshtha", {}).get("value") if isinstance(ayush_data.get("koshtha"), dict) else (ayush_data.get("koshtha") or "Not evaluated"),
+            "Ahara (Dietary Pattern & Tastes)": ayush_data.get("ahara", {}).get("value") if isinstance(ayush_data.get("ahara"), dict) else (ayush_data.get("ahara") or "Not evaluated"),
+            "Vihara (Lifestyle & Dinacharya)": ayush_data.get("vihara", {}).get("value") if isinstance(ayush_data.get("vihara"), dict) else (ayush_data.get("vihara") or "Not evaluated"),
+            "Dashavidha Pariksha Summary": ayush_data.get("dashavidha_pariksha", {})
+        }
+
+        # Build Homeopathy assessment block
+        homeo_data = state.get("homeopathy_parameters", {})
+        homeopathy_section = {
+            "Sensations": homeo_data.get("sensation", {}).get("value") if isinstance(homeo_data.get("sensation"), dict) else (homeo_data.get("sensation") or "Not elicited"),
+            "Modalities (Better / Worse)": homeo_data.get("modalities", {}).get("value") if isinstance(homeo_data.get("modalities"), dict) else (homeo_data.get("modalities") or "Not elicited"),
+            "Generals (Thermal & Thirst)": homeo_data.get("thermal_and_thirst", {}).get("value") if isinstance(homeo_data.get("thermal_and_thirst"), dict) else (homeo_data.get("thermal_and_thirst") or "Not elicited"),
+            "Food Desires & Aversions": homeo_data.get("cravings_aversions", {}).get("value") if isinstance(homeo_data.get("cravings_aversions"), dict) else (homeo_data.get("cravings_aversions") or "Not elicited"),
+            "Mental & Emotional Disposition": homeo_data.get("mental_emotional", {}).get("value") if isinstance(homeo_data.get("mental_emotional"), dict) else (homeo_data.get("mental_emotional") or "Not elicited"),
+            "Concomitant Symptoms": homeo_data.get("concomitants", {}).get("value") if isinstance(homeo_data.get("concomitants"), dict) else (homeo_data.get("concomitants") or "None reported")
+        }
+
         return {
             "title": "Comprehensive Clinical Case History",
+            "case_type": case_type,
+            "participant_role": state.get("participant_role", "patient"),
             "chief_complaint": chief,
             "hpi_narrative": cls._build_hpi_narrative(chief, hpi),
             "opqrst_table": opqrst,
+            "ayurveda_assessment": ayurveda_section if case_type == "ayurveda" else None,
+            "homeopathy_assessment": homeopathy_section if case_type == "homeopathy" else None,
             "review_of_systems": ros if ros else {"General": "Elicited during primary complaint interview"},
-            "past_medical_history": state.get("past_history", "None reported"),
-            "family_history": state.get("family_history", "Non-contributory"),
+            "past_medical_history": state.get("past_history") or state.get("past_medical_history") or "Not reported",
+            "family_history": state.get("family_history") or "Not provided",
+            "personal_social_history": state.get("personal_social_history") or "Not provided",
             "medication_reconciliation": {
                 "active_medications": state.get("medications", []),
                 "adherence": state.get("medication_adherence", "Reported compliant"),
@@ -168,7 +250,7 @@ class ClinicalSummarySynthesizer:
         state: Dict[str, Any],
         documents: Optional[List[Dict[str, Any]]] = None
     ) -> Dict[str, Any]:
-        """Produces the complete suite of physician consultation outputs."""
+        """Produces the complete suite of physician consultation outputs adhering to clinical safety."""
         completeness = cls.calculate_completeness(state)
         snapshot = cls.generate_quick_snapshot(state)
         detailed = cls.generate_detailed_history(state, documents)
@@ -177,25 +259,40 @@ class ClinicalSummarySynthesizer:
         uncertainties = state.get("uncertainties", [])
         red_flags = state.get("red_flags_detected", [])
         provenance = state.get("source_provenance", [])
+        doctor_review = state.get("doctor_review", {
+            "status": "AI-ASSISTED DRAFT",
+            "doctor_id": None,
+            "doctor_notes": "",
+            "verified_at": None
+        })
+
+        case_type = state.get("case_type", "general")
 
         return {
             "case_id": state.get("case_id"),
             "patient_id": state.get("patient_id"),
+            "case_type": case_type,
+            "participant_role": state.get("participant_role", "patient"),
+            "consent_given": state.get("consent_given", True),
+            "consent_version": state.get("consent_version", "v2.0"),
             "primary_language": state.get("primary_language", "en-IN"),
             "generated_at": datetime.now(timezone.utc).isoformat(),
-            "status": "READY_FOR_PHYSICIAN_VERIFICATION",
-            "disclaimer": "AI-generated draft — physician verification required.",
+            "status": "DOCTOR VERIFIED" if doctor_review.get("status") == "DOCTOR VERIFIED" else "READY_FOR_PHYSICIAN_VERIFICATION",
+            "doctor_review": doctor_review,
+            "disclaimer": "AI-assisted clinical intake DRAFT for registered healthcare practitioner review only. Does not constitute a clinical diagnosis or treatment prescription.",
             "completeness": completeness,
             "quick_snapshot": snapshot,
             "detailed_case_history": detailed,
             "red_flags": red_flags,
             "uncertainties": uncertainties,
             "contradictions": contradictions,
+            "information_gaps": state.get("information_gaps", []) or [{"parameter": p, "status": "MISSING"} for p in completeness.get("missing_parameters", [])],
             "documents": documents or [],
             "timeline": detailed.get("chronological_timeline", []),
             "source_provenance": provenance,
             "transcripts": transcripts,
-            "ayush_notes": state.get("ayush_parameters", {})
+            "ayush_notes": state.get("ayush_parameters", {}) if case_type == "ayurveda" else None,
+            "homeopathy_notes": state.get("homeopathy_parameters", {}) if case_type == "homeopathy" else None
         }
 
     @classmethod

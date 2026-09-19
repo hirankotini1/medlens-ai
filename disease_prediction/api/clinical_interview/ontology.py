@@ -639,6 +639,277 @@ SYSTEMIC_INQUIRY_MODULES: List[Dict[str, Any]] = [
     }
 ]
 
+# ==============================================================================
+# AYURVEDA CLINICAL CASE-TAKING PATHWAY (SIH PS 26047)
+# ==============================================================================
+AYURVEDA_PATHWAY: List[Dict[str, Any]] = [
+    {
+        "id": "ayush.prakriti",
+        "priority": PRIORITY_P1,
+        "state_key": "prakriti",
+        "section": "Ayurvedic Prakriti",
+        "category": "ayush",
+        "why_asking": "Helps your Ayurvedic practitioner understand your baseline constitutional balance (Prakriti).",
+        "text": {
+            "en-IN": "Regarding your bodily constitution (Prakriti), how would you describe your natural physical build, skin texture, and temperature tolerance?",
+            "hi-IN": "आपकी शारीरिक प्रकृति के अनुसार, आपकी शारीरिक बनावट, त्वचा की बनावट और तापमान सहनशीलता कैसी है?",
+            "te-IN": "మీ శరీర ప్రకృతి ప్రకారం, మీ శారీరక నిర్మాణం, చర్మ స్వభావం మరియు ఉష్ణోగ్రత తట్టుకునే శక్తి ఎలా ఉంటుంది?",
+            "or-IN": "ଆପଣଙ୍କ ଶରୀରର ପ୍ରକୃତି ଅନୁସାରେ, ଶାରୀରିକ ଗଠନ, ଚର୍ମର ପ୍ରକୃତି ଓ ତାପମାତ୍ରା ସହନଶୀଳତା କିପରି?",
+            "ta-IN": "உங்கள் உடலமைப்பு, தோல் தன்மை மற்றும் உடல் வெப்ப தாங்குதிறன் எப்படி உள்ளது?"
+        },
+        "quick_picks": [
+            "Lean build, dry skin, sensitive to cold (Vata)",
+            "Moderate build, warm body, sharp appetite (Pitta)",
+            "Sturdy build, smooth skin, slow metabolism (Kapha)",
+            "Mixed constitution (Tridosha / Vata-Pitta / Pitta-Kapha)"
+        ]
+    },
+    {
+        "id": "ayush.agni",
+        "priority": PRIORITY_P1,
+        "state_key": "agni",
+        "section": "Ayurvedic Agni",
+        "category": "ayush",
+        "why_asking": "Assesses your digestive fire (Agni), which is fundamental to Ayurvedic diagnosis and metabolic health.",
+        "text": {
+            "en-IN": "How is your digestion and appetite (Agni)? Do you experience sharp burning hunger, slow sluggish digestion, irregular appetite, or normal balanced digestion?",
+            "hi-IN": "आपकी पाचन शक्ति और भूख (अग्नि) कैसी है? क्या बहुत तेज भूख लगती है, पाचन धीमा रहता है, अनियमित रहता है या संतुलित?",
+            "te-IN": "మీ జీర్ణశక్తి మరియు ఆకలి (అగ్ని) ఎలా ఉంది? తీవ్రమైన ఆకలా, మందకొడి జీర్ణక్రియా, క్రమరహితమా లేదా సమానంగా ఉందా?",
+            "or-IN": "ଆପଣଙ୍କ ହଜମ ଶକ୍ତି ଓ ଭୋକ (ଅଗ୍ନି) କିପରି ରହୁଛି — ତୀବ୍ର, ଧୀମା, ଅନିୟମିତ ନା ସନ୍ତୁଳିତ?",
+            "ta-IN": "உங்கள் செரிமானம் மற்றும் பசி எப்படி உள்ளது?"
+        },
+        "quick_picks": [
+            "Sama Agni (Balanced & comfortable digestion)",
+            "Tikshna Agni (Sharp burning hunger, hyperacidity)",
+            "Manda Agni (Sluggish digestion, heaviness after food)",
+            "Vishama Agni (Irregular hunger, gas & bloating)"
+        ]
+    },
+    {
+        "id": "ayush.koshtha",
+        "priority": PRIORITY_P2,
+        "state_key": "koshtha",
+        "section": "Ayurvedic Koshtha",
+        "category": "ayush",
+        "why_asking": "Identifies digestive elimination status (Koshtha) for safe dietary and herbal guidance.",
+        "text": {
+            "en-IN": "How are your daily bowel movements (Koshtha)? Are they regular and smooth, soft/loose with urgency, or hard and constipated?",
+            "hi-IN": "आपका पेट साफ होने की स्थिति (कोष्ठ) कैसी है — नियमित और सामान्य, पतला/ढीला, या कठोर और कब्जियत वाला?",
+            "te-IN": "మీ మలవిసర్జన (కోష్ఠం) ఎలా ఉంటుంది — సాధారణంగానా, పల్చగానా లేదా మలబద్ధకంతోనా?",
+            "or-IN": "ଆପଣଙ୍କ ପେଟ ସଫା ହେବା (କୋଷ୍ଠ) କିପରି — ନିୟମିତ, ତରଳ ନା କଠିନ/କୋଷ୍ଠକାଠିନ୍ୟ?",
+            "ta-IN": "உங்கள் குடல் இயக்கம் எப்படி உள்ளது?"
+        },
+        "quick_picks": [
+            "Madhyama (Regular, normal consistency)",
+            "Mridu (Soft/loose, easily stimulated)",
+            "Krura (Hard, dry stools, prone to constipation)"
+        ]
+    },
+    {
+        "id": "ayush.ahara",
+        "priority": PRIORITY_P2,
+        "state_key": "ahara",
+        "section": "Ayurvedic Ahara",
+        "category": "ayush",
+        "why_asking": "Elicits nutritional habits and taste preferences (Rasa) influencing doshic equilibrium.",
+        "text": {
+            "en-IN": "What are your primary dietary habits (Ahara)? What tastes do you crave, and do you prefer warm freshly-cooked meals or cold foods?",
+            "hi-IN": "आपका खान-पान और आहार (आहार) कैसा है? आपको कैसा भोजन पसंद है और क्या आप गर्म ताजा खाना पसंद करते हैं?",
+            "te-IN": "మీ ఆహారపు అలవాట్లు (ఆహార) ఏమిటి? ఎలాంటి రుచులు ఇష్టపడతారు?",
+            "or-IN": "ଆପଣଙ୍କ ଖାଦ୍ୟପେୟ ଅଭ୍ୟାସ କିପରି — ଉଷୁମ ତାଜା ଖାଦ୍ୟ ନା ଥଣ୍ଡା ଖାଦ୍ୟ ପସନ୍ଦ କରନ୍ତି?",
+            "ta-IN": "உங்கள் உணவு பழக்கவழக்கங்கள் என்ன?"
+        },
+        "quick_picks": [
+            "Vegetarian, freshly cooked warm meals",
+            "Spicy, oily, or fried foods frequently",
+            "Irregular meal timings, snacking often",
+            "Prefers sweets, heavy dairy items",
+            "Non-vegetarian balanced meals"
+        ]
+    },
+    {
+        "id": "ayush.vihara_lifestyle",
+        "priority": PRIORITY_P2,
+        "state_key": "vihara",
+        "section": "Ayurvedic Vihara",
+        "category": "ayush",
+        "why_asking": "Documents rest patterns (Nidra) and daily regimens (Dinacharya) impacting physical vitality.",
+        "text": {
+            "en-IN": "How is your daily lifestyle and routine (Vihara)? How do you sleep (Nidra), and what is your level of physical exertion and daily stress?",
+            "hi-IN": "आपकी दिनचर्या और जीवनशैली (विहार) कैसी है? आपकी नींद कैसी है और काम का तनाव कितना है?",
+            "te-IN": "మీ జీవనశైలి, నిద్ర (నిద్ర) మరియు వ్యాయామం ఎలా ఉన్నాయి?",
+            "or-IN": "ଆପଣଙ୍କ ଦୈନନ୍ଦିନ ଜୀବନଶୈଳୀ, ନିଦ ଓ ଶାରୀରିକ ପରିଶ୍ରମ କିପରି?",
+            "ta-IN": "உங்கள் தினசரி வாழ்க்கை முறை மற்றும் தூக்கம் எப்படி உள்ளது?"
+        },
+        "quick_picks": [
+            "Sound 7-8 hours sleep, regular daily routine",
+            "Disturbed / interrupted sleep, high stress",
+            "Sedentary lifestyle, late nights",
+            "Active physical work, early riser"
+        ]
+    },
+    {
+        "id": "ayush.dashavidha",
+        "priority": PRIORITY_P3,
+        "state_key": "dashavidha",
+        "section": "Dashavidha Pariksha",
+        "category": "ayush",
+        "why_asking": "Provides structured clinical markers of tissue strength and functional stamina for practitioner review.",
+        "text": {
+            "en-IN": "Regarding your physical endurance and stamina (Vyayama Shakti), how quickly do you feel tired after routine activities?",
+            "hi-IN": "आपकी शारीरिक सहनशक्ति और ताकत कैसी है? क्या आप सामान्य काम के बाद जल्दी थक जाते हैं?",
+            "te-IN": "మీ శారీరక సత్తువ మరియు మానసిక స్థైర్యం ఎలా ఉన్నాయి? త్వరగా అలసిపోతారా?",
+            "or-IN": "ଆପଣଙ୍କ ଶାରୀରିକ ସହନଶକ୍ତି ଓ ମାନସିକ ସନ୍ତୁଳନ କିପରି? ଶୀଘ୍ର ଥକି ଯାଉଛନ୍ତି କି?",
+            "ta-IN": "உங்கள் உடல் தாங்குதிறன் எப்படி உள்ளது?"
+        },
+        "quick_picks": [
+            "Pravara (High stamina, rarely fatigued)",
+            "Madhyama (Moderate endurance, handles daily chores well)",
+            "Avara (Easily fatigued, low physical stamina)"
+        ]
+    }
+]
+
+# ==============================================================================
+# HOMEOPATHY CLINICAL CASE-TAKING PATHWAY (SIH PS 26047)
+# ==============================================================================
+HOMEOPATHY_PATHWAY: List[Dict[str, Any]] = [
+    {
+        "id": "homeo.location_sensation",
+        "priority": PRIORITY_P1,
+        "state_key": "sensation",
+        "section": "Homeopathic Sensation",
+        "category": "homeopathy",
+        "why_asking": "The precise subjective sensation provides essential individualized symptom characterization.",
+        "text": {
+            "en-IN": "Please describe the exact sensation and nature of your discomfort — is it burning, throbbing, sharp stitching, dull aching, or cramping?",
+            "hi-IN": "कृपया अपनी तकलीफ का सटीक अनुभव बताएं — क्या यह जलन, धड़कन, चुभन, हल्का दर्द या ऐंठन जैसा है?",
+            "te-IN": "మీ నొప్పి యొక్క స్వభావం ఎలా ఉంది — మంటగానా, కొట్టుకుంటున్నట్లుగానా, సూదులతో గుచ్చినట్లుగానా లేదా పట్టేసినట్లుగానా?",
+            "or-IN": "ଆପଣଙ୍କ ଯନ୍ତ୍ରଣାର ଅନୁଭବ କିପରି — ଜଳାପୋଡ଼ା, ଛାତି ଧଡ଼ଧଡ଼, ଛୁଞ୍ଚି ଫୋଡ଼ି ହେବା ପରି ନା କାଲୁଆ?",
+            "ta-IN": "உங்கள் வலியின் தன்மை எப்படி உள்ளது — எரியும் உணர்வா, குத்தும் வலியா?"
+        },
+        "quick_picks": [
+            "Burning / Hot sensation",
+            "Throbbing / Pulsating pain",
+            "Sharp stitching / Pricking pain",
+            "Dull continuous ache",
+            "Cramping / Spasmodic pain"
+        ]
+    },
+    {
+        "id": "homeo.modalities",
+        "priority": PRIORITY_P1,
+        "state_key": "modalities",
+        "section": "Homeopathic Modalities",
+        "category": "homeopathy",
+        "why_asking": "Aggravating and relieving triggers (Modalities) are the core foundation of homeopathic symptom differentiation.",
+        "text": {
+            "en-IN": "What specific conditions make your symptoms better or worse (Modalities)? For example: warmth, cold, open air, resting, moving, pressure, or a particular time of day?",
+            "hi-IN": "किन चीजों से आपकी तकलीफ बढ़ती या घटती है — जैसे ठंड, गर्मी, खुली हवा, आराम करना, चलना, दबाना या दिन/रात का कोई समय?",
+            "te-IN": "ఏ పరిస్థితులలో మీ లక్షణాలు పెరుగుతాయి లేదా తగ్గుతాయి — వేడి, చలి, గాలి, విశ్రాంతి, నడక వల్లనా?",
+            "or-IN": "କେଉଁ କାରଣରୁ ଯନ୍ତ୍ରଣା ବଢ଼ୁଛି ବା କମୁଛି — ଥଣ୍ଡା, ଗରମ, ଚାଲିବା, ବିଶ୍ରାମ ବା ଦବାଇବା?",
+            "ta-IN": "எந்த நேரத்தில் அல்லது சூழ்நிலையில் உங்கள் வலி கூடுகிறது அல்லது குறைகிறது?"
+        },
+        "quick_picks": [
+            "Worse from cold, better from warmth",
+            "Worse from heat, better in cool open air",
+            "Worse from first movement, better with continued motion",
+            "Better with firm pressure or lying on painful side",
+            "Worse in early morning (3-5 AM)",
+            "Worse at night or lying down"
+        ]
+    },
+    {
+        "id": "homeo.generals_thermal_thirst",
+        "priority": PRIORITY_P2,
+        "state_key": "thermal_and_thirst",
+        "section": "Homeopathic Generals",
+        "category": "homeopathy",
+        "why_asking": "Constitutional generals (thermal reaction and thirst) help understand overall systemic reactivity.",
+        "text": {
+            "en-IN": "In general, are you a person who feels cold easily (chilly) or one who cannot tolerate heat? How is your thirst for water?",
+            "hi-IN": "सामान्यतः, क्या आपको ठंड जल्दी लगती है या गर्मी बिल्कुल बर्दाश्त नहीं होती? आपको प्यास कैसी लगती है?",
+            "te-IN": "సాధారణంగా మీకు చలి ఎక్కువ వేస్తుందా లేదా వేడి తట్టుకోలేరా? దాహం ఎలా ఉంటుంది?",
+            "or-IN": "ସାଧାରଣତଃ ଆପଣଙ୍କୁ ଥଣ୍ଡା ଶୀଘ୍ର ଲାଗେ ନା ଗରମ ସହ୍ୟ ହୁଏନାହିଁ? ପାଣି ପିଇବା ତୃଷ୍ଣା କିପରି?",
+            "ta-IN": "உங்களுக்கு குளிர் ஒத்துக்கொள்ளாதா அல்லது வெப்பம் ஒத்துக்கொள்ளாதா? தாகம் எப்படி?"
+        },
+        "quick_picks": [
+            "Chilly person (Sensitive to cold, drafts, wants warm clothes)",
+            "Hot person (Cannot tolerate heat/warm rooms, wants cool air)",
+            "Very thirsty for large quantities of cold water",
+            "Thirstless / rarely feels thirsty",
+            "Thirsty for small sips frequently"
+        ]
+    },
+    {
+        "id": "homeo.cravings_aversions",
+        "priority": PRIORITY_P2,
+        "state_key": "cravings_aversions",
+        "section": "Food Desires & Aversions",
+        "category": "homeopathy",
+        "why_asking": "Documents systemic dietary affinities and sensitivities for homeopathic repertorization.",
+        "text": {
+            "en-IN": "Do you have any strong food cravings, aversions, or foods that clearly disagree with you (e.g. sweets, salt, spicy, fatty foods, sour items)?",
+            "hi-IN": "क्या आपको किसी विशेष खाने की तीव्र इच्छा या अरुचि है — जैसे मीठा, नमकीन, तीखा, वसायुक्त भोजन या खट्टा?",
+            "te-IN": "మీకు ప్రత్యేకంగా ఇష్టమైన లేదా నచ్చని ఆహారాలు ఏవైనా ఉన్నాయా — తీపి, ఉప్పు, కారం లేదా పులుపు?",
+            "or-IN": "କୌଣସି ଖାଦ୍ୟ ପ୍ରତି ଅଧିକ ଇଚ୍ଛା ବା ଅରୁଚି ଅଛି କି — ମିଠା, ଲୁଣିଆ, ରାଗ ବା ତେଲିଆ ଖାଦ୍ୟ?",
+            "ta-IN": "உங்களுக்கு ஏதேனும் உணவு மீது அதிக விருப்பம் அல்லது வெறுப்பு உள்ளதா?"
+        },
+        "quick_picks": [
+            "Strong craving for sweets and sugar",
+            "Strong desire for salty foods",
+            "Desire for spicy and pungent food",
+            "Aversion to fatty or greasy foods",
+            "Milk or dairy causes digestive upset",
+            "No specific food cravings"
+        ]
+    },
+    {
+        "id": "homeo.mental_emotional",
+        "priority": PRIORITY_P2,
+        "state_key": "mental_emotional",
+        "section": "Mental & Emotional History",
+        "category": "homeopathy",
+        "why_asking": "Assists the clinician in understanding the mental-emotional plane in relation to physical complaints.",
+        "text": {
+            "en-IN": "How has your mental and emotional state been alongside this complaint — are you feeling anxious, irritable, restless, weepy, or needing quiet solitude?",
+            "hi-IN": "इस तकलीफ के दौरान आपकी मानसिक और भावनात्मक स्थिति कैसी है — क्या चिंता, चिड़चिड़ापन, बेचैनी या उदासी महसूस होती है?",
+            "te-IN": "ఈ సమస్యతో పాటు మీ మానసిక స్థితి ఎలా ఉంది — ఆందోళన, కోపం, నిరాశ లేదా ఒంటరిగా ఉండాలనే భావన ఉందా?",
+            "or-IN": "ଏହି ଅସୁବିଧା ସହିତ ମାନସିକ ସ୍ଥିତି କିପରି ଅଛି — ଚିନ୍ତା, ବିରକ୍ତିଭାବ, ଅଶାନ୍ତି ବା ଏକୁଟିଆ ରହିବାର ଇଚ୍ଛା?",
+            "ta-IN": "உங்கள் மனநிலை மற்றும் உணர்ச்சி நிலை எப்படி உள்ளது?"
+        },
+        "quick_picks": [
+            "Anxious & worried about health",
+            "Restless (Constantly moving, unable to stay calm)",
+            "Irritable and easily angered",
+            "Mild, emotional, comforted by consolation",
+            "Calm and composed baseline"
+        ]
+    },
+    {
+        "id": "homeo.concomitants",
+        "priority": PRIORITY_P3,
+        "state_key": "concomitants",
+        "section": "Concomitant Symptoms",
+        "category": "homeopathy",
+        "why_asking": "Captures concomitant symptoms appearing alongside the chief complaint for clinical differentiation.",
+        "text": {
+            "en-IN": "Do you notice any other unusual symptoms that appear at the exact same time as your main complaint, even in completely different parts of the body?",
+            "hi-IN": "क्या मुख्य तकलीफ के साथ शरीर के किसी अन्य हिस्से में कोई ऐसा लक्षण होता है जो उसी समय शुरू होता है?",
+            "te-IN": "ప్రధాన సమస్య వచ్చినప్పుడే శరీరంలో ఇతర భాగాలలో ఏవైనా ఇతర అసాధారణ లక్షణాలు కనిపిస్తాయా?",
+            "or-IN": "ମୁଖ୍ୟ ଯନ୍ତ୍ରଣା ସମୟରେ ଶରୀରର ଅନ୍ୟ କୌଣସି ଅଂଶରେ କିଛି ଅସ୍ୱାଭାବିକ ଲକ୍ଷଣ ଦେଖାଯାଉଛି କି?",
+            "ta-IN": "முக்கிய பிரச்சனையுடன் சேர்ந்து வேறு ஏதேனும் அறிகுறிகள் தோன்றுகிறதா?"
+        },
+        "quick_picks": [
+            "Headache during stomach upset / nausea",
+            "Profuse sweating with pain",
+            "Coldness of hands and feet during discomfort",
+            "Extreme tiredness / drowsiness with pain",
+            "No other accompanying symptoms"
+        ]
+    }
+]
+
 def get_pathway_for_complaint(complaint_text: str) -> Optional[Dict[str, Any]]:
     """Identifies the best specialized clinical pathway matching a complaint."""
     if not complaint_text:
@@ -655,3 +926,12 @@ def get_pathway_for_complaint(complaint_text: str) -> Optional[Dict[str, Any]]:
 def get_generic_pathway() -> List[Dict[str, Any]]:
     """Returns the OPQRST generic clinical questions for non-specialized complaints."""
     return GENERIC_CLINICAL_PATHWAY
+
+def get_ayurveda_pathway() -> List[Dict[str, Any]]:
+    """Returns the structured Ayurveda clinical pathway."""
+    return AYURVEDA_PATHWAY
+
+def get_homeopathy_pathway() -> List[Dict[str, Any]]:
+    """Returns the structured Homeopathy clinical pathway."""
+    return HOMEOPATHY_PATHWAY
+

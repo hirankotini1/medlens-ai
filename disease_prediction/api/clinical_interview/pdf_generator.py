@@ -140,6 +140,7 @@ def generate_clinical_pdf(
     patient_meta = report_data.get("patient", {})
     case_id = case_meta.get("case_id") or "CASE-UNKNOWN"
     date_str = case_meta.get("created_at") or datetime.now().strftime("%Y-%m-%d %H:%M")
+    intake_date = date_str  # display-friendly alias used in the demographics grid
     status_str = case_meta.get("status") or "Ready for Physician Review"
 
     if FPDF is object:
@@ -182,10 +183,12 @@ def generate_clinical_pdf(
 
     # 3. Patient Demographics Matrix Card (Modern 2x3 Grid)
     p_name = sanitize_text(patient_meta.get("name") or "Outpatient")
-    p_age = sanitize_text(patient_meta.get("age") or "Adult")
-    p_gender = sanitize_text(patient_meta.get("gender") or "Unspecified")
-    p_id = sanitize_text(patient_meta.get("patient_id") or "P-MEDLENS-01")
-    p_abha = sanitize_text(patient_meta.get("abha_id") or "91-4589-2041-8832")
+    p_age = sanitize_text(str(patient_meta.get("age")) if patient_meta.get("age") not in [None, 0, "0", ""] else "Not provided")
+    p_gender = sanitize_text(patient_meta.get("gender") or "Not provided")
+    p_id = sanitize_text(patient_meta.get("patient_id") or "Unregistered")
+    p_abha = sanitize_text(patient_meta.get("abha_id") or "Not linked")
+    p_case_type = sanitize_text(case_meta.get("case_type") or "General Clinical").title()
+    p_role = sanitize_text(case_meta.get("participant_role") or "Patient").title()
     p_lang = sanitize_text(case_meta.get("language") or "English (en-IN)")
     p_mode = sanitize_text(case_meta.get("input_mode") or "Voice Assisted Clinical Intake")
 
@@ -222,6 +225,13 @@ def generate_clinical_pdf(
     pdf.set_x(17)
     pdf.set_font(font, "" if is_unicode else "B", 7.5)
     pdf.set_text_color(100, 116, 139)
+    pdf.cell(20, 3.5, "Case Pathway:", 0, 0)
+    pdf.set_font(font, "" if is_unicode else "B", 8)
+    pdf.set_text_color(13, 148, 136) if "Ayurveda" in p_case_type or "Homeopathy" in p_case_type else pdf.set_text_color(15, 23, 42)
+    pdf.cell(42, 3.5, f"{p_case_type} ({p_role})", 0, 0)
+
+    pdf.set_font(font, "" if is_unicode else "B", 7.5)
+    pdf.set_text_color(100, 116, 139)
     pdf.cell(20, 3.5, "ABHA ID:", 0, 0)
     pdf.set_font(font, "", 8)
     pdf.set_text_color(15, 23, 42)
@@ -229,17 +239,10 @@ def generate_clinical_pdf(
 
     pdf.set_font(font, "" if is_unicode else "B", 7.5)
     pdf.set_text_color(100, 116, 139)
-    pdf.cell(20, 3.5, "Language:", 0, 0)
+    pdf.cell(18, 3.5, "Language:", 0, 0)
     pdf.set_font(font, "", 8)
     pdf.set_text_color(15, 23, 42)
-    pdf.cell(42, 3.5, p_lang, 0, 0)
-
-    pdf.set_font(font, "" if is_unicode else "B", 7.5)
-    pdf.set_text_color(100, 116, 139)
-    pdf.cell(18, 3.5, "Intake Mode:", 0, 0)
-    pdf.set_font(font, "", 8)
-    pdf.set_text_color(15, 23, 42)
-    pdf.cell(40, 3.5, p_mode, 0, 1)
+    pdf.cell(40, 3.5, p_lang, 0, 1)
 
     # Row 3
     pdf.set_x(17)
@@ -252,10 +255,18 @@ def generate_clinical_pdf(
 
     pdf.set_font(font, "" if is_unicode else "B", 7.5)
     pdf.set_text_color(100, 116, 139)
-    pdf.cell(20, 3.5, "Date & Time:", 0, 0)
+    pdf.cell(20, 3.5, "Intake Date:", 0, 0)
     pdf.set_font(font, "", 8)
     pdf.set_text_color(15, 23, 42)
-    pdf.cell(42, 3.5, date_str, 0, 0)
+    pdf.cell(42, 3.5, intake_date, 0, 0)
+
+    pdf.set_font(font, "" if is_unicode else "B", 7.5)
+    pdf.set_text_color(100, 116, 139)
+    pdf.cell(18, 3.5, "Mode:", 0, 0)
+    pdf.set_font(font, "", 8)
+    pdf.set_text_color(15, 23, 42)
+    pdf.cell(40, 3.5, p_mode, 0, 1)
+
 
     pdf.set_font(font, "" if is_unicode else "B", 7.5)
     pdf.set_text_color(100, 116, 139)
@@ -333,11 +344,11 @@ def generate_clinical_pdf(
         ("Duration", hpi_data.get("duration") or "Ongoing"),
         ("Anatomical Location", hpi_data.get("location") or "Refer to chief complaint"),
         ("Character / Quality", hpi_data.get("character") or "Unspecified quality"),
-        ("Severity Score", f"{hpi_data.get('severity')}/10" if hpi_data.get("severity") else "Moderate"),
-        ("Radiation Pattern", hpi_data.get("radiation") or "No radiation reported"),
-        ("Aggravating Factors", hpi_data.get("aggravating") or "None noted"),
-        ("Relieving Factors", hpi_data.get("relieving") or "None noted"),
-        ("Associated Symptoms", hpi_data.get("associated_symptoms") or "None reported")
+        ("Severity Score", f"{hpi_data.get('severity')}/10" if hpi_data.get("severity") is not None else "Not rated"),
+        ("Radiation Pattern", hpi_data.get("radiation") or "Not reported"),
+        ("Aggravating Factors", hpi_data.get("aggravating") or "Not reported"),
+        ("Relieving Factors", hpi_data.get("relieving") or "Not reported"),
+        ("Associated Symptoms", hpi_data.get("associated_symptoms") or "Not reported")
     ]
 
     pdf.set_fill_color(248, 250, 252)
@@ -373,14 +384,19 @@ def generate_clinical_pdf(
     pdf.section_heading("SYSTEMIC MEDICAL & LIFESTYLE HISTORY", "3")
     hist = report_data.get("history", {})
     allergies = report_data.get("allergies")
-    allergy_str = ", ".join(allergies) if isinstance(allergies, list) else sanitize_text(allergies or "No known drug allergies reported (NKDA)")
+    if isinstance(allergies, list) and len(allergies) > 0:
+        allergy_str = ", ".join(allergies)
+    elif allergies and isinstance(allergies, str):
+        allergy_str = sanitize_text(allergies)
+    else:
+        allergy_str = "Not reported"
 
     hist_rows = [
-        ("Past Medical History", hist.get("past_medical_history") or "No prior chronic illnesses declared"),
-        ("Surgical History", hist.get("past_surgical_history") or "No previous surgical interventions"),
-        ("Family History", hist.get("family_history") or "Non-contributory hereditary background"),
+        ("Past Medical History", hist.get("past_medical_history") or "Not reported"),
+        ("Surgical History", hist.get("past_surgical_history") or "Not reported"),
+        ("Family History", hist.get("family_history") or "Not reported"),
         ("Allergies / Adverse Reactions", allergy_str),
-        ("Social / Lifestyle Profile", hist.get("personal_social_history") or "Non-smoker, active baseline")
+        ("Social / Lifestyle Profile", hist.get("personal_social_history") or "Not provided")
     ]
 
     for lbl, val in hist_rows:
@@ -390,13 +406,86 @@ def generate_clinical_pdf(
         pdf.set_text_color(100, 116, 139)
         pdf.cell(42, 4.2, f"* {lbl}:", 0, 0)
         pdf.set_font(font, "", 8)
-        if "Allergies" in lbl and "No known" not in v_str and "NKDA" not in v_str:
+        if "Allergies" in lbl and v_str not in ["Not reported", "None reported", "No known drug allergies reported (NKDA)"]:
             pdf.set_text_color(225, 29, 72)
             pdf.set_font(font, "" if is_unicode else "B", 8)
         else:
             pdf.set_text_color(15, 23, 42)
         pdf.cell(0, 4.2, v_str, 0, 1)
     pdf.ln(1)
+
+    # 7b. AYUSH / Homeopathy Clinical Framework (if applicable)
+    c_type = (case_meta.get("case_type") or report_data.get("case_type") or "general").lower()
+    ayush_data = report_data.get("ayurveda_parameters") or report_data.get("ayush_parameters") or case_meta.get("ayush_parameters") or {}
+    hom_data = report_data.get("homeopathy_parameters") or case_meta.get("homeopathy_parameters") or {}
+
+    if c_type == "ayurveda" or ayush_data:
+        pdf.section_heading("AYURVEDIC CLINICAL ASSESSMENT (ASHTAVIDHA & DASHAVIDHA)", "3A")
+        ayush_grid = [
+            ("Prakriti (Constitution)", ayush_data.get("prakriti") or "Not assessed"),
+            ("Agni (Digestive Fire)", ayush_data.get("agni") or "Not assessed"),
+            ("Koshtha (Bowel Pattern)", ayush_data.get("koshtha") or "Not assessed"),
+            ("Ahara & Diet Habits", ayush_data.get("ahara_vihara") or "Not reported"),
+            ("Nidra & Bala (Sleep/Energy)", ayush_data.get("sleep_vitality") or "Not assessed"),
+            ("Srotas & Dhatu Involvement", ayush_data.get("srotas_involvement") or "Not evaluated")
+        ]
+        for i in range(0, len(ayush_grid), 2):
+            row_items = ayush_grid[i:i+2]
+            c1_lbl, c1_val = row_items[0]
+            c1_str = ", ".join(c1_val) if isinstance(c1_val, list) else sanitize_text(c1_val)
+            pdf.set_x(14)
+            pdf.set_font(font, "" if is_unicode else "B", 7.5)
+            pdf.set_text_color(100, 116, 139)
+            pdf.cell(38, 4.2, f"* {c1_lbl}:", 0, 0)
+            pdf.set_font(font, "", 8)
+            pdf.set_text_color(15, 23, 42)
+            pdf.cell(52, 4.2, c1_str[:34], 0, 0)
+            if len(row_items) > 1:
+                c2_lbl, c2_val = row_items[1]
+                c2_str = ", ".join(c2_val) if isinstance(c2_val, list) else sanitize_text(c2_val)
+                pdf.set_font(font, "" if is_unicode else "B", 7.5)
+                pdf.set_text_color(100, 116, 139)
+                pdf.cell(38, 4.2, f"* {c2_lbl}:", 0, 0)
+                pdf.set_font(font, "", 8)
+                pdf.set_text_color(15, 23, 42)
+                pdf.cell(54, 4.2, c2_str[:34], 0, 1)
+            else:
+                pdf.ln(4.2)
+        pdf.ln(1)
+
+    elif c_type == "homeopathy" or hom_data:
+        pdf.section_heading("HOMEOPATHIC REPERTORY & CONSTITUTIONAL TOTALITY", "3A")
+        hom_grid = [
+            ("Location & Sensation", hom_data.get("location_sensation") or "Not specified"),
+            ("Modalities (< / >)", hom_data.get("modalities") or "None noted"),
+            ("Thermal Disposition", hom_data.get("generals_thermal") or "Not assessed"),
+            ("Cravings & Thirst", hom_data.get("food_cravings") or "Not reported"),
+            ("Mental / Emotional State", hom_data.get("mental_emotional") or "Not reported"),
+            ("Concomitant Symptoms", hom_data.get("concomitants") or "None noted")
+        ]
+        for i in range(0, len(hom_grid), 2):
+            row_items = hom_grid[i:i+2]
+            c1_lbl, c1_val = row_items[0]
+            c1_str = ", ".join(c1_val) if isinstance(c1_val, list) else sanitize_text(c1_val)
+            pdf.set_x(14)
+            pdf.set_font(font, "" if is_unicode else "B", 7.5)
+            pdf.set_text_color(100, 116, 139)
+            pdf.cell(38, 4.2, f"* {c1_lbl}:", 0, 0)
+            pdf.set_font(font, "", 8)
+            pdf.set_text_color(15, 23, 42)
+            pdf.cell(52, 4.2, c1_str[:34], 0, 0)
+            if len(row_items) > 1:
+                c2_lbl, c2_val = row_items[1]
+                c2_str = ", ".join(c2_val) if isinstance(c2_val, list) else sanitize_text(c2_val)
+                pdf.set_font(font, "" if is_unicode else "B", 7.5)
+                pdf.set_text_color(100, 116, 139)
+                pdf.cell(38, 4.2, f"* {c2_lbl}:", 0, 0)
+                pdf.set_font(font, "", 8)
+                pdf.set_text_color(15, 23, 42)
+                pdf.cell(54, 4.2, c2_str[:34], 0, 1)
+            else:
+                pdf.ln(4.2)
+        pdf.ln(1)
 
     # 8. Current Pharmacotherapy & Medications
     pdf.section_heading("CURRENT PHARMACOTHERAPY & MEDICATIONS", "4")
@@ -449,7 +538,7 @@ def generate_clinical_pdf(
     else:
         pdf.set_font(font, "", 7.5)
         pdf.set_text_color(100, 116, 139)
-        pdf.cell(0, 4.2, "   * No active prescription pharmacotherapy or chronic medications reported.", ln=True)
+        pdf.cell(0, 4.2, "   * No regular medications reported / Pending clinician review.", ln=True)
     pdf.ln(1)
 
     # 9. Attached Diagnostic Documents & Investigations
@@ -529,6 +618,12 @@ def generate_clinical_pdf(
         pdf.add_page()
     pdf.section_heading("ATTENDING PHYSICIAN CLINICAL ASSESSMENT & SIGN-OFF", "8")
     
+    doc_review = report_data.get("doctor_review") or {}
+    is_doc_verified = doc_review.get("status") == "DOCTOR VERIFIED"
+    doc_id = sanitize_text(doc_review.get("verified_by") or "")
+    doc_notes = sanitize_text(doc_review.get("doctor_notes") or doc_review.get("notes") or "")
+    doc_date = sanitize_text(doc_review.get("verified_at") or "")
+
     # Elegant Assessment Box with Stamp Frame
     sign_y = pdf.get_y()
     pdf.set_fill_color(248, 250, 252)
@@ -543,8 +638,12 @@ def generate_clinical_pdf(
     pdf.cell(115, 4, "Physician Assessment & Differential Diagnosis:", ln=True)
     pdf.set_x(17)
     pdf.set_font(font, "", 7)
-    pdf.set_text_color(148, 163, 184)
-    pdf.cell(115, 4, "____________________________________________________________________________________", ln=True)
+    if is_doc_verified and doc_notes:
+        pdf.set_text_color(15, 23, 42)
+        pdf.cell(115, 4, f"Confirmed: {doc_notes[:75]}", ln=True)
+    else:
+        pdf.set_text_color(148, 163, 184)
+        pdf.cell(115, 4, "____________________________________________________________________________________", ln=True)
 
     pdf.set_x(17)
     pdf.set_font(font, "" if is_unicode else "B", 7.5)
@@ -561,22 +660,41 @@ def generate_clinical_pdf(
     pdf.cell(115, 4, "Attending Physician Signature & Registration No.:", ln=True)
     pdf.set_x(17)
     pdf.set_font(font, "", 7)
-    pdf.set_text_color(148, 163, 184)
-    pdf.cell(115, 4, "Dr. ___________________________  |  NMC Reg: __________________  |  Date: ____________", ln=True)
+    if is_doc_verified:
+        pdf.set_text_color(16, 185, 129)
+        pdf.cell(115, 4, f"Electronically Verified by: {doc_id}  |  Timestamp: {doc_date[:19]}", ln=True)
+    else:
+        pdf.set_text_color(148, 163, 184)
+        pdf.cell(115, 4, "Dr. ___________________________  |  NMC Reg: __________________  |  Date: ____________", ln=True)
 
     # Right: Boxed Stamp Frame
     stamp_x = 138
     stamp_y = sign_y + 3
-    pdf.set_draw_color(148, 163, 184)
-    pdf.set_line_width(0.3)
-    pdf.rect(stamp_x, stamp_y, 54, 27, "D")
-    pdf.set_xy(stamp_x, stamp_y + 9)
-    pdf.set_font(font, "" if is_unicode else "B", 7)
-    pdf.set_text_color(148, 163, 184)
-    pdf.cell(54, 4, "[ OFFICIAL CLINICAL SEAL / STAMP ]", align="C", ln=True)
-    pdf.set_x(stamp_x)
-    pdf.set_font(font, "", 6.5)
-    pdf.cell(54, 3.5, "Hospital Registration Verification", align="C", ln=True)
+    if is_doc_verified:
+        pdf.set_draw_color(16, 185, 129)
+        pdf.set_line_width(0.4)
+        pdf.rect(stamp_x, stamp_y, 54, 27, "D")
+        pdf.set_xy(stamp_x, stamp_y + 6)
+        pdf.set_font(font, "" if is_unicode else "B", 7.5)
+        pdf.set_text_color(16, 185, 129)
+        pdf.cell(54, 4, "[ DOCTOR VERIFIED ]", align="C", ln=True)
+        pdf.set_x(stamp_x)
+        pdf.set_font(font, "", 6.5)
+        pdf.set_text_color(71, 85, 105)
+        pdf.cell(54, 3.5, f"Verified by: {doc_id[:20]}", align="C", ln=True)
+        pdf.set_x(stamp_x)
+        pdf.cell(54, 3.5, "MedLens Clinical Validation", align="C", ln=True)
+    else:
+        pdf.set_draw_color(148, 163, 184)
+        pdf.set_line_width(0.3)
+        pdf.rect(stamp_x, stamp_y, 54, 27, "D")
+        pdf.set_xy(stamp_x, stamp_y + 9)
+        pdf.set_font(font, "" if is_unicode else "B", 7)
+        pdf.set_text_color(148, 163, 184)
+        pdf.cell(54, 4, "[ OFFICIAL CLINICAL SEAL / STAMP ]", align="C", ln=True)
+        pdf.set_x(stamp_x)
+        pdf.set_font(font, "", 6.5)
+        pdf.cell(54, 3.5, "Hospital Registration Verification", align="C", ln=True)
 
     pdf_bytes = bytes(pdf.output())
     if output_path:
