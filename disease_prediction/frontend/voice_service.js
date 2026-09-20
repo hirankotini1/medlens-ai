@@ -309,28 +309,66 @@ async function _startAudioRecording() {
 
     try {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            console.warn('[VoiceService] getUserMedia not available in this browser');
+            const isNonSecure = window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+            const msg = isNonSecure
+                ? 'Microphone access requires HTTPS or localhost on macOS/Safari.'
+                : 'Microphone access is not supported by this browser.';
+            console.warn('[VoiceService]', msg);
+            if (_currentOnError) _currentOnError('not_supported', msg);
+            if (_currentOnEnd) _currentOnEnd();
+            _voiceIsListening = false;
             return false;
         }
 
-        _activeAudioStream = await navigator.mediaDevices.getUserMedia({
-            audio: {
-                channelCount: 1,
-                echoCancellation: true,
-                noiseSuppression: true,
-                autoGainControl: true,
+        // Resilient audio constraints (macOS Safari can reject autoGainControl or channelCount)
+        let stream = null;
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true
+                }
+            });
+        } catch (constraintErr) {
+            console.warn('[VoiceService] Advanced audio constraints rejected, falling back to basic { audio: true }:', constraintErr);
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            } catch (err) {
+                console.warn('[VoiceService] getUserMedia permission error:', err);
+                const isMac = /Macintosh|Mac OS X/i.test(navigator.userAgent || '');
+                if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                    const msg = isMac
+                        ? 'Microphone blocked. On macOS: System Settings → Privacy & Security → Microphone → enable your browser, then allow mic in the address bar.'
+                        : 'Microphone permission denied. Tap the lock icon in your browser address bar and select "Allow".';
+                    if (_currentOnError) _currentOnError('not-allowed', msg);
+                } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+                    if (_currentOnError) _currentOnError('audio-capture', 'No microphone device found on this system.');
+                } else {
+                    if (_currentOnError) _currentOnError('audio-error', `Microphone error: ${err.message}`);
+                }
+                if (_currentOnEnd) _currentOnEnd();
+                _voiceIsListening = false;
+                return false;
             }
-        });
+        }
+        _activeAudioStream = stream;
 
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        _activeAudioContext = new AudioCtx();
-
-        // Chrome autoplay policy: resume AudioContext
-        if (_activeAudioContext.state === 'suspended') {
-            await _activeAudioContext.resume();
+        if (!AudioCtx) {
+            console.warn('[VoiceService] AudioContext not available');
+            return false;
+        }
+        try {
+            _activeAudioContext = new AudioCtx();
+            // Chrome/Safari autoplay policy: resume AudioContext
+            if (_activeAudioContext.state === 'suspended') {
+                await _activeAudioContext.resume();
+            }
+        } catch (actxErr) {
+            console.warn('[VoiceService] AudioContext init error:', actxErr);
         }
 
-        _recordedSampleRate = _activeAudioContext.sampleRate || 44100;
+        _recordedSampleRate = _activeAudioContext ? (_activeAudioContext.sampleRate || 44100) : 44100;
         _activeAudioInput = _activeAudioContext.createMediaStreamSource(_activeAudioStream);
 
         // 4096 buffer size for capturing PCM
@@ -352,15 +390,16 @@ async function _startAudioRecording() {
             }
 
             // Voice Activity Detection (VAD)
-            if (rms > 0.015) {
+            if (rms > 0.012) {
                 _speechDetected = true;
                 _lastSpeechTime = Date.now();
             }
         };
 
-        // Create silent gain node so audio does not echo out of speakers
+        // In macOS Safari, WebKit may prune script processors connected to gain 0.
+        // Keeping gain at 0.00001 (completely inaudible) guarantees WebKit executes onaudioprocess.
         _activeMuteNode = _activeAudioContext.createGain();
-        _activeMuteNode.gain.value = 0;
+        _activeMuteNode.gain.value = 0.00001;
 
         _activeAudioInput.connect(_activeProcessor);
         _activeProcessor.connect(_activeMuteNode);
@@ -540,110 +579,6 @@ async function _transcribeAudioWithServer(wavBlob, languageCode) {
 }
 
 /* ============================================================================
-   SPEECH-TO-TEXT — Clean Browser Web Speech API Implementation
-   Uses continuous=false for predictable single-delivery behavior.
-   All session state lives inside the closure — no global race conditions.
-   ============================================================================ */
-let _currentOnFinal = null;
-let _currentOnInterim = null;
-let _currentOnError = null;
-let _currentOnEnd = null;
-let _currentOnStatus = null;
-let _currentOnVolume = null;
-let _currentLanguageCode = 'en-IN';
-// Note: _voiceActiveRecognition is declared in INTERNAL STATE above (line 53)
-
-function detectBrowserSTTSupport() {
-    if (window.SpeechRecognition) return 'full';
-    if (window.webkitSpeechRecognition) return 'webkit';
-    return 'server';
-}
-
-/**
- * Starts voice recognition.
- * Uses browser Web Speech API with continuous=false for clean, single-delivery behavior.
- * Falls back to server transcription if Web Speech API is unavailable (Firefox).
- */
-async function voiceStartListening(languageCode, onInterim, onFinal, onError, onEnd, onStatus, onVolume) {
-    // Stop any previous session cleanly
-    if (_voiceIsListening || _voiceActiveRecognition) {
-        await voiceStopListening();
-    }
-
-    languageCode = languageCode || _voiceCurrentLanguage || 'en-IN';
-    _currentLanguageCode = languageCode;
-    _currentOnFinal = onFinal;
-    _currentOnInterim = onInterim;
-    _currentOnError = onError;
-    _currentOnEnd = onEnd;
-    _currentOnStatus = onStatus;
-    _currentOnVolume = onVolume;
-    _voiceIsListening = true;
-
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-    if (SpeechRecognition) {
-        try {
-            const recognition = new SpeechRecognition();
-            const langConfig = voiceGetLanguageByCode(languageCode);
-            const sttCode = langConfig ? langConfig.sttLang : 'en-IN';
-
-            // continuous=false: fires exactly ONE onend after one utterance.
-            // This is the key to preventing duplicate text — no complex multi-onend handling needed.
-            recognition.continuous = false;
-            recognition.interimResults = true;
-            recognition.maxAlternatives = 1;
-            recognition.lang = sttCode;
-
-            // All session state lives HERE inside the closure — no global pollution.
-            let _sessionTranscript = '';
-            let _delivered = false;   // Ensures onFinal fires exactly once
-            let _silenceTimer = null;
-
-            const _clearSilenceTimer = () => {
-                if (_silenceTimer) { clearTimeout(_silenceTimer); _silenceTimer = null; }
-            };
-
-            recognition.onstart = () => {
-                if (onStatus) onStatus('listening', '🔴 Listening... Speak clearly into your mic');
-            };
-
-            recognition.onresult = (event) => {
-                // Build the complete transcript from scratch each time (never +=)
-                let transcript = '';
-                for (let i = 0; i < event.results.length; i++) {
-                    transcript += event.results[i][0].transcript;
-                }
-                _sessionTranscript = transcript.trim();
-                if (_sessionTranscript && onInterim) {
-                    onInterim(_sessionTranscript);
-                }
-                // Auto-stop after 2s of silence so text gets delivered
-                _clearSilenceTimer();
-                _silenceTimer = setTimeout(() => {
-                    if (_voiceIsListening) recognition.stop();
-                }, 2000);
-            };
-
-            recognition.onerror = (event) => {
-                _clearSilenceTimer();
-                if (event.error === 'no-speech') return; // Ignore — onend handles delivery
-                if (event.error === 'not-allowed') {
-                    _delivered = true;
-                    _voiceIsListening = false;
-                    _voiceActiveRecognition = null;
-                    if (onError) onError('not-allowed', 'Microphone permission denied. Tap the lock icon in your browser address bar and select "Allow".');
-                    if (onEnd) onEnd();
-                } else if (event.error === 'audio-capture') {
-                    _delivered = true;
-                    _voiceIsListening = false;
-                    _voiceActiveRecognition = null;
-                    if (onError) onError('audio-capture', 'No microphone found or it is in use by another app.');
-                    if (onEnd) onEnd();
-                }
-            };
-
-/* ============================================================================
    ODIA SCRIPT CONVERTER — Multitier Client & Server Translation
    Converts English words, Romanized Odia, and mixed speech into authentic Odia script.
    ============================================================================ */
@@ -712,6 +647,147 @@ async function convertToOdiaScript(text) {
 }
 window.convertToOdiaScript = convertToOdiaScript;
 
+/* ============================================================================
+   SPEECH-TO-TEXT — Clean Browser Web Speech API & macOS Server Fallback
+   Uses continuous=false for predictable single-delivery behavior.
+   All session state lives inside the closure — no global race conditions.
+   ============================================================================ */
+let _currentOnFinal = null;
+let _currentOnInterim = null;
+let _currentOnError = null;
+let _currentOnEnd = null;
+let _currentOnStatus = null;
+let _currentOnVolume = null;
+let _currentLanguageCode = 'en-IN';
+// Note: _voiceActiveRecognition is declared in INTERNAL STATE above (line 53)
+
+function detectBrowserSTTSupport() {
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent || '');
+    if (isSafari) return 'safari-hybrid';
+    if (window.SpeechRecognition) return 'full';
+    if (window.webkitSpeechRecognition) return 'webkit';
+    return 'server';
+}
+
+/**
+ * Starts voice recognition.
+ * Optimized for both Windows and macOS (Safari/Chrome).
+ * Automatically falls back to high-accuracy server transcription when:
+ * 1. Running on Safari for Indic languages (Odia, Telugu, Hindi, etc.)
+ * 2. Apple Dictation is disabled or encounters network/service errors on macOS
+ * 3. Browser lacks Web Speech API support
+ */
+async function voiceStartListening(languageCode, onInterim, onFinal, onError, onEnd, onStatus, onVolume) {
+    // Stop any previous session cleanly
+    if (_voiceIsListening || _voiceActiveRecognition) {
+        await voiceStopListening();
+    }
+
+    languageCode = languageCode || _voiceCurrentLanguage || 'en-IN';
+    _currentLanguageCode = languageCode;
+    _currentOnFinal = onFinal;
+    _currentOnInterim = onInterim;
+    _currentOnError = onError;
+    _currentOnEnd = onEnd;
+    _currentOnStatus = onStatus;
+    _currentOnVolume = onVolume;
+    _voiceIsListening = true;
+
+    const isMacOS = /Macintosh|Mac OS X/i.test(navigator.userAgent || '');
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent || '');
+    const langConfig = voiceGetLanguageByCode(languageCode);
+    const sttCode = langConfig ? langConfig.sttLang : 'en-IN';
+    const isIndicLang = !sttCode.startsWith('en');
+
+    // Safari on macOS does not support Indian regional languages in Apple Dictation / webkitSpeechRecognition.
+    // Route directly to server audio recording which supports all 23 Indian languages via Google STT!
+    if (isSafari && isIndicLang) {
+        console.info(`[VoiceService] Safari does not support ${sttCode} in WebKit Speech API. Using high-accuracy server speech recognition directly.`);
+        _voiceActiveRecognition = null;
+        if (onStatus) onStatus('listening', '🔴 Listening (macOS audio engine)... Speak clearly');
+        const started = await _startAudioRecording();
+        return !!started;
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (SpeechRecognition) {
+        try {
+            const recognition = new SpeechRecognition();
+
+            // continuous=false: fires exactly ONE onend after one utterance.
+            // This is the key to preventing duplicate text — no complex multi-onend handling needed.
+            recognition.continuous = false;
+            recognition.interimResults = true;
+            recognition.maxAlternatives = 1;
+            recognition.lang = sttCode;
+
+            // All session state lives HERE inside the closure — no global pollution.
+            let _sessionTranscript = '';
+            let _delivered = false;   // Ensures onFinal fires exactly once
+            let _silenceTimer = null;
+            const sessionStartTime = Date.now();
+
+            const _clearSilenceTimer = () => {
+                if (_silenceTimer) { clearTimeout(_silenceTimer); _silenceTimer = null; }
+            };
+
+            recognition.onstart = () => {
+                if (onStatus) onStatus('listening', '🔴 Listening... Speak clearly into your mic');
+            };
+
+            recognition.onresult = (event) => {
+                // Build the complete transcript from scratch each time (never +=)
+                let transcript = '';
+                for (let i = 0; i < event.results.length; i++) {
+                    transcript += event.results[i][0].transcript;
+                }
+                _sessionTranscript = transcript.trim();
+                if (_sessionTranscript && onInterim) {
+                    onInterim(_sessionTranscript);
+                }
+                // Auto-stop after 2s of silence so text gets delivered
+                _clearSilenceTimer();
+                _silenceTimer = setTimeout(() => {
+                    if (_voiceIsListening) recognition.stop();
+                }, 2000);
+            };
+
+            recognition.onerror = async (event) => {
+                _clearSilenceTimer();
+                console.warn('[VoiceService] SpeechRecognition error:', event.error);
+                if (event.error === 'no-speech') return; // Handled by onend
+
+                // macOS Safari and Chrome often throw 'network', 'service-not-allowed', or 'language-not-supported'
+                // when Apple Dictation is off or regional language model is unavailable.
+                // Seamlessly fall back to server-side audio recording!
+                if (event.error === 'network' || event.error === 'service-not-allowed' || event.error === 'language-not-supported') {
+                    console.info(`[VoiceService] Browser STT failed with '${event.error}'. Seamlessly falling back to server audio recording...`);
+                    try { recognition.abort(); } catch (e) {}
+                    _voiceActiveRecognition = null;
+                    if (onStatus) onStatus('listening', '🔴 Listening (macOS audio engine)... Speak clearly');
+                    const started = await _startAudioRecording();
+                    if (started) return;
+                }
+
+                if (event.error === 'not-allowed') {
+                    _delivered = true;
+                    _voiceIsListening = false;
+                    _voiceActiveRecognition = null;
+                    const msg = isMacOS
+                        ? 'Microphone blocked. On macOS: System Settings → Privacy & Security → Microphone → enable your browser, then allow mic in the address bar.'
+                        : 'Microphone permission denied. Tap the lock icon in your browser address bar and select "Allow".';
+                    if (onError) onError('not-allowed', msg);
+                    if (onEnd) onEnd();
+                } else if (event.error === 'audio-capture') {
+                    _delivered = true;
+                    _voiceIsListening = false;
+                    _voiceActiveRecognition = null;
+                    if (onError) onError('audio-capture', 'No microphone found or it is in use by another app.');
+                    if (onEnd) onEnd();
+                }
+            };
+
             // onend fires ONCE when recognition stops (either naturally or via .stop())
             // This is the single, guaranteed delivery point.
             recognition.onend = async () => {
@@ -720,9 +796,24 @@ window.convertToOdiaScript = convertToOdiaScript;
                 _voiceActiveRecognition = null;
 
                 if (_delivered) return; // Already delivered (e.g. from onerror)
-                _delivered = true;
 
                 let text = _sessionTranscript.trim();
+                const duration = Date.now() - sessionStartTime;
+
+                // macOS Safari bug: If Apple Dictation is disabled in System Settings,
+                // WebKit recognition ends immediately (< 1200ms) with 0 text and no error.
+                // Catch this and immediately fall back to server audio recording without failing!
+                if (!text && duration < 1200 && isMacOS) {
+                    console.warn(`[VoiceService] Recognition ended prematurely (${duration}ms) on macOS. Seamlessly falling back to server audio recording...`);
+                    _delivered = false;
+                    _voiceIsListening = true;
+                    if (onStatus) onStatus('listening', '🔴 Listening (macOS audio engine)... Speak clearly');
+                    const started = await _startAudioRecording();
+                    if (started) return;
+                }
+
+                _delivered = true;
+
                 if (text) {
                     const isOdiaSession = (languageCode === 'or-IN' || languageCode === 'or' || languageCode === 'Odia' || (langConfig && langConfig.isOdia));
                     if (isOdiaSession) {
@@ -747,10 +838,10 @@ window.convertToOdiaScript = convertToOdiaScript;
         }
     }
 
-    // Fallback: server-side transcription (Firefox desktop, older browsers)
-    if (onStatus) onStatus('listening', '🔴 Recording audio for server transcription...');
-    await _startAudioRecording();
-    return true;
+    // Fallback: server-side transcription (Safari Indic, Firefox desktop, older browsers)
+    if (onStatus) onStatus('listening', '🔴 Listening (recording audio)... Speak clearly');
+    const started = await _startAudioRecording();
+    return !!started;
 }
 
 /**
@@ -771,7 +862,8 @@ async function voiceStopListening() {
             const result = await _transcribeAudioWithServer(wavBlob, _currentLanguageCode);
             if (result.transcript && result.transcript.trim()) {
                 let tr = result.transcript.trim();
-                const isOdiaSession = (_currentLanguageCode === 'or-IN' || _currentLanguageCode === 'or' || _currentLanguageCode === 'Odia');
+                const langCfg = voiceGetLanguageByCode(_currentLanguageCode);
+                const isOdiaSession = (_currentLanguageCode === 'or-IN' || _currentLanguageCode === 'or' || _currentLanguageCode === 'Odia' || (langCfg && langCfg.isOdia));
                 if (isOdiaSession) {
                     tr = await convertToOdiaScript(tr);
                 }
@@ -803,14 +895,25 @@ window.getLanguageFlagBadge = getLanguageFlagBadge;
    MICROPHONE PERMISSION TEST
    ============================================================================ */
 async function voiceTestMicrophone() {
+    const isMac = /Macintosh|Mac OS X/i.test(navigator.userAgent || '');
     try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        let stream = null;
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({
+                audio: { echoCancellation: true, noiseSuppression: true }
+            });
+        } catch (ce) {
+            stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        }
         stream.getTracks().forEach(track => track.stop()); // Release immediately
         return { available: true, message: 'Microphone detected ✓' };
     } catch (e) {
-        if (e.name === 'NotAllowedError') {
-            return { available: false, message: 'Microphone permission denied. Please allow in browser settings.' };
-        } else if (e.name === 'NotFoundError') {
+        if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
+            const msg = isMac
+                ? 'Microphone blocked. On macOS: System Settings → Privacy & Security → Microphone → enable your browser.'
+                : 'Microphone permission denied. Please allow in browser settings.';
+            return { available: false, message: msg };
+        } else if (e.name === 'NotFoundError' || e.name === 'DevicesNotFoundError') {
             return { available: false, message: 'No microphone found on this device.' };
         } else {
             return { available: false, message: `Microphone unavailable: ${e.message}` };
