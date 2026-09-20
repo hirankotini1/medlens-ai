@@ -611,7 +611,7 @@ async function startVoiceRecording() {
             console.warn('[CaseTaking] STT:', errorType, errorMsg);
             if (errorType === 'not-allowed') {
                 if (typeof showModalAlert === 'function') {
-                    showModalAlert('Microphone permission was blocked. Click the lock icon in the address bar and select "Allow".', 'Microphone Access Required');
+                    showModalAlert(errorMsg || 'Microphone permission was blocked. Click the lock icon in the address bar and select "Allow".', 'Microphone Access Required');
                 }
             }
         },
