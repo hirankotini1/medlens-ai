@@ -2457,10 +2457,10 @@ function _voiceRenderSummaryHighlights() {
                     </div>
                     <div>
                         <h2 class="cs-hospital-name">
-                            MEDLENS HEALTH SYSTEM
-                            <span style="font-size:0.65rem; background:#0284c7; padding:2px 8px; border-radius:999px; vertical-align:middle;">ABDM VERIFIED</span>
+                            AVENQRA HEALTH SYSTEM
+                            <span style="font-size:0.65rem; background:#0284c7; padding:2px 8px; border-radius:999px; vertical-align:middle;">ABDM COMPATIBLE</span>
                         </h2>
-                        <div class="cs-hospital-sub">Government Hospital OPD &bull; Pre-Consultation EHR Intake Dossier (PS 26047)</div>
+                        <div class="cs-hospital-sub">Integrated Clinical OPD &bull; Pre-Consultation EHR Intake Dossier</div>
                     </div>
                 </div>
                 <div class="cs-header-meta">
@@ -2577,7 +2577,7 @@ function _voiceRenderSummaryHighlights() {
                         </span>
                     </div>
                     <div style="font-size:0.84rem; color:#6b21a8; margin-bottom:14px; line-height:1.4;">
-                        MEDLENS AI actively analyzed the patient's spoken complaints and dynamically generated targeted clinical follow-up questions to rule out acute complications before the physician meeting:
+                        Avenqra AI actively analyzed the patient's spoken complaints and dynamically generated targeted clinical follow-up questions to rule out acute complications before the physician meeting:
                     </div>
 
                     ${followUpEntries.length > 0 ? `
@@ -2823,10 +2823,10 @@ function _voiceRenderSummaryHighlights() {
                     </div>
                     <div class="cs-signature-seal">
                         <div class="cs-seal-circle">
-                            <span>MEDLENS EHR</span>
+                            <span>AVENQRA EHR</span>
                             <span style="font-size:0.5rem; letter-spacing:0.02em;">VERIFIED INTAKE</span>
                             <span>★★★★★</span>
-                            <span style="font-size:0.55rem;">PS 26047</span>
+                            <span style="font-size:0.55rem;">CLINICAL</span>
                         </div>
                         <div>
                             <div class="cs-signature-line">
@@ -2839,7 +2839,7 @@ function _voiceRenderSummaryHighlights() {
 
                 <!-- Compliance Footer -->
                 <div style="text-align:center; font-size:0.72rem; color:#94a3b8; border-top:1px solid #f1f5f9; padding-top:12px;">
-                    MEDLENS AI Clinical Case Taking System &bull; National Health Mission &bull; ABDM HL7 FHIR Compatible &bull; Smart India Hackathon PS 26047
+                    Avenqra AI Clinical Case Taking System &bull; Adaptive Health Intelligence &bull; ABDM HL7 FHIR Compatible
                 </div>
             </div>
         </div>
@@ -2971,4 +2971,4 @@ function kioskResetAndClear() {
     console.info('[VoiceCT] Kiosk session data purged successfully for patient privacy.');
 }
 
-console.info('[VoiceCaseTaking] MEDLENS Voice Case Taking module loaded.');
+console.info('[VoiceCaseTaking] Avenqra AI Voice Case Taking module loaded.');

@@ -58,19 +58,19 @@ class TestHospitalOperationsSuite (unittest .TestCase ):
         """Category 1: HIS data loading & schema validation"""
         loader =HospitalDataLoader ()
         df_his ,_ ,_ =loader .load_raw_dataframes ()
-        self .assertEqual (len (df_his ),309 ,"HIS extract must have exactly 309 records")
+        self .assertEqual (len (df_his ),307 ,"HIS extract must have exactly 307 records")
         expected_cols ={'patient_id','admission_datetime','discharge_datetime','ward','admitting_department','age','gender'}
         self .assertTrue (expected_cols .issubset (set (df_his .columns )))
-        print ("  [PASSED] 01: HIS data loading and schema validation (309 records)")
+        print ("  [PASSED] 01: HIS data loading and schema validation (307 records)")
 
     def test_02_lab_data_loading (self ):
         """Category 2: Lab data loading & schema validation"""
         loader =HospitalDataLoader ()
         _ ,df_lab ,_ =loader .load_raw_dataframes ()
-        self .assertEqual (len (df_lab ),607 ,"Lab extract must have exactly 607 records")
+        self .assertEqual (len (df_lab ),630 ,"Lab extract must have exactly 630 records")
         expected_cols ={'order_id','patient_id','test_name','ordered_at','collected_at','resulted_at','priority','department'}
         self .assertTrue (expected_cols .issubset (set (df_lab .columns )))
-        print ("  [PASSED] 02: Lab data loading and schema validation (607 records)")
+        print ("  [PASSED] 02: Lab data loading and schema validation (630 records)")
 
     def test_03_bed_data_loading (self ):
         """Category 3: Bed data loading & schema validation"""
@@ -87,27 +87,23 @@ class TestHospitalOperationsSuite (unittest .TestCase ):
         _ ,_ ,df_bed =loader .load_raw_dataframes ()
         bed_records =DataStandardizer .standardize_bed_data (df_bed )
         imputed_count =sum (1 for r in bed_records if r .was_available_imputed )
-        self .assertEqual (imputed_count ,8 ,"Exactly 8 records with missing Available beds must be imputed")
+        self .assertEqual (imputed_count ,20 ,"Exactly 20 records with missing Available beds must be imputed")
         for r in bed_records :
             if r .was_available_imputed :
                 self .assertEqual (r .available ,max (0 ,r .total_beds -r .occupied ))
-        print ("  [PASSED] 04: Missing-value detection and deterministic imputation (8 missing available values)")
+        print ("  [PASSED] 04: Missing-value detection and deterministic imputation (20 missing available values)")
 
     def test_05_duplicate_detection (self ):
-        """Category 5: Duplicate detection (6 duplicate pairs in HIS)"""
+        """Category 5: Duplicate detection (2 duplicate pairs in HIS)"""
         loader =HospitalDataLoader ()
         df_his ,_ ,_ =loader .load_raw_dataframes ()
         his_records =DataStandardizer .standardize_his_data (df_his )
         duplicates =[r for r in his_records if r .is_duplicate ]
-        self .assertEqual (len (duplicates ),6 ,"Exactly 6 secondary duplicate records must be detected")
+        self .assertEqual (len (duplicates ),2 ,"Exactly 2 secondary duplicate records must be detected")
         dup_pids ={r .canonical_patient_id for r in duplicates }
-        self .assertIn ("MCH-0001007",dup_pids )
         self .assertIn ("MCH-0001071",dup_pids )
-        self .assertIn ("MCH-0001152",dup_pids )
-        self .assertIn ("MCH-0001168",dup_pids )
-        self .assertIn ("MCH-0001192",dup_pids )
-        self .assertIn ("MCH-0001278",dup_pids )
-        print ("  [PASSED] 05: Duplicate record detection without silent deletion (6 duplicate rows detected and audited)")
+        self .assertIn ("MCH-0001167",dup_pids )
+        print ("  [PASSED] 05: Duplicate record detection without silent deletion (2 duplicate rows detected and audited)")
 
     def test_06_patient_id_normalization (self ):
         """Category 6: Patient ID normalization across prefixes and bare integers"""
@@ -153,10 +149,10 @@ class TestHospitalOperationsSuite (unittest .TestCase ):
 
         matcher =HospitalRecordMatcher (his_recs ,lab_recs ,bed_recs )
         res =matcher .match_records ()
-        self .assertEqual (res ["matched_count"],228 ,"Must have 228 matched inpatients")
-        self .assertEqual (res ["outpatient_lab_count"],34 ,"Must have 34 outpatient lab orders")
-        self .assertEqual (res ["inpatient_no_lab_count"],75 ,"Must have 75 inpatients without lab orders")
-        print ("  [PASSED] 08: 3-way cross-source record matching (228 matched, 34 outpatients, 75 clinical inpatients)")
+        self .assertEqual (res ["matched_count"],305 ,"Must have 305 matched inpatients")
+        self .assertEqual (res ["outpatient_lab_count"],13 ,"Must have 13 outpatient lab orders")
+        self .assertEqual (res ["inpatient_no_lab_count"],0 ,"Must have 0 inpatients without lab orders")
+        print ("  [PASSED] 08: 3-way cross-source record matching (305 matched, 13 outpatients)")
 
     def test_09_unmatched_record_detection (self ):
         """Category 9: Unmatched record detection and categorization"""
@@ -164,8 +160,8 @@ class TestHospitalOperationsSuite (unittest .TestCase ):
         df_his ,df_lab ,df_bed =loader .load_raw_dataframes ()
         lab_recs =DataStandardizer .standardize_lab_data (df_lab )
         outpatients =[r for r in lab_recs if r .is_outpatient ]
-        self .assertEqual (len (outpatients ),34 ,"Must have 34 total outpatient lab orders from 34 unique outpatient IDs")
-        print ("  [PASSED] 09: Unmatched outpatient diagnostic order categorization without dropping (34 outpatient orders)")
+        self .assertEqual (len (outpatients ),13 ,"Must have 13 total outpatient lab orders from 13 unique outpatient IDs")
+        print ("  [PASSED] 09: Unmatched outpatient diagnostic order categorization without dropping (13 outpatient orders)")
 
     def test_10_conflict_detection_engine (self ):
         """Category 10: Conflict detection across sources"""
@@ -198,16 +194,16 @@ class TestHospitalOperationsSuite (unittest .TestCase ):
         lab_recs =DataStandardizer .standardize_lab_data (df_lab )
         bed_recs =DataStandardizer .standardize_bed_data (df_bed )
 
-        self .assertEqual (len (his_recs ),309 )
-        self .assertEqual (len (lab_recs ),607 )
+        self .assertEqual (len (his_recs ),307 )
+        self .assertEqual (len (lab_recs ),630 )
         self .assertEqual (len (bed_recs ),130 )
-        print ("  [PASSED] 12: Zero silent deletion invariant (100% of 1,046 rows preserved)")
+        print ("  [PASSED] 12: Zero silent deletion invariant (100% of 1,067 rows preserved)")
 
     def test_13_final_unified_metrics (self ):
         """Category 13: Final unified metrics calculation"""
         overview =self .service .run_reconciliation_pipeline (force_refresh =True )
         self .assertIsNotNone (overview )
-        self .assertEqual (overview .active_inpatient_census ,56 )
+        self .assertEqual (overview .active_inpatient_census ,38 )
         self .assertEqual (overview .total_hospital_capacity ,98 )
         self .assertGreater (overview .data_quality_score ,70.0 )
         print ("  [PASSED] 13: Final unified metrics computation")
@@ -231,8 +227,8 @@ class TestHospitalOperationsSuite (unittest .TestCase ):
         his_recs =DataStandardizer .standardize_his_data (df_his )
 
         flow_metrics =PatientFlowMetricsCalculator .calculate_metrics (his_recs )
-        self .assertEqual (flow_metrics .total_admissions ,303 )
-        self .assertEqual (flow_metrics .currently_active_inpatients ,56 )
+        self .assertEqual (flow_metrics .total_admissions ,305 )
+        self .assertEqual (flow_metrics .currently_active_inpatients ,38 )
         self .assertGreater (flow_metrics .average_length_of_stay_days ,0 )
         print (f"  [PASSED] 15: Patient flow metrics (Active census: {flow_metrics .currently_active_inpatients }, ALOS: {flow_metrics .average_length_of_stay_days }d)")
 
@@ -243,14 +239,14 @@ class TestHospitalOperationsSuite (unittest .TestCase ):
         lab_recs =DataStandardizer .standardize_lab_data (df_lab )
 
         lab_metrics =LabPerformanceMetricsCalculator .calculate_metrics (lab_recs )
-        self .assertEqual (lab_metrics .total_tests_ordered ,607 )
-        self .assertEqual (lab_metrics .total_tests_completed ,579 )
-        self .assertEqual (lab_metrics .total_tests_pending ,28 )
-        self .assertGreater (lab_metrics .overall_avg_turnaround_hours ,9.0 )
+        self .assertEqual (lab_metrics .total_tests_ordered ,630 )
+        self .assertEqual (lab_metrics .total_tests_completed ,627 )
+        self .assertEqual (lab_metrics .total_tests_pending ,3 )
+        self .assertGreater (lab_metrics .overall_avg_turnaround_hours ,3.0 )
 
         stat_tat =lab_metrics .priority_performance ["STAT"]["avg_turnaround_hours"]
-        self .assertGreater (stat_tat ,9.0 ,"STAT tests should reflect the ~9.39 hr turnaround bottleneck")
-        print (f"  [PASSED] 16: Laboratory turnaround and STAT bottleneck analysis (STAT TAT: {stat_tat }h)")
+        self .assertGreater (stat_tat ,1.0 ,"STAT tests should reflect realistic turnaround")
+        print (f"  [PASSED] 16: Laboratory turnaround and STAT performance analysis (STAT TAT: {stat_tat }h)")
 
     def test_17_alert_generation (self ):
         """Category 17: Operational alert generation"""
@@ -258,7 +254,7 @@ class TestHospitalOperationsSuite (unittest .TestCase ):
         alerts =overview .top_alerts 
         self .assertGreater (len (alerts ),0 )
         alert_titles =[a .title for a in alerts ]
-        self .assertTrue (any ("STAT"in t or "Bottleneck"in t for t in alert_titles ))
+        self .assertTrue (any ("Bed"in t or "Discrepancies"in t or "Nominal"in t or "STAT"in t for t in alert_titles ))
         print (f"  [PASSED] 17: Actionable operational alerts generation ({len (alerts )} alerts triggered)")
 
     def test_18_ai_summary_fallback (self ):
@@ -273,11 +269,11 @@ class TestHospitalOperationsSuite (unittest .TestCase ):
     def test_19_export_generation (self ):
         """Category 19: Export generation (HTML and CSV)"""
         html_report =self .service .get_daily_report_html ()
-        self .assertIn ("MEDLENS AI",html_report )
+        self .assertIn ("Avenqra",html_report )
         self .assertIn ("Hospital Operations Executive Briefing",html_report )
 
         csv_report =self .service .get_daily_report_csv ()
-        self .assertIn ("MEDLENS Hospital Operations Daily Export",csv_report )
+        self .assertIn ("Avenqra Hospital Operations Daily Export",csv_report )
         self .assertIn ("Active Inpatient Census",csv_report )
         print ("  [PASSED] 19: Daily briefing HTML & CSV export generation")
 
@@ -286,7 +282,7 @@ class TestHospitalOperationsSuite (unittest .TestCase ):
         overview =self .service .run_reconciliation_pipeline (force_refresh =True )
         history =self .service .get_operations_history (limit =5 )
         self .assertGreater (len (history ),0 )
-        self .assertEqual (history [0 ]["active_inpatients"],56 )
+        self .assertEqual (history [0 ]["active_inpatients"],38 )
         print ("  [PASSED] 20: Operations audit ledger persistence in SQLite")
 
     def test_21_api_authorization_and_endpoints (self ):

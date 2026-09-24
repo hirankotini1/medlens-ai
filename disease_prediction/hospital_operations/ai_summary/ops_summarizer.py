@@ -93,8 +93,8 @@ Keep it strictly factual based only on the numbers provided. Do not invent metri
             headers ={
             "Authorization":f"Bearer {api_key }",
             "Content-Type":"application/json",
-            "HTTP-Referer":"https://medlens.ai",
-            "X-Title":"MEDLENS AI Hospital Operations"
+            "HTTP-Referer":"https://medlens-ai-v3ru.onrender.com/",
+            "X-Title":"Avenqra AI Hospital Operations"
             }
             body ={
             "model":"google/gemini-2.5-flash",

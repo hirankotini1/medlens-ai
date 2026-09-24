@@ -147,10 +147,32 @@ def require_authenticated_user (auth :Optional [Dict [str ,Any ]]=Depends (get_a
 
 
 app =FastAPI (
-title ="MEDLENS — AI-Powered Clinical Diagnostic Platform",
-description ="Secure, authenticated clinical pathology management system with isolated ML decision-support pipelines.",
+title ="Avenqra AI — Adaptive Intelligence for Healthcare",
+description ="AI-assisted healthcare platform connecting patients, doctors and healthcare staff through adaptive case taking, medical document intelligence and structured clinical workflows.",
 version ="2.0.0"
 )
+
+@app.get("/robots.txt", include_in_schema=False)
+async def get_robots_txt():
+    robots_path = os.path.join(FRONTEND_DIR, "robots.txt")
+    if os.path.exists(robots_path):
+        return FileResponse(robots_path, media_type="text/plain")
+    return Response(content="User-agent: *\nAllow: /\nSitemap: https://medlens-ai-v3ru.onrender.com/sitemap.xml\n", media_type="text/plain")
+
+@app.get("/sitemap.xml", include_in_schema=False)
+async def get_sitemap_xml():
+    sitemap_path = os.path.join(FRONTEND_DIR, "sitemap.xml")
+    if os.path.exists(sitemap_path):
+        return FileResponse(sitemap_path, media_type="application/xml")
+    return Response(content='<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://medlens-ai-v3ru.onrender.com/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url></urlset>', media_type="application/xml")
+
+@app.get("/favicon.svg", include_in_schema=False)
+@app.get("/favicon.ico", include_in_schema=False)
+async def get_favicon():
+    fav_path = os.path.join(FRONTEND_DIR, "favicon.svg")
+    if os.path.exists(fav_path):
+        return FileResponse(fav_path, media_type="image/svg+xml")
+    return Response(status_code=404)
 
 app .add_middleware (
 CORSMiddleware ,
@@ -1598,7 +1620,7 @@ def symptoms_suggest (body :SymptomsRequest ):
     if selected_language .lower ()!="english":
         language_instruction =f"\n\nLANGUAGE INSTRUCTION: Translate ALL output text strictly into {selected_language }. Use accessible, layman's terms throughout. Keep medical parameter names (e.g. CBC, TSH, Hemoglobin, CBC) and section headers in their original form but explain all content in {selected_language }."
 
-    system_msg =f"""You are MEDLENS HealthGuide — an intelligent, compassionate, clinical decision-support AI.
+    system_msg =f"""You are Avenqra HealthGuide — an intelligent, compassionate, clinical decision-support AI.
 Analyze the reported symptoms and provide clear, empathetic, structured patient guidance in this EXACT markdown format:
 
 ## 🔍 Possible Conditions & Pattern Signals
@@ -1619,8 +1641,8 @@ Analyze the reported symptoms and provide clear, empathetic, structured patient 
 ## 💡 Related Things Patients Should Know
 (2-3 insightful educational facts or questions the patient can ask their healthcare provider.)
 
-## 🩺 Questions to Ask Your Medicover Specialist
-(Generate exactly 3 highly specific, clinically relevant questions the patient should ask their Medicover doctor at their appointment. Frame as direct questions starting with 'Should I...', 'What does...', or 'How do I...'. Make them specific to the symptoms described.)
+## 🩺 Questions to Ask Your Specialist
+(Generate exactly 3 highly specific, clinically relevant questions the patient should ask their doctor at their appointment. Frame as direct questions starting with 'Should I...', 'What does...', or 'How do I...'. Make them specific to the symptoms described.)
 
 STRICT CLINICAL RULES:
 - Never prescribe specific prescription drug names or dosages (e.g. no "Take 500mg X").
@@ -1644,7 +1666,7 @@ STRICT CLINICAL RULES:
     "Authorization":f"Bearer {SYMPTOMS_API_KEY }",
     "Content-Type":"application/json",
     "HTTP-Referer":"http://localhost:8000",
-    "X-Title":"MEDLENS HealthGuide"
+    "X-Title":"Avenqra HealthGuide"
     }
 
     def generate_smart_heuristic_stream ():
@@ -1842,11 +1864,11 @@ STRICT CLINICAL RULES:
         ("## 🚨 Red-Flag Emergency Warning Signs","\n".join (f"- {rf }"for rf in red_flags )),
         ("## 🧪 Recommended Laboratory Panels to Discuss with Your Doctor","\n".join (f"- {t }"for t in tests )),
         ("## 💡 Related Things Patients Should Know","\n".join (f"- {rel }"for rel in related )),
-        ("## 🩺 Questions to Ask Your Medicover Specialist","\n".join (f"- {dq }"for dq in doctor_questions ))
+        ("## 🩺 Questions to Ask Your Specialist","\n".join (f"- {dq }"for dq in doctor_questions ))
         ]
 
 
-        yield f"data: {json .dumps ({'event':'start','model':'MEDLENS Clinical Engine (Verified)'})}\n\n"
+        yield f"data: {json .dumps ({'event':'start','model':'Avenqra Clinical Engine (Verified)'})}\n\n"
         nl_token =json .dumps ({'token':'\n'})
         for title ,body_text in sections :
             sec_header =json .dumps ({'token':title +'\n\n'})
@@ -1863,7 +1885,7 @@ STRICT CLINICAL RULES:
             yield f"data: {nl_token }\n\n"
             time .sleep (0.03 )
 
-        yield f"data: {json .dumps ({'usage':{'total_tokens':420 ,'prompt_tokens':80 ,'completion_tokens':340 ,'completion_tokens_details':{'reasoning_tokens':48 }},'reasoning_tokens':48 ,'model':'MEDLENS Clinical Engine (Offline Mode)'})}\n\n"
+        yield f"data: {json .dumps ({'usage':{'total_tokens':420 ,'prompt_tokens':80 ,'completion_tokens':340 ,'completion_tokens_details':{'reasoning_tokens':48 }},'reasoning_tokens':48 ,'model':'Avenqra Clinical Engine (Offline Mode)'})}\n\n"
         yield "data: [DONE]\n\n"
 
     def event_stream ():
@@ -1984,7 +2006,7 @@ def whatsapp_status ():
     twilio_from =os .getenv ("TWILIO_WHATSAPP_FROM","")
     return {
     "status":"active",
-    "chatbot":"MEDLENS AI WhatsApp Assistant",
+    "chatbot":"Avenqra AI WhatsApp Assistant",
     "twilio_configured":bool (twilio_sid and twilio_token and twilio_from ),
     "twilio_from":twilio_from or "not configured",
     "webhook_endpoint":"/api/whatsapp/webhook",
@@ -1992,7 +2014,7 @@ def whatsapp_status ():
     "Symptom Checker (AI-powered)",
     "Patient Lab Report Lookup",
     "Emergency Triage",
-    "Medicover Doctor Finder",
+    "Doctor Finder",
     "ML Prediction Status"
     ],
     "demo_credentials":{
@@ -2038,7 +2060,7 @@ async def whatsapp_webhook (request :Request ):
         reply_text =_whatsapp_bot .handle_message (from_number ,body )
     except Exception as e :
         print (f"[WHATSAPP-HANDLER-ERROR] {e }")
-        reply_text ="Welcome to MEDLENS AI Health Assistant!\nType 'hi' or 'menu' to see options."
+        reply_text ="Welcome to Avenqra AI Health Assistant!\nType 'hi' or 'menu' to see options."
 
     print (f"[WHATSAPP-REPLY] Generated reply for {from_number } ({len (reply_text )} chars)")
 

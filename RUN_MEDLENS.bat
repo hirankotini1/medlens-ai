@@ -1,9 +1,9 @@
 @echo off
-title MEDLENS AI - Clinical Pathology Platform
+title AVENQRA AI - Adaptive Healthcare Platform
 color 0B
 
 echo ======================================================================
-echo                     MEDLENS AI CLINICAL PLATFORM
+echo                     AVENQRA AI ADAPTIVE PLATFORM
 echo ======================================================================
 echo.
 echo [1/3] Checking Python environment...

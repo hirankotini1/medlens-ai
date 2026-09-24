@@ -550,14 +550,14 @@ def synthesize_physician_summary(
     summary_payload = {
         "header": {
             "title": "PATIENT CLINICAL CASE SHEET",
-            "hospital": "MEDLENS AI x Medicover Clinical Diagnostic Platform",
+            "hospital": "Avenqra AI Adaptive Clinical Platform",
             "generated_at": datetime.now().strftime("%d %b %Y, %I:%M %p"),
             "case_id": case_info.get("case_id"),
             "patient_id": patient_info.get("patient_id", case_info.get("patient_id")),
             "patient_name": patient_info.get("name", "Outpatient"),
             "age_gender": f"{patient_info.get('age', '—')} Yrs / {patient_info.get('gender', '—')}",
             "contact": patient_info.get("contact", "—"),
-            "abha_id": case_info.get("abha_id") or "Not Registered (Demo)",
+            "abha_id": case_info.get("abha_id") or "Not linked",
             "triage_urgency": red_flag_res["triage_level"].upper()
         },
         "red_flags": red_flag_res["flags"],

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="avenqraGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="50%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#4f46e5"/>
+    </linearGradient>
+    <linearGradient id="crossGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e0f2fe"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+  
+  <!-- Outer Rounded Shield / Container -->
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="url(#avenqraGrad)"/>
+  
+  <!-- Subtle Outer Precision Ring -->
+  <circle cx="32" cy="32" r="23" fill="none" stroke="#ffffff" stroke-opacity="0.25" stroke-width="1.5" stroke-dasharray="2 3"/>
+  
+  <!-- Concentric Intelligence Iris Aperture -->
+  <circle cx="32" cy="32" r="18" fill="none" stroke="#ffffff" stroke-opacity="0.45" stroke-width="1.75"/>
+  
+  <!-- Clinical Precision Cross -->
+  <path d="M 29 18 C 29 16.9 29.9 16 31 16 L 33 16 C 34.1 16 35 16.9 35 18 L 35 29 L 46 29 C 47.1 29 48 29.9 48 31 L 48 33 C 48 34.1 47.1 35 46 35 L 35 35 L 35 46 C 35 47.1 34.1 48 33 48 L 31 48 C 29.9 48 29 47.1 29 46 L 29 35 L 18 35 C 16.9 35 16 34.1 16 33 L 16 31 C 16 29.9 16.9 29 18 29 L 29 29 Z" fill="url(#crossGrad)" filter="url(#glow)"/>
+  
+  <!-- Core Intelligence Node -->
+  <circle cx="32" cy="32" r="3.5" fill="#0284c7"/>
+  <circle cx="32" cy="32" r="1.5" fill="#ffffff"/>
+</svg>

@@ -33,7 +33,7 @@ services:
           name: medlens-ai
           property: host
       - key: OPENROUTER_APP_NAME
-        value: MEDLENS AI Health Assistant
+        value: Avenqra AI Health Assistant
       - key: TWILIO_ACCOUNT_SID
         sync: false
       - key: TWILIO_AUTH_TOKEN

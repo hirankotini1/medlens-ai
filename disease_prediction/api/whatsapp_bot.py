@@ -168,24 +168,24 @@ def twiml_response (message :str )->str :
 
 
 WELCOME_MSG =(
-"Welcome to MEDLENS AI Health Assistant!\n"
-"Powered by Medicover Clinical Platform\n\n"
+"Welcome to Avenqra AI Health Assistant!\n"
+"Powered by Adaptive Healthcare Platform\n\n"
 "MAIN MENU - Type a number:\n"
 "1 - Check My Symptoms (AI-powered)\n"
 "2 - View My Lab Reports and Results\n"
 "3 - EMERGENCY Guidance\n"
-"4 - Find a Medicover Doctor\n"
-"5 - My Latest ML Health Prediction\n\n"
+"4 - Find a Doctor\n"
+"5 - My Latest Health Prediction\n\n"
 "Type 'reset' anytime to restart."
 )
 
 MENU_MSG =(
-"MEDLENS Main Menu - Type a number:\n"
+"Avenqra Main Menu - Type a number:\n"
 "1 - Check My Symptoms\n"
 "2 - View My Lab Reports\n"
 "3 - EMERGENCY Guidance\n"
-"4 - Find a Medicover Doctor\n"
-"5 - My Latest ML Prediction\n\n"
+"4 - Find a Doctor\n"
+"5 - My Latest Health Prediction\n\n"
 "Type 'reset' to restart."
 )
 
@@ -255,7 +255,7 @@ def get_ai_symptom_guidance (symptoms :str )->str :
         return _heuristic_symptom_guidance (symptoms )
 
     system_msg =(
-    "You are MEDLENS HealthGuide, a compassionate clinical AI. "
+    "You are Avenqra HealthGuide, a compassionate clinical AI. "
     "Analyze patient symptoms and respond in this WhatsApp-friendly format (max 1400 chars):\n\n"
     "Possible Conditions:\n- [2-3 possible conditions, framed as possibilities]\n\n"
     "Immediate Care Steps:\n- [3 specific safety steps]\n\n"
@@ -270,7 +270,7 @@ def get_ai_symptom_guidance (symptoms :str )->str :
     "Authorization":f"Bearer {api_key }",
     "Content-Type":"application/json",
     "HTTP-Referer":BASE_URL ,
-    "X-Title":"MEDLENS WhatsApp Bot"
+    "X-Title":"Avenqra WhatsApp Bot"
     }
     models_to_try =[
     OPENROUTER_MODEL ,
@@ -420,7 +420,7 @@ def format_reports_for_whatsapp (reports :List [Dict ])->str :
         date =str (r .get ("created_at","-"))[:10 ]
         lines .append (f"{i }. {cat } | {rid } | {date } | {st }")
     if len (reports )>5 :
-        lines .append (f"... and {len (reports )-5 } more. Visit MEDLENS portal for full history.")
+        lines .append (f"... and {len (reports )-5 } more. Visit Avenqra portal for full history.")
     lines .append ("\nType 5 for your latest ML prediction, or 'menu' to go back.")
     return "\n".join (lines )
 
@@ -435,7 +435,7 @@ def format_ml_prediction_for_whatsapp (pred :Dict )->str :
     conf_pct =round (float (confidence )*100 )if confidence else 0 
     risk_mark ="HIGH RISK"if "High"in str (risk )else ("MODERATE"if "Moderate"in str (risk )else "LOW RISK")
     return (
-    f"MEDLENS ML Prediction Result\n"
+    f"Avenqra Clinical Prediction Result\n"
     f"Disease Panel: {disease }\n"
     f"Prediction: {prediction }\n"
     f"Confidence: {conf_pct }%\n"
@@ -728,10 +728,10 @@ def handle_message (from_number :str ,body :str )->str :
         session ["patient_id"],session ["patient_name"],session ["data"])
         return (
         header 
-        +"MEDLENS AI Symptom Guidance\n\n"
+        +"Avenqra AI Symptom Guidance\n\n"
         +guidance 
         +"\n\nAlways consult a qualified physician for proper medical evaluation.\n"
-        +"Book at Medicover Vizag: 040-68334455\n\n"
+        +"Clinical Appointment Desk: Contact Care Coordinator\n\n"
         +MENU_MSG 
         )
 

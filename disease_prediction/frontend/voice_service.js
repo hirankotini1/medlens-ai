@@ -1015,4 +1015,4 @@ window.isSpeaking = isSpeaking;
 window.getAvailableVoices = getAvailableVoices;
 window.onLanguageChange = onLanguageChange;
 
-console.info('[VoiceService] MEDLENS Multilingual Voice Service initialized.');
+console.info('[VoiceService] Avenqra AI Multilingual Voice Service initialized.');

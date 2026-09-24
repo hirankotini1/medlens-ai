@@ -206,7 +206,7 @@ async function handleCaseConsentSubmit(event) {
         const payload = {
             patient_id: activeCasePatientId || 'PAT-1001',
             chief_complaint: chiefComplaint,
-            abha_id: abhaId || '91-DEMO-ABHA',
+            abha_id: abhaId || '',
             consent_given: true,
             consent_text: 'I voluntarily provide informed consent for automated clinical case-taking, voice transcript processing, and medical document extraction for physician decision support.'
         };
@@ -327,7 +327,7 @@ function renderContextualSectionUpload(sectionId) {
                     </div>
                     <div>
                         <div style="font-size: 0.88rem; font-weight: 800; color: #1d4ed8;">Upload Lab Report, Blood Test or ECG</div>
-                        <div style="font-size: 0.76rem; color: #1e40af;">Attach your diagnostic PDF or photo — MedLens will extract all biomarkers and lab values into this case.</div>
+                        <div style="font-size: 0.76rem; color: #1e40af;">Attach your diagnostic PDF or photo — Avenqra AI will extract all biomarkers and lab values into this case.</div>
                     </div>
                 </div>
                 <label class="btn-primary" style="font-size: 0.78rem; font-weight: 700; padding: 7px 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; background: #2563eb; border-color: #2563eb; border-radius: 8px;">
@@ -854,10 +854,10 @@ function renderSummarySheet(summary) {
             <div class="case-sheet-header">
                 <div class="case-sheet-header-left">
                     <div class="case-sheet-badge">
-                        <span class="material-symbols-outlined" style="font-size: 14px;">verified</span> OFFICIAL CLINICAL CASE SHEET &bull; SIH PATIENT INTAKE
+                        <span class="material-symbols-outlined" style="font-size: 14px;">verified</span> OFFICIAL CLINICAL CASE SHEET &bull; ADAPTIVE PATIENT INTAKE
                     </div>
                     <h2 class="case-sheet-title">PATIENT CLINICAL CASE SHEET</h2>
-                    <div class="case-sheet-subtitle">MEDLENS AI x Medicover Clinical Precision Healthcare Platform</div>
+                    <div class="case-sheet-subtitle">Avenqra AI &bull; Adaptive Clinical Case Taking Platform</div>
                 </div>
                 <div class="case-sheet-header-right">
                     <div class="case-meta-item">
@@ -870,7 +870,7 @@ function renderSummarySheet(summary) {
                     </div>
                     <div class="case-meta-item">
                         <span class="meta-lbl">ABHA / ABDM:</span>
-                        <span class="meta-val-abha">${escapeHtml(hdr.abha_id || '91-5423-4671-3173')}</span>
+                        <span class="meta-val-abha">${escapeHtml(hdr.abha_id || 'Not linked')}</span>
                     </div>
                 </div>
             </div>
@@ -886,9 +886,9 @@ function renderSummarySheet(summary) {
                 <div class="patient-bar-col">
                     <div class="bar-lbl"><span class="material-symbols-outlined">health_and_safety</span> Health ID (ABHA)</div>
                     <div class="bar-val-main" style="font-family: var(--font-mono); color: #00397e; font-size: 0.92rem;">
-                        ${escapeHtml(hdr.abha_id || '91-5423-4671-3173')}
+                        ${escapeHtml(hdr.abha_id || 'Not linked')}
                     </div>
-                    <div class="bar-val-sub" style="color: #059669; font-weight: 700;">✓ ABDM Consent Verified</div>
+                    <div class="bar-val-sub" style="color: ${hdr.abha_id ? '#059669' : '#64748b'}; font-weight: 700;">${hdr.abha_id ? '✓ ABDM Consent Verified' : 'ABHA: Not linked'}</div>
                 </div>
 
                 <div class="patient-bar-col">
@@ -1202,8 +1202,8 @@ async function openDoctorCaseReviewModal(caseId) {
                 </div>
                 <div>
                     <div style="font-size: 0.72rem; font-weight: 800; color: #64748b; text-transform: uppercase;">ABHA ID / ABDM</div>
-                    <div style="font-family: var(--font-mono); color: #0284c7; font-weight: 700; font-size: 0.88rem;">${escapeHtml(caseData.abha_id || '91-5423-4671-3173')}</div>
-                    <div style="color: #059669; font-size: 0.76rem; font-weight: 700;">✓ Digital Consent Verified</div>
+                    <div style="font-family: var(--font-mono); color: #0284c7; font-weight: 700; font-size: 0.88rem;">${escapeHtml(caseData.abha_id || 'Not linked')}</div>
+                    <div style="color: ${caseData.abha_id ? '#059669' : '#64748b'}; font-size: 0.76rem; font-weight: 700;">${caseData.abha_id ? '✓ Digital Consent Verified' : 'ABHA: Not linked'}</div>
                 </div>
                 <div>
                     <div style="font-size: 0.72rem; font-weight: 800; color: #64748b; text-transform: uppercase;">Triage Priority</div>

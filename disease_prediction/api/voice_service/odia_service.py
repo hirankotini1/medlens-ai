@@ -153,7 +153,7 @@ def _translate_with_openrouter(text: str) -> Optional[str]:
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
             "HTTP-Referer": "http://localhost:8000",
-            "X-Title": "MEDLENS Multilingual Voice Engine",
+            "X-Title": "Avenqra Multilingual Voice Engine",
         }
         payload = {
             "model": "openrouter/free",

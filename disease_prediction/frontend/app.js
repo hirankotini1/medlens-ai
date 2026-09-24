@@ -624,6 +624,21 @@ function switchView(viewName) {
         sessionStorage.setItem('nexus_active_view', viewName);
     } catch (e) {}
 
+    // Update browser title dynamically based on active clinical portal / view
+    const viewTitles = {
+        'home': 'Avenqra AI | Adaptive Intelligence for Healthcare',
+        'patient': 'Avenqra AI | Patient Portal',
+        'admin': 'Avenqra AI | Doctor Console',
+        'operations': 'Avenqra AI | Healthcare Staff',
+        'voice-case-taking': 'Avenqra AI | Adaptive Case Taking',
+        'case-taking': 'Avenqra AI | Adaptive Case Taking',
+        'analyzer': 'Avenqra AI | Medical Document Analysis',
+        'symptoms': 'Avenqra AI | Symptom Intelligence',
+        'sandbox': 'Avenqra AI | ML Clinical Sandbox',
+        'about': 'Avenqra AI | Clinical Architecture'
+    };
+    document.title = viewTitles[viewName] || 'Avenqra AI | Adaptive Intelligence for Healthcare';
+
     document.querySelectorAll('.section-view').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.admin-corner-btn').forEach(el => el.classList.remove('active'));
@@ -1866,7 +1881,7 @@ function renderOfficialReportHTML(report) {
         <div class="official-report-doc" id="doc-${report.report_id}">
             <div class="report-doc-header">
                 <div class="lab-title">
-                    <h3>MEDLENS DIAGNOSTIC LABORATORY</h3>
+                    <h3>AVENQRA CLINICAL LABORATORY</h3>
                     <p>Accredited Hematology, Clinical Biochemistry &amp; Diagnostic Reference Center</p>
                 </div>
                 <div style="text-align: right;">
@@ -3415,7 +3430,7 @@ function renderVisualHealthSummary(data) {
             <!-- Header -->
             <div class="report-doc-header">
                 <div class="lab-title">
-                    <div style="font-size: 0.8rem; color: var(--primary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">MEDLENS &bull; Diagnostic Intelligence</div>
+                    <div style="font-size: 0.8rem; color: var(--primary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">AVENQRA AI &bull; Diagnostic Intelligence</div>
                     <h3>AI HEALTH REPORT COMPREHENSIVE ANALYSIS</h3>
                     <p>Multi-Tier Clinical Decision Support &amp; Validated ML Pipeline Synthesis</p>
                 </div>
@@ -5883,7 +5898,7 @@ function updateSmsPreview() {
     const adminTime = document.getElementById('rem-admin-time') ? document.getElementById('rem-admin-time').value.trim() : '';
     const dueDate = document.getElementById('rem-due-date') ? document.getElementById('rem-due-date').value : '';
 
-    let preview = `MedLens Alert for ${patientName}:\n`;
+    let preview = `Avenqra Alert for ${patientName}:\n`;
     if (remType === 'medication_reminder' && medName) {
         preview += `Take ${medName}${dosage ? ' ' + dosage : ''}${adminTime ? ' (' + adminTime + ')' : ''}. `;
     } else {
@@ -6020,7 +6035,7 @@ async function checkGatewayStatus(showFeedback = false) {
         if (showFeedback) {
             alert(isOnline ?
                 `✅ Android SIM Gateway is ONLINE!\n\nDevice: ${data.device_name}\nLast ping: ${data.last_seen || 'Just now'}\nToday sent: ${data.today_sms_count}/${data.daily_limit}` :
-                `⚠️ Android SIM Gateway is currently OFFLINE.\n\nStart the MedLens SMS Gateway app on your Android phone and connect to this server.`);
+                `⚠️ Android SIM Gateway is currently OFFLINE.\n\nStart the Avenqra SMS Gateway app on your Android phone and connect to this server.`);
         }
     } catch (err) {
         console.warn("Gateway check error:", err);
@@ -6111,7 +6126,7 @@ function openTestSmsModal() {
     // Reliable instant fallback if modal markup hasn't loaded yet
     const phone = prompt("Enter recipient mobile number (e.g. 9876543210 or +919876543210):");
     if (!phone) return;
-    const msg = prompt("Enter message to send via SIM:", "MEDLENS AI Test: Hello from your hospital SIM gateway!");
+    const msg = prompt("Enter message to send via SIM:", "Avenqra AI Test: Hello from your hospital SIM gateway!");
     if (!msg) return;
 
     fetch(apiUrl('/api/sms-gateway/test'), {

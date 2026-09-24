@@ -53,7 +53,7 @@ class DailyOperationsReportGenerator :
 <html>
 <head>
     <meta charset="utf-8">
-    <title>MEDLENS Hospital Daily Operations Briefing — {now_str }</title>
+    <title>Avenqra Hospital Daily Operations Briefing — {now_str }</title>
     <style>
         body {{ font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; color: #0f172a; margin: 0; padding: 24px; background: #ffffff; line-height: 1.5; }}
         .header-box {{ border-bottom: 2px solid #0284c7; padding-bottom: 14px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end; }}
@@ -76,8 +76,8 @@ class DailyOperationsReportGenerator :
 <body>
     <div class="header-box">
         <div>
-            <h1 class="header-title">MEDLENS AI &bull; Hospital Operations Executive Briefing</h1>
-            <p class="header-sub">Medicover Hospital Multi-Source Reconciled Operations Report</p>
+            <h1 class="header-title">Avenqra AI &bull; Hospital Operations Executive Briefing</h1>
+            <p class="header-sub">Integrated Healthcare Multi-Source Reconciled Operations Report</p>
         </div>
         <div style="text-align: right; font-size: 12px; color: #475569;">
             <div><strong>Report Date:</strong> {now_str }</div>
@@ -148,7 +148,7 @@ class DailyOperationsReportGenerator :
     {alerts_html }
 
     <div class="footer">
-        Generated autonomously by MEDLENS Hospital Operations Intelligence &bull; Multi-Source Deterministic Reconciliation Engine &bull; Confidential &bull; For Hospital Leadership Use Only
+        Generated autonomously by Avenqra Hospital Operations Intelligence &bull; Multi-Source Deterministic Reconciliation Engine &bull; Confidential &bull; For Healthcare Leadership Use Only
     </div>
 </body>
 </html>
@@ -163,7 +163,7 @@ class DailyOperationsReportGenerator :
         output =io .StringIO ()
         writer =csv .writer (output )
 
-        writer .writerow (["MEDLENS Hospital Operations Daily Export"])
+        writer .writerow (["Avenqra Hospital Operations Daily Export"])
         writer .writerow (["Generated At",datetime .now ().strftime ("%Y-%m-%d %H:%M:%S")])
         writer .writerow ([])
         writer .writerow (["METRIC","VALUE","NOTES"])
