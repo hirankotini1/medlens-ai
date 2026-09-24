@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://medlens-ai-v3ru.onrender.com/sitemap.xml

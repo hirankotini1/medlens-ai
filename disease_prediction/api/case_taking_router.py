@@ -948,7 +948,7 @@ def get_case_report_pdf_endpoint(case_id: str):
 
     pdf_bytes = ci.generate_clinical_pdf(report_data)
     date_tag = datetime.now().strftime("%Y%m%d")
-    filename = f"MedLens_Clinical_Case_Summary_{case_id}_{date_tag}.pdf"
+    filename = f"Avenqra_Clinical_Case_Summary_{case_id}_{date_tag}.pdf"
 
     return Response(
         content=pdf_bytes,

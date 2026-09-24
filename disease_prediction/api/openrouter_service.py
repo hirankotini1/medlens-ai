@@ -24,7 +24,7 @@ else :
 OPENROUTER_API_URL ="https://openrouter.ai/api/v1/chat/completions"
 DEFAULT_MODEL =os .getenv ("OPENROUTER_MODEL","openrouter/auto")
 SITE_URL = os.getenv("OPENROUTER_SITE_URL", "http://localhost:8000")
-APP_NAME = os.getenv("OPENROUTER_APP_NAME", "MEDLENS AI Health Report Analyzer")
+APP_NAME = os.getenv("OPENROUTER_APP_NAME", "Avenqra AI Health Report Analyzer")
 
 _CIRCUIT_BREAKER_RESET_TIME = 0.0
 _LAST_RATE_LIMIT_REASON = ""
@@ -309,7 +309,7 @@ model_override :Optional [str ]=None
     model =model_override or os .getenv ("OPENROUTER_MODEL",DEFAULT_MODEL )
     clean_payload =strip_pii_from_payload (parameters ,patient_meta )
 
-    system_prompt ="""You are a clinical pathology decision-support AI in MEDLENS. Analyze lab findings and return ONLY valid JSON — no markdown.
+    system_prompt ="""You are a clinical pathology decision-support AI in Avenqra AI. Analyze lab findings and return ONLY valid JSON — no markdown.
 
 RULES:
 - Never make autonomous diagnoses. Use: "Possible pattern", "Findings consistent with...", "Screening signal only".

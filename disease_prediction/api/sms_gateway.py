@@ -81,53 +81,53 @@ def build_sms_text(
     name = patient_name or "Patient"
     templates = {
         "medication_reminder": (
-            f"MEDLENS AI: Hello {name}, this is a reminder to take your prescribed "
+            f"Avenqra AI: Hello {name}, this is a reminder to take your prescribed "
             f"{medication_name or 'medication'}"
             + (f" ({dosage} {dose_unit})" if dosage else "")
             + (f" at {administration_time}" if administration_time else "")
             + ", as instructed by your doctor."
         ),
         "appointment_reminder": (
-            f"MEDLENS AI: Hello {name}, your appointment is scheduled"
+            f"Avenqra AI: Hello {name}, your appointment is scheduled"
             + (f" on {due_date}" if due_date else "")
-            + ". Please contact the hospital if you need to reschedule."
+            + ". Please contact the clinic if you need to reschedule."
         ),
         "lab_reminder": (
-            f"MEDLENS AI: Hello {name}, your laboratory test is due"
+            f"Avenqra AI: Hello {name}, your laboratory test is due"
             + (f" on {due_date}" if due_date else "")
             + ". Please follow any preparation instructions from your clinical team."
         ),
         "report_ready": (
-            f"MEDLENS AI: Hello {name}, your health report is ready. "
-            "Please log in to your MedLens patient portal to view it securely."
+            f"Avenqra AI: Hello {name}, your health report is ready. "
+            "Please log in to your Avenqra patient portal to view it securely."
         ),
         "followup_reminder": (
-            f"MEDLENS AI: Hello {name}, this is a reminder for your follow-up visit"
+            f"Avenqra AI: Hello {name}, this is a reminder for your follow-up visit"
             + (f" on {due_date}" if due_date else "")
             + ". Please follow your doctor's instructions."
         ),
         "health_checkup": (
-            f"MEDLENS AI: Hello {name}, your periodic health checkup is due. "
-            "Please contact MedLens to schedule your appointment."
+            f"Avenqra AI: Hello {name}, your periodic health checkup is due. "
+            "Please contact Avenqra Health to schedule your appointment."
         ),
         "vaccination_reminder": (
-            f"MEDLENS AI: Hello {name}, your vaccination is due"
+            f"Avenqra AI: Hello {name}, your vaccination is due"
             + (f" on {due_date}" if due_date else "")
             + ". Please visit the clinic as advised by your doctor."
         ),
         "daily_care": (
-            f"MEDLENS AI: Hello {name}, this is your daily care reminder. "
+            f"Avenqra AI: Hello {name}, this is your daily care reminder. "
             + (custom_message or "Please follow your prescribed care routine.")
         ),
         "diagnosis": (
-            f"MEDLENS AI: Hello {name}, please follow your doctor's instructions for your ongoing care. "
+            f"Avenqra AI: Hello {name}, please follow your doctor's instructions for your ongoing care. "
             + (custom_message or "Contact your clinical team if you have questions.")
         ),
         "checkup": (
-            f"MEDLENS AI: Hello {name}, your scheduled health checkup reminder. "
+            f"Avenqra AI: Hello {name}, your scheduled health checkup reminder. "
             + (custom_message or "Please attend as instructed by your care team.")
         ),
-        "custom": f"MEDLENS AI: {custom_message}" if custom_message else f"MEDLENS AI: Hello {name}, you have a message from your clinical care team.",
+        "custom": f"Avenqra AI: {custom_message}" if custom_message else f"Avenqra AI: Hello {name}, you have a message from your clinical care team.",
     }
     text = templates.get(message_type, templates["custom"])
     # Hard safety limit: SMS is 160 chars per segment, keep to 2 segments max
@@ -421,7 +421,7 @@ def test_sms_endpoint(
     if not body.message or len(body.message.strip()) < 3:
         raise HTTPException(status_code=400, detail="Test message is too short.")
 
-    safe_message = f"MEDLENS AI TEST: {body.message.strip()[:200]}"
+    safe_message = f"AVENQRA AI TEST: {body.message.strip()[:200]}"
     entry = db.create_sms_outbox_entry(
         patient_id="TEST",
         phone_number=phone,

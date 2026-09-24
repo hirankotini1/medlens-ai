@@ -30,4 +30,6 @@ local.properties
 *.apk
 .idea/
 scratch/
+*.env
+.vscode/
 

@@ -72,7 +72,7 @@ class MedLensReportPDF(FPDF):
         self.set_text_color(255, 255, 255)
         self.set_font(font, "" if self.has_unicode_font else "B", 8.5)
         self.set_xy(14, 2.5)
-        self.cell(100, 8, "MEDLENS HEALTH SYSTEM  |  CLINICAL CASE DOSSIER", align="L")
+        self.cell(100, 8, "AVENQRA HEALTH SYSTEM  |  CLINICAL CASE DOSSIER", align="L")
         self.set_xy(110, 2.5)
         self.cell(86, 8, f"REF: {self.case_id}  |  {self.intake_date}", align="R")
         self.set_text_color(30, 41, 59)
@@ -683,7 +683,7 @@ def generate_clinical_pdf(
         pdf.set_text_color(71, 85, 105)
         pdf.cell(54, 3.5, f"Verified by: {doc_id[:20]}", align="C", ln=True)
         pdf.set_x(stamp_x)
-        pdf.cell(54, 3.5, "MedLens Clinical Validation", align="C", ln=True)
+        pdf.cell(54, 3.5, "Avenqra Clinical Validation", align="C", ln=True)
     else:
         pdf.set_draw_color(148, 163, 184)
         pdf.set_line_width(0.3)
