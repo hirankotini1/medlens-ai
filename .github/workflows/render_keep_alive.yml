@@ -1,9 +1,9 @@
 name: Render Keep-Alive Ping
 
 on:
-  # Staggered 10-minute execution avoiding peak top-of-hour congestion (:00, :10, :20, etc.)
+  # Scheduled execution every 10 minutes to prevent Render free-tier spin-down
   schedule:
-    - cron: '3,13,23,33,43,53 * * * *'
+    - cron: '*/10 * * * *'
   # Manual execution trigger from GitHub Actions UI ("Run workflow")
   workflow_dispatch:
 
