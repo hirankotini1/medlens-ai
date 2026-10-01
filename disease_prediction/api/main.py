@@ -152,19 +152,26 @@ description ="AI-assisted healthcare platform connecting patients, doctors and h
 version ="2.0.0"
 )
 
-@app.get("/robots.txt", include_in_schema=False)
+@app.api_route("/robots.txt", methods=["GET", "HEAD"], include_in_schema=False)
 async def get_robots_txt():
     robots_path = os.path.join(FRONTEND_DIR, "robots.txt")
     if os.path.exists(robots_path):
-        return FileResponse(robots_path, media_type="text/plain")
-    return Response(content="User-agent: *\nAllow: /\nSitemap: https://medlens-ai-v3ru.onrender.com/sitemap.xml\n", media_type="text/plain")
+        return FileResponse(robots_path, media_type="text/plain; charset=utf-8")
+    return Response(content="User-agent: *\nAllow: /\nSitemap: https://medlens-ai-v3ru.onrender.com/sitemap.xml\n", media_type="text/plain; charset=utf-8")
 
-@app.get("/sitemap.xml", include_in_schema=False)
+@app.api_route("/sitemap.xml", methods=["GET", "HEAD"], include_in_schema=False)
 async def get_sitemap_xml():
     sitemap_path = os.path.join(FRONTEND_DIR, "sitemap.xml")
     if os.path.exists(sitemap_path):
-        return FileResponse(sitemap_path, media_type="application/xml")
-    return Response(content='<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://medlens-ai-v3ru.onrender.com/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url></urlset>', media_type="application/xml")
+        return FileResponse(sitemap_path, media_type="application/xml; charset=utf-8")
+    return Response(content='<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url>\n    <loc>https://medlens-ai-v3ru.onrender.com/</loc>\n    <lastmod>2026-10-01</lastmod>\n    <changefreq>daily</changefreq>\n    <priority>1.0</priority>\n  </url>\n  <url>\n    <loc>https://medlens-ai-v3ru.onrender.com/product.html</loc>\n    <lastmod>2026-10-01</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.9</priority>\n  </url>\n</urlset>', media_type="application/xml; charset=utf-8")
+
+@app.api_route("/google73d6ccb7c4ba0db2.html", methods=["GET", "HEAD"], include_in_schema=False)
+async def get_google_verification():
+    verify_path = os.path.join(FRONTEND_DIR, "google73d6ccb7c4ba0db2.html")
+    if os.path.exists(verify_path):
+        return FileResponse(verify_path, media_type="text/html; charset=utf-8")
+    return Response(content="google-site-verification: google73d6ccb7c4ba0db2.html", media_type="text/html; charset=utf-8")
 
 @app.get("/favicon.svg", include_in_schema=False)
 @app.get("/favicon.ico", include_in_schema=False)

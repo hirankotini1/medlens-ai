@@ -2,6 +2,8 @@ User-agent: *
 Allow: /
 Allow: /index.html
 Allow: /product.html
+Allow: /sitemap.xml
+Allow: /google73d6ccb7c4ba0db2.html
 Allow: /favicon.svg
 Allow: /og-image.png
 Allow: /style.css
