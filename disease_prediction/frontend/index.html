@@ -7,20 +7,25 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Avenqra AI | Adaptive Intelligence for Healthcare</title>
-    <meta name="description" content="Avenqra AI is an AI-assisted healthcare platform connecting patients, doctors and healthcare staff through adaptive case taking, medical document intelligence and structured clinical workflows.">
+    <meta name="description" content="Avenqra AI is an AI-assisted healthcare platform for adaptive clinical case taking, medical document intelligence, and structured clinical workflows supporting physician-reviewed decision-support across patients, doctors, and healthcare staff.">
+    <meta name="keywords" content="Avenqra AI, Avenqra AI Healthcare, Avenqra Healthcare AI, Avenqra clinical AI, Avenqra medical AI, Avenqra adaptive intelligence, adaptive case taking, medical document intelligence, clinical decision support">
+    <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://medlens-ai-v3ru.onrender.com/">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
 
     <!-- Open Graph / Social Sharing -->
+    <meta property="og:site_name" content="Avenqra AI">
     <meta property="og:title" content="Avenqra AI | Adaptive Intelligence for Healthcare">
-    <meta property="og:description" content="AI-assisted healthcare platform for adaptive case taking, medical document intelligence and connected healthcare workflows.">
+    <meta property="og:description" content="AI-assisted healthcare platform for adaptive clinical case taking, medical document intelligence, and physician-reviewed clinical decision-support.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://medlens-ai-v3ru.onrender.com/">
+    <meta property="og:image" content="https://medlens-ai-v3ru.onrender.com/og-image.png">
 
     <!-- Twitter/X Metadata -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Avenqra AI | Adaptive Intelligence for Healthcare">
-    <meta name="twitter:description" content="AI-assisted healthcare platform connecting patients, doctors and healthcare staff.">
+    <meta name="twitter:description" content="AI-assisted healthcare platform connecting patients, doctors, and healthcare staff with adaptive clinical intelligence.">
+    <meta name="twitter:image" content="https://medlens-ai-v3ru.onrender.com/og-image.png">
 
     <!-- Schema.org JSON-LD Structured Data -->
     <script type="application/ld+json">
@@ -32,6 +37,7 @@
           "@id": "https://medlens-ai-v3ru.onrender.com/#website",
           "url": "https://medlens-ai-v3ru.onrender.com/",
           "name": "Avenqra AI",
+          "alternateName": ["Avenqra AI Healthcare", "Avenqra Healthcare AI"],
           "description": "Avenqra AI is an AI-assisted healthcare platform connecting patients, doctors and healthcare staff through adaptive case taking, medical document intelligence and structured clinical workflows.",
           "publisher": {
             "@id": "https://medlens-ai-v3ru.onrender.com/#organization"
@@ -43,7 +49,47 @@
           "name": "Avenqra AI",
           "url": "https://medlens-ai-v3ru.onrender.com/",
           "logo": "https://medlens-ai-v3ru.onrender.com/favicon.svg",
-          "slogan": "Adaptive Intelligence for Healthcare"
+          "slogan": "Adaptive Intelligence for Healthcare",
+          "description": "Healthcare intelligence platform providing AI-assisted clinical decision-support and structured hospital operational workflows."
+        },
+        {
+          "@type": "SoftwareApplication",
+          "@id": "https://medlens-ai-v3ru.onrender.com/#software",
+          "name": "Avenqra AI",
+          "applicationCategory": "HealthApplication",
+          "operatingSystem": "Web Browser, Android",
+          "url": "https://medlens-ai-v3ru.onrender.com/",
+          "description": "AI-assisted clinical decision-support software for medical document intelligence, adaptive patient intake, and physician-reviewed clinical summaries.",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          },
+          "featureList": [
+            "Adaptive Clinical Case Taking",
+            "Medical Document Intelligence & OCR",
+            "Physician-Reviewed Clinical Summaries",
+            "Doctor Decision-Support Console",
+            "Healthcare Staff Inpatient Bed Operations",
+            "SIM Gateway SMS Patient Alerts",
+            "Standardized Clinical PDF Reports"
+          ]
+        },
+        {
+          "@type": "MedicalWebPage",
+          "@id": "https://medlens-ai-v3ru.onrender.com/#medicalpage",
+          "url": "https://medlens-ai-v3ru.onrender.com/",
+          "name": "Avenqra AI | Adaptive Intelligence for Healthcare",
+          "description": "Public portal and clinical decision-support suite for patient case taking, medical document analysis, and collaborative hospital care.",
+          "audience": {
+            "@type": "MedicalAudience",
+            "audienceType": "Healthcare Professionals, Clinicians, and Patients"
+          },
+          "aspect": [
+            "Clinical Workflow Management",
+            "Physician Decision Support",
+            "Medical Document Extraction"
+          ]
         }
       ]
     }
@@ -94,6 +140,9 @@
             </a>
             <a href="javascript:void(0)" onclick="switchView('operations')" class="nav-btn" id="tab-operations" title="Hospital Staff Operations Hub &amp; Inpatient Management">
                 <span class="material-symbols-outlined">badge</span> STAFF OPERATIONS
+            </a>
+            <a href="/product.html" class="nav-btn" id="tab-product" title="Avenqra AI Product Architecture &amp; Capabilities">
+                <span class="material-symbols-outlined">info</span> PRODUCT
             </a>
 
             <button type="button" class="btn-primary" onclick="openPatientRegistrationModal()" style="background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%); padding: 7px 16px; font-size: 0.82rem; font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase; border-radius: 9px; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35); display: inline-flex; align-items: center; gap: 6px; border: none; cursor: pointer; color: white; white-space: nowrap; margin-left: 4px;" title="Register new outpatient and get appointment slip">
@@ -172,6 +221,13 @@
                         <span class="drawer-link-desc">Inpatient admissions &amp; live bed tracker</span>
                     </div>
                 </a>
+                <a href="/product.html" class="mobile-drawer-link">
+                    <span class="drawer-link-icon" style="background:#e0f2fe; color:#0284c7;"><span class="material-symbols-outlined">info</span></span>
+                    <div class="drawer-link-info">
+                        <span class="drawer-link-title">Product Architecture</span>
+                        <span class="drawer-link-desc">Public overview, modules &amp; clinical boundaries</span>
+                    </div>
+                </a>
             </div>
 
             <div class="mobile-drawer-section-label">AI INTELLIGENCE SUITE</div>
@@ -221,7 +277,7 @@
 
     
     <div id="server-status-banner" style="display: none; background: linear-gradient(135deg, #b91c1c, #dc2626); color: #ffffff; padding: 12px 20px; font-size: 0.86rem; font-weight: 600; text-align: center; justify-content: center; align-items: center; gap: 14px; box-shadow: 0 4px 14px rgba(220,38,38,0.25); z-index: 1000; position: sticky; top: 68px;">
-        <span>⚠️ <strong>Backend Server Offline (Port 8000)</strong> — Please double-click <code>RUN_MEDLENS.bat</code> to start the Python server.</span>
+        <span>⚠️ <strong>Backend Server Offline (Port 8000)</strong> — Please start the Avenqra AI Python backend server.</span>
         <button type="button" onclick="checkBackendHealth(true)" style="background: #ffffff; color: #dc2626; border: none; padding: 4px 14px; border-radius: 6px; font-weight: 800; cursor: pointer; font-size: 0.8rem;">🔄 Retry Connection</button>
     </div>
 
@@ -245,7 +301,7 @@
                             FOR <span style="background: linear-gradient(135deg, #0284c7 0%, #2563eb 45%, #7c3aed 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 4px 20px rgba(37, 99, 235, 0.15);">BETTER CARE</span>
                         </h1>
                         <p class="ml-hero-desc" style="font-size: 1.1rem; font-weight: 600; color: #334155; line-height: 1.65; margin-bottom: 26px; max-width: 600px;">
-                            AI-assisted healthcare that transforms patient information into structured, reviewable clinical insights.
+                            AI-assisted healthcare platform transforming patient symptom narratives and medical documents into structured, physician-reviewed clinical decision-support insights.
                         </p>
                         <div class="ml-hero-buttons">
                             <button type="button" class="ml-btn-primary" onclick="document.getElementById('ml-roles-gateway').scrollIntoView({behavior: 'smooth'})" style="background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%); color: #ffffff; font-weight: 900; font-size: 0.96rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 14px 28px; border-radius: 12px; box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4); border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
@@ -255,6 +311,10 @@
                                 <span class="material-symbols-outlined" style="font-size: 20px; color: #0284c7;">mic</span>
                                 <span>TRY ADAPTIVE CASE-TAKING</span>
                             </button>
+                            <a href="/product.html" style="background: #f8fafc; border: 2px solid #cbd5e1; color: #0f172a; font-weight: 800; font-size: 0.92rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 13px 20px; border-radius: 12px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
+                                <span class="material-symbols-outlined" style="font-size: 18px; color: #0284c7;">info</span>
+                                <span>PRODUCT OVERVIEW</span>
+                            </a>
                         </div>
                         <div class="ml-stats-strip" style="display: flex; gap: 14px; flex-wrap: wrap; padding-top: 18px; border-top: 2px solid #e2e8f0;">
                             <div class="ml-stat-item" style="background: #ffffff; border: 1.5px solid #bae6fd; border-radius: 12px; padding: 10px 18px; box-shadow: 0 3px 10px rgba(2, 132, 199, 0.08); min-width: 125px;">
@@ -4862,6 +4922,56 @@
             </div><!-- end voice-ct-wrapper -->
         </section><!-- end view-voice-case-taking -->
     </main>
+
+    <!-- Comprehensive Avenqra AI Public Footer & Internal Linking -->
+    <footer style="background: #07152b; color: #cbd5e1; padding: 48px 24px 30px; border-top: 1px solid #1e293b; margin-top: 40px;">
+        <div style="max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 36px; margin-bottom: 36px;">
+            <div>
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                    <span class="material-symbols-outlined" style="color: #38bdf8; font-size: 26px;">biotech</span>
+                    <strong style="color: #ffffff; font-size: 1.2rem; letter-spacing: -0.01em;">AVENQRA AI</strong>
+                </div>
+                <p style="font-size: 0.88rem; color: #94a3b8; line-height: 1.6; margin-bottom: 14px;">
+                    Adaptive Intelligence for Healthcare. AI-assisted clinical case taking, medical document OCR intelligence, and multi-disciplinary hospital workflow coordination.
+                </p>
+                <div style="font-size: 0.78rem; color: #64748b;">
+                    Official Production Service &bull; medlens-ai-v3ru.onrender.com
+                </div>
+            </div>
+
+            <div>
+                <h4 style="color: #ffffff; font-size: 0.92rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 14px;">Clinical Portals</h4>
+                <ul style="list-style: none; display: flex; flex-direction: column; gap: 9px; padding: 0;">
+                    <li><a href="javascript:void(0)" onclick="switchView('home')" style="color: #94a3b8; text-decoration: none; font-size: 0.88rem;">Home Dashboard</a></li>
+                    <li><a href="javascript:void(0)" onclick="switchView('admin')" style="color: #94a3b8; text-decoration: none; font-size: 0.88rem;">Doctor Console &amp; EHR Review</a></li>
+                    <li><a href="javascript:void(0)" onclick="switchView('patient')" style="color: #94a3b8; text-decoration: none; font-size: 0.88rem;">Patient Health Records Portal</a></li>
+                    <li><a href="javascript:void(0)" onclick="switchView('operations')" style="color: #94a3b8; text-decoration: none; font-size: 0.88rem;">Healthcare Staff Operations Hub</a></li>
+                    <li><a href="javascript:void(0)" onclick="switchView('voice-case-taking')" style="color: #94a3b8; text-decoration: none; font-size: 0.88rem;">Adaptive Clinical Case Taking</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 style="color: #ffffff; font-size: 0.92rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 14px;">Intelligence &amp; Architecture</h4>
+                <ul style="list-style: none; display: flex; flex-direction: column; gap: 9px; padding: 0;">
+                    <li><a href="/product.html" style="color: #38bdf8; text-decoration: none; font-size: 0.88rem; font-weight: 700;">Platform Architecture &amp; Features &rarr;</a></li>
+                    <li><a href="javascript:void(0)" onclick="switchView('analyzer')" style="color: #94a3b8; text-decoration: none; font-size: 0.88rem;">Medical Document Intelligence</a></li>
+                    <li><a href="javascript:void(0)" onclick="switchView('symptoms')" style="color: #94a3b8; text-decoration: none; font-size: 0.88rem;">AI-Assisted Clinical Summaries</a></li>
+                    <li><a href="javascript:void(0)" onclick="switchView('about')" style="color: #94a3b8; text-decoration: none; font-size: 0.88rem;">About Avenqra AI</a></li>
+                    <li><a href="/robots.txt" style="color: #94a3b8; text-decoration: none; font-size: 0.88rem;">Robots.txt Directives</a></li>
+                    <li><a href="/sitemap.xml" style="color: #94a3b8; text-decoration: none; font-size: 0.88rem;">XML Sitemap</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div style="max-width: 1200px; margin: 0 auto; padding: 18px 0; border-top: 1px solid #1e293b; font-size: 0.80rem; color: #94a3b8; line-height: 1.55;">
+            <p><strong>Clinical Decision-Support Boundary:</strong> Avenqra AI is an AI-assisted healthcare information architecture. It does not provide autonomous diagnosis or independent patient prescriptions. All diagnostic suggestions and differential summaries require review, validation, and clinical oversight by licensed medical physicians.</p>
+        </div>
+
+        <div style="max-width: 1200px; margin: 0 auto; padding-top: 14px; border-top: 1px solid #1e293b; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; font-size: 0.78rem; color: #64748b;">
+            <div>&copy; 2026 Avenqra AI. All rights reserved. Adaptive Intelligence for Healthcare.</div>
+            <div>Physician-Reviewed Decision Support &bull; 256-Bit Cryptographic Security</div>
+        </div>
+    </footer>
 
     <script src="app.js?v=20260920_v2"></script>
     <script src="voice_service.js?v=20260920_v1"></script>
