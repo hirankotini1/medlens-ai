@@ -1660,13 +1660,12 @@ STRICT CLINICAL RULES:
     user_msg =f"Patient reports the following symptoms{demo_ctx }:\n\n\"{body .symptoms .strip ()}\"\n\nPlease provide comprehensive, structured guidance following the required format."
 
 
-    models_to_try =[
-    "google/gemma-4-31b-it:free",
-    "minimax/minimax-m3:free",
-    "nvidia/nemotron-3.5-lightning:free",
-    "google/gemma-4-26b-a4b-it:free",
-    "openrouter/free",
-    "openrouter/auto"
+    models_to_try = [
+        "openrouter/auto",
+        "openrouter/free",
+        "meta-llama/llama-3.3-70b-instruct:free",
+        "google/gemma-2-9b-it:free",
+        "qwen/qwen-2.5-72b-instruct:free"
     ]
 
     headers_or ={
@@ -1875,109 +1874,118 @@ STRICT CLINICAL RULES:
         ]
 
 
-        yield f"data: {json .dumps ({'event':'start','model':'Avenqra Clinical Engine (Verified)'})}\n\n"
-        nl_token =json .dumps ({'token':'\n'})
-        for title ,body_text in sections :
-            sec_header =json .dumps ({'token':title +'\n\n'})
-            yield f"data: {sec_header }\n\n"
-            time .sleep (0.04 )
-            for line in body_text .split ('\n'):
-                words =line .split (' ')
-                for i in range (0 ,len (words ),3 ):
-                    chunk =' '.join (words [i :i +3 ])+' '
-                    chunk_payload =json .dumps ({'token':chunk })
-                    yield f"data: {chunk_payload }\n\n"
-                    time .sleep (0.02 )
-                yield f"data: {nl_token }\n\n"
-            yield f"data: {nl_token }\n\n"
-            time .sleep (0.03 )
+        yield f"data: {json.dumps({'event':'start','model':'Avenqra Clinical Engine (Verified)','reset':True})}\n\n"
+        nl_token = json.dumps({'token': '\n'})
+        for title, body_text in sections:
+            sec_header = json.dumps({'token': title + '\n\n'})
+            yield f"data: {sec_header}\n\n"
+            time.sleep(0.04)
+            for line in body_text.split('\n'):
+                words = line.split(' ')
+                for i in range(0, len(words), 3):
+                    chunk = ' '.join(words[i:i + 3]) + ' '
+                    chunk_payload = json.dumps({'token': chunk})
+                    yield f"data: {chunk_payload}\n\n"
+                    time.sleep(0.02)
+                yield f"data: {nl_token}\n\n"
+            yield f"data: {nl_token}\n\n"
+            time.sleep(0.03)
 
-        yield f"data: {json .dumps ({'usage':{'total_tokens':420 ,'prompt_tokens':80 ,'completion_tokens':340 ,'completion_tokens_details':{'reasoning_tokens':48 }},'reasoning_tokens':48 ,'model':'Avenqra Clinical Engine (Offline Mode)'})}\n\n"
+        yield f"data: {json.dumps({'usage':{'total_tokens':420,'prompt_tokens':80,'completion_tokens':340,'completion_tokens_details':{'reasoning_tokens':48}},'reasoning_tokens':48,'model':'Avenqra Clinical Engine (Offline Mode)'})}\n\n"
         yield "data: [DONE]\n\n"
 
-    def event_stream ():
-        success =False 
-        last_err ="No response"
+    def event_stream():
+        success = False
+        last_err = "No response"
 
+        triage_level = compute_triage_level(body.symptoms, body.severity)
+        yield f"data: {json.dumps({'triage': triage_level})}\n\n"
 
-        triage_level =compute_triage_level (body .symptoms ,body .severity )
-        yield f"data: {json .dumps ({'triage':triage_level })}\n\n"
+        if not SYMPTOMS_API_KEY:
+            for fallback_chunk in generate_smart_heuristic_stream():
+                yield fallback_chunk
+            return
 
-        for cand_model in models_to_try :
-            payload ={
-            "model":cand_model ,
-            "messages":[
-            {"role":"system","content":system_msg },
-            {"role":"user","content":user_msg }
-            ],
-            "stream":True ,
-            "temperature":0.2 ,
-            "max_tokens":1800 
+        for cand_model in models_to_try:
+            payload = {
+                "model": cand_model,
+                "messages": [
+                    {"role": "system", "content": system_msg},
+                    {"role": "user", "content": user_msg}
+                ],
+                "stream": True,
+                "temperature": 0.2,
+                "max_tokens": 1800
             }
-            try :
-                with _requests .post (OR_URL ,headers =headers_or ,json =payload ,
-                stream =True ,timeout =(4.0 ,35.0 ))as r :
-                    if r .status_code !=200 :
-                        last_err =f"Model {cand_model } returned HTTP {r .status_code }"
-                        continue 
+            try:
+                with _requests.post(OR_URL, headers=headers_or, json=payload,
+                                    stream=True, timeout=(3.0, 10.0)) as r:
+                    if r.status_code != 200:
+                        last_err = f"Model {cand_model} returned HTTP {r.status_code}"
+                        continue
 
+                    cand_started = False
+                    cand_tokens = []
+                    reasoning_tokens_count = 0
 
-                    yield f"data: {json .dumps ({'event':'start','model':cand_model })}\n\n"
+                    for raw_line in r.iter_lines():
+                        if not raw_line:
+                            continue
+                        line = raw_line.decode("utf-8") if isinstance(raw_line, bytes) else raw_line
+                        if line.startswith("data: "):
+                            chunk_str = line[6:].strip()
+                            if chunk_str == "[DONE]":
+                                break
+                            try:
+                                chunk = json.loads(chunk_str)
+                                choices = chunk.get("choices", [])
 
-                    got_token =False 
-                    reasoning_tokens_count =0 
+                                if choices:
+                                    delta = choices[0].get("delta", {})
 
-                    for raw_line in r .iter_lines ():
-                        if not raw_line :
-                            continue 
-                        line =raw_line .decode ("utf-8")if isinstance (raw_line ,bytes )else raw_line 
-                        if line .startswith ("data: "):
-                            chunk_str =line [6 :].strip ()
-                            if chunk_str =="[DONE]":
-                                break 
-                            try :
-                                chunk =json .loads (chunk_str )
-                                choices =chunk .get ("choices",[])
+                                    reasoning_txt = delta.get("reasoning") or delta.get("reasoning_content") or ""
+                                    if reasoning_txt:
+                                        if not cand_started:
+                                            cand_started = True
+                                            yield f"data: {json.dumps({'event':'start','model':cand_model})}\n\n"
+                                        yield f"data: {json.dumps({'reasoning_chunk':reasoning_txt})}\n\n"
 
+                                    content = delta.get("content", "")
+                                    if content:
+                                        if not cand_started:
+                                            cand_started = True
+                                            yield f"data: {json.dumps({'event':'start','model':cand_model})}\n\n"
+                                        cand_tokens.append(content)
+                                        yield f"data: {json.dumps({'token':content})}\n\n"
 
-                                if choices :
-                                    delta =choices [0 ].get ("delta",{})
+                                usage = chunk.get("usage")
+                                if usage:
+                                    comp_details = usage.get("completion_tokens_details") or usage.get("completionTokensDetails") or {}
+                                    r_tokens = comp_details.get("reasoning_tokens") or comp_details.get("reasoningTokens") or 0
+                                    if r_tokens:
+                                        reasoning_tokens_count = r_tokens
+                                    yield f"data: {json.dumps({'usage':usage,'reasoning_tokens':reasoning_tokens_count,'model':cand_model})}\n\n"
 
+                            except Exception:
+                                continue
 
-                                    reasoning_txt =delta .get ("reasoning")or delta .get ("reasoning_content")or ""
-                                    if reasoning_txt :
-                                        yield f"data: {json .dumps ({'reasoning_chunk':reasoning_txt })}\n\n"
+                    total_len = sum(len(t) for t in cand_tokens)
+                    full_text = "".join(cand_tokens).strip()
 
-
-                                    content =delta .get ("content","")
-                                    if content :
-                                        got_token =True 
-                                        yield f"data: {json .dumps ({'token':content })}\n\n"
-
-
-                                usage =chunk .get ("usage")
-                                if usage :
-                                    comp_details =usage .get ("completion_tokens_details")or usage .get ("completionTokensDetails")or {}
-                                    r_tokens =comp_details .get ("reasoning_tokens")or comp_details .get ("reasoningTokens")or 0 
-                                    if r_tokens :
-                                        reasoning_tokens_count =r_tokens 
-                                    yield f"data: {json .dumps ({'usage':usage ,'reasoning_tokens':reasoning_tokens_count ,'model':cand_model })}\n\n"
-
-                            except Exception :
-                                continue 
-
-                    if got_token :
+                    # Confirm the stream generated substantive clinical guidance
+                    if total_len >= 100 and not (full_text.startswith("Here's a thinking") and total_len < 300):
                         yield "data: [DONE]\n\n"
-                        success =True 
-                        return 
-            except Exception as e :
-                last_err =str (e )
-                continue 
+                        success = True
+                        return
+                    else:
+                        continue
+            except Exception as e:
+                last_err = str(e)
+                continue
 
-
-        if not success :
-            for fallback_chunk in generate_smart_heuristic_stream ():
-                yield fallback_chunk 
+        if not success:
+            for fallback_chunk in generate_smart_heuristic_stream():
+                yield fallback_chunk
 
     return StreamingResponse (
     event_stream (),

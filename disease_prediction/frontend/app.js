@@ -4542,10 +4542,21 @@ async function streamSymptomSuggestions(e) {
                         if (parsed.model && modelBadge) {
                             modelBadge.textContent = `Model: ${parsed.model}`;
                         }
+                        if (parsed.reset) {
+                            rawSymptomMarkdown = "";
+                            rawReasoningText = "";
+                            if (reasoningContent) reasoningContent.textContent = "";
+                        }
                         if (parsed.reasoning_chunk) {
                             rawReasoningText += parsed.reasoning_chunk;
                             if (reasoningDrawer) reasoningDrawer.style.display = 'block';
                             if (reasoningContent) reasoningContent.textContent = rawReasoningText;
+                            if (contentEl && !rawSymptomMarkdown) {
+                                contentEl.innerHTML = `<div style="display:flex;align-items:center;gap:10px;color:#6d28d9;padding:12px 0;">
+                                    <span class="symp-mini-spinner" style="display:inline-block;width:18px;height:18px;border:2px solid #7c3aed;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></span>
+                                    <span>Synthesizing structured clinical guidance & precautions...</span>
+                                </div>`;
+                            }
                         }
                         if (parsed.reasoning_tokens && parsed.reasoning_tokens > 0) {
                             if (reasoningBadge) reasoningBadge.style.display = 'inline-flex';
@@ -4566,7 +4577,13 @@ async function streamSymptomSuggestions(e) {
 
         
         if (contentEl) {
-            contentEl.innerHTML = formatMarkdownAdvice(rawSymptomMarkdown);
+            if (rawSymptomMarkdown && rawSymptomMarkdown.trim().length > 30) {
+                contentEl.innerHTML = formatMarkdownAdvice(rawSymptomMarkdown);
+            } else {
+                contentEl.innerHTML = `<div style="padding:16px;color:#0284c7;background:rgba(2,132,199,0.08);border-radius:8px;border:1px solid rgba(2,132,199,0.2);">
+                    <strong>Avenqra Clinical Engine Ready.</strong> Click <em>Analyze Symptoms &amp; Stream AI Guidance</em> to view structured clinical recommendations.
+                </div>`;
+            }
         }
         if (statusEl) {
             statusEl.textContent = '✓ Guidance Ready';
