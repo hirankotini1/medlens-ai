@@ -1,9 +1,9 @@
 name: Render Keep-Alive Ping
 
 on:
-  # Automatic scheduled execution every 10 minutes to prevent Render free-tier spin-down
+  # Staggered 10-minute execution avoiding peak top-of-hour congestion (:00, :10, :20, etc.)
   schedule:
-    - cron: '*/10 * * * *'
+    - cron: '3,13,23,33,43,53 * * * *'
   # Manual execution trigger from GitHub Actions UI ("Run workflow")
   workflow_dispatch:
 
@@ -14,12 +14,13 @@ jobs:
     steps:
       - name: Send HTTP Ping to /health
         run: |
-          RESPONSE=$(curl -s -w "\n%{http_code}" https://medlens-ai-v3ru.onrender.com/health)
+          RESPONSE=$(curl -sSL --max-time 30 -w "\n%{http_code}" https://medlens-ai-v3ru.onrender.com/health)
           HTTP_BODY=$(echo "$RESPONSE" | head -n 1)
           HTTP_STATUS=$(echo "$RESPONSE" | tail -n 1)
           echo "Endpoint response: $HTTP_BODY (HTTP $HTTP_STATUS)"
           if [ "$HTTP_STATUS" -eq 200 ]; then
             echo "Success: Avenqra AI service is warm and operational."
           else
-            echo "Ping delivered with status $HTTP_STATUS."
+            echo "Error: Keep-alive ping failed with HTTP status $HTTP_STATUS"
+            exit 1
           fi
