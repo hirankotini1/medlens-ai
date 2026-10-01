@@ -2079,5 +2079,10 @@ async def whatsapp_webhook (request :Request ):
 
 
 if os .path .exists (FRONTEND_DIR ):
+    @app.get("/product", include_in_schema=False)
+    def serve_product_page():
+        from fastapi.responses import FileResponse
+        return FileResponse(os.path.join(FRONTEND_DIR, "product.html"))
+
     app .mount ("/",StaticFiles (directory =FRONTEND_DIR ,html =True ),name ="frontend")
 

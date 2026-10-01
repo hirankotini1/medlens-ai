@@ -1,4 +1,21 @@
 User-agent: *
 Allow: /
+Allow: /index.html
+Allow: /product.html
+Allow: /favicon.svg
+Allow: /og-image.png
+Allow: /style.css
+Allow: /app.js
+
+# Disallow private areas, authentication endpoints, and sensitive data
+Disallow: /api/
+Disallow: /auth/
+Disallow: /uploads/
+Disallow: /reports/
+Disallow: /admin/
+Disallow: /patient/
+Disallow: /staff/
+Disallow: /operations/
+Disallow: /download/
 
 Sitemap: https://medlens-ai-v3ru.onrender.com/sitemap.xml

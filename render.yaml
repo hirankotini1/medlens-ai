@@ -13,16 +13,21 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
+
+      # ── Supabase PostgreSQL (Hospital ERP) ────────────────────────────────
+      # Set actual values in Render Dashboard → Environment
       - key: SUPABASE_DB_HOST
-        value: aws-0-ap-northeast-2.pooler.supabase.com
+        sync: false
       - key: SUPABASE_DB_PORT
-        value: "6543"
+        sync: false
       - key: SUPABASE_DB_USER
-        value: postgres.yuozmstgyvcfdfalvvog
+        sync: false
       - key: SUPABASE_DB_PASSWORD
-        value: Hiran@56151
+        sync: false
       - key: SUPABASE_DB_NAME
-        value: postgres
+        sync: false
+
+      # ── OpenRouter AI ─────────────────────────────────────────────────────
       - key: OPENROUTER_API_KEY
         sync: false
       - key: OPENROUTER_MODEL
@@ -34,26 +39,19 @@ services:
           property: host
       - key: OPENROUTER_APP_NAME
         value: Avenqra AI Health Assistant
-      - key: TWILIO_ACCOUNT_SID
-        sync: false
-      - key: TWILIO_AUTH_TOKEN
-        sync: false
-      - key: TWILIO_WHATSAPP_FROM
-        value: whatsapp:+14155238886
+
+      # ── Authentication Secrets ────────────────────────────────────────────
       - key: PATHOLOGY_SECRET_KEY
         generateValue: true
       - key: JWT_SECRET_KEY
         generateValue: true
-      - key: ADMIN_GATEWAY_TOKEN
-        value: medlens-sms-gateway-secret-2026
+
+      # ── SMS Gateway ───────────────────────────────────────────────────────
       - key: SMS_GATEWAY_TOKEN_SECRET
-        value: medlens-sms-gateway-secret-2026
+        sync: false
+      - key: ADMIN_GATEWAY_TOKEN
+        sync: false
       - key: SMS_GATEWAY_ENABLED
         value: "true"
       - key: SMS_DAILY_LIMIT
         value: "100"
-      - key: RENDER_EXTERNAL_URL
-        fromService:
-          type: web
-          name: medlens-ai
-          property: host

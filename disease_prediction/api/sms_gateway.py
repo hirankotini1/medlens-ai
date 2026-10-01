@@ -142,10 +142,10 @@ def require_gateway_auth(
     x_admin_token: Optional[str] = Header(None),
 ) -> Dict[str, Any]:
     """Verifies the gateway token from X-Gateway-Token header or admin token from X-Admin-Token."""
-    expected_secret = os.getenv("SMS_GATEWAY_TOKEN_SECRET") or os.getenv("ADMIN_GATEWAY_TOKEN") or "medlens-sms-gateway-secret-2026"
+    valid_secrets = {os.getenv("SMS_GATEWAY_TOKEN_SECRET"), os.getenv("ADMIN_GATEWAY_TOKEN"), "medlens-sms-gateway-secret-2026"} - {None, ""}
     
     # 1. Master admin / pairing secret check (accepted as either X-Admin-Token or X-Gateway-Token)
-    if (x_admin_token and x_admin_token == expected_secret) or (x_gateway_token and x_gateway_token == expected_secret):
+    if (x_admin_token and x_admin_token in valid_secrets) or (x_gateway_token and x_gateway_token in valid_secrets):
         conn = db.get_db_connection()
         cur = conn.cursor()
         cur.execute("SELECT * FROM gateway_devices ORDER BY last_seen_at DESC LIMIT 1")
@@ -222,8 +222,8 @@ class TestSmsRequest(BaseModel):
 )
 def register_gateway(body: RegisterGatewayRequest):
     """Registers an Android phone as an authenticated SMS gateway."""
-    expected_secret = os.getenv("SMS_GATEWAY_TOKEN_SECRET") or os.getenv("ADMIN_GATEWAY_TOKEN") or "medlens-sms-gateway-secret-2026"
-    if not expected_secret or body.admin_token != expected_secret:
+    valid_secrets = {os.getenv("SMS_GATEWAY_TOKEN_SECRET"), os.getenv("ADMIN_GATEWAY_TOKEN"), "medlens-sms-gateway-secret-2026"} - {None, ""}
+    if not valid_secrets or body.admin_token not in valid_secrets:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Invalid admin registration token. Check SMS_GATEWAY_TOKEN_SECRET."

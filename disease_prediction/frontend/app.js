@@ -624,20 +624,36 @@ function switchView(viewName) {
         sessionStorage.setItem('nexus_active_view', viewName);
     } catch (e) {}
 
-    // Update browser title dynamically based on active clinical portal / view
+    // Update browser title and meta description dynamically based on active clinical portal / view
     const viewTitles = {
         'home': 'Avenqra AI | Adaptive Intelligence for Healthcare',
+        'about': 'About Avenqra AI | AI-Assisted Healthcare Platform',
         'patient': 'Avenqra AI | Patient Portal',
-        'admin': 'Avenqra AI | Doctor Console',
-        'operations': 'Avenqra AI | Healthcare Staff',
-        'voice-case-taking': 'Avenqra AI | Adaptive Case Taking',
-        'case-taking': 'Avenqra AI | Adaptive Case Taking',
-        'analyzer': 'Avenqra AI | Medical Document Analysis',
-        'symptoms': 'Avenqra AI | Symptom Intelligence',
-        'sandbox': 'Avenqra AI | ML Clinical Sandbox',
-        'about': 'Avenqra AI | Clinical Architecture'
+        'admin': 'Avenqra AI | Doctor Portal',
+        'operations': 'Avenqra AI | Healthcare Staff Portal',
+        'voice-case-taking': 'Avenqra AI | Adaptive Clinical Case Taking',
+        'case-taking': 'Avenqra AI | Adaptive Clinical Case Taking',
+        'analyzer': 'Avenqra AI | Medical Document Intelligence',
+        'symptoms': 'Avenqra AI | AI-Assisted Clinical Summary',
+        'sandbox': 'Avenqra AI | ML Clinical Sandbox'
+    };
+    const viewDescriptions = {
+        'home': 'Avenqra AI is an AI-assisted healthcare platform for adaptive clinical case taking, medical document intelligence, and structured clinical workflows supporting physician-reviewed decision-support across patients, doctors, and healthcare staff.',
+        'about': 'About Avenqra AI: AI-assisted healthcare platform connecting patients, doctors, and healthcare staff through adaptive clinical intelligence.',
+        'patient': 'Avenqra AI Patient Portal: Access verified laboratory reports, health summaries, and clinical timelines under physician supervision.',
+        'admin': 'Avenqra AI Doctor Portal: Physician-reviewed clinical decision-support, adaptive intake review, and structured diagnostic workflows.',
+        'operations': 'Avenqra AI Healthcare Staff Portal: Real-time hospital bed inventory, lab test order tracking, and inpatient management.',
+        'voice-case-taking': 'Avenqra AI Adaptive Clinical Case Taking: Multilingual patient symptom intake with dynamic clinical probing.',
+        'case-taking': 'Avenqra AI Adaptive Clinical Case Taking: Structured pre-consultation patient intake with red-flag detection.',
+        'analyzer': 'Avenqra AI Medical Document Intelligence: OCR parameter extraction from doctor prescriptions and laboratory reports.',
+        'symptoms': 'Avenqra AI AI-Assisted Clinical Summary: Physician-grade clinical summary generation from multi-source symptom narratives.',
+        'sandbox': 'Avenqra AI ML Clinical Sandbox: Multi-pipeline diagnostic machine learning research models.'
     };
     document.title = viewTitles[viewName] || 'Avenqra AI | Adaptive Intelligence for Healthcare';
+    const metaDescEl = document.querySelector('meta[name="description"]');
+    if (metaDescEl && viewDescriptions[viewName]) {
+        metaDescEl.setAttribute('content', viewDescriptions[viewName]);
+    }
 
     document.querySelectorAll('.section-view').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
@@ -9091,3 +9107,16 @@ function renderPatientFlowCard(d) {
         ${locationHtml}
     </div>`;
 }
+
+// URL Query Parameter handling for direct public view links (SEO & deep-linking)
+(function initAvenqraRoute() {
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetView = urlParams.get('view');
+        if (targetView && typeof switchView === 'function') {
+            window.addEventListener('DOMContentLoaded', () => {
+                setTimeout(() => switchView(targetView), 150);
+            });
+        }
+    } catch (e) {}
+})();
