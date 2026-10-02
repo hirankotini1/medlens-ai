@@ -173,12 +173,45 @@ async def get_google_verification():
         return FileResponse(verify_path, media_type="text/html; charset=utf-8")
     return Response(content="google-site-verification: google73d6ccb7c4ba0db2.html", media_type="text/html; charset=utf-8")
 
-@app.get("/favicon.svg", include_in_schema=False)
-@app.get("/favicon.ico", include_in_schema=False)
-async def get_favicon():
+@app.api_route("/favicon.ico", methods=["GET", "HEAD"], include_in_schema=False)
+async def get_favicon_ico():
+    ico_path = os.path.join(FRONTEND_DIR, "favicon.ico")
+    if os.path.exists(ico_path):
+        return FileResponse(ico_path, media_type="image/x-icon")
+    svg_path = os.path.join(FRONTEND_DIR, "favicon.svg")
+    if os.path.exists(svg_path):
+        return FileResponse(svg_path, media_type="image/svg+xml")
+    return Response(status_code=404)
+
+@app.api_route("/favicon.svg", methods=["GET", "HEAD"], include_in_schema=False)
+async def get_favicon_svg():
     fav_path = os.path.join(FRONTEND_DIR, "favicon.svg")
     if os.path.exists(fav_path):
         return FileResponse(fav_path, media_type="image/svg+xml")
+    return Response(status_code=404)
+
+@app.api_route("/favicon.png", methods=["GET", "HEAD"], include_in_schema=False)
+@app.api_route("/favicon-48x48.png", methods=["GET", "HEAD"], include_in_schema=False)
+@app.api_route("/favicon-96x96.png", methods=["GET", "HEAD"], include_in_schema=False)
+@app.api_route("/favicon-192x192.png", methods=["GET", "HEAD"], include_in_schema=False)
+@app.api_route("/favicon-512x512.png", methods=["GET", "HEAD"], include_in_schema=False)
+@app.api_route("/apple-touch-icon.png", methods=["GET", "HEAD"], include_in_schema=False)
+@app.api_route("/apple-touch-icon-precomposed.png", methods=["GET", "HEAD"], include_in_schema=False)
+async def get_favicon_raster(request: Request):
+    filename = request.url.path.lstrip("/")
+    if filename == "apple-touch-icon-precomposed.png":
+        filename = "apple-touch-icon.png"
+    target_path = os.path.join(FRONTEND_DIR, filename)
+    if os.path.exists(target_path):
+        return FileResponse(target_path, media_type="image/png")
+    return Response(status_code=404)
+
+@app.api_route("/site.webmanifest", methods=["GET", "HEAD"], include_in_schema=False)
+@app.api_route("/manifest.json", methods=["GET", "HEAD"], include_in_schema=False)
+async def get_webmanifest():
+    manifest_path = os.path.join(FRONTEND_DIR, "site.webmanifest")
+    if os.path.exists(manifest_path):
+        return FileResponse(manifest_path, media_type="application/manifest+json")
     return Response(status_code=404)
 
 app .add_middleware (
