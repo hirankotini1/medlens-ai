@@ -3,9 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
-    <meta name="theme-color" content="#00397e">
+    <meta name="theme-color" content="#00397e" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0b1c30" media="(prefers-color-scheme: dark)">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Avenqra AI">
+    <meta name="format-detection" content="telephone=no">
     <title>Avenqra AI | Adaptive Intelligence for Healthcare</title>
     <meta name="description" content="Avenqra AI is an AI-assisted healthcare platform for adaptive clinical case taking, medical document intelligence, and structured clinical workflows supporting physician-reviewed decision-support across patients, doctors, and healthcare staff.">
     <meta name="keywords" content="Avenqra AI, Avenqra AI Healthcare, Avenqra Healthcare AI, Avenqra clinical AI, Avenqra medical AI, Avenqra adaptive intelligence, adaptive case taking, medical document intelligence, clinical decision support">
@@ -4983,8 +4987,33 @@
         <div style="max-width: 1200px; margin: 0 auto; padding-top: 14px; border-top: 1px solid #1e293b; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; font-size: 0.78rem; color: #64748b;">
             <div>&copy; 2026 Avenqra AI. All rights reserved. Adaptive Intelligence for Healthcare.</div>
             <div>Physician-Reviewed Decision Support &bull; 256-Bit Cryptographic Security</div>
-        </div>
     </footer>
+
+    <!-- NATIVE CLINICAL MOBILE BOTTOM NAVIGATION BAR -->
+    <nav class="mobile-bottom-nav" id="mobile-bottom-nav" aria-label="Mobile Clinical Navigation">
+        <button type="button" class="mob-nav-btn active" id="mob-tab-home" onclick="switchView('home')" aria-label="Home Dashboard">
+            <span class="material-symbols-outlined">dashboard</span>
+            <span class="mob-nav-label">Home</span>
+        </button>
+        <button type="button" class="mob-nav-btn" id="mob-tab-admin" onclick="switchView('admin')" aria-label="Doctor Console">
+            <span class="material-symbols-outlined">stethoscope</span>
+            <span class="mob-nav-label">Doctor</span>
+        </button>
+        <button type="button" class="mob-nav-btn mob-nav-hero" id="mob-tab-voice-case-taking" onclick="switchView('voice-case-taking')" aria-label="AI Case Taking">
+            <div class="mob-hero-circle">
+                <span class="material-symbols-outlined">mic</span>
+            </div>
+            <span class="mob-nav-label">AI Case</span>
+        </button>
+        <button type="button" class="mob-nav-btn" id="mob-tab-analyzer" onclick="switchView('analyzer')" aria-label="AI Lab Analyzer">
+            <span class="material-symbols-outlined">analytics</span>
+            <span class="mob-nav-label">Analyzer</span>
+        </button>
+        <button type="button" class="mob-nav-btn" id="mob-tab-more" onclick="toggleMobileNavDrawer()" aria-label="More Features">
+            <span class="material-symbols-outlined">menu</span>
+            <span class="mob-nav-label">Menu</span>
+        </button>
+    </nav>
 
     <script src="app.js?v=20260920_v2"></script>
     <script src="voice_service.js?v=20260920_v1"></script>
