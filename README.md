@@ -422,6 +422,20 @@ For hackathon judges, academic mentors, and clinical researchers, full deep-dive
 
 ---
 
+## 👥 Engineering Leadership & Core Team
+
+<div align="center">
+
+| Role | Member | Focus & Contributions |
+|:---:|:---|:---|
+| 👑 **Project Lead & Chief Architect** | **KOTNI HIRAN** | **Overall Project Lead, Chief AI Architect & System Director.** Spearheaded the 5-panel ML diagnostic architecture, 72KB clinical decision ontology, system security, and omnichannel platform vision. |
+| 🛠️ **Core Systems Engineer** | **GUDLA UDAY BHASKAR** | **Core Systems & AI Integration.** Backend clinical services, decoupled report architecture, and robust pipeline engineering. |
+| 🎨 **Full-Stack Engineer** | **A PRANEY** | **Full-Stack & Clinical UI/UX.** Interactive glassmorphic clinical workstation, patient portals, and modern responsive ergonomics. |
+
+</div>
+
+---
+
 ## 📜 License
 
 This project is licensed under the **MIT Academic License** — see the [LICENSE](LICENSE) file for terms.
