@@ -20,7 +20,7 @@ def test_health ():
     response =client .get ("/health")
     assert response .status_code ==200 ,f"Failed: {response .text }"
     data =response .json ()
-    assert data ["status"]=="ok"
+    assert data["status"] in ["ok", "healthy"]
     print ("  [PASSED] GET /health (Lightweight keep-alive verified HTTP 200 OK)")
 
 def test_predict_anemia_positive ():

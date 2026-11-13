@@ -367,9 +367,20 @@ Generate a structured clinical decision-support analysis adhering strictly to th
     if str (lang ).lower ()!="english":
         system_prompt +=f"\n\nLANGUAGE INSTRUCTION: Provide all explanatory values, summaries, pathophysiological notes, and recommendations strictly in {lang }. Keep parameter names in standard clinical format."
 
+    if image_b64 and str (image_b64 ).startswith ("data:image"):
+        user_msg ={
+            "role":"user",
+            "content":[
+                {"type":"text","text":user_content },
+                {"type":"image_url","image_url":{"url":image_b64 }}
+            ]
+        }
+    else :
+        user_msg ={"role":"user","content":user_content }
+
     messages =[
     {"role":"system","content":system_prompt },
-    {"role":"user","content":user_content }
+    user_msg 
     ]
 
     headers ={
@@ -385,6 +396,8 @@ Generate a structured clinical decision-support analysis adhering strictly to th
         preferred_model,
         "nex-agi/nex-n2.5-mini:free"
     ]
+    if image_b64:
+        candidate_models.insert(0, "google/gemini-2.0-flash-001")
 
     seen = set()
     candidate_models = [m for m in candidate_models if m and not (m in seen or seen.add(m))]

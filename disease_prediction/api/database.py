@@ -50,8 +50,10 @@ def get_db_connection():
     conn = sqlite3.connect(DB_PATH, timeout=30.0)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
+    conn.execute("PRAGMA busy_timeout = 5000")
     try:
         conn.execute("PRAGMA journal_mode = WAL")
+        conn.execute("PRAGMA synchronous = NORMAL")
     except Exception:
         pass
     return conn 
@@ -420,6 +422,32 @@ def init_db ():
         pass 
     else :
         cursor .execute ("UPDATE users SET password_hash = ? WHERE username = 'admin'",(hash_secret ("admin123"),))
+
+    # ── Database Performance & Query Optimization Indexes ──────────────────────
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_patients_name ON patients(name);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_lab_reports_patient ON lab_reports(patient_id);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_lab_reports_created ON lab_reports(created_at);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_lab_reports_status ON lab_reports(status);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_ml_predictions_patient ON ml_predictions(patient_id);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_ml_predictions_report ON ml_predictions(report_id);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_report_analyses_patient ON report_analyses(patient_id);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_shared_sessions_pin ON shared_sessions(access_pin);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_shared_sessions_patient ON shared_sessions(patient_id);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_patient_issues_patient ON patient_reported_issues(patient_id);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_patient_reminders_patient ON patient_care_reminders(patient_id);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_patient_reminders_status ON patient_care_reminders(status);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_appointments_patient ON patient_appointments(patient_id);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_appointments_date ON patient_appointments(appointment_date);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_hospital_beds_ward ON hospital_beds(ward_name);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_hospital_beds_status ON hospital_beds(status);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_clinical_cases_patient ON clinical_cases(patient_id);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_clinical_cases_status ON clinical_cases(status);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_case_history_case ON case_history_records(case_id);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_case_docs_case ON case_documents(case_id);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_sms_outbox_status_prio ON sms_outbox(status, priority);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_sms_outbox_patient ON sms_outbox(patient_id);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_voice_transcripts_case ON voice_transcripts(case_id);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_voice_transcripts_session ON voice_transcripts(session_id);")
 
     conn .commit ()
     seed_demo_data (conn )

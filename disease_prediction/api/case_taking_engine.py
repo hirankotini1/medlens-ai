@@ -275,19 +275,24 @@ def get_deterministic_adaptive_questions(chief_complaint: str, answers: Dict[str
     """
     User's built-in deterministic clinical rule engine:
     Evaluates chief complaint and current section answers using predefined clinical rules.
+    Prevents repetitive or duplicate questions.
     """
     combined = f"{chief_complaint} " + " ".join([str(v) for v in answers.values()])
     suggested = []
+    seen_ids = set()
+    answered_keys = {str(k).lower().strip() for k in answers.keys()}
     
     for rule in ADAPTIVE_RULES:
         if re.search(rule["trigger"], combined, re.IGNORECASE):
             for q in rule["questions"]:
-                if q["id"] not in answers:
+                qid = q["id"]
+                if qid.lower() not in answered_keys and qid not in seen_ids:
+                    seen_ids.add(qid)
                     suggested.append(q)
     
     # Fallback questions if no specialized match
     if not suggested:
-        suggested = [
+        fallbacks = [
             {
                 "id": "gen_onset",
                 "question": "When did these symptoms first begin, and have they changed over time?",
@@ -299,6 +304,10 @@ def get_deterministic_adaptive_questions(chief_complaint: str, answers: Dict[str
                 "options": ["Mild (1 - 3)", "Moderate (4 - 6)", "Severe (7 - 8)", "Very Severe (9 - 10)"]
             }
         ]
+        for fb in fallbacks:
+            if fb["id"].lower() not in answered_keys and fb["id"] not in seen_ids:
+                seen_ids.add(fb["id"])
+                suggested.append(fb)
     
     return suggested[:3]
 
@@ -388,14 +397,19 @@ def get_ai_adaptive_questions(chief_complaint: str, answers: Dict[str, Any], tim
                     q_list = parsed.get("questions") if isinstance(parsed, dict) else (parsed if isinstance(parsed, list) else None)
                     if isinstance(q_list, list) and len(q_list) > 0:
                         valid_qs = []
+                        seen_ai_ids = set()
+                        answered_keys = {str(k).lower().strip() for k in answers.keys()}
                         for i, q in enumerate(q_list[:3]):
                             if isinstance(q, dict) and q.get("question"):
-                                valid_qs.append({
-                                    "id": str(q.get("id") or f"ai_q_{i+1}"),
-                                    "question": str(q["question"]).strip(),
-                                    "options": [str(opt).replace("\ufffd", "-").strip() for opt in q.get("options", []) if str(opt).strip()][:4],
-                                    "source": "ai_generated"
-                                })
+                                qid = str(q.get("id") or f"ai_q_{i+1}")
+                                if qid.lower() not in answered_keys and qid not in seen_ai_ids:
+                                    seen_ai_ids.add(qid)
+                                    valid_qs.append({
+                                        "id": qid,
+                                        "question": str(q["question"]).strip(),
+                                        "options": [str(opt).replace("\ufffd", "-").strip() for opt in q.get("options", []) if str(opt).strip()][:4],
+                                        "source": "ai_generated"
+                                    })
                         if valid_qs:
                             return valid_qs
             elif resp.status_code == 429:

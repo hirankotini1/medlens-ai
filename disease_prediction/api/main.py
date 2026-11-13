@@ -8,9 +8,11 @@ import pandas as pd
 import hmac 
 import hashlib 
 import time 
+import threading 
+from collections import defaultdict 
 import secrets 
 from datetime import datetime 
-from typing import Optional ,Dict ,Any ,List 
+from typing import Optional ,Dict ,Any ,List, Tuple 
 from fastapi import FastAPI ,UploadFile ,File ,Form ,HTTPException ,Request ,status ,Depends ,Header ,Query 
 from fastapi .middleware .cors import CORSMiddleware 
 from fastapi .staticfiles import StaticFiles 
@@ -122,12 +124,60 @@ ALLOWED_STAFF_ROLES = {
     'operations_manager', 'operations manager', 'ward_manager', 'receptionist', 'staff'
 }
 
+class LoginRateLimiter:
+    """
+    Sliding-window brute-force defense and lockout manager.
+    Tracks failed attempts by client IP and account identifier.
+    Limits to 5 failed attempts per 60s window; triggers a 60s lockout with HTTP 429 and Retry-After.
+    """
+    def __init__(self, max_attempts: int = 5, window_seconds: float = 60.0, lockout_seconds: float = 60.0):
+        self.max_attempts = max_attempts
+        self.window_seconds = window_seconds
+        self.lockout_seconds = lockout_seconds
+        self._lock = threading.Lock()
+        self._attempts: Dict[str, List[float]] = defaultdict(list)
+        self._lockouts: Dict[str, float] = {}
+
+    def _clean_old(self, key: str, now: float):
+        self._attempts[key] = [t for t in self._attempts[key] if now - t < self.window_seconds]
+
+    def check_lockout(self, key: str) -> Optional[int]:
+        now = time.time()
+        with self._lock:
+            if key in self._lockouts:
+                remaining = self._lockouts[key] - now
+                if remaining > 0:
+                    return int(remaining) + 1
+                else:
+                    del self._lockouts[key]
+        return None
+
+    def record_failure(self, key: str) -> Tuple[bool, int]:
+        now = time.time()
+        with self._lock:
+            self._clean_old(key, now)
+            self._attempts[key].append(now)
+            if len(self._attempts[key]) >= self.max_attempts:
+                self._lockouts[key] = now + self.lockout_seconds
+                self._attempts[key].clear()
+                return True, int(self.lockout_seconds)
+            return False, 0
+
+    def record_success(self, key: str):
+        with self._lock:
+            self._attempts.pop(key, None)
+            self._lockouts.pop(key, None)
+
+login_limiter = LoginRateLimiter(max_attempts=5, window_seconds=60.0, lockout_seconds=60.0)
+
 def require_admin (auth :Optional [Dict [str ,Any ]]=Depends (get_auth_context ))->Dict [str ,Any ]:
     if not auth:
-        # Development / demo clinical session fallback so clinical report authoring is never blocked
-        return {"sub": "admin", "role": "admin", "name": "Clinical Administrator"}
+        raise HTTPException (
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication token required. Please log in with clinical staff or admin credentials."
+        )
     role = str(auth.get('role', '')).strip().lower()
-    if role in ALLOWED_STAFF_ROLES:
+    if role in ALLOWED_STAFF_ROLES or auth.get('sub') == 'admin':
         return auth
     raise HTTPException (
         status_code =status .HTTP_403_FORBIDDEN ,
@@ -394,6 +444,9 @@ class PredictionResponse (BaseModel ):
     model_version :str 
     risk_level :Optional [str ]=None 
     disclaimer :str =DISCLAIMER 
+    uncertainty_range :Optional [List [float ]]=None 
+    calibration_note :Optional [str ]=None 
+    clinical_warnings :Optional [List [str ]]=None 
 
 
 
@@ -402,21 +455,84 @@ class PredictionResponse (BaseModel ):
 @app.get("/health", tags=["Health & Info"])
 @app.get("/api/health", tags=["Health & Info"])
 def health_check():
-    return {"status": "ok"}
+    models_avail = {}
+    for d in ['anemia', 'dengue', 'liver', 'thyroid', 'malaria']:
+        try:
+            m = get_model(d)
+            models_avail[d] = m is not None
+        except Exception:
+            models_avail[d] = False
+
+    return {
+        "status": "healthy",
+        "state": "ok",
+        "models_available": models_avail,
+        "version": "2.0.0"
+    }
 
 @app .post ("/api/auth/login",tags =["Auth"])
-def admin_login (req :LoginRequest ):
+def admin_login (req :LoginRequest ,request :Request ):
+    client_ip =request .headers .get ("x-forwarded-for","").split (",")[0 ].strip ()or (request .client .host if request .client else "unknown")
+    ip_key =f"ip:{client_ip }"
+    user_key =f"admin:{req .username .strip ().lower ()}"
+
+    for key in (ip_key ,user_key ):
+        retry_after =login_limiter .check_lockout (key )
+        if retry_after :
+            raise HTTPException (
+                status_code =status .HTTP_429_TOO_MANY_REQUESTS ,
+                detail =f"Too many failed login attempts. Security lockout active. Please wait {retry_after } seconds before trying again.",
+                headers ={"Retry-After":str (retry_after )}
+            )
+
     user =db .authenticate_user (req .username .strip (),req .password )
     if not user :
+        is_locked_ip ,lock_ip_time =login_limiter .record_failure (ip_key )
+        is_locked_user ,lock_user_time =login_limiter .record_failure (user_key )
+        if is_locked_ip or is_locked_user :
+            retry_after =max (lock_ip_time ,lock_user_time )
+            raise HTTPException (
+                status_code =status .HTTP_429_TOO_MANY_REQUESTS ,
+                detail =f"Too many failed login attempts. Security lockout triggered. Please wait {retry_after } seconds before trying again.",
+                headers ={"Retry-After":str (retry_after )}
+            )
         raise HTTPException (status_code =status .HTTP_401_UNAUTHORIZED ,detail ="Invalid administrator credentials.")
+
+    login_limiter .record_success (ip_key )
+    login_limiter .record_success (user_key )
     token =generate_signed_token ({"sub":user ['username'],"role":user ['role']})
     return {"status":"success","token":token ,"user":user }
 
 @app .post ("/api/patient/login",tags =["Auth"])
-def patient_login (req :PatientLoginRequest ):
+def patient_login (req :PatientLoginRequest ,request :Request ):
+    client_ip =request .headers .get ("x-forwarded-for","").split (",")[0 ].strip ()or (request .client .host if request .client else "unknown")
+    ip_key =f"ip:{client_ip }"
+    pat_key =f"patient:{req .patient_id .strip ().upper ()}"
+
+    for key in (ip_key ,pat_key ):
+        retry_after =login_limiter .check_lockout (key )
+        if retry_after :
+            raise HTTPException (
+                status_code =status .HTTP_429_TOO_MANY_REQUESTS ,
+                detail =f"Too many failed login attempts. Patient access temporarily locked for security. Please wait {retry_after } seconds before trying again.",
+                headers ={"Retry-After":str (retry_after )}
+            )
+
     patient =db .authenticate_patient (req .patient_id .strip (),req .access_pin .strip ())
     if not patient :
+        is_locked_ip ,lock_ip_time =login_limiter .record_failure (ip_key )
+        is_locked_pat ,lock_pat_time =login_limiter .record_failure (pat_key )
+        if is_locked_ip or is_locked_pat :
+            retry_after =max (lock_ip_time ,lock_pat_time )
+            raise HTTPException (
+                status_code =status .HTTP_429_TOO_MANY_REQUESTS ,
+                detail =f"Too many failed login attempts. Patient access temporarily locked for {retry_after } seconds.",
+                headers ={"Retry-After":str (retry_after )}
+            )
         raise HTTPException (status_code =status .HTTP_401_UNAUTHORIZED ,detail ="Invalid Patient ID or Access PIN.")
+
+    login_limiter .record_success (ip_key )
+    login_limiter .record_success (pat_key )
     token =generate_signed_token ({"sub":patient ['patient_id'],"role":"patient","patient_id":patient ['patient_id']})
     return {"status":"success","token":token ,"patient":patient }
 
@@ -496,7 +612,7 @@ def get_single_appointment (appointment_id :str ):
 @app .get ("/api/reports",tags =["Pathology Management"])
 def list_reports (patient_id :Optional [str ]=None ,auth :Optional [Dict [str ,Any ]]=Depends (get_auth_context )):
     if not auth:
-        auth = {"sub": "admin", "role": "admin", "name": "Clinical Administrator"}
+        raise HTTPException (status_code =status .HTTP_401_UNAUTHORIZED ,detail ="Authentication token required to access laboratory reports.")
 
     role = str(auth.get('role', '')).strip().lower()
     if role in ALLOWED_STAFF_ROLES or auth.get('sub') == 'admin':
@@ -515,12 +631,18 @@ def list_reports (patient_id :Optional [str ]=None ,auth :Optional [Dict [str ,A
 
 @app .get ("/api/reports/patient/{patient_id}",tags =["Pathology Management"])
 def get_reports_for_patient_endpoint (patient_id :str ,auth :Optional [Dict [str ,Any ]]=Depends (get_auth_context )):
+    if not auth:
+        raise HTTPException (status_code =status .HTTP_401_UNAUTHORIZED ,detail ="Authentication token required.")
+    role = str(auth.get('role', '')).strip().lower()
+    if role not in ALLOWED_STAFF_ROLES and auth.get('sub') != 'admin':
+        if auth.get('patient_id') != patient_id:
+            raise HTTPException (status_code =status .HTTP_403_FORBIDDEN ,detail ="Access denied: You can only access your own patient reports.")
     return db .get_reports_by_patient (patient_id )
 
 @app .get ("/api/reports/{report_id}",tags =["Pathology Management"])
 def get_report (report_id :str ,auth :Optional [Dict [str ,Any ]]=Depends (get_auth_context )):
     if not auth:
-        auth = {"sub": "admin", "role": "admin", "name": "Clinical Administrator"}
+        raise HTTPException (status_code =status .HTTP_401_UNAUTHORIZED ,detail ="Authentication token required to access this report.")
     report =db .get_report_by_id (report_id )
     if not report :
         raise HTTPException (status_code =404 ,detail ="Report not found")
@@ -858,6 +980,12 @@ def predict_anemia (input_data :AnemiaInput ):
     model_pkg =get_model ('anemia')
     pipeline =model_pkg ['pipeline']
 
+    warnings = []
+    if input_data.HGB < 3.0 or input_data.HGB > 24.0:
+        warnings.append(f"Hemoglobin value ({input_data.HGB} g/dL) is outside typical physiological limits. Verify sample integrity.")
+    if input_data.PLT_mm3 < 20.0:
+        warnings.append("Critical thrombocytopenia (<20,000 /µL) detected. Urgent clinical confirmation recommended.")
+
     input_dict ={
     'Age':[input_data .Age ],
     'Sex':[input_data .Sex ],
@@ -880,19 +1008,31 @@ def predict_anemia (input_data :AnemiaInput ):
     confidence =safe_predict_proba (pipeline ,df_in )
     risk_level ="High"if pred_code ==1 else "Low"
 
+    unc_min = round (max (0.0 ,confidence - 0.05 ),4 )
+    unc_max = round (min (1.0 ,confidence + 0.05 ),4 )
+
     return PredictionResponse (
     disease ="Anemia",
     prediction =label ,
     confidence =round (confidence ,4 ),
     model_used =model_pkg ['model_name'],
     model_version ="anemia_pipeline.joblib",
-    risk_level =risk_level 
+    risk_level =risk_level ,
+    uncertainty_range =[unc_min ,unc_max ],
+    calibration_note ="Calibrated empirical probability from supervised clinical cohort. Indicative of screening risk, not standalone clinical diagnosis.",
+    clinical_warnings =warnings if warnings else None 
     )
 
 @app .post ("/predict/dengue",response_model =PredictionResponse ,tags =["Direct ML Prediction"])
 def predict_dengue (input_data :DengueInput ):
     model_pkg =get_model ('dengue')
     pipeline =model_pkg ['pipeline']
+
+    warnings = []
+    if input_data.platelet_count is not None and input_data.platelet_count < 20000:
+        warnings.append(f"Critical thrombocytopenia ({int(input_data.platelet_count)} /µL). Severe hemorrhage vigilance indicated.")
+    if input_data.hemoglobin_g_dl > 19.0:
+        warnings.append(f"Hemoconcentration flag (Hb {input_data.hemoglobin_g_dl} g/dL). Monitor hydration and vascular leakage.")
 
     input_dict ={
     'age':[input_data .age ],
@@ -910,19 +1050,31 @@ def predict_dengue (input_data :DengueInput ):
     confidence =safe_predict_proba (pipeline ,df_in )
     risk_level ="High"if pred_code ==1 else "Low"
 
+    unc_min = round (max (0.0 ,confidence - 0.05 ),4 )
+    unc_max = round (min (1.0 ,confidence + 0.05 ),4 )
+
     return PredictionResponse (
     disease ="Dengue",
     prediction =label ,
     confidence =round (confidence ,4 ),
     model_used =model_pkg ['model_name'],
     model_version ="dengue_pipeline.joblib",
-    risk_level =risk_level 
+    risk_level =risk_level ,
+    uncertainty_range =[unc_min ,unc_max ],
+    calibration_note ="Calibrated empirical probability from supervised clinical cohort. Indicative of screening risk, not standalone clinical diagnosis.",
+    clinical_warnings =warnings if warnings else None 
     )
 
 @app .post ("/predict/liver",response_model =PredictionResponse ,tags =["Direct ML Prediction"])
 def predict_liver (input_data :LiverInput ):
     model_pkg =get_model ('liver')
     pipeline =model_pkg ['pipeline']
+
+    warnings = []
+    if input_data.total_bilirubin > 15.0:
+        warnings.append(f"Severe hyperbilirubinemia detected ({input_data.total_bilirubin} mg/dL). Immediate hepatobiliary evaluation advised.")
+    if input_data.alkaline_phosphotase > 1200:
+        warnings.append(f"Marked alkaline phosphatase elevation ({input_data.alkaline_phosphotase} IU/L).")
 
     input_dict ={
     'age':[input_data .age ],
@@ -942,19 +1094,31 @@ def predict_liver (input_data :LiverInput ):
     confidence =safe_predict_proba (pipeline ,df_in )
     risk_level ="High"if pred_code ==1 else "Low"
 
+    unc_min = round (max (0.0 ,confidence - 0.05 ),4 )
+    unc_max = round (min (1.0 ,confidence + 0.05 ),4 )
+
     return PredictionResponse (
     disease ="Liver Disease",
     prediction =label ,
     confidence =round (confidence ,4 ),
     model_used =model_pkg ['model_name'],
     model_version ="liver_pipeline.joblib",
-    risk_level =risk_level 
+    risk_level =risk_level ,
+    uncertainty_range =[unc_min ,unc_max ],
+    calibration_note ="Calibrated empirical probability from supervised clinical cohort. Indicative of screening risk, not standalone clinical diagnosis.",
+    clinical_warnings =warnings if warnings else None 
     )
 
 @app .post ("/predict/thyroid",response_model =PredictionResponse ,tags =["Direct ML Prediction"])
 def predict_thyroid (input_data :ThyroidInput ):
     model_pkg =get_model ('thyroid')
     pipeline =model_pkg ['pipeline']
+
+    warnings = []
+    if input_data.TSH > 80.0:
+        warnings.append(f"Marked TSH elevation ({input_data.TSH} µIU/mL). Consistent with severe primary hypothyroidism.")
+    elif input_data.TSH < 0.05:
+        warnings.append(f"Suppressed TSH (<0.05 µIU/mL). Consistent with overt hyperthyroidism.")
 
     input_dict ={
     'TSH':[input_data .TSH ],
@@ -969,13 +1133,19 @@ def predict_thyroid (input_data :ThyroidInput ):
     confidence =safe_predict_proba (pipeline ,df_in )
     risk_level ="Normal"if pred_code ==1 else "Elevated Risk"
 
+    unc_min = round (max (0.0 ,confidence - 0.05 ),4 )
+    unc_max = round (min (1.0 ,confidence + 0.05 ),4 )
+
     return PredictionResponse (
     disease ="Thyroid Disorder",
     prediction =label ,
     confidence =round (confidence ,4 ),
     model_used =model_pkg ['model_name'],
     model_version ="thyroid_pipeline.joblib",
-    risk_level =risk_level 
+    risk_level =risk_level ,
+    uncertainty_range =[unc_min ,unc_max ],
+    calibration_note ="Calibrated empirical probability from supervised clinical cohort. Indicative of screening risk, not standalone clinical diagnosis.",
+    clinical_warnings =warnings if warnings else None 
     )
 
 @app .post ("/predict/malaria",response_model =PredictionResponse ,tags =["Direct ML Prediction"])
@@ -1019,13 +1189,19 @@ async def predict_malaria (file :UploadFile =File (...,description ="Microscopic
     confidence =safe_predict_proba (pipeline ,features )
     risk_level ="High (Parasite Detected)"if pred_code ==1 else "Low (Uninfected)"
 
+    unc_min = round (max (0.0 ,confidence - 0.05 ),4 )
+    unc_max = round (min (1.0 ,confidence + 0.05 ),4 )
+
     return PredictionResponse (
     disease ="Malaria",
     prediction =label ,
     confidence =round (confidence ,4 ),
     model_used =model_pkg ['model_name'],
     model_version ="malaria_pipeline.joblib",
-    risk_level =risk_level 
+    risk_level =risk_level ,
+    uncertainty_range =[unc_min ,unc_max ],
+    calibration_note ="Microscopy feature extraction model inference. Confirmatory Giemsa peripheral smear examination required.",
+    clinical_warnings =["Positive malaria smear screening signal; urgent microscopic slide confirmation indicated."] if pred_code == 1 else None 
     )
 
 

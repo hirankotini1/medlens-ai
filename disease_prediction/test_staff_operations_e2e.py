@@ -28,7 +28,7 @@ def test_16_staff_logins ():
             print (f"  [PASS] {u } ({expected_role }) - Token issued for: {data ['user']['name']}")
     return tokens 
 
-def test_patient_registration_and_search (rec_token ):
+def run_patient_registration_and_search (rec_token ):
     print ("\n--- TEST 2: PATIENT REGISTRATION & SEARCH ---")
     headers ={"Authorization":f"Bearer {rec_token }"}
 
@@ -66,7 +66,7 @@ def test_patient_registration_and_search (rec_token ):
 
     return pat 
 
-def test_bed_admission_and_discharge (rec_token ,pat ):
+def run_bed_admission_and_discharge (rec_token ,pat ):
     print ("\n--- TEST 3: ATOMIC ADMISSION & BED QUOTA ENFORCEMENT ---")
     headers ={"Authorization":f"Bearer {rec_token }"}
 
@@ -120,7 +120,7 @@ def test_bed_admission_and_discharge (rec_token ,pat ):
     assert bed_check_final and bed_check_final ["status"]=="Available",f"Bed {chosen_bed ['bed_id']} was not freed to Available"
     print (f"  [PASS] Bed {chosen_bed ['bed_id']} atomically freed back to Available in Supabase")
 
-def test_lab_order_completion (lab_token ):
+def run_lab_order_completion (lab_token ):
     print ("\n--- TEST 4: LAB ORDERS & RESULT ENTRY ---")
     headers ={"Authorization":f"Bearer {lab_token }"}
 
@@ -142,7 +142,7 @@ def test_lab_order_completion (lab_token ):
     assert upd_res .status_code ==200 ,f"Lab result update failed: {upd_res .text }"
     print (f"  [PASS] Lab Order {target_order ['order_id']} updated with result '{result_payload ['result_value']}'")
 
-def test_ward_manager_bed_status_update (ward_token ):
+def run_ward_manager_bed_status_update (ward_token ):
     print ("\n--- TEST 5: WARD MANAGER LIVE BED STATUS UPDATE ---")
     headers ={"Authorization":f"Bearer {ward_token }"}
 
@@ -166,7 +166,7 @@ def test_ward_manager_bed_status_update (ward_token ):
     assert b2 and b2 ["status"]=="Available"
     print (f"  [PASS] Bed {bed_id } status updated to Available in Supabase")
 
-def test_persistent_billing (rec_token ,pat ):
+def run_persistent_billing (rec_token ,pat ):
     print ("\n--- TEST 6: PERSISTENT INPATIENT BILLING ---")
     headers ={"Authorization":f"Bearer {rec_token }"}
     pat_name =pat .get ("full_name")or pat .get ("name")
@@ -204,7 +204,7 @@ def test_persistent_billing (rec_token ,pat ):
     print (f"  [PASS] Verified invoice {bill ['bill_id']} persisted in Supabase billing_invoices table")
 
 
-def test_regression_5_protected_features ():
+def run_regression_5_protected_features ():
     print ("\n--- TEST 5: REGRESSION TESTS FOR 5 PROTECTED FEATURES ---")
 
 
@@ -245,16 +245,19 @@ def test_regression_5_protected_features ():
     assert dengue_res .status_code ==200 ,f"Dengue sandbox model failed: {dengue_res .text }"
     print ("    -> PASS: ML Sandbox verified.")
 
-if __name__ =="__main__":
+def test_all_staff_operations_e2e ():
     print ("Starting Comprehensive MEDLENS E2E & Regression Suite...")
     tokens =test_16_staff_logins ()
-    pat =test_patient_registration_and_search (tokens ["REC001"])
-    test_bed_admission_and_discharge (tokens ["REC001"],pat )
-    test_lab_order_completion (tokens ["LAB001"])
-    test_ward_manager_bed_status_update (tokens ["WARD001"])
-    test_persistent_billing (tokens ["REC001"],pat )
-    test_regression_5_protected_features ()
+    pat =run_patient_registration_and_search (tokens ["REC001"])
+    run_bed_admission_and_discharge (tokens ["REC001"],pat )
+    run_lab_order_completion (tokens ["LAB001"])
+    run_ward_manager_bed_status_update (tokens ["WARD001"])
+    run_persistent_billing (tokens ["REC001"],pat )
+    run_regression_5_protected_features ()
     print ("\n========================================================")
     print ("ALL TESTS PASSED! ZERO REGRESSIONS DETECTED.")
     print ("========================================================")
+
+if __name__ =="__main__":
+    test_all_staff_operations_e2e ()
 

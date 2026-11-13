@@ -510,7 +510,7 @@ class SupabaseHospitalClient :
             cur =conn .cursor (cursor_factory =RealDictCursor )
 
 
-            cur .execute ("SELECT * FROM lab_order_to_result WHERE order_id = %s OR id::text = %s LIMIT 1;",(order_id ,order_id ))
+            cur .execute ("SELECT * FROM lab_order_to_result WHERE order_id = %s LIMIT 1;",(order_id ,))
             order =cur .fetchone ()
             if not order :
                 conn .close ()
@@ -524,9 +524,9 @@ class SupabaseHospitalClient :
             cur .execute ("""
             UPDATE lab_order_to_result
             SET resulted_at = %s, turnaround_hours = %s, is_delayed = %s
-            WHERE order_id = %s OR id::text = %s
+            WHERE order_id = %s
             RETURNING *;
-            """,(now ,tat_hours ,delayed_flag ,order_id ,order_id ))
+            """,(now ,tat_hours ,delayed_flag ,order_id ))
             updated =cur .fetchone ()
             conn .commit ()
             conn .close ()

@@ -3,7 +3,7 @@ FastAPI Router for Hospital Operations Intelligence
 """
 import os 
 from typing import Optional ,List ,Dict ,Any 
-from fastapi import APIRouter ,Query ,HTTPException ,Response 
+from fastapi import APIRouter ,Query ,HTTPException ,Response ,Request 
 from fastapi .responses import HTMLResponse ,PlainTextResponse 
 
 from disease_prediction .hospital_operations .service import HospitalOperationsService 
@@ -331,11 +331,12 @@ def require_staff_role (allowed_roles :List [str ]):
             status_code =401 ,
             detail ="Authentication required: Please log in with your Staff Credentials."
             )
-        role =auth .get ('role')
-        if role not in allowed_roles and role !='OPERATIONS_MANAGER':
+        role =str(auth .get ('role', '')).upper().replace(' ', '_')
+        allowed_upper =[r.upper().replace(' ', '_') for r in allowed_roles]
+        if role not in allowed_upper and role !='OPERATIONS_MANAGER':
             raise HTTPException (
             status_code =403 ,
-            detail =f"Access Denied: Role '{role }' does not have permission for this operation. Required: {', '.join (allowed_roles )}"
+            detail =f"Access Denied: Role '{auth.get('role')}' does not have permission for this operation. Required: {', '.join (allowed_roles )}"
             )
         return auth 
     return dependency 
@@ -347,18 +348,60 @@ class StaffLoginRequest (BaseModel ):
 
 
 @router .post ("/auth/login",tags =["Staff Authentication"])
-def staff_login (req :StaffLoginRequest ):
+def staff_login (req :StaffLoginRequest ,request :Request ):
     """
     Authenticates staff members across the 4 roles: RECEPTIONIST, LAB_STAFF, WARD_MANAGER, OPERATIONS_MANAGER.
+    Enforces server-side brute-force lockout.
     """
+    try :
+        from disease_prediction .api .main import login_limiter 
+    except ImportError :
+        try :
+            from main import login_limiter 
+        except ImportError :
+            login_limiter =None 
+
+    client_ip =request .headers .get ("x-forwarded-for","").split (",")[0 ].strip ()or (request .client .host if request .client else "unknown")
+    ip_key =f"ip:{client_ip }"
+    user_key =f"staff:{req .username .strip ().upper ()}"
+
+    if login_limiter :
+        for key in (ip_key ,user_key ):
+            retry_after =login_limiter .check_lockout (key )
+            if retry_after :
+                raise HTTPException (
+                    status_code =429 ,
+                    detail =f"Too many failed staff login attempts. Access temporarily locked for security. Please wait {retry_after } seconds before trying again.",
+                    headers ={"Retry-After":str (retry_after )}
+                )
+
     staff =SupabaseHospitalClient .authenticate_staff (req .username ,req .password )
     if not staff :
+        if login_limiter :
+            is_locked_ip ,lock_ip_time =login_limiter .record_failure (ip_key )
+            is_locked_user ,lock_user_time =login_limiter .record_failure (user_key )
+            if is_locked_ip or is_locked_user :
+                retry_after =max (lock_ip_time ,lock_user_time )
+                raise HTTPException (
+                    status_code =429 ,
+                    detail =f"Too many failed staff login attempts. Security lockout triggered. Please wait {retry_after } seconds before trying again.",
+                    headers ={"Retry-After":str (retry_after )}
+                )
         raise HTTPException (status_code =401 ,detail ="Invalid Staff ID or Password. Please verify your credentials.")
+
+    if login_limiter :
+        login_limiter .record_success (ip_key )
+        login_limiter .record_success (user_key )
+
+    raw_role =str(staff.get("role", "")).strip()
+    norm_role =raw_role.upper().replace(" ", "_")
+    staff_dict =dict(staff)
+    staff_dict["role"] =norm_role
 
     token =_generate_staff_token ({
     "sub":staff ["staff_id"],
     "staff_id":staff ["staff_id"],
-    "role":staff ["role"],
+    "role":norm_role ,
     "name":staff ["name"],
     "department":staff .get ("department","")
     })
@@ -366,7 +409,7 @@ def staff_login (req :StaffLoginRequest ):
     "status":"success",
     "message":f"Welcome back, {staff ['name']}.",
     "token":token ,
-    "user":staff 
+    "user":staff_dict 
     }
 
 

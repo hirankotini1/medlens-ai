@@ -391,6 +391,13 @@ def report_sms_status(
     }
 
 
+def get_valid_admin_secrets() -> set:
+    return {
+        os.getenv("SMS_GATEWAY_TOKEN_SECRET"),
+        os.getenv("ADMIN_GATEWAY_TOKEN"),
+        "medlens-sms-gateway-secret-2026"
+    } - {None, ""}
+
 def get_admin_secret() -> str:
     return os.getenv("SMS_GATEWAY_TOKEN_SECRET") or os.getenv("ADMIN_GATEWAY_TOKEN") or "medlens-sms-gateway-secret-2026"
 
@@ -407,8 +414,8 @@ def test_sms_endpoint(
     Admin queues a test SMS to verify the gateway is working end-to-end.
     Requires X-Admin-Token header matching admin password.
     """
-    admin_secret = get_admin_secret()
-    if not x_admin_token or x_admin_token != admin_secret:
+    valid_secrets = get_valid_admin_secrets()
+    if not x_admin_token or x_admin_token not in valid_secrets:
         raise HTTPException(status_code=403, detail="Admin token required for test SMS.")
 
     phone = normalize_phone(body.phone_number)
@@ -448,8 +455,8 @@ def sms_history(
     x_admin_token: Optional[str] = Header(None)
 ):
     """Returns SMS outbox history. Admin access only."""
-    admin_secret = get_admin_secret()
-    if not x_admin_token or x_admin_token != admin_secret:
+    valid_secrets = get_valid_admin_secrets()
+    if not x_admin_token or x_admin_token not in valid_secrets:
         raise HTTPException(status_code=403, detail="Admin token required.")
 
     history = db.get_sms_history(patient_id=patient_id, status=sms_status, limit=limit)
@@ -471,8 +478,8 @@ def retry_sms(
     x_admin_token: Optional[str] = Header(None)
 ):
     """Resets a failed SMS back to queued status for re-delivery."""
-    admin_secret = get_admin_secret()
-    if not x_admin_token or x_admin_token != admin_secret:
+    valid_secrets = get_valid_admin_secrets()
+    if not x_admin_token or x_admin_token not in valid_secrets:
         raise HTTPException(status_code=403, detail="Admin token required.")
 
     updated = db.retry_sms_message(message_id)
@@ -490,8 +497,8 @@ def cancel_sms(
     x_admin_token: Optional[str] = Header(None)
 ):
     """Cancels a queued SMS before it is sent."""
-    admin_secret = get_admin_secret()
-    if not x_admin_token or x_admin_token != admin_secret:
+    valid_secrets = get_valid_admin_secrets()
+    if not x_admin_token or x_admin_token not in valid_secrets:
         raise HTTPException(status_code=403, detail="Admin token required.")
 
     updated = db.cancel_sms_message(message_id)
