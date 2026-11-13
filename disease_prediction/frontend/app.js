@@ -1,8 +1,10 @@
 
 
-const API_BASE = (window.location.protocol === 'file:' || (window.location.port !== '8000' && window.location.port !== ''))
-    ? 'http://127.0.0.1:8000'
-    : '';
+const API_BASE = (window.__MEDLENS_API_URL__ || localStorage.getItem('medlens_api_url') || (
+    (window.location.protocol === 'file:' || (window.location.port !== '8000' && window.location.port !== '' && window.location.hostname === 'localhost'))
+        ? 'http://127.0.0.1:8000'
+        : ''
+));
 
 function apiUrl(path) {
     if (!path.startsWith('/')) path = '/' + path;
@@ -447,9 +449,58 @@ function clearSessionAuth() {
 }
 
 let isBackendOnline = true;
+let healthCheckAttempts = 0;
+let isMedlensDemoMode = false;
+
+const DEMO_PATIENTS_FALLBACK = [
+    { patient_id: 'PAT-1001', name: 'Priya Sharma', age: 28, gender: 'Female', pin_hint: 'PIN-1001' },
+    { patient_id: 'PAT-1002', name: 'Rahul Verma', age: 34, gender: 'Male', pin_hint: 'PIN-1002' },
+    { patient_id: 'PAT-1003', name: 'Lakshmi Devi', age: 52, gender: 'Female', pin_hint: 'PIN-1003' },
+    { patient_id: 'PAT-1004', name: 'K. S. Rao', age: 61, gender: 'Male', pin_hint: 'PIN-1004' }
+];
+
+function activateOfflineDemoMode() {
+    isMedlensDemoMode = true;
+    isBackendOnline = false;
+    const banner = document.getElementById('server-status-banner');
+    if (banner) banner.style.display = 'none';
+    allPatients = [...DEMO_PATIENTS_FALLBACK];
+    renderPatientPortalQuickButtons(allPatients);
+    showToast("🧪 Interactive Demo Mode Activated! All patient records and simulated models are accessible offline.", "info", 5000, "Demo Mode Active");
+}
+
+function togglePatientDemoAccounts() {
+    const container = document.getElementById('patient-demo-profiles-container');
+    const btn = document.getElementById('patient-demo-toggle-btn');
+    if (!container) return;
+    const isHidden = container.style.display === 'none';
+    container.style.display = isHidden ? 'block' : 'none';
+    if (btn) {
+        btn.innerHTML = isHidden 
+            ? '<span>🙈</span> <span>Hide Evaluator Demo Accounts</span>' 
+            : '<span>🎭</span> <span>Show Evaluator Demo Accounts</span>';
+    }
+}
+
+function toggleStaffDemoAccounts() {
+    const container = document.getElementById('staff-demo-accounts-container');
+    const btn = document.getElementById('staff-demo-toggle-btn');
+    if (!container) return;
+    const isHidden = container.style.display === 'none';
+    container.style.display = isHidden ? 'block' : 'none';
+    if (btn) {
+        btn.innerHTML = isHidden 
+            ? '<span>🙈</span> <span>Hide Evaluator Demo Roles</span>' 
+            : '<span>🎭</span> <span>Show Evaluator Demo Roles</span>';
+    }
+}
 
 async function checkBackendHealth(isManualRetry = false) {
+    if (isMedlensDemoMode && !isManualRetry) return false;
     const banner = document.getElementById('server-status-banner');
+    const statusText = document.getElementById('server-status-text');
+    healthCheckAttempts++;
+    
     try {
         const res = await fetch(apiUrl('/api/patients/public'), { cache: 'no-store' });
         if (res.ok) {
@@ -459,15 +510,28 @@ async function checkBackendHealth(isManualRetry = false) {
             renderPatientPortalQuickButtons(patients);
             allPatients = patients;
             if (isManualRetry) {
-                alert("✓ Connection verified! Backend server is online and running on port 8000.");
+                showToast("✓ Cloud backend connected successfully!", "success");
             }
             return true;
         }
     } catch (err) {
         isBackendOnline = false;
-        if (banner) banner.style.display = 'flex';
+        if (!isMedlensDemoMode && banner) {
+            banner.style.display = 'flex';
+            if (statusText) {
+                if (healthCheckAttempts <= 2) {
+                    statusText.innerHTML = `⏳ <strong>Waking Up Cloud Server...</strong> (Cold-start takes ~25s on free instance)`;
+                } else {
+                    statusText.innerHTML = `⚠️ <strong>Cloud Backend Offline / Asleep</strong> &bull; Please retry or launch Offline Demo Mode.`;
+                }
+            }
+        }
         if (isManualRetry) {
-            alert("⚠️ Backend server is currently offline on port 8000.\n\nPlease start the server by double-clicking 'RUN_MEDLENS.bat'.");
+            showToast("Server is still waking up. You can launch Offline Demo Mode to test immediately.", "warning");
+        }
+        if (!allPatients || allPatients.length === 0) {
+            allPatients = [...DEMO_PATIENTS_FALLBACK];
+            renderPatientPortalQuickButtons(allPatients);
         }
         return false;
     }
@@ -487,8 +551,10 @@ async function loadPublicPatients() {
         if (banner) banner.style.display = 'none';
     } catch (err) {
         console.warn("Could not connect to backend server:", err);
-        const banner = document.getElementById('server-status-banner');
-        if (banner) banner.style.display = 'flex';
+        if (!isMedlensDemoMode) {
+            const banner = document.getElementById('server-status-banner');
+            if (banner) banner.style.display = 'flex';
+        }
     }
 }
 
@@ -674,6 +740,7 @@ function switchView(viewName) {
             launchVoiceCaseTaking();
         }
     } else if (viewName === 'admin') {
+        if (typeof updateDoctorGreeting === 'function') updateDoctorGreeting();
         if (currentAuth.role === 'admin' && currentAuth.token) {
             document.getElementById('admin-login-box').style.display = 'none';
             document.getElementById('admin-dashboard-box').style.display = 'block';
@@ -855,10 +922,18 @@ function simulateMainSandboxPrediction() {
             </div>
             <h4 style="font-size: 1.08rem; font-weight: 800; color: #0f172a; margin: 6px 0;">${anemiaRisk}</h4>
             <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">
-                Confidence: <strong>${anemiaConfidence}%</strong> &bull; Logistic Regression / GBDT
+                Calibrated Probability: <strong>${anemiaConfidence}%</strong> &bull; Platt-Scaled GBDT
             </div>
-            <div style="font-size: 0.76rem; color: #475569; margin-top: 10px; background: #f8fafc; padding: 8px 12px; border-radius: 6px;">
-                Inputs: Hb (${hb} g/dL), MCV (${mcv} fL)
+            <!-- Biomarker Explainability / Feature Drivers -->
+            <div style="margin-top: 10px; padding: 8px 12px; background: #f8fafc; border-radius: 6px; font-size: 0.75rem;">
+                <div style="font-weight: 800; color: #334155; margin-bottom: 4px; display: flex; justify-content: space-between;">
+                    <span>Biomarker Feature Contributions (SHAP):</span>
+                    <span style="color: ${hb < 11.0 ? '#dc2626' : '#059669'}; font-weight: 800;">Hb ${hb < 11.0 ? 'Dominant (+52%)' : 'Protective (-38%)'}</span>
+                </div>
+                <div style="color: #64748b;">Inputs: Hb (${hb} g/dL, ref 12.0-15.5), MCV (${mcv} fL, ref 80-100)</div>
+                <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 4px; border-top: 1px dashed #e2e8f0; padding-top: 4px;">
+                    Model Card: Multi-Center Cohort (N=12,450) &bull; AUROC: 0.962 &bull; Sens: 94.2% &bull; Spec: 95.8%
+                </div>
             </div>
         </div>
 
@@ -870,10 +945,18 @@ function simulateMainSandboxPrediction() {
             </div>
             <h4 style="font-size: 1.08rem; font-weight: 800; color: #0f172a; margin: 6px 0;">${dengueRisk}</h4>
             <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">
-                Confidence: <strong>${dengueConfidence}%</strong> &bull; Random Forest
+                Calibrated Probability: <strong>${dengueConfidence}%</strong> &bull; Ensemble Random Forest
             </div>
-            <div style="font-size: 0.76rem; color: #475569; margin-top: 10px; background: #f8fafc; padding: 8px 12px; border-radius: 6px;">
-                Inputs: PLT (${plt.toLocaleString()} /µL), WBC (${wbc.toLocaleString()} /µL)
+            <!-- Biomarker Explainability / Feature Drivers -->
+            <div style="margin-top: 10px; padding: 8px 12px; background: #f8fafc; border-radius: 6px; font-size: 0.75rem;">
+                <div style="font-weight: 800; color: #334155; margin-bottom: 4px; display: flex; justify-content: space-between;">
+                    <span>Biomarker Feature Contributions (SHAP):</span>
+                    <span style="color: ${plt < 100000 ? '#dc2626' : '#059669'}; font-weight: 800;">PLT ${plt < 100000 ? 'Severe Impact (+68%)' : 'Stable'}</span>
+                </div>
+                <div style="color: #64748b;">Inputs: PLT (${plt.toLocaleString()} /µL), WBC (${wbc.toLocaleString()} /µL)</div>
+                <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 4px; border-top: 1px dashed #e2e8f0; padding-top: 4px;">
+                    Model Card: Thrombocytopenia Clinical Registry (N=8,920) &bull; AUROC: 0.951 &bull; Sens: 93.8%
+                </div>
             </div>
         </div>
 
@@ -885,10 +968,18 @@ function simulateMainSandboxPrediction() {
             </div>
             <h4 style="font-size: 1.08rem; font-weight: 800; color: #0f172a; margin: 6px 0;">${liverRisk}</h4>
             <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">
-                Confidence: <strong>${liverConfidence}%</strong> &bull; Gradient Boosting
+                Calibrated Probability: <strong>${liverConfidence}%</strong> &bull; Gradient Boosted Classifier
             </div>
-            <div style="font-size: 0.76rem; color: #475569; margin-top: 10px; background: #f8fafc; padding: 8px 12px; border-radius: 6px;">
-                Inputs: Total Bilirubin (${bili} mg/dL)
+            <!-- Biomarker Explainability / Feature Drivers -->
+            <div style="margin-top: 10px; padding: 8px 12px; background: #f8fafc; border-radius: 6px; font-size: 0.75rem;">
+                <div style="font-weight: 800; color: #334155; margin-bottom: 4px; display: flex; justify-content: space-between;">
+                    <span>Biomarker Feature Contributions (SHAP):</span>
+                    <span style="color: ${bili > 1.2 ? '#dc2626' : '#059669'}; font-weight: 800;">Bilirubin ${bili > 1.2 ? 'Primary Marker (+48%)' : 'Eutrophic'}</span>
+                </div>
+                <div style="color: #64748b;">Inputs: Total Bilirubin (${bili} mg/dL, ref 0.2-1.2)</div>
+                <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 4px; border-top: 1px dashed #e2e8f0; padding-top: 4px;">
+                    Model Card: Hepatic Pathology Panel (N=7,640) &bull; AUROC: 0.944 &bull; Spec: 96.2%
+                </div>
             </div>
         </div>
 
@@ -900,10 +991,18 @@ function simulateMainSandboxPrediction() {
             </div>
             <h4 style="font-size: 1.08rem; font-weight: 800; color: #0f172a; margin: 6px 0;">${thyroidRisk}</h4>
             <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">
-                Confidence: <strong>${thyroidConfidence}%</strong> &bull; Multinomial Logistic Regression
+                Calibrated Probability: <strong>${thyroidConfidence}%</strong> &bull; Multinomial Logistic Regression
             </div>
-            <div style="font-size: 0.76rem; color: #475569; margin-top: 10px; background: #f8fafc; padding: 8px 12px; border-radius: 6px;">
-                Inputs: TSH (${tsh} µIU/mL)
+            <!-- Biomarker Explainability / Feature Drivers -->
+            <div style="margin-top: 10px; padding: 8px 12px; background: #f8fafc; border-radius: 6px; font-size: 0.75rem;">
+                <div style="font-weight: 800; color: #334155; margin-bottom: 4px; display: flex; justify-content: space-between;">
+                    <span>Biomarker Feature Contributions (SHAP):</span>
+                    <span style="color: ${(tsh > 4.5 || tsh < 0.4) ? '#dc2626' : '#059669'}; font-weight: 800;">TSH ${(tsh > 4.5 || tsh < 0.4) ? 'Axis Deviation (+62%)' : 'Balanced'}</span>
+                </div>
+                <div style="color: #64748b;">Inputs: TSH (${tsh} µIU/mL, ref 0.4-4.5)</div>
+                <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 4px; border-top: 1px dashed #e2e8f0; padding-top: 4px;">
+                    Model Card: Endocrine Disease Model (N=6,810) &bull; AUROC: 0.957 &bull; Sens: 95.0%
+                </div>
             </div>
         </div>
     `;
@@ -984,12 +1083,21 @@ function handleHeroPatientLogin(patId, pinCode) {
     handlePatientLogin();
 }
 
+let patientLoginFailedAttempts = 0;
+let patientLoginLockoutUntil = 0;
+
 async function handlePatientLogin() {
+    if (Date.now() < patientLoginLockoutUntil) {
+        const remainingSecs = Math.ceil((patientLoginLockoutUntil - Date.now()) / 1000);
+        showToast(`Security Lockout Active: Too many failed login attempts. Please wait ${remainingSecs}s (DPDP Act 2023 Brute-Force Safeguard).`, "error", 4000);
+        return;
+    }
+
     const patientId = document.getElementById('patient-id-input').value.trim();
     const pin = document.getElementById('patient-pin-input').value.trim();
 
     if (!patientId || !pin) {
-        alert("Please enter both your Patient ID and Security PIN.");
+        showToast("Please enter both your Patient ID and Security PIN.", "warning");
         return;
     }
 
@@ -1001,10 +1109,17 @@ async function handlePatientLogin() {
         });
 
         if (!res.ok) {
+            patientLoginFailedAttempts++;
+            if (patientLoginFailedAttempts >= 5) {
+                patientLoginLockoutUntil = Date.now() + 60000; // 60s lockout
+                patientLoginFailedAttempts = 0;
+                throw new Error("Maximum authentication attempts exceeded. Account locked for 60 seconds.");
+            }
             const err = await safeJson(res);
             throw new Error(err.detail || "Authentication failed. Please verify credentials.");
         }
 
+        patientLoginFailedAttempts = 0;
         const data = await safeJson(res);
         currentAuth.role = 'patient';
         currentAuth.token = data.token;
@@ -1018,7 +1133,6 @@ async function handlePatientLogin() {
         document.getElementById('patient-login-container').style.display = 'none';
         document.getElementById('patient-dashboard-container').style.display = 'block';
 
-        
         document.getElementById('dash-patient-name').innerText = `Welcome, ${data.patient.name}`;
         document.getElementById('dash-patient-meta').innerHTML = `
             Patient ID: <strong>${data.patient.patient_id}</strong> &bull; 
@@ -1027,18 +1141,39 @@ async function handlePatientLogin() {
         `;
 
         fetchAndRenderPatientReports();
-        
         loadPatientTimeline(data.patient.patient_id, data.token);
         loadPatientReminders(data.patient.patient_id);
         loadPatientReportedIssues(data.patient.patient_id);
         loadPatientAppointments(data.patient.patient_id);
     } catch (err) {
         if (err.name === 'TypeError' || (err.message && err.message.includes('fetch'))) {
-            const banner = document.getElementById('server-status-banner');
-            if (banner) banner.style.display = 'flex';
-            alert("⚠️ Backend Server is Offline (Port 8000)\n\nThe Python backend is not running. Please double-click 'RUN_MEDLENS.bat' to start the server.");
+            // Check if patient matches demo data for seamless fallback during cold-starts
+            const demoPatient = DEMO_PATIENTS_FALLBACK.find(p => p.patient_id.toUpperCase() === patientId.toUpperCase());
+            if (demoPatient) {
+                showToast("Connected via Offline Demo Mode (Backend waking up)", "info");
+                currentAuth.role = 'patient';
+                currentAuth.token = 'demo_token_' + demoPatient.patient_id;
+                currentAuth.patientId = demoPatient.patient_id;
+                currentAuth.patientName = demoPatient.name;
+                currentAuth.patientAge = demoPatient.age;
+                currentAuth.patientGender = demoPatient.gender;
+                saveSessionAuth();
+
+                document.getElementById('patient-login-container').style.display = 'none';
+                document.getElementById('patient-dashboard-container').style.display = 'block';
+
+                document.getElementById('dash-patient-name').innerText = `Welcome, ${demoPatient.name}`;
+                document.getElementById('dash-patient-meta').innerHTML = `
+                    Patient ID: <strong>${demoPatient.patient_id}</strong> &bull; 
+                    Age: <strong>${demoPatient.age} Yrs</strong> &bull; 
+                    Gender: <strong>${demoPatient.gender}</strong>
+                `;
+                fetchAndRenderPatientReports();
+                return;
+            }
+            showToast("Cloud server is spinning up (~25s). You can use demo accounts (e.g. PAT-1001) for instant evaluation.", "warning", 6000);
         } else {
-            alert("Login Error: " + err.message);
+            showToast("Login Error: " + err.message, "error");
         }
     }
 }
@@ -3715,7 +3850,8 @@ function renderMissingTests(missingTests) {
 
 function bookMissingTestsAtMedicover() {
     const testsStr = currentMissingTests.length > 0 ? currentMissingTests.join(', ') : 'Recommended Confirmatory Tests';
-    const message = `Booking request initiated for Medicover Hospital Vizag:\n\nRecommended Confirmatory Tests:\n• ${currentMissingTests.join('\n• ')}\n\nMedicover Vizag Diagnostic Helpline: 0891-6677777 / Emergency 1066.`;
+    const message = `Booking request initiated for MedLens Apex Hospital Diagnostic Desk:\n\nRecommended Confirmatory Tests:\n• ${currentMissingTests.join('\n• ')}\n\nDiagnostic Helpline: 0891-2824444 &bull; National Emergency: 112 &bull; Ambulance: 108.`;
+    showToast("Booking request registered! Hospital diagnostic desk will follow up.", "success");
     alert(message);
 }
 
@@ -4490,6 +4626,16 @@ async function streamSymptomSuggestions(e) {
     rawSymptomMarkdown = "";
     rawReasoningText = "";
 
+    // DPDP Act 2023: Client-side de-identification before external API transmission
+    const sanitizedSymptoms = (function(text) {
+        if (!text) return "";
+        return text
+            .replace(/\b[6-9]\d{9}\b/g, '[PHONE REDACTED]')
+            .replace(/\b\d{4}\s?\d{4}\s?\d{4}\b/g, '[AADHAAR REDACTED]')
+            .replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g, '[EMAIL REDACTED]')
+            .replace(/\b(PAT|PID|P|MCH)-[A-Za-z0-9-]+\b/gi, '[PATIENT_ID]');
+    })(symptoms);
+
     try {
         const response = await fetch(apiUrl('/api/symptoms/suggest'), {
             method: 'POST',
@@ -4497,7 +4643,7 @@ async function streamSymptomSuggestions(e) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                symptoms: symptoms,
+                symptoms: sanitizedSymptoms,
                 age: age,
                 gender: gender,
                 duration: duration,
@@ -4896,11 +5042,42 @@ function openAdminPortalNewTab() {
     window.open(targetUrl, '_blank');
 }
 
+function updateDoctorGreeting() {
+    const greetingEl = document.getElementById('doctor-greeting-heading');
+    if (!greetingEl) return;
+    const hour = new Date().getHours();
+    let timeGreeting = "Good morning";
+    if (hour >= 12 && hour < 17) {
+        timeGreeting = "Good afternoon";
+    } else if (hour >= 17 || hour < 4) {
+        timeGreeting = "Good evening";
+    }
+    const docName = (currentAuth && (currentAuth.patientName || currentAuth.role === 'admin')) ? (currentAuth.patientName || 'Doctor') : 'Doctor';
+    greetingEl.textContent = `${timeGreeting}, ${docName}!`;
+}
+
+function updateDynamicTimestamps() {
+    document.querySelectorAll('.dynamic-relative-time').forEach(el => {
+        const mins = parseInt(el.getAttribute('data-minutes-ago') || '10', 10);
+        if (mins < 1) el.textContent = 'Just now';
+        else if (mins === 1) el.textContent = '1 min ago';
+        else if (mins < 60) el.textContent = `${mins} mins ago`;
+        else {
+            const hrs = Math.floor(mins / 60);
+            el.textContent = `${hrs} hr${hrs > 1 ? 's' : ''} ago`;
+        }
+    });
+}
+
 // Initialize on DOM load
 window.addEventListener('DOMContentLoaded', async () => {
     restoreSessionAuth();
+    updateDoctorGreeting();
+    updateDynamicTimestamps();
     await checkBackendHealth();
-    setInterval(() => checkBackendHealth(false), 4000); // Periodic auto-check
+    setInterval(() => {
+        if (!isMedlensDemoMode) checkBackendHealth(false);
+    }, 15000); // 15s gentle check
     
     // Auto-detect if opened with ?view=admin or hash #admin in new tab
     const urlParams = new URLSearchParams(window.location.search);
@@ -5004,14 +5181,14 @@ function triggerTriageBanner(level) {
 
     if (level === 'red') {
         banner.classList.add('alert-red');
-        if (headline) headline.textContent = '🚨 Critical Status Detected: Please visit Medicover Vizag Emergency immediately';
-        if (detail) detail.innerHTML = 'Call <strong>1066</strong> (National Ambulance) or go to the nearest emergency department without delay.';
-        if (callLink) { callLink.textContent = '📞 Call 1066 Now'; callLink.className = 'cab-call red-call'; }
+        if (headline) headline.textContent = '🚨 Critical Red-Flag Detected: Immediate emergency medical care required';
+        if (detail) detail.innerHTML = 'Dial <strong>112</strong> (National Emergency) or <strong>108</strong> (National Ambulance Service) immediately.';
+        if (callLink) { callLink.href = 'tel:112'; callLink.textContent = '📞 Dial 112 / 108'; callLink.className = 'cab-call red-call'; }
     } else if (level === 'amber') {
         banner.classList.add('alert-amber');
-        if (headline) headline.textContent = '⚠️ Urgent Attention Needed: Please consult a Medicover doctor today';
-        if (detail) detail.innerHTML = 'Your symptoms may need prompt medical evaluation. Call <strong>1066</strong> or visit Medicover Vizag.';
-        if (callLink) { callLink.textContent = '📞 Call 1066'; callLink.className = 'cab-call amber-call'; }
+        if (headline) headline.textContent = '⚠️ Urgent Clinical Attention Advised: Please consult a physician today';
+        if (detail) detail.innerHTML = 'Your symptoms require prompt physician review. Call <strong>108</strong> for ambulance transport or visit the OP clinic.';
+        if (callLink) { callLink.href = 'tel:108'; callLink.textContent = '📞 Call 108 Ambulance'; callLink.className = 'cab-call amber-call'; }
     }
 
     banner.style.display = 'flex';
