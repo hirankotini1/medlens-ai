@@ -248,7 +248,7 @@
                     <span class="drawer-link-icon voice-bg"><span class="material-symbols-outlined">mic</span></span>
                     <div class="drawer-link-info">
                         <span class="drawer-link-title">Voice Case Taking</span>
-                        <span class="drawer-link-desc">23 languages • Voice, touch &amp; OCR</span>
+                        <span class="drawer-link-desc">4 Regional (En/Hi/Te/Or) &bull; 22+ Bhashini</span>
                     </div>
                     <span class="drawer-chip-badge">SIH</span>
                 </a>
@@ -276,11 +276,11 @@
             </div>
 
             <div class="mobile-drawer-footer">
-                <a href="tel:1066" class="mobile-drawer-emergency">
+                <a href="tel:112" class="mobile-drawer-emergency">
                     <span class="material-symbols-outlined">emergency</span>
                     <div>
-                        <div style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700;">Medicover 24/7 Emergency</div>
-                        <div style="font-size: 1.05rem; font-weight: 900; letter-spacing: 0.05em;">Dial 1066</div>
+                        <div style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700;">National Emergency &bull; Ambulance</div>
+                        <div style="font-size: 1.05rem; font-weight: 900; letter-spacing: 0.05em;">Dial 112 / 108</div>
                     </div>
                 </a>
             </div>
@@ -288,9 +288,12 @@
     </aside>
 
     
-    <div id="server-status-banner" style="display: none; background: linear-gradient(135deg, #b91c1c, #dc2626); color: #ffffff; padding: 12px 20px; font-size: 0.86rem; font-weight: 600; text-align: center; justify-content: center; align-items: center; gap: 14px; box-shadow: 0 4px 14px rgba(220,38,38,0.25); z-index: 1000; position: sticky; top: 68px;">
-        <span>⚠️ <strong>Backend Server Offline (Port 8000)</strong> — Please start the Avenqra AI Python backend server.</span>
-        <button type="button" onclick="checkBackendHealth(true)" style="background: #ffffff; color: #dc2626; border: none; padding: 4px 14px; border-radius: 6px; font-weight: 800; cursor: pointer; font-size: 0.8rem;">🔄 Retry Connection</button>
+    <div id="server-status-banner" style="display: none; background: linear-gradient(135deg, #0f172a, #1e293b); border-bottom: 2px solid #0284c7; color: #ffffff; padding: 10px 20px; font-size: 0.86rem; font-weight: 600; text-align: center; justify-content: center; align-items: center; gap: 14px; box-shadow: 0 4px 14px rgba(0,0,0,0.2); z-index: 1000; position: sticky; top: 68px;">
+        <span id="server-status-text">⏳ <strong>Connecting to MedLens Engine...</strong> (Cold start may take ~25s on cloud free instances)</span>
+        <div style="display: inline-flex; gap: 8px;">
+            <button type="button" onclick="checkBackendHealth(true)" style="background: #0284c7; color: #ffffff; border: none; padding: 5px 12px; border-radius: 6px; font-weight: 800; cursor: pointer; font-size: 0.78rem;">🔄 Retry Connection</button>
+            <button type="button" onclick="activateOfflineDemoMode()" style="background: #334155; color: #93c5fd; border: 1px solid #475569; padding: 5px 12px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.78rem;">🧪 Interactive Demo Mode</button>
+        </div>
     </div>
 
     <main>
@@ -344,8 +347,8 @@
                                 <span class="ml-stat-label" style="font-size: 0.72rem; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.04em;">RED-FLAG DETECTION</span>
                             </div>
                             <div class="ml-stat-item" style="background: #ffffff; border: 1.5px solid #fde68a; border-radius: 12px; padding: 10px 18px; box-shadow: 0 3px 10px rgba(217, 119, 6, 0.08); min-width: 125px;">
-                                <span class="ml-stat-number" style="font-size: 1.6rem; font-weight: 900; color: #d97706;">4</span>
-                                <span class="ml-stat-label" style="font-size: 0.72rem; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.04em;">CONSULTATION LANGUAGES</span>
+                                <span class="ml-stat-number" style="font-size: 1.6rem; font-weight: 900; color: #d97706;">4+</span>
+                                <span class="ml-stat-label" style="font-size: 0.72rem; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.04em;">REGIONAL LANGUAGES (22+ BHASHINI)</span>
                             </div>
                         </div>
                     </div>
@@ -552,14 +555,14 @@
                     <span class="material-symbols-outlined icon" style="font-size: 28px; color: #0284c7;">verified_user</span>
                     <div>
                         <div class="title" style="font-weight: 900; font-size: 0.88rem; color: #0f2744; text-transform: uppercase; letter-spacing: 0.03em;">SECURE &amp; PRIVATE</div>
-                        <div class="sub" style="font-weight: 600; font-size: 0.76rem; color: #64748b;">HIPAA &amp; clinical data privacy</div>
+                        <div class="sub" style="font-weight: 600; font-size: 0.76rem; color: #64748b;">DPDP Act 2023 &amp; Clinical Data Privacy</div>
                     </div>
                 </div>
                 <div class="ml-trust-item" style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 14px 18px; display: flex; align-items: center; gap: 12px; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);">
                     <span class="material-symbols-outlined icon" style="font-size: 28px; color: #059669;">language</span>
                     <div>
                         <div class="title" style="font-weight: 900; font-size: 0.88rem; color: #0f2744; text-transform: uppercase; letter-spacing: 0.03em;">MULTIPLE LANGUAGES</div>
-                        <div class="sub" style="font-weight: 600; font-size: 0.76rem; color: #64748b;">English, Hindi, Telugu, Odia</div>
+                        <div class="sub" style="font-weight: 600; font-size: 0.76rem; color: #64748b;">English, Hindi, Telugu, Odia (22+ Bhashini)</div>
                     </div>
                 </div>
                 <div class="ml-trust-item" style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 14px 18px; display: flex; align-items: center; gap: 12px; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);">
@@ -710,7 +713,7 @@
                     <div style="width: 52px; height: 52px; border-radius: 14px; background: #f0f9ff; border: 1.5px solid #bae6fd; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 12px; color: #0284c7;">
                         <span class="material-symbols-outlined" style="font-size: 28px;">medical_services</span>
                     </div>
-                    <div style="font-size: 0.72rem; font-weight: 800; color: #0284c7; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px;">Medicover Patient Services</div>
+                    <div style="font-size: 0.72rem; font-weight: 800; color: #0284c7; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px;">MedLens Patient Services</div>
                     <h2 style="font-size: 1.55rem; font-weight: 800; color: #0f2744; margin: 0 0 6px 0; letter-spacing: -0.01em;">Patient Portal Sign In</h2>
                     <p style="font-size: 0.85rem; color: #64748b; margin: 0; line-height: 1.45;">Enter your Patient ID and Security PIN from your receipt slip to access your medical records.</p>
                 </div>
@@ -761,11 +764,11 @@
                     </a>
                 </div>
 
-                <!-- Quick 1-Click Demo Profiles -->
-                <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #f1f5f9;">
+                <!-- Quick 1-Click Demo Profiles (Protected by Demo Mode) -->
+                <div id="patient-demo-profiles-container" style="display: none; margin-top: 16px; padding: 14px; border: 1.5px dashed #bae6fd; border-radius: 12px; background: #f0f9ff;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <span style="font-size: 0.72rem; color: #64748b; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">
-                            ⚡ Quick 1-Click Demo Fill:
+                        <span style="font-size: 0.72rem; color: #0369a1; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">
+                            🧪 Evaluator Demo Profiles (1-Click Fill):
                         </span>
                         <button type="button" class="btn-secondary" style="padding: 2px 8px; font-size: 0.72rem; border-radius: 6px;" onclick="loadPublicPatients()" title="Refresh patient list">
                             <span class="material-symbols-outlined" style="font-size: 13px; vertical-align: middle;">sync</span> Refresh
@@ -774,18 +777,24 @@
                     <div id="patient-quick-login-grid" style="display: flex; flex-direction: column; gap: 6px;"></div>
                 </div>
 
+                <div style="text-align: center; margin-top: 14px;">
+                    <button type="button" id="patient-demo-toggle-btn" onclick="togglePatientDemoAccounts()" style="background: none; border: none; color: #0284c7; font-size: 0.76rem; font-weight: 700; cursor: pointer; text-decoration: underline; display: inline-flex; align-items: center; gap: 4px;">
+                        <span>🎭</span> <span>Show Evaluator Demo Accounts</span>
+                    </button>
+                </div>
+
                 <!-- Security Trust Footer -->
                 <div style="display: flex; justify-content: center; align-items: center; gap: 14px; margin-top: 22px; padding-top: 14px; border-top: 1px solid #f1f5f9; font-size: 0.74rem; color: #64748b; flex-wrap: wrap;">
                     <span style="display: inline-flex; align-items: center; gap: 4px;">
-                        <span class="material-symbols-outlined" style="font-size: 14px; color: #10b981;">lock</span> HIPAA Encrypted
+                        <span class="material-symbols-outlined" style="font-size: 14px; color: #10b981;">lock</span> DPDP Act 2023 Aligned
                     </span>
                     <span style="color: #cbd5e1;">•</span>
                     <span style="display: inline-flex; align-items: center; gap: 4px;">
-                        <span class="material-symbols-outlined" style="font-size: 14px; color: #0284c7;">verified</span> ABDM &amp; ABHA Ready
+                        <span class="material-symbols-outlined" style="font-size: 14px; color: #0284c7;">verified</span> ABDM Milestone Ready
                     </span>
                     <span style="color: #cbd5e1;">•</span>
                     <span style="display: inline-flex; align-items: center; gap: 4px;">
-                        <span class="material-symbols-outlined" style="font-size: 14px; color: #8b5cf6;">health_and_safety</span> Official EHR
+                        <span class="material-symbols-outlined" style="font-size: 14px; color: #8b5cf6;">health_and_safety</span> Zero PII Retention
                     </span>
                 </div>
             </div>
@@ -1030,7 +1039,7 @@
                 <div style="background: white; border-radius: 20px; padding: 24px 28px; border: 1px solid #e2e8f0; margin-bottom: 22px; box-shadow: 0 4px 16px rgba(15, 23, 42, 0.03); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
                     <div>
                         <div style="font-size: 0.76rem; color: #10b981; text-transform: uppercase; font-weight: 800; letter-spacing: 0.06em; margin-bottom: 2px;">Clinical Decision Support</div>
-                        <h2 style="font-size: 1.85rem; font-weight: 800; color: #0f2744; margin: 0;">Good morning, Dr. Sharma!</h2>
+                        <h2 style="font-size: 1.85rem; font-weight: 800; color: #0f2744; margin: 0;" id="doctor-greeting-heading">Good morning, Doctor!</h2>
                         <div style="font-size: 0.88rem; color: #64748b; margin-top: 4px;">
                             Here's your clinical queue, SIH PS 26047 cases, and laboratory accessioning for today.
                         </div>
@@ -1760,8 +1769,8 @@
                         <div class="anl-step" id="anl-step-2" style="display:flex; align-items:center; gap:12px; padding:10px 14px; border-radius:10px; background: rgba(99,102,241,0.04); border:1px solid rgba(99,102,241,0.12); opacity:0.6;">
                             <span style="font-size:1.2rem;">🤖</span>
                             <div style="flex:1;">
-                                <div style="font-size:0.82rem; font-weight:700; color: var(--text-main);">OpenRouter AI Clinical Analysis</div>
-                                <div style="font-size:0.75rem; color:var(--text-muted);">Gemini Flash analyzing abnormal patterns &amp; rare disease screening</div>
+                                <div style="font-size:0.82rem; font-weight:700; color: var(--text-main);">Clinical AI Analysis Engine</div>
+                                <div style="font-size:0.75rem; color:var(--text-muted);">Gemini Flash &amp; Gemma 4 31B analyzing abnormal patterns &amp; rare disease screening</div>
                             </div>
                             <span class="anl-step-badge anl-step-running" id="anl-step-2-badge" style="font-size:0.75rem; padding:2px 8px; border-radius:20px; background:rgba(251,191,36,0.15); color:#fbbf24; display:none;">⏳ Running</span>
                         </div>
@@ -1818,7 +1827,7 @@
                         </p>
                     </div>
                     <button type="button" class="btn-medicover-booking" onclick="bookMissingTestsAtMedicover()">
-                        <span>🏥</span> Book these tests at Medicover Vizag
+                        <span>🏥</span> Book tests at MedLens Apex Hospital
                     </button>
                 </div>
                 <div id="missing-tests-list-container" class="missing-tests-list"></div>
@@ -1893,12 +1902,12 @@
                 <div class="cab-content">
                     <span class="cab-icon" id="cab-icon">🚨</span>
                     <div class="cab-text">
-                        <strong id="cab-headline">Critical Status Detected: Please seek immediate medical attention</strong>
-                        <span id="cab-detail">Visit Medicover Vizag Emergency immediately or call <strong>1066</strong> (National Ambulance)</span>
+                        <strong id="cab-headline">Critical Status Detected: Please seek immediate emergency medical care</strong>
+                        <span id="cab-detail">Visit the nearest Emergency department immediately or dial <strong>112 / 108</strong> (National Emergency &amp; Free Ambulance)</span>
                     </div>
                 </div>
                 <div class="cab-actions">
-                    <a href="tel:1066" class="cab-call red-call" id="cab-call-link">📞 Call 1066</a>
+                    <a href="tel:112" class="cab-call red-call" id="cab-call-link">📞 Dial 112 / 108</a>
                     <button type="button" class="cab-dismiss" onclick="dismissTriageBanner()">✕ Dismiss</button>
                 </div>
             </div>
@@ -1918,7 +1927,7 @@
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
                     <div>
                         <div style="display: inline-flex; align-items: center; gap: 6px; background: var(--primary-surface); color: var(--primary); border: 1px solid var(--primary-border); padding: 4px 12px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">
-                            <span>⚡</span> Real-Time Streaming &bull; OpenRouter Gemma 4 31B Free AI
+                            <span>⚡</span> Real-Time Streaming &bull; MedLens Clinical LLM (Gemma 4 31B &amp; Gemini Flash)
                         </div>
                         <h2 style="font-size: 1.55rem; font-weight: 800; color: var(--primary); margin-bottom: 6px;">
                             <span>✨</span> Symptoms to AI Suggestions &amp; Care Guidance
@@ -2201,8 +2210,8 @@
                         <div class="mq-header">
                             <div class="mq-title">
                                 <span>🩺</span>
-                                <span>Questions for your Medicover Specialist</span>
-                                <span class="mq-badge">Medicover</span>
+                                <span>Questions for your Attending Specialist</span>
+                                <span class="mq-badge">Doctor Prep</span>
                             </div>
                             <button type="button" class="mq-copy-btn" onclick="copyDoctorQuestions()">
                                 <span id="mq-copy-icon">📋</span> Copy to Clipboard
@@ -2220,7 +2229,7 @@
                                 <span>📋</span> Official Clinical Logging
                             </div>
                             <p style="font-size: 0.8rem; color: var(--text-muted); margin: 2px 0 0 0;">
-                                Send this symptom consultation directly to Medicover physicians as an official reported issue.
+                                Send this symptom consultation directly to attending physicians as an official pre-consultation summary.
                             </p>
                         </div>
                         <button type="button" id="btn-file-symptom-issue" class="btn-primary" style="background: var(--mc-blue); padding: 8px 18px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px;" onclick="fileReportedIssueFromSymptoms()">
@@ -2267,7 +2276,7 @@
                 <div class="ops-header-right">
                     <div class="ops-sync-status">
                         <span class="pulse-dot"></span>
-                        <span id="ops-sync-text">Live Reconciled (1,046 Records)</span>
+                        <span id="ops-sync-text">Live Reconciled (1,067 Records: 309 Admissions, 607 Lab, 151 Ward Logs)</span>
                     </div>
                     <div class="ops-header-actions">
                         <button type="button" class="btn-primary ops-action-btn" onclick="openDailyReportModal()" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: #fff; border: none;">
@@ -2303,9 +2312,16 @@
                 </form>
 
                 
-                <div style="margin-top: 22px; border-top: 1.5px solid #f1f5f9; padding-top: 16px; text-align: left;">
-                    <div style="font-size: 0.74rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">
-                        ⚡ Quick Demo Account Selector (1-Click Fill &amp; Sign In):
+                <div style="text-align: center; margin-top: 14px;">
+                    <button type="button" id="staff-demo-toggle-btn" onclick="toggleStaffDemoAccounts()" style="background: none; border: none; color: #0284c7; font-size: 0.76rem; font-weight: 700; cursor: pointer; text-decoration: underline; display: inline-flex; align-items: center; gap: 4px;">
+                        <span>🎭</span> <span>Show Evaluator Demo Roles</span>
+                    </button>
+                </div>
+
+                
+                <div id="staff-demo-accounts-container" style="display: none; margin-top: 16px; border: 1.5px dashed #bae6fd; border-radius: 12px; padding: 14px; background: #f0f9ff; text-align: left;">
+                    <div style="font-size: 0.74rem; font-weight: 800; color: #0369a1; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">
+                        🧪 SIH Evaluator Demo Roles (1-Click Fill &amp; Sign In):
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
                         <button type="button" class="btn-secondary" style="font-size: 0.78rem; padding: 8px 10px; justify-content: flex-start;" onclick="fillStaffDemo('REC001', 'Staff@2026')">
@@ -2404,7 +2420,7 @@
                             <div>
                                 <div style="display: flex; align-items: center; gap: 8px;">
                                     <div class="ml-kpi-num" id="rec-stat-avail-beds">38</div>
-                                    <span id="rec-quota-badge" class="badge" style="display: none; background: #fee2e2; color: #991b1b; font-weight: 800; font-size: 0.68rem;">BED QUOTA FULL</span>
+                                    <span id="rec-quota-badge" class="badge" style="display: none; background: #fee2e2; color: #991b1b; font-weight: 800; font-size: 0.68rem;">CRITICAL: 0 BEDS AVAILABLE</span>
                                 </div>
                                 <div class="ml-kpi-label">Available Beds (of 98)</div>
                             </div>
@@ -2510,7 +2526,7 @@
                         <div class="invoice-paper-slip" style="box-shadow: 0 4px 14px rgba(0,0,0,0.04);">
                             <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #0284c7; padding-bottom: 10px; margin-bottom: 12px;">
                                 <div>
-                                    <h3 style="font-size: 1.1rem; font-weight: 800; color: #0f172a; margin: 0;">MEDICOVER HOSPITALS</h3>
+                                    <h3 style="font-size: 1.1rem; font-weight: 800; color: #0f172a; margin: 0;">MEDLENS APEX HOSPITAL</h3>
                                     <div style="font-size: 0.74rem; color: #64748b;">Inpatient Billing &amp; TPA Pre-Auth Desk</div>
                                 </div>
                                 <span class="badge" style="background: #e0f2fe; color: #0369a1; font-weight: 800;">LIVE INVOICE</span>
@@ -2568,13 +2584,11 @@
 
                             <table class="invoice-item-table" style="font-size: 0.78rem;">
                                 <tbody>
-                                    <tr><td>Bed Charges:</td><td style="text-align: right; font-weight: 700;" id="disp-bill-bed-charges">₹7,200</td></tr>
+                                    <tr><td>Bed Accommodation:</td><td style="text-align: right; font-weight: 700;" id="disp-bill-bed-charges">₹7,200</td></tr>
                                     <tr><td>Doctor Consultations:</td><td style="text-align: right; font-weight: 700;" id="disp-bill-doc-charges">₹4,000</td></tr>
-                                    <tr><td>Nursing &amp; Sanitization:</td><td style="text-align: right; font-weight: 700;" id="disp-bill-nursing-charges">₹2,000</td></tr>
-                                    <tr><td>Lab Diagnostics:</td><td style="text-align: right; font-weight: 700;" id="disp-bill-lab-charges">₹1,200</td></tr>
-                                    <tr><td>Linen &amp; Bedsheets:</td><td style="text-align: right; font-weight: 700;" id="disp-bill-linen-charges">₹320</td></tr>
-                                    <tr><td>Food &amp; Meals:</td><td style="text-align: right; font-weight: 700;" id="disp-bill-food-charges">₹720</td></tr>
-                                    <tr><td>Housekeeping:</td><td style="text-align: right; font-weight: 700;" id="disp-bill-housekeeping-charges">₹240</td></tr>
+                                    <tr><td>Nursing Care &amp; Sanitization:</td><td style="text-align: right; font-weight: 700;" id="disp-bill-nursing-charges">₹2,000</td></tr>
+                                    <tr><td>Pathology &amp; Lab Diagnostics:</td><td style="text-align: right; font-weight: 700;" id="disp-bill-lab-charges">₹2,200</td></tr>
+                                    <tr><td>Pharmacy &amp; Consumables:</td><td style="text-align: right; font-weight: 700;" id="disp-bill-pharmacy-charges">₹1,800</td></tr>
                                     <tr id="disp-bill-extras-row" style="display:none;"><td>Additional Items:</td><td style="text-align: right; font-weight: 700;" id="disp-bill-extras-total">₹0</td></tr>
                                     <tr style="border-top: 1.5px solid #cbd5e1; font-weight: 800;"><td>Gross Total (+ 5% GST):</td><td style="text-align: right;" id="disp-bill-gross-total">₹18,060</td></tr>
                                     <tr style="color: #16a34a; font-weight: 800;" id="disp-insurance-row"><td>Insurance (80%):</td><td style="text-align: right;" id="disp-bill-insurance-deduct">-₹14,448</td></tr>
@@ -2915,21 +2929,21 @@
                                     <span class="material-symbols-outlined" style="font-size: 20px; color: #d97706;">warning</span>
                                     <div>
                                         <strong>ICU Ward Near Capacity:</strong> Occupancy reached 80% threshold (12/15 beds). Triage coordinator notified.
-                                        <div style="font-size: 0.74rem; color: #b45309; margin-top: 2px;">12 mins ago &bull; Inpatient Management</div>
+                                        <div style="font-size: 0.74rem; color: #b45309; margin-top: 2px;"><span class="dynamic-relative-time" data-minutes-ago="12">12 mins ago</span> &bull; Inpatient Management &bull; <span style="font-size: 0.68rem; background: #fef3c7; color: #92400e; padding: 1px 6px; border-radius: 4px; font-weight: 700;">PILOT FEED</span></div>
                                     </div>
                                 </div>
                                 <div class="ml-alert-item success">
                                     <span class="material-symbols-outlined" style="font-size: 20px; color: #16a34a;">check_circle</span>
                                     <div>
-                                        <strong>Supabase ERP Reconciled:</strong> 1,046 admissions &amp; lab records synchronized with zero data conflicts.
-                                        <div style="font-size: 0.74rem; color: #15803d; margin-top: 2px;">24 mins ago &bull; Automated Pipeline</div>
+                                        <strong>Supabase ERP Reconciled:</strong> 1,067 admissions, lab orders &amp; ward logs synchronized with zero data conflicts.
+                                        <div style="font-size: 0.74rem; color: #15803d; margin-top: 2px;"><span class="dynamic-relative-time" data-minutes-ago="24">24 mins ago</span> &bull; Automated Pipeline &bull; <span style="font-size: 0.68rem; background: #dcfce7; color: #166534; padding: 1px 6px; border-radius: 4px; font-weight: 700;">AUDIT SYNC</span></div>
                                     </div>
                                 </div>
                                 <div class="ml-alert-item info">
                                     <span class="material-symbols-outlined" style="font-size: 20px; color: #0284c7;">biotech</span>
                                     <div>
                                         <strong>Pathology Batch Ingestion:</strong> 14 outpatient blood panels successfully processed by ML classifier.
-                                        <div style="font-size: 0.74rem; color: #0369a1; margin-top: 2px;">45 mins ago &bull; Lab Order Queue</div>
+                                        <div style="font-size: 0.74rem; color: #0369a1; margin-top: 2px;"><span class="dynamic-relative-time" data-minutes-ago="45">45 mins ago</span> &bull; Lab Order Queue &bull; <span style="font-size: 0.68rem; background: #e0f2fe; color: #075985; padding: 1px 6px; border-radius: 4px; font-weight: 700;">AI INGESTION</span></div>
                                     </div>
                                 </div>
                             </div>
@@ -3340,10 +3354,10 @@
     <div id="share-pin-modal-overlay" class="share-pin-modal-overlay" onclick="closeSharePinModal(event)">
         <div class="share-pin-modal-box" onclick="event.stopPropagation()">
             <div class="spm-header">
-                <span>🔐</span> Secure Medicover Share PIN
+                <span>🔐</span> Secure Clinical Share PIN
             </div>
             <p class="spm-sub">
-                Share this 6-digit PIN with your Medicover doctor.<br>
+                Share this 6-digit PIN with your attending physician.<br>
                 They can use it to securely access this report summary.
             </p>
             <div class="spm-pin-display" id="spm-pin-display">
@@ -3393,7 +3407,7 @@
                     </div>
                     <div class="form-group">
                         <label for="rev-doctor-name">Reviewing Physician</label>
-                        <input type="text" id="rev-doctor-name" class="form-control" value="Dr. Rajesh Varma (Medicover Vizag)">
+                        <input type="text" id="rev-doctor-name" class="form-control" value="Dr. Rajesh Varma, MD (Attending Physician)">
                     </div>
                 </div>
                 <div class="form-group" style="margin-bottom: 16px;">
@@ -3534,7 +3548,7 @@
 
                 <div class="form-group" style="margin-bottom: 16px;">
                     <label for="rem-sent-by">Issued By</label>
-                    <input type="text" id="rem-sent-by" class="form-control" value="Dr. Rajesh Varma (Medicover Vizag Clinical Desk)" oninput="updateSmsPreview()">
+                    <input type="text" id="rem-sent-by" class="form-control" value="Dr. Rajesh Varma, MD (Attending Clinical Desk)" oninput="updateSmsPreview()">
                 </div>
                 <div style="display: flex; justify-content: flex-end; gap: 10px;">
                     <button type="button" class="btn-secondary" onclick="closeSendCareReminderModal()">Cancel</button>
@@ -4195,7 +4209,7 @@
                             </div>
                             <div class="apt-field" style="grid-column: 1 / -1;">
                                 <span class="apt-field-label">Consultation Location</span>
-                                <span class="apt-field-value">Medicover Hospital, Health City, Arilova, Visakhapatnam &bull; OP Consultation Desk</span>
+                                <span class="apt-field-value">MedLens Apex Hospital, Health City Campus, Visakhapatnam &bull; OP Consultation Desk</span>
                             </div>
                         </div>
 
@@ -4236,8 +4250,9 @@
                     <div style="border: 2px solid #0f172a; padding: 20px; border-radius: 12px; background: #ffffff;">
                         <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #0f172a; padding-bottom: 10px; margin-bottom: 14px;">
                             <div>
-                                <h3 style="font-size: 1.2rem; font-weight: 900; color: #0f172a; margin: 0;">MEDICOVER HOSPITALS</h3>
-                                <div style="font-size: 0.76rem; color: #475569;">Health City, Arilova, Visakhapatnam &bull; Ph: 0891-6824444</div>
+                                <h3 style="font-size: 1.2rem; font-weight: 900; color: #0f172a; margin: 0;">MEDLENS APEX HOSPITAL &amp; RESEARCH INSTITUTE</h3>
+                                <div style="font-size: 0.76rem; color: #475569;">Health City Campus, Visakhapatnam &bull; Emergency: 112 / 108 &bull; Ph: 0891-2824444</div>
+                                <div style="font-size: 0.68rem; color: #94a3b8; font-style: italic;">(SIH PS 26047 Clinical Decision Support &amp; Operational Pilot Partner)</div>
                             </div>
                             <div style="text-align: right;">
                                 <div style="font-size: 0.72rem; font-weight: 800; color: #64748b;">TAX INVOICE / BILL OF SUPPLY</div>
