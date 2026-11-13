@@ -1273,7 +1273,7 @@ async function fetchAndRenderPatientReports() {
                                 <button type="button" class="btn-primary" style="padding: 5px 12px; font-size: 0.8rem;" onclick="viewPatientReportDetails('${r.report_id}')">
                                     <span>👁️</span> View Full Report
                                 </button>
-                                <button type="button" class="btn-secondary" style="padding: 5px 10px; font-size: 0.8rem; border-color: var(--mc-blue); color: var(--mc-blue);" onclick="shareCurrentReport('${r.report_id}')" title="Generate secure 6-digit PIN for your doctor">
+                                <button type="button" class="btn-secondary" style="padding: 5px 10px; font-size: 0.8rem; border-color: var(--mc-blue); color: var(--mc-blue);" onclick="shareCurrentReport('${r.report_id}')" title="Generate secure 6-digit PIN for your Medicover doctor">
                                     <span>🔐</span> Share PIN
                                 </button>
                             </td>
@@ -1526,11 +1526,11 @@ function generateMedicoverVizagDoctors(report) {
                 </div>
             </div>
 
-            <!-- Specialist Doctor Referral: MedLens Clinical Network -->
+            <!-- Specialist Doctor Referral: Sourced from https://www.medicoverhospitals.in/doctors/vizag -->
             <div class="medicover-doctor-card">
                 <div>
                     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px; flex-wrap: wrap;">
-                        <span class="hospital-badge">🏥 MEDLENS APEX HOSPITAL &bull; VISAKHAPATNAM (VIZAG CAMPUS)</span>
+                        <span class="hospital-badge">🏥 MEDICOVER HOSPITALS &bull; VISAKHAPATNAM (VIZAG)</span>
                         <span style="font-size: 0.76rem; color: var(--text-dim); font-weight: 700;">Department: ${specialty}</span>
                     </div>
                     <h3 style="font-size: 1.25rem; font-weight: 800; color: #1e1b4b; margin: 4px 0;">${doctorName}</h3>
@@ -1538,23 +1538,23 @@ function generateMedicoverVizagDoctors(report) {
                     <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 2px;">${doctorRole}</div>
 
                     <div style="margin-top: 12px; display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.8rem; color: #475569;">
-                        <div>📍 <strong>Location:</strong> MedLens Apex Hospital, Health City Chinagadili, Vizag</div>
+                        <div>📍 <strong>Location:</strong> Medicover Hospital, MVP Colony / Health City Chinagadili, Vizag</div>
                         <div>🕒 <strong>OPD Timings:</strong> ${opdTimings}</div>
                     </div>
                 </div>
 
                 <div style="display: flex; flex-direction: column; gap: 8px; min-width: 200px;">
                     <a href="tel:08916824444" class="btn-primary" style="background: linear-gradient(135deg, #4f46e5, #7c3aed); text-decoration: none; justify-content: center; font-size: 0.85rem; padding: 10px 16px;">
-                        <span>📞</span> Call OPD: 0891-6824444
+                        <span>📞</span> Call: 0891-6824444
                     </a>
-                    <button type="button" class="btn-secondary" onclick="openPatientRegistrationModal()" style="text-decoration: none; justify-content: center; font-size: 0.8rem; padding: 8px 14px; color: #4338ca; border-color: #c7d2fe;">
-                        <span>📅</span> Book Consultation
-                    </button>
+                    <a href="${doctorProfileUrl}" target="_blank" class="btn-secondary" style="text-decoration: none; justify-content: center; font-size: 0.8rem; padding: 8px 14px; color: #4338ca; border-color: #c7d2fe;">
+                        <span>🌐</span> View Official Profile ↗
+                    </a>
                 </div>
             </div>
             
             <div style="font-size: 0.78rem; color: var(--text-dim); text-align: right;">
-                * Attending medical specialists &bull; MedLens Apex Clinical Network (SIH PS 26047 Partner).
+                * Verified doctors sourced from <a href="https://www.medicoverhospitals.in/doctors/vizag" target="_blank" style="color: #4338ca; font-weight: 600;">medicoverhospitals.in/doctors/vizag</a>.
             </div>
         </div>
     `;
@@ -2134,7 +2134,7 @@ function renderOfficialReportHTML(report) {
             </div>
 
             <div class="admin-controls" style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; margin-bottom: 10px; flex-wrap: wrap;">
-                <button type="button" class="btn-secondary" style="background: var(--mc-blue); color: #ffffff; border-color: var(--mc-blue);" onclick="shareCurrentReport('${report.report_id}')"><span>🔐</span> Share with Doctor (PIN)</button>
+                <button type="button" class="btn-secondary" style="background: var(--mc-blue); color: #ffffff; border-color: var(--mc-blue);" onclick="shareCurrentReport('${report.report_id}')"><span>🔐</span> Share with Medicover Doctor</button>
                 <button type="button" class="btn-secondary" onclick="window.print()"><span>🖨️</span> Print Official Report</button>
                 <button type="button" class="btn-primary" onclick="triggerReportMLAnalysis('${report.report_id}')"><span>⚡</span> Run Experimental ML Decision Support</button>
             </div>
@@ -5674,7 +5674,7 @@ function renderPatientReminders() {
                             <p class="reminder-message">${escapeHtml(r.message)}</p>
                             <div class="reminder-meta-row">
                                 <span>📅 ${dueDateStr}</span>
-                                <span>👨‍⚕️ ${escapeHtml(r.sent_by || 'MedLens Clinical Desk')}</span>
+                                <span>👨‍⚕️ ${escapeHtml(r.sent_by || 'Medicover Clinical Desk')}</span>
                                 <span>🕒 Sent ${createdDate}</span>
                             </div>
                         </div>
@@ -5821,7 +5821,7 @@ async function loadPatientReportedIssues(patientId) {
                                 <td><span class="triage-pill ${triageClass}">${iss.triage_level || 'routine'}</span></td>
                                 <td><span class="issue-status-pill ${statusClass}">${statusLabel}</span></td>
                                 <td style="font-size: 0.82rem; color: #334155;">
-                                    ${iss.doctor_notes ? `<strong>${escapeHtml(iss.doctor_notes)}</strong><div style="font-size: 0.72rem; color: #64748b;">— ${escapeHtml(iss.doctor_name || 'MedLens Attending Physician')}</div>` : '<em style="color: #94a3b8;">Pending physician review</em>'}
+                                    ${iss.doctor_notes ? `<strong>${escapeHtml(iss.doctor_notes)}</strong><div style="font-size: 0.72rem; color: #64748b;">— ${escapeHtml(iss.doctor_name || 'Medicover Doctor')}</div>` : '<em style="color: #94a3b8;">Pending physician review</em>'}
                                 </td>
                             </tr>
                         `;
@@ -6118,7 +6118,7 @@ function updateSmsPreview() {
     if (dueDate) {
         preview += ` Due: ${dueDate}.`;
     }
-    preview += `\n- MedLens Clinical Desk. Emergency: 112 / 108`;
+    preview += `\n- Dr. Medicover. Emergency: 108`;
 
     if (preview.length > 320) {
         preview = preview.substring(0, 317) + '...';

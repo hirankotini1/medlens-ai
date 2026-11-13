@@ -1275,7 +1275,7 @@ async function submitDoctorCaseSignoff() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                doctor_id: (currentAuth && currentAuth.patientName) || 'Dr. Sharma (MedLens Clinical Desk)',
+                doctor_id: (currentAuth && currentAuth.patientName) || 'Dr. Medicover Clinical Desk',
                 doctor_notes: notes || 'Clinical case history verified and confirmed.',
                 status: 'confirmed'
             })
