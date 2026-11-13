@@ -120,11 +120,11 @@
     <header class="top-navbar">
         <div class="brand-logo" onclick="switchView('home')">
             <span class="brand-icon">
-                <span class="material-symbols-outlined" style="font-size: 22px; color: var(--primary);">biotech</span>
+                <span class="material-symbols-outlined" style="font-size: 26px; color: var(--clinical-blue);">biotech</span>
             </span>
             <div class="brand-text-block" style="display: flex; flex-direction: column; line-height: 1.15;">
-                <span class="brand-title" style="font-weight: 800; font-size: 1.18rem; color: var(--primary); letter-spacing: -0.02em;">AVENQRA <span style="color: var(--mc-blue-light);">AI</span></span>
-                <span class="brand-subtitle" style="font-size: 0.65rem; color: var(--text-dim); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;">Adaptive Clinical Intelligence</span>
+                <span class="brand-title" style="font-weight: 800; font-size: 1.22rem; color: var(--primary-navy); letter-spacing: -0.02em;">MEDLENS <span style="color: var(--clinical-blue);">AI</span></span>
+                <span class="brand-subtitle" style="font-size: 0.64rem; color: var(--secondary-text); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;">Clinical Intelligence Platform</span>
             </div>
         </div>
 
@@ -132,32 +132,35 @@
             <a href="javascript:void(0)" onclick="switchView('home')" class="nav-btn active" id="tab-home">
                 <span class="material-symbols-outlined">dashboard</span> HOME
             </a>
+            <a href="javascript:void(0)" onclick="if(document.getElementById('view-home').classList.contains('active')){document.getElementById('ml-features-overview')?.scrollIntoView({behavior:'smooth'})}else{switchView('home');setTimeout(()=>document.getElementById('ml-features-overview')?.scrollIntoView({behavior:'smooth'}),150);}" class="nav-btn" id="tab-platform">
+                <span class="material-symbols-outlined">hub</span> PLATFORM
+            </a>
+            <a href="javascript:void(0)" onclick="switchView('voice-case-taking')" class="nav-btn" id="tab-voice-case-taking" title="AI Patient Case Taking (Voice + Touch + OCR) — SIH PS 26047">
+                <span class="material-symbols-outlined">clinical_notes</span> AI CASE TAKING
+            </a>
+            <a href="javascript:void(0)" onclick="switchView('analyzer')" class="nav-btn" id="tab-analyzer">
+                <span class="material-symbols-outlined">analytics</span> REPORT ANALYZER
+            </a>
+            <a href="javascript:void(0)" onclick="switchView('sandbox')" class="nav-btn" id="tab-sandbox">
+                <span class="material-symbols-outlined">query_stats</span> ML SANDBOX
+            </a>
             <a href="javascript:void(0)" onclick="switchView('admin')" class="nav-btn" id="tab-admin">
                 <span class="material-symbols-outlined">stethoscope</span> DOCTOR CONSOLE
             </a>
             <a href="javascript:void(0)" onclick="switchView('patient')" class="nav-btn" id="tab-patient">
                 <span class="material-symbols-outlined">description</span> PATIENT PORTAL
             </a>
-            <a href="javascript:void(0)" onclick="switchView('voice-case-taking')" class="nav-btn" id="tab-voice-case-taking" title="AI Patient Case Taking (Voice + Touch + OCR) — SIH PS 26047">
-                <span class="material-symbols-outlined">clinical_notes</span> AI CASE TAKING
+            <a href="javascript:void(0)" onclick="switchView('operations')" class="nav-btn" id="tab-operations" title="Hospital Staff Operations Hub &amp; Inpatient Management">
+                <span class="material-symbols-outlined">local_hospital</span> OPERATIONS
             </a>
-            <a href="javascript:void(0)" onclick="switchView('analyzer')" class="nav-btn" id="tab-analyzer">
-                <span class="material-symbols-outlined">analytics</span> AI ANALYZER
-            </a>
-            <a href="javascript:void(0)" onclick="switchView('symptoms')" class="nav-btn" id="tab-symptoms">
+            <a href="javascript:void(0)" onclick="switchView('symptoms')" class="nav-btn" id="tab-symptoms" style="display: none;">
                 <span class="material-symbols-outlined">psychology</span> SYMPTOMS AI
             </a>
-            <a href="javascript:void(0)" onclick="switchView('sandbox')" class="nav-btn" id="tab-sandbox">
-                <span class="material-symbols-outlined">query_stats</span> ML SANDBOX
-            </a>
-            <a href="javascript:void(0)" onclick="switchView('operations')" class="nav-btn" id="tab-operations" title="Hospital Staff Operations Hub &amp; Inpatient Management">
-                <span class="material-symbols-outlined">badge</span> STAFF OPERATIONS
-            </a>
-            <a href="/product.html" class="nav-btn" id="tab-product" title="Avenqra AI Product Architecture &amp; Capabilities">
-                <span class="material-symbols-outlined">info</span> PRODUCT
+            <a href="/product.html" class="nav-btn" id="tab-product" title="MedLens AI Product Architecture &amp; Capabilities">
+                <span class="material-symbols-outlined">info</span> ABOUT
             </a>
 
-            <button type="button" class="btn-primary" onclick="openPatientRegistrationModal()" style="background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%); padding: 7px 16px; font-size: 0.82rem; font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase; border-radius: 9px; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35); display: inline-flex; align-items: center; gap: 6px; border: none; cursor: pointer; color: white; white-space: nowrap; margin-left: 4px;" title="Register new outpatient and get appointment slip">
+            <button type="button" class="btn-primary" onclick="openPatientRegistrationModal()" style="background: var(--clinical-blue); padding: 8px 16px; font-size: 0.82rem; font-weight: 800; letter-spacing: 0.03em; text-transform: uppercase; border-radius: 9px; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3); display: inline-flex; align-items: center; gap: 6px; border: none; cursor: pointer; color: white; white-space: nowrap; margin-left: 4px;" title="Register new outpatient and get appointment slip">
                 <span class="material-symbols-outlined" style="font-size: 17px;">calendar_month</span> <span class="doc-btn-text">BOOK APPOINTMENT</span>
             </button>
 
@@ -303,119 +306,429 @@
         <section id="view-home" class="section-view active">
             
             
-            <!-- 1. MODERN CLINICAL HERO SECTION -->
+            <!-- 1. ENTERPRISE CLINICAL HERO SECTION (DARK NAVY THEME) -->
             <div class="ml-hero-section">
                 <div class="ml-hero-grid">
                     <div>
-                        <div class="ml-tagline" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #ffffff; padding: 7px 18px; border-radius: 9999px; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35); font-weight: 900; font-size: 0.82rem; letter-spacing: 0.08em; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 14px;">
-                            <span class="material-symbols-outlined" style="font-size: 18px; color: #ffffff;">health_and_safety</span>
-                            ADAPTIVE INTELLIGENCE FOR HEALTHCARE
+                        <div class="ml-tagline">
+                            <span class="material-symbols-outlined" style="font-size: 16px; color: #38BDF8;">verified</span>
+                            <span>ADAPTIVE CLINICAL INTELLIGENCE PLATFORM</span>
                         </div>
-                        <h1 class="ml-hero-title" style="font-size: clamp(2.5rem, 5.5vw, 3.6rem); font-weight: 900; color: #0b1f3a; line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 10px;">
-                            Avenqra AI
+                        <h1 class="ml-hero-title">
+                            Adaptive Clinical Intelligence for Smarter Healthcare
                         </h1>
-                        <div class="ml-hero-subtitle" style="font-size: clamp(1.15rem, 2.4vw, 1.55rem); font-weight: 800; color: #0284c7; letter-spacing: -0.01em; margin-bottom: 16px;">
-                            Adaptive Intelligence for Healthcare
-                        </div>
-                        <p class="ml-hero-desc" style="font-size: 1.1rem; font-weight: 600; color: #334155; line-height: 1.65; margin-bottom: 26px; max-width: 620px;">
-                            Avenqra AI is an AI-assisted healthcare platform transforming patient symptom narratives and medical documents into structured, physician-reviewed clinical decision-support insights.
+                        <p class="ml-hero-desc">
+                            Connect clinical workflows, medical report analysis, AI-assisted case taking, and hospital operations through one intelligent healthcare platform.
                         </p>
                         <div class="ml-hero-buttons">
-                            <button type="button" class="ml-btn-primary" onclick="document.getElementById('ml-roles-gateway').scrollIntoView({behavior: 'smooth'})" style="background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%); color: #ffffff; font-weight: 900; font-size: 0.96rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 14px 28px; border-radius: 12px; box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4); border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
-                                <span>GET STARTED</span> <span class="material-symbols-outlined" style="font-size: 18px;">arrow_forward</span>
+                            <button type="button" class="ml-btn-primary" onclick="document.getElementById('ml-features-overview').scrollIntoView({behavior: 'smooth'})">
+                                <span>EXPLORE PLATFORM</span>
+                                <span class="material-symbols-outlined" style="font-size: 18px;">arrow_forward</span>
                             </button>
-                            <button type="button" class="ml-btn-outline" onclick="switchView('voice-case-taking')" style="background: #ffffff; border: 2.5px solid #0284c7; color: #0284c7; font-weight: 900; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 13px 26px; border-radius: 12px; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.18); cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
-                                <span class="material-symbols-outlined" style="font-size: 20px; color: #0284c7;">mic</span>
-                                <span>TRY ADAPTIVE CASE-TAKING</span>
+                            <button type="button" class="ml-btn-outline" onclick="document.getElementById('ml-roles-gateway').scrollIntoView({behavior: 'smooth'})">
+                                <span class="material-symbols-outlined" style="font-size: 18px;">dashboard</span>
+                                <span>ACCESS DASHBOARD</span>
                             </button>
-                            <a href="/product.html" style="background: #f8fafc; border: 2px solid #cbd5e1; color: #0f172a; font-weight: 800; font-size: 0.92rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 13px 20px; border-radius: 12px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
-                                <span class="material-symbols-outlined" style="font-size: 18px; color: #0284c7;">info</span>
-                                <span>PRODUCT OVERVIEW</span>
-                            </a>
+                            <button type="button" class="ml-btn-outline" onclick="switchView('voice-case-taking')" style="border-color: rgba(56, 189, 248, 0.4); color: #38BDF8;">
+                                <span class="material-symbols-outlined" style="font-size: 18px;">mic</span>
+                                <span>TRY CASE-TAKING</span>
+                            </button>
                         </div>
-                        <div class="ml-stats-strip" style="display: flex; gap: 14px; flex-wrap: wrap; padding-top: 18px; border-top: 2px solid #e2e8f0;">
-                            <div class="ml-stat-item" style="background: #ffffff; border: 1.5px solid #bae6fd; border-radius: 12px; padding: 10px 18px; box-shadow: 0 3px 10px rgba(2, 132, 199, 0.08); min-width: 125px;">
-                                <span class="ml-stat-number" style="font-size: 1.6rem; font-weight: 900; color: #0284c7;">3</span>
-                                <span class="ml-stat-label" style="font-size: 0.72rem; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.04em;">CLINICAL PATHWAYS</span>
+                        <div class="ml-stats-strip">
+                            <div class="ml-stat-item">
+                                <span class="ml-stat-number" style="color: #38BDF8;">4+ / 22+</span>
+                                <span class="ml-stat-label">LANGUAGES (BHASHINI)</span>
                             </div>
-                            <div class="ml-stat-item" style="background: #ffffff; border: 1.5px solid #a7f3d0; border-radius: 12px; padding: 10px 18px; box-shadow: 0 3px 10px rgba(16, 185, 129, 0.08); min-width: 125px;">
-                                <span class="ml-stat-number" style="font-size: 1.6rem; font-weight: 900; color: #059669;">100%</span>
-                                <span class="ml-stat-label" style="font-size: 0.72rem; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.04em;">ADAPTIVE PROBING</span>
+                            <div class="ml-stat-item">
+                                <span class="ml-stat-number" style="color: #34D399;">100%</span>
+                                <span class="ml-stat-label">ADAPTIVE PROBING</span>
                             </div>
-                            <div class="ml-stat-item" style="background: #ffffff; border: 1.5px solid #ddd6fe; border-radius: 12px; padding: 10px 18px; box-shadow: 0 3px 10px rgba(139, 92, 246, 0.08); min-width: 125px;">
-                                <span class="ml-stat-number" style="font-size: 1.6rem; font-weight: 900; color: #7c3aed;">REAL-TIME</span>
-                                <span class="ml-stat-label" style="font-size: 0.72rem; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.04em;">RED-FLAG DETECTION</span>
+                            <div class="ml-stat-item">
+                                <span class="ml-stat-number" style="color: #A78BFA;">REAL-TIME</span>
+                                <span class="ml-stat-label">RED-FLAG TRIAGE</span>
                             </div>
-                            <div class="ml-stat-item" style="background: #ffffff; border: 1.5px solid #fde68a; border-radius: 12px; padding: 10px 18px; box-shadow: 0 3px 10px rgba(217, 119, 6, 0.08); min-width: 125px;">
-                                <span class="ml-stat-number" style="font-size: 1.6rem; font-weight: 900; color: #d97706;">4+</span>
-                                <span class="ml-stat-label" style="font-size: 0.72rem; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.04em;">REGIONAL LANGUAGES (22+ BHASHINI)</span>
+                            <div class="ml-stat-item">
+                                <span class="ml-stat-number" style="color: #FBBF24;">1,067</span>
+                                <span class="ml-stat-label">RECONCILED RECORDS</span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Right Column: Quick Report Access Card -->
-                    <div class="ml-quick-access-card" style="background: #ffffff; border-radius: 22px; padding: 28px; border: 2px solid #bae6fd; box-shadow: 0 16px 40px rgba(2, 132, 199, 0.12), 0 2px 6px rgba(0,0,0,0.04);">
-                        <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 20px;">
-                            <div style="width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #0284c7, #2563eb); color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);">
-                                <span class="material-symbols-outlined" style="font-size: 26px;">lock</span>
+                    <!-- Right Column: Realistic Healthcare SaaS Dashboard Preview Mockup -->
+                    <div class="hero-saas-mockup" aria-label="MedLens AI Enterprise Dashboard Preview">
+                        <div class="mockup-window-header">
+                            <div class="mockup-traffic-lights">
+                                <span class="tl-red"></span>
+                                <span class="tl-yellow"></span>
+                                <span class="tl-green"></span>
                             </div>
-                            <div>
-                                <h3 style="font-size: 1.22rem; font-weight: 900; color: #0f2744; margin: 0; text-transform: uppercase; letter-spacing: 0.04em;">INSTANT PATIENT ACCESS</h3>
-                                <div style="font-size: 0.80rem; color: #0284c7; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px;">SECURE HEALTH RECORDS PORTAL</div>
+                            <div class="mockup-header-title">
+                                <span class="material-symbols-outlined" style="font-size: 14px; color: #38BDF8;">biotech</span>
+                                <span>MEDLENS CLINICAL CONSOLE v3.4</span>
                             </div>
+                            <div class="mockup-header-badge">● LIVE TELEMETRY</div>
                         </div>
-                        <div style="display: flex; flex-direction: column; gap: 14px;">
-                            <div>
-                                <label style="display: block; font-size: 0.76rem; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px;">PATIENT ID</label>
-                                <input type="text" id="hero-pat-id" class="patient-lookup-input" placeholder="e.g. PAT-1001" autocomplete="username" style="width: 100%; border: 2px solid #cbd5e1; border-radius: 10px; padding: 12px 14px; font-weight: 700; font-size: 0.95rem; color: #0f2744;">
+
+                        <div class="mockup-body">
+                            <!-- 4 KPI Metrics -->
+                            <div class="mockup-kpi-bar">
+                                <div class="mockup-kpi-card">
+                                    <div class="mockup-kpi-val" style="color: #60A5FA;">18</div>
+                                    <div class="mockup-kpi-lbl">Triage Queue</div>
+                                </div>
+                                <div class="mockup-kpi-card">
+                                    <div class="mockup-kpi-val" style="color: #34D399;">4.2m</div>
+                                    <div class="mockup-kpi-lbl">Intake Turnaround</div>
+                                </div>
+                                <div class="mockup-kpi-card">
+                                    <div class="mockup-kpi-val" style="color: #A78BFA;">99.4%</div>
+                                    <div class="mockup-kpi-lbl">OCR Accuracy</div>
+                                </div>
+                                <div class="mockup-kpi-card">
+                                    <div class="mockup-kpi-val" style="color: #FBBF24;">38 / 200</div>
+                                    <div class="mockup-kpi-lbl">Beds Available</div>
+                                </div>
                             </div>
-                            <div>
-                                <label style="display: block; font-size: 0.76rem; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px;">SECURITY PIN</label>
-                                <input type="password" id="hero-pat-pin" class="patient-lookup-input" placeholder="e.g. 123456" autocomplete="current-password" style="width: 100%; border: 2px solid #cbd5e1; border-radius: 10px; padding: 12px 14px; font-weight: 700; font-size: 0.95rem; color: #0f2744;">
-                            </div>
-                            <button type="button" class="ml-btn-primary" style="width: 100%; justify-content: center; padding: 14px; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); font-weight: 900; font-size: 0.96rem; text-transform: uppercase; letter-spacing: 0.06em; border-radius: 12px; box-shadow: 0 6px 20px rgba(2, 132, 199, 0.4); border: none; cursor: pointer; color: white; display: flex; align-items: center; gap: 8px;" onclick="handleHeroPatientLogin()">
-                                <span class="material-symbols-outlined" style="font-size: 20px;">lock_open</span> ACCESS MY HEALTH RECORDS
-                            </button>
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; padding-top: 8px; border-top: 1px solid #f1f5f9;">
-                                <a href="javascript:void(0)" onclick="openPatientRegistrationModal()" style="font-size: 0.84rem; font-weight: 800; color: #0284c7; text-decoration: none; text-transform: uppercase; letter-spacing: 0.03em;">NEW PATIENT? REGISTER HERE →</a>
-                                <span style="font-size: 0.76rem; color: #059669; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em;">🔒 256-BIT ENCRYPTED</span>
+
+                            <!-- Split Clinical Workspace Preview -->
+                            <div class="mockup-split-grid">
+                                <!-- Triage Case List -->
+                                <div class="mockup-panel">
+                                    <div class="mockup-panel-title">
+                                        <span>Active Intake Queue</span>
+                                        <span style="font-size: 0.60rem; color: #F87171;">3 STAT Priority</span>
+                                    </div>
+                                    <div class="mockup-triage-item" style="border-left-color: #EF4444;">
+                                        <div class="mockup-triage-meta">
+                                            <span>PAT-1005 (46M)</span>
+                                            <span style="color: #F87171; font-size: 0.60rem;">● STAT CRITICAL</span>
+                                        </div>
+                                        <div class="mockup-triage-desc">Acute Epigastric Pain radiating to back. Tachycardia.</div>
+                                    </div>
+                                    <div class="mockup-triage-item urgent" style="border-left-color: #F59E0B;">
+                                        <div class="mockup-triage-meta">
+                                            <span>PAT-1001 (28F)</span>
+                                            <span style="color: #FBBF24; font-size: 0.60rem;">● URGENT</span>
+                                        </div>
+                                        <div class="mockup-triage-desc">CBC Panel: Low Platelets (110k/mcL), high ESR.</div>
+                                    </div>
+                                    <div class="mockup-triage-item routine" style="border-left-color: #10B981;">
+                                        <div class="mockup-triage-meta">
+                                            <span>PAT-1002 (58F)</span>
+                                            <span style="color: #34D399; font-size: 0.60rem;">● ROUTINE</span>
+                                        </div>
+                                        <div class="mockup-triage-desc">Type-II Diabetes HbA1c review. Routine refill.</div>
+                                    </div>
+                                </div>
+
+                                <!-- Biomarker & Decision Support -->
+                                <div class="mockup-panel">
+                                    <div class="mockup-panel-title">
+                                        <span>Clinical Biomarker Extraction</span>
+                                        <span style="font-size: 0.60rem; color: #38BDF8;">OCR Verified</span>
+                                    </div>
+                                    <div class="mockup-biomarker-row">
+                                        <span class="mockup-biomarker-name">Hemoglobin (Hb)</span>
+                                        <div style="display: flex; align-items: center; gap: 6px;">
+                                            <span class="mockup-biomarker-val">10.4 g/dL</span>
+                                            <span class="mockup-badge-danger">LOW</span>
+                                        </div>
+                                    </div>
+                                    <div class="mockup-biomarker-row">
+                                        <span class="mockup-biomarker-name">White Blood Cells</span>
+                                        <div style="display: flex; align-items: center; gap: 6px;">
+                                            <span class="mockup-biomarker-val">12,400 /mcL</span>
+                                            <span class="mockup-badge-danger">HIGH</span>
+                                        </div>
+                                    </div>
+                                    <div class="mockup-biomarker-row">
+                                        <span class="mockup-biomarker-name">Blood Glucose</span>
+                                        <div style="display: flex; align-items: center; gap: 6px;">
+                                            <span class="mockup-biomarker-val">98 mg/dL</span>
+                                            <span class="mockup-badge-normal">NORMAL</span>
+                                        </div>
+                                    </div>
+                                    <!-- AI Clinical Synthesis Box -->
+                                    <div class="mockup-ai-insight-box">
+                                        <strong style="color: #60A5FA;">AI Synthesis:</strong> Ruled out peritoneal signs. High suspicion: Acute Cholecystitis. Differential queued for Dr. Sharma sign-off.
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- FEATURE HIGHLIGHT PILLS -->
-            <div class="ml-pills-strip">
-                <div class="ml-feature-pill" style="border: 2px solid #bae6fd; background: linear-gradient(145deg, #ffffff 0%, #f0f9ff 100%); border-radius: 16px; padding: 16px 18px; box-shadow: 0 4px 16px rgba(2, 132, 199, 0.08);">
-                    <div class="ml-pill-icon" style="background: linear-gradient(135deg, #0284c7, #0ea5e9); color: white; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);"><span class="material-symbols-outlined">record_voice_over</span></div>
+            <!-- QUICK ACCESS & PATIENT SECURE SIGN-IN STRIP -->
+            <div style="background: #FFFFFF; border: 1px solid var(--card-border); border-radius: 16px; padding: 20px 24px; margin-bottom: 34px; box-shadow: var(--shadow-sm); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+                <div style="display: flex; align-items: center; gap: 14px; min-width: 260px;">
+                    <div style="width: 44px; height: 44px; border-radius: 10px; background: var(--clinical-blue-subtle); color: var(--clinical-blue); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <span class="material-symbols-outlined" style="font-size: 24px;">lock</span>
+                    </div>
                     <div>
-                        <div class="ml-pill-title" style="font-size: 0.95rem; font-weight: 900; color: #0369a1; text-transform: uppercase; letter-spacing: 0.04em;">TALK NATURALLY</div>
-                        <div class="ml-pill-desc" style="font-size: 0.80rem; font-weight: 600; color: #475569;">Voice or text in your language</div>
+                        <div style="font-weight: 800; font-size: 0.98rem; color: var(--primary-text);">Instant Patient Health Record Access</div>
+                        <div style="font-size: 0.80rem; color: var(--secondary-text);">Enter Patient ID &amp; 6-digit PIN for verified lab reports &amp; timeline</div>
                     </div>
                 </div>
-                <div class="ml-feature-pill" style="border: 2px solid #a7f3d0; background: linear-gradient(145deg, #ffffff 0%, #ecfdf5 100%); border-radius: 16px; padding: 16px 18px; box-shadow: 0 4px 16px rgba(16, 185, 129, 0.08);">
-                    <div class="ml-pill-icon" style="background: linear-gradient(135deg, #059669, #10b981); color: white; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);"><span class="material-symbols-outlined">upload_file</span></div>
-                    <div>
-                        <div class="ml-pill-title" style="font-size: 0.95rem; font-weight: 900; color: #065f46; text-transform: uppercase; letter-spacing: 0.04em;">SHARE REPORTS</div>
-                        <div class="ml-pill-desc" style="font-size: 0.80rem; font-weight: 600; color: #475569;">Upload documents securely</div>
-                    </div>
-                </div>
-                <div class="ml-feature-pill" style="border: 2px solid #ddd6fe; background: linear-gradient(145deg, #ffffff 0%, #faf5ff 100%); border-radius: 16px; padding: 16px 18px; box-shadow: 0 4px 16px rgba(139, 92, 246, 0.08);">
-                    <div class="ml-pill-icon" style="background: linear-gradient(135deg, #7c3aed, #8b5cf6); color: white; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);"><span class="material-symbols-outlined">insights</span></div>
-                    <div>
-                        <div class="ml-pill-title" style="font-size: 0.95rem; font-weight: 900; color: #5b21b6; text-transform: uppercase; letter-spacing: 0.04em;">CLINICAL INSIGHTS</div>
-                        <div class="ml-pill-desc" style="font-size: 0.80rem; font-weight: 600; color: #475569;">AI-assisted differential diagnosis</div>
-                    </div>
-                </div>
-                <div class="ml-feature-pill" style="border: 2px solid #fde68a; background: linear-gradient(145deg, #ffffff 0%, #fffbeb 100%); border-radius: 16px; padding: 16px 18px; box-shadow: 0 4px 16px rgba(217, 119, 6, 0.08);">
-                    <div class="ml-pill-icon" style="background: linear-gradient(135deg, #d97706, #f59e0b); color: white; box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);"><span class="material-symbols-outlined">groups</span></div>
-                    <div>
-                        <div class="ml-pill-title" style="font-size: 0.95rem; font-weight: 900; color: #92400e; text-transform: uppercase; letter-spacing: 0.04em;">CONNECTED CARE</div>
-                        <div class="ml-pill-desc" style="font-size: 0.80rem; font-weight: 600; color: #475569;">Patients, doctors &amp; hospital staff</div>
-                    </div>
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; flex-grow: 1; justify-content: flex-end;">
+                    <input type="text" id="hero-pat-id" placeholder="Patient ID (e.g. PAT-1001)" autocomplete="username" style="padding: 10px 14px; border-radius: 8px; border: 1.5px solid #CBD5E1; font-size: 0.88rem; font-weight: 600; color: #0F172A; min-width: 170px;">
+                    <input type="password" id="hero-pat-pin" placeholder="Security PIN" autocomplete="current-password" style="padding: 10px 14px; border-radius: 8px; border: 1.5px solid #CBD5E1; font-size: 0.88rem; font-weight: 600; color: #0F172A; width: 140px;">
+                    <button type="button" class="ml-btn-primary" onclick="handleHeroPatientLogin()" style="padding: 10px 18px; font-size: 0.88rem; white-space: nowrap;">
+                        <span class="material-symbols-outlined" style="font-size: 17px;">login</span>
+                        <span>Sign In</span>
+                    </button>
+                    <button type="button" class="ml-btn-outline" onclick="openPatientRegistrationModal()" style="padding: 9px 16px; font-size: 0.88rem; color: var(--clinical-blue); border-color: var(--clinical-blue); background: var(--clinical-blue-subtle); white-space: nowrap;">
+                        <span class="material-symbols-outlined" style="font-size: 17px;">person_add</span>
+                        <span>Register</span>
+                    </button>
                 </div>
             </div>
+
+            <!-- 2. PHASE 3: 8 CORE ENTERPRISE FEATURE MODULES -->
+            <section class="enterprise-features-section" id="ml-features-overview">
+                <div class="features-header">
+                    <div class="features-badge">
+                        <span class="material-symbols-outlined" style="font-size: 15px;">apps</span>
+                        <span>COMPREHENSIVE CLINICAL SUITE</span>
+                    </div>
+                    <h2 class="features-title">Enterprise Clinical Intelligence Modules</h2>
+                    <p class="features-subtitle">
+                        Eight connected clinical intelligence capabilities engineered for physicians, patients, pathologists, and hospital administrators.
+                    </p>
+                </div>
+
+                <div class="features-grid-8">
+                    <!-- Feature 1: AI Clinical Case Taking -->
+                    <div class="feature-card-item" onclick="switchView('voice-case-taking')">
+                        <div>
+                            <div class="feature-card-header">
+                                <div class="feature-icon-box blue">
+                                    <span class="material-symbols-outlined">clinical_notes</span>
+                                </div>
+                                <h3 class="feature-card-title">AI Clinical Case Taking</h3>
+                            </div>
+                            <p class="feature-card-desc">
+                                Dynamic pre-consultation intake with adaptive clinical probing, chief complaint mapping, and automated red-flag triage across General, Ayurveda, and Homeopathy pathways.
+                            </p>
+                        </div>
+                        <div>
+                            <div class="feature-preview-chip">
+                                <span>Adaptive Probing Engine</span>
+                                <span style="color: var(--clinical-blue); font-weight: 700;">100% Coverage</span>
+                            </div>
+                            <span class="feature-card-action">Launch Case Taking <span class="material-symbols-outlined">arrow_forward</span></span>
+                        </div>
+                    </div>
+
+                    <!-- Feature 2: Medical Report Analysis -->
+                    <div class="feature-card-item" onclick="switchView('analyzer')">
+                        <div>
+                            <div class="feature-card-header">
+                                <div class="feature-icon-box teal">
+                                    <span class="material-symbols-outlined">document_scanner</span>
+                                </div>
+                                <h3 class="feature-card-title">Medical Report Analysis</h3>
+                            </div>
+                            <p class="feature-card-desc">
+                                High-precision document OCR and biomarker extraction for CBCs, lipid profiles, thyroid panels, and prescriptions with automated reference range validation.
+                            </p>
+                        </div>
+                        <div>
+                            <div class="feature-preview-chip">
+                                <span>OCR Precision Rate</span>
+                                <span style="color: var(--medical-teal); font-weight: 700;">99.4% Verified</span>
+                            </div>
+                            <span class="feature-card-action">Analyze Reports <span class="material-symbols-outlined">arrow_forward</span></span>
+                        </div>
+                    </div>
+
+                    <!-- Feature 3: AI-Assisted Disease Prediction -->
+                    <div class="feature-card-item" onclick="switchView('sandbox')">
+                        <div>
+                            <div class="feature-card-header">
+                                <div class="feature-icon-box purple">
+                                    <span class="material-symbols-outlined">query_stats</span>
+                                </div>
+                                <h3 class="feature-card-title">AI-Assisted Disease Prediction</h3>
+                            </div>
+                            <p class="feature-card-desc">
+                                Multi-pipeline machine learning models calibrated with Platt scaling, featuring SHAP biomarker explainability, clinical AUROC metrics, and model cards.
+                            </p>
+                        </div>
+                        <div>
+                            <div class="feature-preview-chip">
+                                <span>Calibrated AUROC</span>
+                                <span style="color: #7C3AED; font-weight: 700;">0.962 Confidence</span>
+                            </div>
+                            <span class="feature-card-action">Open ML Sandbox <span class="material-symbols-outlined">arrow_forward</span></span>
+                        </div>
+                    </div>
+
+                    <!-- Feature 4: Patient Management -->
+                    <div class="feature-card-item" onclick="switchView('patient')">
+                        <div>
+                            <div class="feature-card-header">
+                                <div class="feature-icon-box sky">
+                                    <span class="material-symbols-outlined">person</span>
+                                </div>
+                                <h3 class="feature-card-title">Patient Management</h3>
+                            </div>
+                            <p class="feature-card-desc">
+                                Patient care portal with longitudinal health timelines, verified pathology reports, and secure 6-digit Doctor Access PIN sharing with automatic session expiry.
+                            </p>
+                        </div>
+                        <div>
+                            <div class="feature-preview-chip">
+                                <span>Encrypted Health Record</span>
+                                <span style="color: #0284C7; font-weight: 700;">PIN Protected</span>
+                            </div>
+                            <span class="feature-card-action">Patient Portal <span class="material-symbols-outlined">arrow_forward</span></span>
+                        </div>
+                    </div>
+
+                    <!-- Feature 5: Hospital Operations Intelligence -->
+                    <div class="feature-card-item" onclick="switchView('operations')">
+                        <div>
+                            <div class="feature-card-header">
+                                <div class="feature-icon-box amber">
+                                    <span class="material-symbols-outlined">domain</span>
+                                </div>
+                                <h3 class="feature-card-title">Hospital Operations Intelligence</h3>
+                            </div>
+                            <p class="feature-card-desc">
+                                Real-time hospital ERP bed telemetry across General, Semi-Special, ICU, and Pediatric wards with admission workflows, shift handovers, and discharge clearing.
+                            </p>
+                        </div>
+                        <div>
+                            <div class="feature-preview-chip">
+                                <span>Real-time Bed Tracking</span>
+                                <span style="color: #D97706; font-weight: 700;">38 Available</span>
+                            </div>
+                            <span class="feature-card-action">View Operations <span class="material-symbols-outlined">arrow_forward</span></span>
+                        </div>
+                    </div>
+
+                    <!-- Feature 6: Laboratory Workflow Management -->
+                    <div class="feature-card-item" onclick="switchView('admin')">
+                        <div>
+                            <div class="feature-card-header">
+                                <div class="feature-icon-box emerald">
+                                    <span class="material-symbols-outlined">biotech</span>
+                                </div>
+                                <h3 class="feature-card-title">Laboratory Workflow Management</h3>
+                            </div>
+                            <p class="feature-card-desc">
+                                End-to-end pathology accessioning, STAT order flags, specimen status tracking, reconciled billing desk, and clinician digital sign-off and e-prescriptions.
+                            </p>
+                        </div>
+                        <div>
+                            <div class="feature-preview-chip">
+                                <span>Lab Order Triage</span>
+                                <span style="color: #16A34A; font-weight: 700;">607 Orders Logged</span>
+                            </div>
+                            <span class="feature-card-action">Lab &amp; Doctor Desk <span class="material-symbols-outlined">arrow_forward</span></span>
+                        </div>
+                    </div>
+
+                    <!-- Feature 7: Voice-Based Clinical Interaction -->
+                    <div class="feature-card-item" onclick="switchView('voice-case-taking')">
+                        <div>
+                            <div class="feature-card-header">
+                                <div class="feature-icon-box rose">
+                                    <span class="material-symbols-outlined">mic</span>
+                                </div>
+                                <h3 class="feature-card-title">Voice-Based Clinical Interaction</h3>
+                            </div>
+                            <p class="feature-card-desc">
+                                Speech-to-text recognition with medical terminology phonetics, live audio visualizer waveforms, hands-free doctor dictation, and acoustic playback.
+                            </p>
+                        </div>
+                        <div>
+                            <div class="feature-preview-chip">
+                                <span>Hands-Free Speech</span>
+                                <span style="color: #E11D48; font-weight: 700;">Real-Time Audio</span>
+                            </div>
+                            <span class="feature-card-action">Start Voice Intake <span class="material-symbols-outlined">arrow_forward</span></span>
+                        </div>
+                    </div>
+
+                    <!-- Feature 8: Multilingual Healthcare Support -->
+                    <div class="feature-card-item" onclick="switchView('voice-case-taking')">
+                        <div>
+                            <div class="feature-card-header">
+                                <div class="feature-icon-box indigo">
+                                    <span class="material-symbols-outlined">translate</span>
+                                </div>
+                                <h3 class="feature-card-title">Multilingual Healthcare Support</h3>
+                            </div>
+                            <p class="feature-card-desc">
+                                Native consultation intake in Telugu, Hindi, Tamil, Odia, Bengali, Marathi, and English via Bhashini voice pipeline with cross-language physician summaries.
+                            </p>
+                        </div>
+                        <div>
+                            <div class="feature-preview-chip">
+                                <span>Regional Languages</span>
+                                <span style="color: #4F46E5; font-weight: 700;">22+ via Bhashini</span>
+                            </div>
+                            <span class="feature-card-action">Select Language <span class="material-symbols-outlined">arrow_forward</span></span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. HOW IT WORKS: 4-STEP CLINICAL WORKFLOW -->
+            <section class="how-it-works-section">
+                <div style="text-align: center; max-width: 680px; margin: 0 auto;">
+                    <div style="display: inline-flex; align-items: center; gap: 6px; background: var(--clinical-blue-subtle); color: var(--clinical-blue); padding: 4px 14px; border-radius: 9999px; font-size: 0.74rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; border: 1px solid #BFDBFE;">
+                        <span class="material-symbols-outlined" style="font-size: 15px;">route</span>
+                        <span>INTEGRATED CARE DELIVERY</span>
+                    </div>
+                    <h2 style="font-size: clamp(1.6rem, 3.2vw, 2.1rem); font-weight: 800; color: var(--primary-text); letter-spacing: -0.02em; margin-bottom: 8px;">
+                        How MedLens AI Connects Healthcare
+                    </h2>
+                    <p style="font-size: 0.92rem; color: var(--secondary-text); line-height: 1.55;">
+                        From the moment a patient speaks their symptoms to physician verification and inpatient ward management.
+                    </p>
+                </div>
+
+                <div class="workflow-steps-grid">
+                    <div class="workflow-step-card">
+                        <div class="step-number-badge">1</div>
+                        <div style="color: var(--clinical-blue);"><span class="material-symbols-outlined" style="font-size: 24px;">record_voice_over</span></div>
+                        <h4 class="step-title">Intake &amp; Probing</h4>
+                        <p class="step-desc">
+                            Patient describes symptoms in their mother tongue; adaptive AI conducts follow-up clinical probing.
+                        </p>
+                    </div>
+
+                    <div class="workflow-step-card">
+                        <div class="step-number-badge">2</div>
+                        <div style="color: var(--medical-teal);"><span class="material-symbols-outlined" style="font-size: 24px;">document_scanner</span></div>
+                        <h4 class="step-title">OCR &amp; Extraction</h4>
+                        <p class="step-desc">
+                            Past prescriptions and lab panels are converted into normalized structured clinical biomarkers.
+                        </p>
+                    </div>
+
+                    <div class="workflow-step-card">
+                        <div class="step-number-badge">3</div>
+                        <div style="color: #7C3AED;"><span class="material-symbols-outlined" style="font-size: 24px;">psychology</span></div>
+                        <h4 class="step-title">Clinical Synthesis</h4>
+                        <p class="step-desc">
+                            Algorithms detect red flags immediately and compute differential diagnoses with calibrated probabilities.
+                        </p>
+                    </div>
+
+                    <div class="workflow-step-card">
+                        <div class="step-number-badge">4</div>
+                        <div style="color: #16A34A;"><span class="material-symbols-outlined" style="font-size: 24px;">verified_user</span></div>
+                        <h4 class="step-title">Physician Action</h4>
+                        <p class="step-desc">
+                            Doctor validates the dossier, digitally signs e-prescriptions, and coordinates ward admissions.
+                        </p>
+                    </div>
+                </div>
+            </section>
 
             <!-- 2. ROLE SELECTION GATEWAY (Screen 2) -->
             <div class="ml-role-section" id="ml-roles-gateway">
@@ -4954,53 +5267,73 @@
         </section><!-- end view-voice-case-taking -->
     </main>
 
-    <!-- Comprehensive Avenqra AI Public Footer & Internal Linking -->
-    <footer style="background: #07152b; color: #cbd5e1; padding: 48px 24px 30px; border-top: 1px solid #1e293b; margin-top: 40px;">
-        <div style="max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 36px; margin-bottom: 36px;">
+    <!-- Comprehensive MedLens AI Enterprise Footer -->
+    <footer style="background: #0B1220; color: #94A3B8; padding: 48px 24px 30px; border-top: 1px solid rgba(255, 255, 255, 0.1); margin-top: 50px;">
+        <div style="max-width: 1240px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 32px; margin-bottom: 36px;">
             <div>
                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-                    <span class="material-symbols-outlined" style="color: #38bdf8; font-size: 26px;">biotech</span>
-                    <strong style="color: #ffffff; font-size: 1.2rem; letter-spacing: -0.01em;">AVENQRA AI</strong>
+                    <span class="material-symbols-outlined" style="color: var(--clinical-blue); font-size: 26px;">biotech</span>
+                    <strong style="color: #FFFFFF; font-size: 1.25rem; letter-spacing: -0.01em;">MEDLENS <span style="color: #38BDF8;">AI</span></strong>
                 </div>
-                <p style="font-size: 0.88rem; color: #94a3b8; line-height: 1.6; margin-bottom: 14px;">
-                    Adaptive Intelligence for Healthcare. AI-assisted clinical case taking, medical document OCR intelligence, and multi-disciplinary hospital workflow coordination.
+                <p style="font-size: 0.86rem; color: #94A3B8; line-height: 1.6; margin-bottom: 14px;">
+                    Adaptive Clinical Intelligence Platform. AI-assisted clinical case taking, medical document OCR, and hospital operational intelligence supporting physician-verified care.
                 </p>
-                <div style="font-size: 0.78rem; color: #64748b;">
-                    Official Production Service &bull; medlens-ai-v3ru.onrender.com
+                <div style="font-size: 0.78rem; color: #64748B;">
+                    MedLens Apex Hospital &amp; Research Institute &bull; SIH PS 26047 Pilot
                 </div>
             </div>
 
             <div>
-                <h4 style="color: #ffffff; font-size: 0.92rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 14px;">Clinical Portals</h4>
+                <h4 style="color: #FFFFFF; font-size: 0.90rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 14px;">Clinical Portals</h4>
                 <ul style="list-style: none; display: flex; flex-direction: column; gap: 9px; padding: 0;">
-                    <li><a href="javascript:void(0)" onclick="switchView('home')" style="color: #94a3b8; text-decoration: none; font-size: 0.88rem;">Home Dashboard</a></li>
-                    <li><a href="javascript:void(0)" onclick="switchView('admin')" style="color: #94a3b8; text-decoration: none; font-size: 0.88rem;">Doctor Console &amp; EHR Review</a></li>
-                    <li><a href="javascript:void(0)" onclick="switchView('patient')" style="color: #94a3b8; text-decoration: none; font-size: 0.88rem;">Patient Health Records Portal</a></li>
-                    <li><a href="javascript:void(0)" onclick="switchView('operations')" style="color: #94a3b8; text-decoration: none; font-size: 0.88rem;">Healthcare Staff Operations Hub</a></li>
-                    <li><a href="javascript:void(0)" onclick="switchView('voice-case-taking')" style="color: #94a3b8; text-decoration: none; font-size: 0.88rem;">Adaptive Clinical Case Taking</a></li>
+                    <li><a href="javascript:void(0)" onclick="switchView('home')" style="color: #94A3B8; text-decoration: none; font-size: 0.86rem;">Home Workspace</a></li>
+                    <li><a href="javascript:void(0)" onclick="switchView('admin')" style="color: #94A3B8; text-decoration: none; font-size: 0.86rem;">Doctor Console &amp; EHR Review</a></li>
+                    <li><a href="javascript:void(0)" onclick="switchView('patient')" style="color: #94A3B8; text-decoration: none; font-size: 0.86rem;">Patient Health Records Portal</a></li>
+                    <li><a href="javascript:void(0)" onclick="switchView('operations')" style="color: #94A3B8; text-decoration: none; font-size: 0.86rem;">Healthcare Staff Operations Hub</a></li>
+                    <li><a href="javascript:void(0)" onclick="switchView('voice-case-taking')" style="color: #94A3B8; text-decoration: none; font-size: 0.86rem;">Adaptive Clinical Case Taking</a></li>
                 </ul>
             </div>
 
             <div>
-                <h4 style="color: #ffffff; font-size: 0.92rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 14px;">Intelligence &amp; Architecture</h4>
+                <h4 style="color: #FFFFFF; font-size: 0.90rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 14px;">Clinical Intelligence</h4>
                 <ul style="list-style: none; display: flex; flex-direction: column; gap: 9px; padding: 0;">
-                    <li><a href="/product.html" style="color: #38bdf8; text-decoration: none; font-size: 0.88rem; font-weight: 700;">Avenqra AI Product Architecture &rarr;</a></li>
-                    <li><a href="javascript:void(0)" onclick="switchView('analyzer')" style="color: #94a3b8; text-decoration: none; font-size: 0.88rem;">Medical Document Intelligence</a></li>
-                    <li><a href="javascript:void(0)" onclick="switchView('symptoms')" style="color: #94a3b8; text-decoration: none; font-size: 0.88rem;">AI-Assisted Clinical Summaries</a></li>
-                    <li><a href="javascript:void(0)" onclick="switchView('about')" style="color: #94a3b8; text-decoration: none; font-size: 0.88rem;">About Avenqra AI</a></li>
-                    <li><a href="/robots.txt" style="color: #94a3b8; text-decoration: none; font-size: 0.88rem;">Robots.txt Directives</a></li>
-                    <li><a href="/sitemap.xml" style="color: #94a3b8; text-decoration: none; font-size: 0.88rem;">XML Sitemap</a></li>
+                    <li><a href="javascript:void(0)" onclick="switchView('analyzer')" style="color: #94A3B8; text-decoration: none; font-size: 0.86rem;">Medical Document OCR &amp; Biomarkers</a></li>
+                    <li><a href="javascript:void(0)" onclick="switchView('sandbox')" style="color: #94A3B8; text-decoration: none; font-size: 0.86rem;">ML Disease Prediction &amp; SHAP</a></li>
+                    <li><a href="javascript:void(0)" onclick="switchView('symptoms')" style="color: #94A3B8; text-decoration: none; font-size: 0.86rem;">AI Clinical Summarization</a></li>
+                    <li><a href="/product.html" style="color: #38BDF8; text-decoration: none; font-size: 0.86rem; font-weight: 700;">Platform Architecture &rarr;</a></li>
+                    <li><a href="javascript:void(0)" onclick="switchView('about')" style="color: #94A3B8; text-decoration: none; font-size: 0.86rem;">About MedLens AI</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 style="color: #FFFFFF; font-size: 0.90rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 14px;">Compliance &amp; Emergency</h4>
+                <ul style="list-style: none; display: flex; flex-direction: column; gap: 9px; padding: 0;">
+                    <li style="color: #34D399; font-size: 0.84rem; display: flex; align-items: center; gap: 6px;">
+                        <span class="material-symbols-outlined" style="font-size: 16px;">verified_user</span> DPDP Act 2023 Aligned
+                    </li>
+                    <li style="color: #60A5FA; font-size: 0.84rem; display: flex; align-items: center; gap: 6px;">
+                        <span class="material-symbols-outlined" style="font-size: 16px;">health_and_safety</span> ABDM Milestone Ready
+                    </li>
+                    <li style="color: #CBD5E1; font-size: 0.84rem; display: flex; align-items: center; gap: 6px;">
+                        <span class="material-symbols-outlined" style="font-size: 16px;">lock</span> Client-Side PII Scrubbing
+                    </li>
+                    <li style="margin-top: 6px; padding-top: 8px; border-top: 1px solid rgba(255, 255, 255, 0.08);">
+                        <a href="tel:112" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #FCA5A5; padding: 6px 12px; border-radius: 8px; font-weight: 800; font-size: 0.80rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                            <span class="material-symbols-outlined" style="font-size: 16px;">emergency</span> National Emergency: 112 / 108
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>
 
-        <div style="max-width: 1200px; margin: 0 auto; padding: 18px 0; border-top: 1px solid #1e293b; font-size: 0.80rem; color: #94a3b8; line-height: 1.55;">
-            <p><strong>Clinical Decision-Support Boundary:</strong> Avenqra AI is an AI-assisted healthcare information architecture. It does not provide autonomous diagnosis or independent patient prescriptions. All diagnostic suggestions and differential summaries require review, validation, and clinical oversight by licensed medical physicians.</p>
+        <div style="max-width: 1240px; margin: 0 auto; padding: 18px 0; border-top: 1px solid rgba(255, 255, 255, 0.08); font-size: 0.80rem; color: #94A3B8; line-height: 1.55;">
+            <p><strong>Clinical Decision-Support Boundary:</strong> MedLens AI is an assistive clinical intelligence platform. It does not provide autonomous diagnosis or independent patient prescriptions. All diagnostic suggestions, differential probabilities, and triage flags require review, validation, and clinical oversight by licensed medical practitioners under applicable healthcare regulations.</p>
         </div>
 
-        <div style="max-width: 1200px; margin: 0 auto; padding-top: 14px; border-top: 1px solid #1e293b; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; font-size: 0.78rem; color: #64748b;">
-            <div>&copy; 2026 Avenqra AI. All rights reserved. Adaptive Intelligence for Healthcare.</div>
-            <div>Physician-Reviewed Decision Support &bull; 256-Bit Cryptographic Security</div>
+        <div style="max-width: 1240px; margin: 0 auto; padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.08); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; font-size: 0.76rem; color: #64748B;">
+            <div>&copy; 2026 MedLens AI / Avenqra. All rights reserved. Adaptive Clinical Intelligence.</div>
+            <div>Physician-Reviewed Decision Support &bull; DPDP Act 2023 Aligned &bull; 256-Bit Encryption</div>
+        </div>
     </footer>
 
     <!-- NATIVE CLINICAL MOBILE BOTTOM NAVIGATION BAR -->
