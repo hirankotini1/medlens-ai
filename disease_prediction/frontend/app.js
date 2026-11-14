@@ -739,7 +739,12 @@ function switchView(viewName) {
             portalsToggle.classList.add('active');
         }
     }
-    if (mobTabEl) mobTabEl.classList.add('active');
+    if (mobTabEl) {
+        mobTabEl.classList.add('active');
+    } else if (['patient', 'admin', 'operations', 'about'].includes(viewName)) {
+        const mobMore = document.getElementById('mob-tab-more');
+        if (mobMore) mobMore.classList.add('active');
+    }
 
     window.scrollTo(0, 0);
 
@@ -7586,6 +7591,7 @@ let lastRegisteredAppointment = null;
 function openPatientRegistrationModal() {
     const modal = document.getElementById('modal-patient-registration');
     if (!modal) return;
+    if (typeof lockBodyScroll === 'function') lockBodyScroll();
 
     const dateInput = document.getElementById('reg-date');
     if (dateInput && !dateInput.value) {
@@ -7600,6 +7606,7 @@ function openPatientRegistrationModal() {
 function closePatientRegistrationModal() {
     const modal = document.getElementById('modal-patient-registration');
     if (modal) modal.style.display = 'none';
+    if (typeof unlockBodyScroll === 'function') unlockBodyScroll();
 }
 
 function toggleRegInsuranceFields(isInsured) {
@@ -9537,5 +9544,61 @@ function loadSandboxPreset(presetType) {
                 input.style.backgroundColor = "";
             }, 1000);
         }
+    }
+}
+
+
+// =============================================================================
+// MODAL SCROLL LOCK & MOBILE ACCESSIBILITY HELPERS
+// =============================================================================
+function lockBodyScroll() {
+    document.body.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
+}
+
+function unlockBodyScroll() {
+    document.body.style.overflow = '';
+    document.body.style.touchAction = '';
+}
+
+// Lightweight Debounce Utility
+function debounce(fn, delayMs = 250) {
+    let timer = null;
+    return function(...args) {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn.apply(this, args), delayMs);
+    };
+}
+
+// Interactive Dashboard Role Filter
+function filterHomeRoleView(role) {
+    document.querySelectorAll('.role-filter-btn').forEach(b => b.classList.remove('active'));
+    const btn = document.getElementById(`rf-btn-${role}`);
+    if (btn) btn.classList.add('active');
+
+    const hint = document.getElementById('home-role-hint');
+    const cards = document.querySelectorAll('.task-action-card');
+
+    if (role === 'patients') {
+        if (hint) hint.textContent = 'Showing patient-centered health tools: symptom assessment, report translation, and personal records.';
+        cards.forEach((c, idx) => {
+            c.style.display = 'flex';
+            c.style.opacity = (idx === 0 || idx === 1) ? '1' : '0.82';
+            c.style.borderColor = (idx === 0 || idx === 1) ? '#0284c7' : '#e2e8f0';
+        });
+    } else if (role === 'doctors') {
+        if (hint) hint.textContent = 'Showing physician decision-support tools: triage console, digital prescription authoring, and predictive ML models.';
+        cards.forEach((c, idx) => {
+            c.style.display = 'flex';
+            c.style.opacity = (idx === 2 || idx === 3) ? '1' : '0.82';
+            c.style.borderColor = (idx === 2 || idx === 3) ? '#059669' : '#e2e8f0';
+        });
+    } else if (role === 'staff') {
+        if (hint) hint.textContent = 'Showing hospital operations: live bed occupancy tracker, inpatient admissions, and billing desk.';
+        cards.forEach((c, idx) => {
+            c.style.display = 'flex';
+            c.style.opacity = (idx === 3) ? '1' : '0.75';
+            c.style.borderColor = (idx === 3) ? '#7c3aed' : '#e2e8f0';
+        });
     }
 }

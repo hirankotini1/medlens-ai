@@ -356,9 +356,15 @@
             <div class="ml-hero-section" style="margin-top: 14px;">
                 <div class="ml-hero-grid">
                     <div>
-                        <div class="ml-tagline" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #ffffff; padding: 7px 18px; border-radius: 9999px; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35); font-weight: 900; font-size: 0.82rem; letter-spacing: 0.08em; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 14px;">
-                            <span class="material-symbols-outlined" style="font-size: 18px; color: #ffffff;">health_and_safety</span>
-                            AI-ASSISTED CLINICAL INTELLIGENCE PLATFORM
+                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 14px;">
+                            <div class="ml-tagline" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #ffffff; padding: 6px 16px; border-radius: 9999px; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35); font-weight: 900; font-size: 0.80rem; letter-spacing: 0.08em; display: inline-flex; align-items: center; gap: 6px;">
+                                <span class="material-symbols-outlined" style="font-size: 16px; color: #ffffff;">health_and_safety</span>
+                                AI-ASSISTED CLINICAL INTELLIGENCE PLATFORM
+                            </div>
+                            <div class="live-status-pill" style="background: #ecfdf5; border: 1.5px solid #a7f3d0; color: #059669; padding: 5px 12px; border-radius: 9999px; font-size: 0.76rem; font-weight: 800; display: inline-flex; align-items: center; gap: 6px;">
+                                <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; display: inline-block; box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);"></span>
+                                <span>Systems Online &bull; Zero-Wait Intake</span>
+                            </div>
                         </div>
                         <h1 class="ml-hero-title" style="font-size: clamp(2.4rem, 5.2vw, 3.5rem); font-weight: 900; color: #0b1f3a; line-height: 1.12; letter-spacing: -0.03em; margin-bottom: 10px;">
                             Avenqra AI
@@ -421,7 +427,7 @@
                             </div>
                             <div>
                                 <label style="display: block; font-size: 0.76rem; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px;">SECURITY PIN</label>
-                                <input type="password" id="hero-pat-pin" class="patient-lookup-input" placeholder="e.g. 123456" autocomplete="current-password" style="width: 100%; border: 2px solid #cbd5e1; border-radius: 10px; padding: 12px 14px; font-weight: 700; font-size: 0.95rem; color: #0f2744;">
+                                <input type="password" id="hero-pat-pin" class="patient-lookup-input" placeholder="e.g. 123456" autocomplete="current-password" inputmode="numeric" pattern="[0-9]*" style="width: 100%; border: 2px solid #cbd5e1; border-radius: 10px; padding: 12px 14px; font-weight: 700; font-size: 0.95rem; color: #0f2744;">
                             </div>
                             <button type="button" class="ml-btn-primary" style="width: 100%; justify-content: center; padding: 14px; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); font-weight: 900; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.05em; border-radius: 12px; box-shadow: 0 6px 20px rgba(2, 132, 199, 0.4); border: none; cursor: pointer; color: white; display: flex; align-items: center; gap: 8px;" onclick="handleHeroPatientLogin()">
                                 <span class="material-symbols-outlined" style="font-size: 20px;">lock_open</span> ACCESS MY HEALTH RECORDS
@@ -437,7 +443,7 @@
 
             <!-- 2. TASK-ORIENTED ACTION CARDS: "HOW CAN WE HELP YOU TODAY?" -->
             <div style="margin: 40px 0 24px 0;">
-                <div style="text-align: center; max-width: 720px; margin: 0 auto 30px auto;">
+                <div style="text-align: center; max-width: 720px; margin: 0 auto 18px auto;">
                     <span style="background: #e0f2fe; color: #0284c7; padding: 5px 16px; border-radius: 9999px; font-weight: 900; font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase; border: 1.5px solid #bae6fd;">START YOUR TASK</span>
                     <h2 style="font-size: clamp(1.8rem, 3.8vw, 2.4rem); font-weight: 900; text-transform: uppercase; letter-spacing: -0.02em; color: #0f2744; margin-top: 10px; margin-bottom: 10px;">
                         HOW CAN WE HELP YOU TODAY?
@@ -445,6 +451,24 @@
                     <p style="font-size: 1.05rem; font-weight: 600; color: #475569; margin: 0;">
                         Choose an action below to start an interactive health assessment, analyze medical test slips, or access clinical records.
                     </p>
+                </div>
+
+                <!-- Interactive Role Filter Bar for Context-Aware Personalization -->
+                <div class="home-role-filter-container" style="text-align: center; margin: 0 auto 24px auto; max-width: 580px;">
+                    <div class="home-role-filter-bar" style="background: #f1f5f9; padding: 4px; border-radius: 9999px; display: flex; gap: 4px; border: 1.5px solid #e2e8f0; box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);">
+                        <button type="button" class="role-filter-btn active" id="rf-btn-patients" onclick="filterHomeRoleView('patients')">
+                            👤 For Patients
+                        </button>
+                        <button type="button" class="role-filter-btn" id="rf-btn-doctors" onclick="filterHomeRoleView('doctors')">
+                            🩺 For Doctors
+                        </button>
+                        <button type="button" class="role-filter-btn" id="rf-btn-staff" onclick="filterHomeRoleView('staff')">
+                            🏥 Hospital Staff
+                        </button>
+                    </div>
+                    <div id="home-role-hint" style="font-size: 0.82rem; font-weight: 700; color: #0284c7; margin-top: 8px;">
+                        Showing patient-centered health tools: symptom assessment, report translation, and private records.
+                    </div>
                 </div>
 
                 <div class="task-card-grid">
@@ -599,7 +623,7 @@
                         <p class="ml-action-desc" style="font-size: 0.88rem; font-weight: 600; color: #475569; line-height: 1.5; margin-bottom: 18px;">Already registered or submitted a case? Look up your reports and clinical updates instantly.</p>
                     </div>
                     <div class="ml-search-bar" style="display: flex; gap: 8px;">
-                        <input type="text" id="quick-case-search" placeholder="Enter Patient ID (e.g. PAT-1001)" style="flex: 1; padding: 12px 14px; border-radius: 10px; border: 2px solid #cbd5e1; font-size: 0.90rem; font-weight: 700; color: #0f2744;" onkeydown="if(event.key==='Enter') { document.getElementById('hero-pat-id').value=this.value; handleHeroPatientLogin(); }">
+                        <input type="text" id="quick-case-search" placeholder="Enter Patient ID (e.g. PAT-1001)" inputmode="text" autocomplete="off" style="flex: 1; padding: 12px 14px; border-radius: 10px; border: 2px solid #cbd5e1; font-size: 0.90rem; font-weight: 700; color: #0f2744;" onkeydown="if(event.key==='Enter') { document.getElementById('hero-pat-id').value=this.value; handleHeroPatientLogin(); }">
                         <button type="button" style="background: linear-gradient(135deg, #0f766e, #0d9488); color: white; font-weight: 900; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.04em; border: none; padding: 12px 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(15, 118, 110, 0.3); cursor: pointer;" onclick="document.getElementById('hero-pat-id').value=document.getElementById('quick-case-search').value; handleHeroPatientLogin();">SEARCH</button>
                     </div>
                 </div>
@@ -4383,6 +4407,7 @@
                             <div><strong>Stay Duration:</strong> <span id="inv-days-stayed">4 Days</span></div>
                         </div>
 
+                        <div class="table-responsive-wrapper">
                         <table style="width: 100%; border-collapse: collapse; font-size: 0.84rem; margin-bottom: 14px;">
                             <thead>
                                 <tr style="background: #f1f5f9; border-top: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1;">
@@ -4425,6 +4450,7 @@
                                 </tr>
                             </tbody>
                         </table>
+                        </div>
 
                         <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 24px; font-size: 0.76rem; color: #64748b;">
                             <div>Computer Generated Inpatient Invoice &bull; E&amp;OE</div>
@@ -5122,27 +5148,29 @@
     <!-- NATIVE CLINICAL MOBILE BOTTOM NAVIGATION BAR -->
     <nav class="mobile-bottom-nav" id="mobile-bottom-nav" aria-label="Mobile Clinical Navigation">
         <button type="button" class="mob-nav-btn active" id="mob-tab-home" onclick="switchView('home')" aria-label="Home Dashboard">
-            <span class="material-symbols-outlined">dashboard</span>
+            <span class="material-symbols-outlined">home</span>
             <span class="mob-nav-label">Home</span>
         </button>
-        <button type="button" class="mob-nav-btn" id="mob-tab-admin" onclick="switchView('admin')" aria-label="Doctor Console">
-            <span class="material-symbols-outlined">stethoscope</span>
-            <span class="mob-nav-label">Doctor</span>
+        <button type="button" class="mob-nav-btn" id="mob-tab-analyzer" onclick="switchView('analyzer')" aria-label="Lab Report Analyzer">
+            <span class="material-symbols-outlined">biotech</span>
+            <span class="mob-nav-label">Reports</span>
         </button>
-        <button type="button" class="mob-nav-btn mob-nav-hero" id="mob-tab-voice-case-taking" onclick="switchView('voice-case-taking')" aria-label="AI Case Taking">
+        <button type="button" class="mob-nav-btn mob-nav-hero" id="mob-tab-voice-case-taking" onclick="switchView('voice-case-taking')" aria-label="AI Symptom Check &amp; Intake">
             <div class="mob-hero-circle">
-                <span class="material-symbols-outlined">mic</span>
+                <span class="material-symbols-outlined">clinical_notes</span>
             </div>
-            <span class="mob-nav-label">AI Case</span>
+            <span class="mob-nav-label">Symptoms</span>
         </button>
-        <button type="button" class="mob-nav-btn" id="mob-tab-analyzer" onclick="switchView('analyzer')" aria-label="AI Lab Analyzer">
-            <span class="material-symbols-outlined">analytics</span>
-            <span class="mob-nav-label">Analyzer</span>
+        <button type="button" class="mob-nav-btn" id="mob-tab-sandbox" onclick="switchView('sandbox')" aria-label="Disease Risk Screening">
+            <span class="material-symbols-outlined">query_stats</span>
+            <span class="mob-nav-label">Screening</span>
         </button>
-        <button type="button" class="mob-nav-btn" id="mob-tab-more" onclick="toggleMobileNavDrawer()" aria-label="More Features">
-            <span class="material-symbols-outlined">menu</span>
-            <span class="mob-nav-label">Menu</span>
+        <button type="button" class="mob-nav-btn" id="mob-tab-more" onclick="toggleMobileNavDrawer()" aria-label="Clinical Portals and Menu">
+            <span class="material-symbols-outlined">hub</span>
+            <span class="mob-nav-label">Portals</span>
         </button>
+        <!-- Legacy hidden button for background JS compatibility -->
+        <button type="button" id="mob-tab-admin" onclick="switchView('admin')" style="display: none;" aria-hidden="true"></button>
     </nav>
 
     <script src="app.js?v=20260920_v2"></script>
