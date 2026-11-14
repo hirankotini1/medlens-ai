@@ -9373,6 +9373,12 @@ document.addEventListener('click', function(e) {
     }
 });
 
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeNavDropdown();
+    }
+});
+
 // =============================================================================
 // 1-CLICK SAMPLE REPORT GENERATOR FOR REPORT ANALYZER
 // =============================================================================

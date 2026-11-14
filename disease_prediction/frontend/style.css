@@ -224,13 +224,13 @@ h1, h2, h3, h4, h5, h6,
 }
 
 /* 2. Doctor Console - Stethoscope Emerald Highlight */
-#tab-admin, #tab-admin:visited {
+.nav-btn#tab-admin, .nav-btn#tab-admin:visited {
     background: #f0fdf4;
     border-color: #bbf7d0;
     color: #15803d;
 }
-#tab-admin .material-symbols-outlined { color: #16a34a; }
-#tab-admin:hover, #tab-admin.active {
+.nav-btn#tab-admin .material-symbols-outlined { color: #16a34a; }
+.nav-btn#tab-admin:hover, .nav-btn#tab-admin.active {
     background: #dcfce7;
     border-color: #16a34a;
     color: #15803d;
@@ -280,13 +280,13 @@ h1, h2, h3, h4, h5, h6,
 }
 
 /* 6. Symptoms AI - Clinical Rose Highlight */
-#tab-symptoms, #tab-symptoms:visited {
+.nav-btn#tab-symptoms, .nav-btn#tab-symptoms:visited {
     background: #fff1f2;
     border-color: #fecdd3;
     color: #be123c;
 }
-#tab-symptoms .material-symbols-outlined { color: #e11d48; }
-#tab-symptoms:hover, #tab-symptoms.active {
+.nav-btn#tab-symptoms .material-symbols-outlined { color: #e11d48; }
+.nav-btn#tab-symptoms:hover, .nav-btn#tab-symptoms.active {
     background: #ffe4e6;
     border-color: #e11d48;
     color: #be123c;
@@ -308,17 +308,232 @@ h1, h2, h3, h4, h5, h6,
 }
 
 /* 8. Staff Operations - Hospital Staff Indigo Highlight */
-#tab-operations, #tab-operations:visited {
+.nav-btn#tab-operations, .nav-btn#tab-operations:visited {
     background: #eef2ff;
     border-color: #c7d2fe;
     color: #4338ca;
 }
-#tab-operations .material-symbols-outlined { color: #4f46e5; }
-#tab-operations:hover, #tab-operations.active {
+.nav-btn#tab-operations .material-symbols-outlined { color: #4f46e5; }
+.nav-btn#tab-operations:hover, .nav-btn#tab-operations.active {
     background: #e0e7ff;
     border-color: #4f46e5;
     color: #4338ca;
     box-shadow: 0 2px 8px rgba(79, 70, 229, 0.22);
+}
+
+/* 9. Clinical Portals Toggle Button */
+#tab-portals-toggle, #tab-portals-toggle:visited {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: #334155;
+}
+#tab-portals-toggle .material-symbols-outlined { color: #0284c7; }
+#tab-portals-toggle:hover, #tab-portals-toggle.active {
+    background: #e0f2fe;
+    border-color: #0284c7;
+    color: #0284c7;
+    box-shadow: 0 2px 8px rgba(2, 132, 199, 0.22);
+}
+
+/* =============================================================================
+   CLINICAL PORTALS DROPDOWN (ENTERPRISE GLASS/CARD POPUP FOR LAPTOPS & DESKTOPS)
+   ============================================================================= */
+.nav-dropdown {
+    position: relative !important;
+    display: inline-flex !important;
+    align-items: center !important;
+}
+
+.nav-dropdown-toggle {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    cursor: pointer !important;
+}
+
+.nav-dropdown-menu {
+    display: none;
+    position: absolute !important;
+    top: calc(100% + 8px) !important;
+    right: 0 !important;
+    width: 320px !important;
+    min-width: 320px !important;
+    background: #ffffff !important;
+    border: 1.5px solid #cbd5e1 !important;
+    border-radius: 16px !important;
+    box-shadow: 0 20px 45px -10px rgba(15, 23, 42, 0.22), 0 0 0 1px rgba(15, 23, 42, 0.05) !important;
+    padding: 8px !important;
+    z-index: 9999 !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+}
+
+.nav-dropdown-menu.show {
+    display: flex !important;
+    animation: navDropdownFade 0.16s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+@keyframes navDropdownFade {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.nav-dropdown-menu .nav-dropdown-item,
+.nav-dropdown-menu a,
+.nav-dropdown-menu #tab-admin,
+.nav-dropdown-menu #tab-operations,
+.nav-dropdown-menu #tab-symptoms,
+.nav-dropdown-menu #tab-product {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding: 10px 12px !important;
+    border-radius: 12px !important;
+    text-decoration: none !important;
+    background: transparent !important;
+    border: 1px solid transparent !important;
+    box-shadow: none !important;
+    color: #0f2744 !important;
+    text-align: left !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    transform: none !important;
+    transition: background 0.15s ease, border-color 0.15s ease !important;
+}
+
+.nav-dropdown-menu .nav-dropdown-item:hover,
+.nav-dropdown-menu a:hover,
+.nav-dropdown-menu #tab-admin:hover,
+.nav-dropdown-menu #tab-operations:hover,
+.nav-dropdown-menu #tab-symptoms:hover,
+.nav-dropdown-menu #tab-product:hover {
+    background: #f8fafc !important;
+    border-color: #e2e8f0 !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.nav-dropdown-menu .nav-dropdown-item.active,
+.nav-dropdown-menu a.active,
+.nav-dropdown-menu #tab-admin.active,
+.nav-dropdown-menu #tab-operations.active,
+.nav-dropdown-menu #tab-symptoms.active,
+.nav-dropdown-menu #tab-product.active {
+    background: #e0f2fe !important;
+    border-color: #bae6fd !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.nav-dropdown-menu .dd-item-icon {
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 10px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+}
+
+.nav-dropdown-menu .dd-item-icon.doctor-icon {
+    background: #dcfce7 !important;
+    color: #059669 !important;
+}
+.nav-dropdown-menu .dd-item-icon.staff-icon {
+    background: #f3e8ff !important;
+    color: #7c3aed !important;
+}
+.nav-dropdown-menu .dd-item-icon.symptoms-icon {
+    background: #fee2e2 !important;
+    color: #dc2626 !important;
+}
+.nav-dropdown-menu .dd-item-icon.product-icon {
+    background: #e0f2fe !important;
+    color: #0284c7 !important;
+}
+
+.nav-dropdown-menu .dd-item-icon .material-symbols-outlined {
+    font-size: 20px !important;
+    color: inherit !important;
+}
+
+.nav-dropdown-menu .dd-item-text {
+    display: flex !important;
+    flex-direction: column !important;
+    line-height: 1.25 !important;
+    text-align: left !important;
+}
+
+.nav-dropdown-menu .dd-title {
+    font-weight: 800 !important;
+    font-size: 0.88rem !important;
+    color: #0f2744 !important;
+    letter-spacing: -0.01em !important;
+    margin-bottom: 2px !important;
+}
+
+.nav-dropdown-menu .dd-desc {
+    font-size: 0.72rem !important;
+    color: #64748b !important;
+    font-weight: 500 !important;
+    line-height: 1.2 !important;
+}
+
+/* =============================================================================
+   RESPONSIVE NAVBAR OPTIMIZATION FOR LAPTOPS (1024px to 1366px viewports)
+   ============================================================================= */
+@media (max-width: 1320px) and (min-width: 901px) {
+    .top-navbar {
+        padding: 0.60rem 1.20rem !important;
+        gap: 8px !important;
+    }
+    .nav-links {
+        gap: 4px !important;
+    }
+    .nav-btn {
+        padding: 5px 9px !important;
+        font-size: 0.77rem !important;
+        gap: 4px !important;
+    }
+    .nav-btn .material-symbols-outlined {
+        font-size: 16px !important;
+    }
+    .top-navbar .btn-primary {
+        padding: 6px 12px !important;
+        font-size: 0.77rem !important;
+        gap: 4px !important;
+    }
+}
+
+@media (max-width: 1140px) and (min-width: 901px) {
+    .top-navbar {
+        padding: 0.50rem 0.85rem !important;
+        gap: 6px !important;
+    }
+    .brand-title {
+        font-size: 1.05rem !important;
+    }
+    .brand-subtitle {
+        display: none !important;
+    }
+    .nav-links {
+        gap: 3px !important;
+    }
+    .nav-btn {
+        padding: 5px 7px !important;
+        font-size: 0.74rem !important;
+        letter-spacing: 0.01em !important;
+    }
+    .top-navbar .btn-primary {
+        padding: 5px 9px !important;
+        font-size: 0.74rem !important;
+    }
 }
 
 
@@ -4291,21 +4506,16 @@ input:focus, select:focus, textarea:focus {
         justify-content: center !important;
         border-radius: 10px !important;
     }
-}
-
     .patient-hero-title {
         font-size: 1.3rem !important;
     }
-
     .patient-hero-subtitle {
         font-size: 0.8rem !important;
     }
-
     .preset-pill-btn {
         font-size: 0.72rem !important;
         padding: 4px 8px !important;
     }
-
     .card {
         padding: 14px 12px !important;
     }
@@ -8259,8 +8469,6 @@ input:focus, select:focus, textarea:focus {
     font-weight: 800;
 }
 
-}
-
 /* Dynamic AI Follow-up Bubble Highlighting */
 .voice-followup-alert-chip {
     display: inline-flex;
@@ -9999,92 +10207,7 @@ input:focus, select:focus, textarea:focus {
    SIMPLIFIED TASK-ORIENTED UX STYLING (REDESIGN UPGRADE)
    ============================================================================= */
 
-/* 1. Navigation Dropdown */
-.nav-dropdown {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-}
-
-.nav-dropdown-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    cursor: pointer;
-}
-
-.nav-dropdown-menu {
-    display: none;
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
-    width: 320px;
-    background: #ffffff;
-    border: 1.5px solid #cbd5e1;
-    border-radius: 14px;
-    box-shadow: 0 14px 35px rgba(15, 23, 42, 0.15), 0 2px 6px rgba(15, 23, 42, 0.05);
-    padding: 8px;
-    z-index: 1050;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.nav-dropdown-menu.show {
-    display: flex;
-}
-
-.nav-dropdown-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 12px;
-    border-radius: 10px;
-    text-decoration: none;
-    color: #0f2744;
-    transition: all 0.18s ease;
-}
-
-.nav-dropdown-item:hover {
-    background: #f1f5f9;
-}
-
-.nav-dropdown-item.active {
-    background: #e0f2fe;
-    border: 1px solid #bae6fd;
-}
-
-.dd-item-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.dd-item-icon.doctor-icon { background: #dcfce7; color: #059669; }
-.dd-item-icon.staff-icon { background: #f3e8ff; color: #7c3aed; }
-.dd-item-icon.symptoms-icon { background: #e0f2fe; color: #0284c7; }
-.dd-item-icon.product-icon { background: #e0f2fe; color: #0369a1; }
-
-.dd-item-text {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.25;
-}
-
-.dd-title {
-    font-weight: 800;
-    font-size: 0.88rem;
-    color: #0f2744;
-}
-
-.dd-desc {
-    font-size: 0.72rem;
-    color: #64748b;
-    font-weight: 600;
-}
+/* Navigation Dropdown styles have been placed at top-navbar section */
 
 /* 2. Task Action Cards Grid */
 .task-card-grid {
