@@ -400,7 +400,7 @@ h1, h2, h3, h4, h5, h6,
     gap: 8px;
 }
 
-.emergency-1066-pill {
+.emergency-112-pill, .emergency-1066-pill {
     background: #fef2f2;
     color: #b91c1c;
     border: 1px solid #fecaca;
@@ -416,7 +416,7 @@ h1, h2, h3, h4, h5, h6,
     transition: var(--transition);
 }
 
-.emergency-1066-pill:hover {
+.emergency-112-pill, .emergency-1066-pill:hover {
     background: #fee2e2;
     border-color: #fca5a5;
     color: #991b1b;
@@ -4320,8 +4320,8 @@ input:focus, select:focus, textarea:focus {
         display: none !important;
     }
 
-    .emergency-1066-pill::after {
-        content: "1066";
+    .emergency-112-pill, .emergency-1066-pill::after {
+        content: "112 / 108";
         font-size: 0.7rem;
         font-weight: 800;
     }
@@ -9992,3 +9992,269 @@ input:focus, select:focus, textarea:focus {
 
 
 
+
+
+/* =============================================================================
+   SIMPLIFIED TASK-ORIENTED UX STYLING (REDESIGN UPGRADE)
+   ============================================================================= */
+
+/* 1. Navigation Dropdown */
+.nav-dropdown {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.nav-dropdown-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+}
+
+.nav-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 320px;
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 14px;
+    box-shadow: 0 14px 35px rgba(15, 23, 42, 0.15), 0 2px 6px rgba(15, 23, 42, 0.05);
+    padding: 8px;
+    z-index: 1050;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.nav-dropdown-menu.show {
+    display: flex;
+}
+
+.nav-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    text-decoration: none;
+    color: #0f2744;
+    transition: all 0.18s ease;
+}
+
+.nav-dropdown-item:hover {
+    background: #f1f5f9;
+}
+
+.nav-dropdown-item.active {
+    background: #e0f2fe;
+    border: 1px solid #bae6fd;
+}
+
+.dd-item-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.dd-item-icon.doctor-icon { background: #dcfce7; color: #059669; }
+.dd-item-icon.staff-icon { background: #f3e8ff; color: #7c3aed; }
+.dd-item-icon.symptoms-icon { background: #e0f2fe; color: #0284c7; }
+.dd-item-icon.product-icon { background: #e0f2fe; color: #0369a1; }
+
+.dd-item-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+}
+
+.dd-title {
+    font-weight: 800;
+    font-size: 0.88rem;
+    color: #0f2744;
+}
+
+.dd-desc {
+    font-size: 0.72rem;
+    color: #64748b;
+    font-weight: 600;
+}
+
+/* 2. Task Action Cards Grid */
+.task-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 22px;
+    margin: 28px 0;
+}
+
+.task-action-card {
+    background: #ffffff;
+    border: 2px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 26px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.04);
+    position: relative;
+    overflow: hidden;
+}
+
+.task-action-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 36px rgba(2, 132, 199, 0.12);
+}
+
+.task-card-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+}
+
+.task-card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: white;
+    flex-shrink: 0;
+}
+
+.task-card-badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 6px;
+    margin-bottom: 4px;
+}
+
+.task-card-title {
+    font-size: 1.22rem;
+    font-weight: 900;
+    color: #0f2744;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.task-card-desc {
+    font-size: 0.90rem;
+    line-height: 1.55;
+    color: #475569;
+    margin-bottom: 18px;
+    font-weight: 500;
+}
+
+.task-features-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.task-features-list li {
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.task-cta-btn {
+    width: 100%;
+    padding: 13px 20px;
+    border-radius: 12px;
+    font-weight: 900;
+    font-size: 0.92rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.task-cta-btn:hover {
+    filter: brightness(1.08);
+}
+
+/* 3. How It Works 3-Step Guide */
+.how-it-works-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+    margin: 24px 0 8px 0;
+}
+
+.how-step-card {
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 24px;
+    position: relative;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+
+.how-step-num {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: #e0f2fe;
+    color: #0284c7;
+    font-weight: 900;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
+    border: 1px solid #bae6fd;
+}
+
+.how-step-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #0f2744;
+    margin: 0 0 8px 0;
+}
+
+.how-step-desc {
+    font-size: 0.86rem;
+    color: #475569;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* 4. Emergency Banner */
+.emergency-alert-banner {
+    background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%);
+    border: 2px solid #fecdd3;
+    border-radius: 16px;
+    padding: 16px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin: 0 0 22px 0;
+    box-shadow: 0 4px 14px rgba(225, 29, 72, 0.08);
+}

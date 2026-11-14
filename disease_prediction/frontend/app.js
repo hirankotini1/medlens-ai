@@ -723,14 +723,22 @@ function switchView(viewName) {
 
     document.querySelectorAll('.section-view').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-dropdown-item').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.admin-corner-btn').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.mob-nav-btn').forEach(el => el.classList.remove('active'));
+    const portalsToggle = document.getElementById('tab-portals-toggle');
+    if (portalsToggle) portalsToggle.classList.remove('active');
 
     const viewEl = document.getElementById(`view-${viewName}`);
     const tabEl = document.getElementById(`tab-${viewName}`);
     const mobTabEl = document.getElementById(`mob-tab-${viewName}`);
     if (viewEl) viewEl.classList.add('active');
-    if (tabEl) tabEl.classList.add('active');
+    if (tabEl) {
+        tabEl.classList.add('active');
+        if (tabEl.closest && tabEl.closest('#nav-dropdown-menu') && portalsToggle) {
+            portalsToggle.classList.add('active');
+        }
+    }
     if (mobTabEl) mobTabEl.classList.add('active');
 
     window.scrollTo(0, 0);
@@ -2747,7 +2755,21 @@ function switchSandboxDisease(disease) {
         container.innerHTML = `
             <div class="card">
                 <h3 style="margin-bottom: 6px; font-size: 1.1rem;">${config.title}</h3>
-                <div style="font-size: 0.8rem; color: #38bdf8; margin-bottom: 14px;">Pipeline: ${config.pipeline}</div>
+                <div style="font-size: 0.8rem; color: #0284c7; font-weight: 700; margin-bottom: 14px;">Pipeline: ${config.pipeline}</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 14px; flex-wrap: wrap; gap: 8px;">
+                    <div style="font-size: 0.80rem; font-weight: 800; color: #475569; display: flex; align-items: center; gap: 6px;">
+                        <span class="material-symbols-outlined" style="font-size: 16px; color: #0284c7;">tune</span>
+                        <span>QUICK SAMPLE PRESETS:</span>
+                    </div>
+                    <div style="display: inline-flex; gap: 8px;">
+                        <button type="button" onclick="loadSandboxPreset('normal')" style="background: #ecfdf5; border: 1.5px solid #a7f3d0; color: #059669; font-weight: 800; font-size: 0.78rem; padding: 5px 12px; border-radius: 7px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                            <span>✨</span> Normal Healthy Values
+                        </button>
+                        <button type="button" onclick="loadSandboxPreset('elevated')" style="background: #fff1f2; border: 1.5px solid #fecdd3; color: #e11d48; font-weight: 800; font-size: 0.78rem; padding: 5px 12px; border-radius: 7px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                            <span>⚠️</span> Elevated Risk Values
+                        </button>
+                    </div>
+                </div>
                 <form id="sb-form" onsubmit="runSandboxPrediction(event)" class="form-grid">
                     ${config.fields.map(f => {
                         const fullClass = f.full ? 'full-width' : '';
@@ -9314,3 +9336,206 @@ function renderPatientFlowCard(d) {
         }
     } catch (e) {}
 })();
+
+
+// =============================================================================
+// TASK-ORIENTED NAVIGATION DROPDOWN CONTROLS
+// =============================================================================
+function toggleNavDropdown(event) {
+    if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
+    const menu = document.getElementById('nav-dropdown-menu');
+    if (menu) {
+        menu.classList.toggle('show');
+    }
+}
+
+function closeNavDropdown() {
+    const menu = document.getElementById('nav-dropdown-menu');
+    if (menu) {
+        menu.classList.remove('show');
+    }
+}
+
+document.addEventListener('click', function(e) {
+    const dropdown = document.getElementById('nav-portals-dropdown');
+    if (dropdown && !dropdown.contains(e.target)) {
+        closeNavDropdown();
+    }
+});
+
+// =============================================================================
+// 1-CLICK SAMPLE REPORT GENERATOR FOR REPORT ANALYZER
+// =============================================================================
+const SAMPLE_ANALYZER_DATA = {
+    anemia: {
+        metadata: {
+            patient_id: "PAT-1002",
+            patient_name: "Pooja Sharma",
+            age: 28,
+            gender: "Female",
+            report_id: "CBC-2026-8812",
+            report_date: "2026-11-14",
+            sample_type: "Whole Blood (EDTA)"
+        },
+        data_quality: { overall_quality: "GOOD" },
+        parameters: [
+            { name: "Hemoglobin (Hb)", value: "8.5", unit: "g/dL", status: "LOW", reference_interval: "12.0 - 16.0", confidence: "HIGH", clinical_significance: "Microcytic hypochromic anemia; reduced blood oxygen capacity." },
+            { name: "RBC Count", value: "3.40", unit: "x10^12/L", status: "LOW", reference_interval: "4.00 - 5.40", confidence: "HIGH", clinical_significance: "Reduced erythrocyte mass." },
+            { name: "Packed Cell Volume (PCV / Hct)", value: "26.5", unit: "%", status: "LOW", reference_interval: "37.0 - 47.0", confidence: "HIGH", clinical_significance: "Decreased packed volume of red cells." },
+            { name: "Mean Corpuscular Volume (MCV)", value: "71.0", unit: "fL", status: "LOW", reference_interval: "80.0 - 100.0", confidence: "HIGH", clinical_significance: "Microcytosis, characteristic of iron-deficiency anemia." },
+            { name: "Mean Corpuscular Hgb (MCH)", value: "22.0", unit: "pg", status: "LOW", reference_interval: "27.0 - 33.0", confidence: "HIGH", clinical_significance: "Hypochromia; pale red blood cells." },
+            { name: "Mean Corpuscular Hgb Conc (MCHC)", value: "29.0", unit: "g/dL", status: "LOW", reference_interval: "32.0 - 36.0", confidence: "HIGH", clinical_significance: "Reduced mean cellular hemoglobin concentration." },
+            { name: "Red Cell Distribution Width (RDW)", value: "18.5", unit: "%", status: "HIGH", reference_interval: "11.5 - 14.5", confidence: "HIGH", clinical_significance: "Elevated anisocytosis, strongly correlates with iron deficiency." },
+            { name: "Total Leukocyte Count (TLC / WBC)", value: "6.8", unit: "x10^3/uL", status: "NORMAL", reference_interval: "4.0 - 11.0", confidence: "HIGH", clinical_significance: "Normal white cell count." },
+            { name: "Platelet Count", value: "215", unit: "x10^3/uL", status: "NORMAL", reference_interval: "150 - 450", confidence: "HIGH", clinical_significance: "Normal platelet count." }
+        ]
+    },
+    dengue: {
+        metadata: {
+            patient_id: "PAT-1003",
+            patient_name: "Rahul Verma",
+            age: 36,
+            gender: "Male",
+            report_id: "DNG-2026-4421",
+            report_date: "2026-11-14",
+            sample_type: "Venous Blood"
+        },
+        data_quality: { overall_quality: "GOOD" },
+        parameters: [
+            { name: "Platelet Count", value: "48000", unit: "cells/uL", status: "CRITICAL_LOW", reference_interval: "150000 - 450000", confidence: "HIGH", clinical_significance: "Severe thrombocytopenia; acute bleeding precaution needed." },
+            { name: "WBC Count", value: "2400", unit: "cells/uL", status: "LOW", reference_interval: "4000 - 11000", confidence: "HIGH", clinical_significance: "Marked leukopenia typical of acute viremic dengue phase." },
+            { name: "Hemoglobin", value: "15.8", unit: "g/dL", status: "HIGH", reference_interval: "13.0 - 17.0", confidence: "HIGH", clinical_significance: "Hemoconcentration indicating plasma leakage." },
+            { name: "Packed Cell Volume (Hematocrit)", value: "48.5", unit: "%", status: "HIGH", reference_interval: "40.0 - 50.0", confidence: "HIGH", clinical_significance: "Plasma leakage marker; monitor hydration." },
+            { name: "Platelet Distribution Width (PDW)", value: "18.2", unit: "%", status: "HIGH", reference_interval: "9.0 - 14.0", confidence: "HIGH", clinical_significance: "Accelerated platelet destruction and regeneration." }
+        ]
+    },
+    liver: {
+        metadata: {
+            patient_id: "PAT-1004",
+            patient_name: "Amitabh Sen",
+            age: 58,
+            gender: "Male",
+            report_id: "LFT-2026-1932",
+            report_date: "2026-11-14",
+            sample_type: "Serum"
+        },
+        data_quality: { overall_quality: "GOOD" },
+        parameters: [
+            { name: "Total Bilirubin", value: "3.6", unit: "mg/dL", status: "HIGH", reference_interval: "0.2 - 1.2", confidence: "HIGH", clinical_significance: "Hyperbilirubinemia; patient may exhibit jaundice." },
+            { name: "Direct Bilirubin", value: "1.7", unit: "mg/dL", status: "HIGH", reference_interval: "0.0 - 0.3", confidence: "HIGH", clinical_significance: "Conjugated hyperbilirubinemia, hepatocellular/cholestatic pattern." },
+            { name: "Alkaline Phosphatase (ALP)", value: "320", unit: "IU/L", status: "HIGH", reference_interval: "44 - 147", confidence: "HIGH", clinical_significance: "Biliary tract or hepatic canalicular irritation." },
+            { name: "ALT / SGPT", value: "92", unit: "IU/L", status: "HIGH", reference_interval: "7 - 56", confidence: "HIGH", clinical_significance: "Acute hepatocellular enzyme leakage." },
+            { name: "AST / SGOT", value: "105", unit: "IU/L", status: "HIGH", reference_interval: "10 - 40", confidence: "HIGH", clinical_significance: "Hepatocellular injury." },
+            { name: "Total Protein", value: "6.2", unit: "g/dL", status: "NORMAL", reference_interval: "6.0 - 8.3", confidence: "HIGH", clinical_significance: "Normal serum total proteins." },
+            { name: "Serum Albumin", value: "2.8", unit: "g/dL", status: "LOW", reference_interval: "3.5 - 5.0", confidence: "HIGH", clinical_significance: "Hypoalbuminemia; impaired hepatic synthetic capacity." },
+            { name: "A/G Ratio", value: "0.82", unit: "Ratio", status: "LOW", reference_interval: "1.0 - 2.0", confidence: "HIGH", clinical_significance: "Inverted A/G ratio." }
+        ]
+    }
+};
+
+function loadSampleAnalyzerReport(type) {
+    const sample = SAMPLE_ANALYZER_DATA[type] || SAMPLE_ANALYZER_DATA.anemia;
+    currentExtractedData = JSON.parse(JSON.stringify(sample));
+    
+    // Create a mock File object so triggerFinalAIAnalysis succeeds
+    const mockBlob = new Blob(["MEDLENS SAMPLE REPORT DATA"], { type: "application/pdf" });
+    selectedAnalyzerFile = new File([mockBlob], `sample_${type}_report.pdf`, { type: "application/pdf" });
+
+    // Populate UI Metadata Fields
+    const meta = currentExtractedData.metadata || {};
+    const patIdEl = document.getElementById('anl-meta-patient-id');
+    const patNameEl = document.getElementById('anl-meta-patient-name');
+    const ageEl = document.getElementById('anl-meta-age');
+    const genderEl = document.getElementById('anl-meta-gender');
+    const repIdEl = document.getElementById('anl-meta-report-id');
+    const repDateEl = document.getElementById('anl-meta-report-date');
+
+    if (patIdEl) patIdEl.value = meta.patient_id || '';
+    if (patNameEl) patNameEl.value = meta.patient_name || '';
+    if (ageEl) ageEl.value = meta.age !== undefined ? meta.age : '';
+    if (genderEl) genderEl.value = meta.gender || 'Female';
+    if (repIdEl) repIdEl.value = meta.report_id || '';
+    if (repDateEl) repDateEl.value = meta.report_date || '';
+
+    // Update Quality Badges
+    const countEl = document.getElementById('anl-audit-biomarker-count');
+    const qualityPill = document.getElementById('anl-audit-quality-pill');
+    if (countEl) countEl.innerText = `${currentExtractedData.parameters.length}`;
+    if (qualityPill) {
+        qualityPill.innerText = "PRE-VALIDATED SAMPLE";
+        qualityPill.className = "conf-pill conf-high";
+    }
+
+    // Render table
+    renderExtractedParametersTable(currentExtractedData.parameters);
+
+    // Update 3-step progress bar
+    const s1 = document.getElementById('anl-step-indicator-1');
+    const s2 = document.getElementById('anl-step-indicator-2');
+    if (s1) {
+        s1.style.background = "#dcfce7";
+        s1.style.color = "#059669";
+        s1.style.borderColor = "#a7f3d0";
+        s1.innerHTML = `<span style="width: 20px; height: 20px; border-radius: 50%; background: #059669; color: white; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem;">✓</span> <span>Sample Loaded (${type.toUpperCase()})</span>`;
+    }
+    if (s2) {
+        s2.style.background = "#e0f2fe";
+        s2.style.color = "#0284c7";
+        s2.style.borderColor = "#bae6fd";
+    }
+
+    // Reveal review card & scroll smoothly
+    const reviewCard = document.getElementById('anl-review-card');
+    if (reviewCard) {
+        reviewCard.style.display = 'block';
+        reviewCard.scrollIntoView({ behavior: 'smooth' });
+    }
+}
+
+// =============================================================================
+// PRESETS FOR DISEASE RISK SCREENING (SANDBOX)
+// =============================================================================
+const SANDBOX_PRESETS = {
+    anemia: {
+        normal: { Age: 28, Sex: 'Female', HGB: 13.5, RBC: 4.80, PCV: 42.0, MCV: 88.0, MCH: 29.5, MCHC: 33.5, RDW: 12.8, TLC: 6.8, PLT_mm3: 250.0 },
+        elevated: { Age: 28, Sex: 'Female', HGB: 8.5, RBC: 3.40, PCV: 26.5, MCV: 71.0, MCH: 22.0, MCHC: 29.0, RDW: 18.5, TLC: 6.8, PLT_mm3: 195.0 }
+    },
+    dengue: {
+        normal: { age: 32, gender: 'Male', hemoglobin_g_dl: 14.5, wbc_count: 7200, differential_count: 0, rbc_count: 0, platelet_count: 240000, platelet_distribution_width: 10.5 },
+        elevated: { age: 43, gender: 'Male', hemoglobin_g_dl: 15.6, wbc_count: 2200, differential_count: 1, rbc_count: 1, platelet_count: 38000, platelet_distribution_width: 17.5 }
+    },
+    liver: {
+        normal: { age: 35, gender: 'Female', total_bilirubin: 0.8, direct_bilirubin: 0.2, alkaline_phosphotase: 90, alamine_aminotransferase: 24, aspartate_aminotransferase: 22, total_protiens: 7.2, albumin: 4.2, albumin_and_globulin_ratio: 1.4 },
+        elevated: { age: 65, gender: 'Female', total_bilirubin: 3.8, direct_bilirubin: 1.8, alkaline_phosphotase: 350, alamine_aminotransferase: 85, aspartate_aminotransferase: 95, total_protiens: 5.8, albumin: 2.7, albumin_and_globulin_ratio: 0.7 }
+    },
+    thyroid: {
+        normal: { TSH: 2.1, T4: 8.5, T3: 130.0, TSH_response: 12.0, T3_resin_uptake: 100 },
+        elevated: { TSH: 25.0, T4: 3.2, T3: 0.8, TSH_response: 28.5, T3_resin_uptake: 85 }
+    }
+};
+
+function loadSandboxPreset(presetType) {
+    const disease = currentSandboxDisease || 'anemia';
+    const presetsForDisease = SANDBOX_PRESETS[disease];
+    if (!presetsForDisease) {
+        alert("Preset values are not available for cell microscopy images. Please select an image file.");
+        return;
+    }
+    const data = presetsForDisease[presetType];
+    if (!data) return;
+
+    for (const [key, val] of Object.entries(data)) {
+        const input = document.getElementById(`sb-${key}`);
+        if (input) {
+            input.value = val;
+            input.style.transition = "background-color 0.4s ease";
+            input.style.backgroundColor = presetType === 'normal' ? "#ecfdf5" : "#fff1f2";
+            setTimeout(() => {
+                input.style.backgroundColor = "";
+            }, 1000);
+        }
+    }
+}
