@@ -178,94 +178,317 @@ def detect_red_flags(combined_text: str) -> Dict[str, Any]:
 # ==============================================================================
 # ADAPTIVE QUESTION ENGINE (Deterministic + Clinical Intelligence)
 # ==============================================================================
+try:
+    from disease_prediction.api.clinical_interview.relevance_validator import ClinicalQuestionRelevanceValidator
+except ImportError:
+    try:
+        from api.clinical_interview.relevance_validator import ClinicalQuestionRelevanceValidator
+    except ImportError:
+        from clinical_interview.relevance_validator import ClinicalQuestionRelevanceValidator
+
 ADAPTIVE_RULES = [
     {
-        "trigger": r"chest\s*pain|angina|cardiac",
+        "domain": "chest_pain",
+        "trigger": r"chest\s*pain|angina|cardiac|heart|seena\s*dard|chhati|gunde\s*noppi",
         "section": "hpi",
         "questions": [
             {
-                "id": "cp_onset",
-                "question": "When exactly did the chest pain start, and was it sudden or gradual?",
-                "options": ["Sudden onset (< 1 hour)", "Started earlier today", "Present for 2-3 days", "Chronic / on and off for weeks"]
-            },
-            {
-                "id": "cp_radiation",
-                "question": "Does the pain spread or radiate anywhere else (e.g., left arm, shoulder, neck, jaw, or back)?",
-                "options": ["Spreads to left arm & shoulder", "Spreads to jaw / neck", "Spreads to upper back", "Remains localized in the center"]
+                "id": "cp_location_radiation",
+                "question": "Where exactly is the chest discomfort, and does it spread/radiate to your left arm, jaw, neck, shoulder, or back?",
+                "options": ["Left-sided radiating to left arm/shoulder", "Center retrosternal crushing pressure", "Radiates to jaw/neck", "Localized in center without radiation"]
             },
             {
                 "id": "cp_character",
                 "question": "How would you describe the feeling of the pain?",
-                "options": ["Crushing / heavy pressure", "Sharp / stabbing like a needle", "Burning sensation", "Dull ache"]
+                "options": ["Crushing / heavy pressure like an elephant", "Sharp / stabbing needle pain", "Burning sensation / acid reflux", "Dull ache"]
             },
             {
                 "id": "cp_triggers",
                 "question": "Does walking, climbing stairs, or physical exertion worsen the chest pain?",
                 "options": ["Yes, exertion definitely worsens it", "No, happens even at rest", "Worse when lying flat / after meals", "Worse with deep breaths / coughing"]
+            },
+            {
+                "id": "cp_associated",
+                "question": "Are you experiencing cold sweating, difficulty breathing, dizziness, or nausea along with the chest pain?",
+                "options": ["Cold sweating & shortness of breath", "Dizziness / feeling faint", "Nausea or vomiting", "No associated symptoms"]
             }
         ]
     },
     {
-        "trigger": r"fever|pyrexia|temperature|chills",
+        "domain": "fever",
+        "trigger": r"fever|pyrexia|temperature|chills|shivering|bukhar|jwar",
         "section": "hpi",
         "questions": [
             {
                 "id": "fever_duration",
-                "question": "How many days have you had the fever, and what was the highest recorded temperature?",
-                "options": ["1-2 days (Low grade < 100°F)", "3-5 days (High grade > 102°F)", "> 1 week continuous", "Intermittent with severe chills & rigors"]
+                "question": "How many days have you had the fever, and did it start suddenly with chills or gradually?",
+                "options": ["1-2 days (Recent onset)", "3-5 days (High grade)", "> 1 week continuous", "Started today with severe chills & rigors"]
+            },
+            {
+                "id": "fever_pattern",
+                "question": "How high has the fever reached, and does it stay continuous or come and go in spikes with shivering?",
+                "options": ["Continuous high fever (> 102°F)", "Comes in spikes with shivering chills", "Low grade (99-100°F)", "Not measured with thermometer"]
             },
             {
                 "id": "fever_associated",
-                "question": "Are you experiencing any associated symptoms along with the fever?",
-                "options": ["Severe headache & body ache", "Cough & sore throat", "Burning urination / flank pain", "Nausea, vomiting & abdominal pain", "Skin rash or red spots"]
+                "question": "Are you experiencing severe headache, body aches, cough, sore throat, or burning urination with the fever?",
+                "options": ["Severe headache & body aches", "Cough & sore throat", "Burning sensation during urination", "Nausea, vomiting & abdominal pain"]
+            },
+            {
+                "id": "fever_warning",
+                "question": "Have you noticed any red spots on your skin, bleeding gums, pain behind your eyes, or a stiff neck?",
+                "options": ["Pain behind the eyes (Retro-orbital)", "Red rash / tiny red spots on skin", "Stiff neck and intolerance to light", "No rash, bleeding, or neck stiffness"]
             }
         ]
     },
     {
-        "trigger": r"breath|dyspnea|shortness\s*of\s*breath|wheez",
+        "domain": "cough",
+        "trigger": r"cough|sputum|phlegm|khansi|daggu|kaas",
+        "section": "hpi",
+        "questions": [
+            {
+                "id": "cough_duration",
+                "question": "How long have you had this cough, and did it start after a cold or fever?",
+                "options": ["Less than 1 week (Acute)", "1 to 3 weeks", "More than 3 weeks (Persistent)", "Chronic cough for several months"]
+            },
+            {
+                "id": "cough_type",
+                "question": "Is the cough dry or productive with phlegm/sputum? Have you seen any traces of blood?",
+                "options": ["Dry continuous irritating cough", "Productive with yellow/green phlegm", "Traces of red blood (Hemoptysis)", "Clear or white mucus"]
+            },
+            {
+                "id": "cough_triggers",
+                "question": "Is the cough worse at night, when lying flat, in cold air, or accompanied by wheezing sounds?",
+                "options": ["Worse at night or lying down", "Wheezing / whistling sounds in chest", "Triggered by dust or smoke", "No nocturnal worsening"]
+            }
+        ]
+    },
+    {
+        "domain": "breathlessness",
+        "trigger": r"breath|dyspnea|shortness\s*of\s*breath|wheez|saans|swasa",
         "section": "hpi",
         "questions": [
             {
                 "id": "dyspnea_severity",
-                "question": "When is the shortness of breath most noticeable?",
-                "options": ["At rest / sitting still", "With mild activity (walking across room)", "With moderate exertion (climbing stairs)", "When lying flat at night (need extra pillows)"]
+                "question": "Are you struggling to breathe while resting, or unable to lie flat without extra pillows (orthopnea)?",
+                "options": ["Struggling at complete rest", "Short of breath on minimal walking", "Cannot lie flat without 2+ pillows", "Wheezing / whistling in chest"]
             },
             {
-                "id": "dyspnea_cough",
-                "question": "Do you have a cough, wheezing, or phlegm?",
-                "options": ["Dry cough only", "Productive cough with yellow/green phlegm", "Wheezing / whistling sound", "No cough"]
+                "id": "dyspnea_onset",
+                "question": "Did the breathing difficulty begin suddenly within minutes/hours, or gradually over days?",
+                "options": ["Sudden acute onset (< 2 hours)", "Developed over 2-3 days", "Gradually worsening over weeks", "Chronic long-standing issue"]
             }
         ]
     },
     {
-        "trigger": r"abdom|stomach\s*pain|belly|nausea|vomit|diarrhea",
+        "domain": "abdominal_pain",
+        "trigger": r"abdom|stomach\s*pain|belly|pet\s*dard|gut|kadupu\s*noppi",
         "section": "hpi",
         "questions": [
             {
                 "id": "abd_location",
-                "question": "Where in your abdomen is the pain located?",
-                "options": ["Upper center (epigastric)", "Right upper side (under ribs)", "Right lower abdomen", "Diffuse / all over"]
+                "question": "Which part of your abdomen hurts most — upper center, upper right under ribs, lower right (appendix area), or all over?",
+                "options": ["Upper center (Burning/Acidity)", "Right upper side under ribs (Gallbladder/Liver)", "Right lower abdomen (Appendix concern)", "All over / Diffuse cramping"]
+            },
+            {
+                "id": "abd_character",
+                "question": "What does the pain feel like — burning sensation, sharp cramping spasms that come in waves, or a dull ache?",
+                "options": ["Burning acidity sensation", "Cramping spasms in waves (Colicky)", "Sharp continuous pain", "Dull bloated ache"]
             },
             {
                 "id": "abd_relation_food",
-                "question": "Is the pain related to eating or taking spicy/greasy meals?",
-                "options": ["Worse immediately after meals", "Better after eating", "Unrelated to food", "Accompanied by vomiting / loose stools"]
+                "question": "Is the pain related to eating — worse immediately after meals, on an empty stomach, or after oily/spicy food?",
+                "options": ["Worse immediately after meals", "Worse after fatty, greasy or spicy food", "Relieved after eating / Worse on empty stomach", "Unrelated to food"]
+            },
+            {
+                "id": "abd_associated",
+                "question": "Are you experiencing vomiting, loose watery stools (diarrhea), constipation, or fever along with the stomach pain?",
+                "options": ["Nausea & vomiting", "Watery loose stools / diarrhea", "Inability to pass stools or gas", "No vomiting or bowel changes"]
             }
         ]
     },
     {
-        "trigger": r"headache|migraine|head\s*pain",
+        "domain": "headache",
+        "trigger": r"headache|migraine|head\s*pain|sar\s*dard|matha\s*darda|munda\s*bindha|talanappi",
         "section": "hpi",
         "questions": [
             {
                 "id": "ha_character",
-                "question": "Is the headache throbbing on one side or a dull band across the entire forehead?",
-                "options": ["One-sided pulsating / throbbing", "Tight band around head", "Sudden severe 'thunderclap' headache", "Back of head / neck stiffness"]
+                "question": "What does the headache feel like — throbbing and pulsating like a heartbeat, or a tight squeezing band across the forehead?",
+                "options": ["One-sided pulsating / throbbing (Migraine pattern)", "Tight band squeezing around head (Tension pattern)", "Sudden severe 'thunderclap' headache", "Back of head & neck stiffness"]
+            },
+            {
+                "id": "ha_location",
+                "question": "Where is the headache located — one side of the head, across your forehead, at the back of your head/neck, or all over?",
+                "options": ["One side of head (Temple/Eye)", "Across forehead / Front of head", "Back of head & neck (Occipital)", "All over entire head"]
             },
             {
                 "id": "ha_vision",
-                "question": "Do you experience sensitivity to light/sound or nausea during the headache?",
-                "options": ["Yes, light sensitivity & nausea", "Visual blurring or seeing flashing lights", "No associated symptoms"]
+                "question": "Do you experience sensitivity to bright light/sound, nausea, or seeing flashing zigzag lights during the headache?",
+                "options": ["Sensitivity to bright light & loud sound", "Nausea or vomiting", "Visual zigzag lines / flashing aura", "No associated symptoms"]
+            },
+            {
+                "id": "ha_triggers",
+                "question": "Does anything trigger or worsen the headache — such as lack of sleep, stress, long screen use, or coughing?",
+                "options": ["Worse with stress / lack of sleep", "Worse with long screen use / reading", "Worse when coughing or bending forward", "Relieved in a quiet dark room"]
+            }
+        ]
+    },
+    {
+        "domain": "joint_pain",
+        "trigger": r"joint|knee|arthritis|jodon\s*me\s*dard|ghutne|mokaali",
+        "section": "hpi",
+        "questions": [
+            {
+                "id": "joint_location",
+                "question": "Which specific joints are hurting (e.g., one knee, both knees, hips, fingers, wrists, or ankles)?",
+                "options": ["One knee only (Right / Left)", "Both knees symmetrically", "Small joints of fingers & wrists", "Ankles or feet"]
+            },
+            {
+                "id": "joint_swelling_stiffness",
+                "question": "Is there visible swelling, warmth, or morning stiffness in the joints that lasts for more than 30 minutes?",
+                "options": ["Morning stiffness lasting > 30 minutes", "Stiff for 5-10 minutes, worse with walking", "Visible swelling, warmth & redness", "No swelling or significant stiffness"]
+            },
+            {
+                "id": "joint_mobility",
+                "question": "Does walking, climbing stairs, or bearing weight worsen the pain? Can you walk independently?",
+                "options": ["Worse when climbing stairs or walking", "Unable to bear weight on the joint", "Pain even while resting in bed", "Creaking sounds in joint on movement"]
+            }
+        ]
+    },
+    {
+        "domain": "back_pain",
+        "trigger": r"back\s*pain|spine|lumbago|sciatica|kamar\s*dard|nadumu\s*noppi",
+        "section": "hpi",
+        "questions": [
+            {
+                "id": "back_location_radiation",
+                "question": "Where is the back pain located, and does it shoot down your buttocks, leg, or foot (sciatica)?",
+                "options": ["Lower back localized only (No radiation)", "Shoots down one leg to calf/foot (Sciatica)", "Shoots down both legs", "Upper / Mid back between shoulder blades"]
+            },
+            {
+                "id": "back_red_flags",
+                "question": "Have you experienced any loss of bowel/bladder control, difficulty passing urine, or numbness between your legs?",
+                "options": ["No numbness or urinary / bowel problems", "Numbness / tingling in feet or toes", "Difficulty passing urine / retention", "Weakness in foot (Foot drop)"]
+            }
+        ]
+    },
+    {
+        "domain": "vomiting",
+        "trigger": r"vomit|nausea|ulti|vaanti|baanti|emesis",
+        "section": "hpi",
+        "questions": [
+            {
+                "id": "vomit_frequency",
+                "question": "How many times have you vomited in the past 24 hours, and are you able to keep sips of water down?",
+                "options": ["1-2 times (Mild)", "3-5 times today", "Persistent (> 6 times) / Cannot keep water down", "Nausea only (No vomiting)"]
+            },
+            {
+                "id": "vomit_blood_bile",
+                "question": "What does the vomit look like — clear fluid, greenish-yellow bile, or have you seen red blood or dark coffee-ground material?",
+                "options": ["Undigested food & clear fluid", "Greenish-yellow bitter bile", "Traces of red blood or coffee-ground color", "No blood seen"]
+            }
+        ]
+    },
+    {
+        "domain": "diarrhea",
+        "trigger": r"diarrhea|loose\s*motion|loose\s*stool|dast|jhada|dysentery",
+        "section": "hpi",
+        "questions": [
+            {
+                "id": "diarrhea_frequency",
+                "question": "How many loose or watery motions have you had in the last 24 hours?",
+                "options": ["2 to 4 loose motions (Mild)", "5 to 8 watery stools today (Moderate)", "> 8 watery motions / continuous (Severe)", "Semi-formed soft stools"]
+            },
+            {
+                "id": "diarrhea_blood",
+                "question": "Have you seen any red blood, black tarry color, or sticky mucus in the stools?",
+                "options": ["Traces of red blood with mucus (Dysentery concern)", "Black tarry stools (Melena concern)", "Watery without any blood or mucus", "Sticky mucus only"]
+            }
+        ]
+    },
+    {
+        "domain": "urinary_symptoms",
+        "trigger": r"urin|dysuria|bladder|peshab|mutram|parisra",
+        "section": "hpi",
+        "questions": [
+            {
+                "id": "urinary_dysuria",
+                "question": "Do you feel a burning sensation or pain when urinating, or an urgent need to urinate frequently?",
+                "options": ["Burning pain during urination (Dysuria)", "Urgent need to urinate every few minutes", "Difficulty starting urine stream / weak flow", "Pain at end of urination"]
+            },
+            {
+                "id": "urinary_hematuria",
+                "question": "Have you seen any red blood, pink tint, or cloudiness in your urine?",
+                "options": ["Visible red blood in urine (Hematuria)", "Cloudy foul-smelling urine", "Normal pale yellow color", "Dark concentrated yellow"]
+            }
+        ]
+    },
+    {
+        "domain": "dizziness",
+        "trigger": r"dizz\w*|vertigo|lightheaded|chakkar|kallu\s*thiragadam",
+        "section": "hpi",
+        "questions": [
+            {
+                "id": "dizziness_type",
+                "question": "Does the room feel like it is spinning around you (vertigo), or do you feel lightheaded like you might faint?",
+                "options": ["Room spinning around me (True Vertigo)", "Lightheaded / Feeling faint on standing", "Unsteadiness / Loss of balance while walking", "Floating woozy sensation"]
+            },
+            {
+                "id": "dizziness_triggers",
+                "question": "Does turning your head, rolling over in bed, or suddenly standing up trigger the dizziness?",
+                "options": ["Triggered by rolling over in bed or looking up", "Triggered only when standing up quickly", "Constant dizziness regardless of position", "No specific positional trigger"]
+            }
+        ]
+    },
+    {
+        "domain": "skin_allergy",
+        "trigger": r"rash|itch|hives|urticaria|khujli|chakatte|skin\s*allergy",
+        "section": "hpi",
+        "questions": [
+            {
+                "id": "skin_location",
+                "question": "Where on your body did the rash or itching start, and is it spreading?",
+                "options": ["Localized to arms / legs only", "Spread all over chest, back & abdomen", "Face, neck and scalp involved", "Confined to hands or feet only"]
+            },
+            {
+                "id": "skin_morphology",
+                "question": "What does the rash look like — raised red itchy welts (hives), fluid-filled blisters, or dry scaly patches?",
+                "options": ["Raised itchy wheals / hives (Urticaria)", "Fluid-filled blisters or peeling skin", "Dry, red, scaly itching patches", "Tiny red dots (Petechiae concern)"]
+            }
+        ]
+    },
+    {
+        "domain": "throat_symptoms",
+        "trigger": r"throat|swallow|pharyngitis|tonsil|gala\s*dard|gonthu\s*noppi",
+        "section": "hpi",
+        "questions": [
+            {
+                "id": "throat_character",
+                "question": "Does your throat feel raw and scratchy, or is there sharp pain specifically when swallowing food and liquids?",
+                "options": ["Severe pain when swallowing (Odynophagia)", "Dry scratchy raw sensation", "Pain radiates to one ear", "Mild irritation only"]
+            },
+            {
+                "id": "throat_airway",
+                "question": "Can you swallow your own saliva, or are you drooling, unable to open your mouth wide, or having noisy breathing?",
+                "options": ["Can swallow saliva without difficulty", "Difficulty opening mouth wide (Trismus)", "Drooling / Unable to swallow saliva", "Hoarse muffled voice"]
+            }
+        ]
+    },
+    {
+        "domain": "weakness_fatigue",
+        "trigger": r"weak\w*|fatigue|tired|exhaust\w*|kamzori|thakan|durbalata",
+        "section": "hpi",
+        "questions": [
+            {
+                "id": "weakness_duration",
+                "question": "How long have you felt this weakness, and does it prevent you from completing your daily routine or work?",
+                "options": ["Started recently over past few days", "Present for 2 to 4 weeks", "Chronic ongoing exhaustion for months", "Prevents basic household tasks"]
+            },
+            {
+                "id": "weakness_pallor",
+                "question": "Have you noticed pale skin/eyes, shortness of breath after climbing just a few stairs, or dizziness when standing?",
+                "options": ["Pale eyes/nails & breathlessness on minor walking", "Feeling dizzy upon standing up quickly", "Cold hands and feet with hair fall", "No breathlessness or paleness"]
             }
         ]
     }
@@ -273,23 +496,42 @@ ADAPTIVE_RULES = [
 
 def get_deterministic_adaptive_questions(chief_complaint: str, answers: Dict[str, Any]) -> List[Dict[str, Any]]:
     """
-    User's built-in deterministic clinical rule engine:
     Evaluates chief complaint and current section answers using predefined clinical rules.
-    Prevents repetitive or duplicate questions.
+    Prevents repetitive or cross-system duplicate questions.
     """
-    combined = f"{chief_complaint} " + " ".join([str(v) for v in answers.values()])
+    cc_clean = str(chief_complaint or "").strip()
+
+    # 1. Check for Ambiguous / Non-specific complaint
+    if ClinicalQuestionRelevanceValidator.is_ambiguous_complaint(cc_clean):
+        clarify_q = ClinicalQuestionRelevanceValidator.get_clarification_question("en-IN")
+        return [{
+            "id": clarify_q["id"],
+            "question": clarify_q["text"],
+            "options": clarify_q["quick_picks"],
+            "source": "clinical_clarification"
+        }]
+
+    combined = f"{cc_clean} " + " ".join([str(v) for v in answers.values()])
     suggested = []
     seen_ids = set()
     answered_keys = {str(k).lower().strip() for k in answers.keys()}
-    
+
+    # Match rules against combined text
+    matched_domain = None
     for rule in ADAPTIVE_RULES:
         if re.search(rule["trigger"], combined, re.IGNORECASE):
+            matched_domain = rule.get("domain", "generic")
             for q in rule["questions"]:
                 qid = q["id"]
                 if qid.lower() not in answered_keys and qid not in seen_ids:
-                    seen_ids.add(qid)
-                    suggested.append(q)
-    
+                    # Validate cross-system jump prohibition
+                    is_valid, _ = ClinicalQuestionRelevanceValidator.validate_question(
+                        q, {"hpi": answers, "chief_complaints": [cc_clean]}, active_complaint=matched_domain
+                    )
+                    if is_valid:
+                        seen_ids.add(qid)
+                        suggested.append(q)
+
     # Fallback questions if no specialized match
     if not suggested:
         fallbacks = [
@@ -308,17 +550,22 @@ def get_deterministic_adaptive_questions(chief_complaint: str, answers: Dict[str
             if fb["id"].lower() not in answered_keys and fb["id"] not in seen_ids:
                 seen_ids.add(fb["id"])
                 suggested.append(fb)
-    
+
     return suggested[:3]
 
 
 def get_ai_adaptive_questions(chief_complaint: str, answers: Dict[str, Any], timeout: float = 4.5, language: str = "en-IN") -> Optional[List[Dict[str, Any]]]:
     """
     Calls OpenRouter AI API to generate tailored clinical follow-up questions.
-    Returns None if API key is missing, network fails, times out, or output is invalid.
+    Validates all output with ClinicalQuestionRelevanceValidator to eliminate off-target questions.
+    Returns None if API key is missing, network fails, times out, or questions fail validation.
     """
     if not chief_complaint or not str(chief_complaint).strip():
         return None
+
+    cc_clean = str(chief_complaint).strip()
+    if ClinicalQuestionRelevanceValidator.is_ambiguous_complaint(cc_clean):
+        return None  # Let deterministic clarify_chief_complaint handle ambiguous complaints
 
     try:
         from disease_prediction.api.openrouter_service import get_api_key, OPENROUTER_API_URL, SITE_URL, APP_NAME, is_circuit_open, trip_circuit_breaker
@@ -337,23 +584,34 @@ def get_ai_adaptive_questions(chief_complaint: str, answers: Dict[str, Any], tim
     if not api_key:
         return None
 
+    canonical_domain = ClinicalQuestionRelevanceValidator.normalize_complaint_key(cc_clean)
     lang_instruction = f"Target Language: {language}.\n" if language and language != "en-IN" else ""
+
     prompt = (
         "You are an expert clinical history intake assistant for an outpatient clinic.\n"
         "Generate 2 to 3 clinically relevant follow-up questions based on the patient's complaint and recorded answers.\n"
         "Follow standard clinical history protocol (OPQRST / SOCRATES).\n"
         f"{lang_instruction}"
         "CRITICAL RULES:\n"
-        "1. DO NOT provide a diagnosis, medical advice, or reassure the patient.\n"
-        "2. Only ask intake questions to gather more specific clinical history.\n"
-        "3. For each question, provide 3 to 4 concise selectable options / answer chips.\n"
-        f"Chief Complaint: {chief_complaint}\n"
+        f"1. Stay strictly on the patient's reported complaint: '{cc_clean}'.\n"
+        "2. DO NOT jump to unrelated body systems (no breathing questions for headache, no arm pain for stomach pain).\n"
+        "3. DO NOT provide a diagnosis, medical advice, or reassure the patient.\n"
+        "4. Only ask intake questions to gather more specific clinical history (onset, duration, location, character, triggers, severity).\n"
+        "5. For each question, provide 3 to 4 concise selectable options / answer chips.\n"
+        f"Chief Complaint: {cc_clean}\n"
         f"Known Answers: {json.dumps(answers)}\n\n"
-        "Respond ONLY with a JSON object in this exact format:\n"
+        "Respond ONLY with a JSON object in this exact schema:\n"
         "{\n"
         '  "questions": [\n'
-        '    {"id": "q1", "question": "Question text here?", "options": ["Option 1", "Option 2", "Option 3"]},\n'
-        '    {"id": "q2", "question": "Question text here?", "options": ["Option 1", "Option 2", "Option 3"]}\n'
+        '    {\n'
+        '      "question_id": "q1",\n'
+        '      "question": "Question text here?",\n'
+        '      "clinical_objective": "Reason for asking this question",\n'
+        f'      "related_symptoms": ["{canonical_domain}"],\n'
+        '      "target_slot": "location",\n'
+        '      "relevance_reason": "Why this question relates to the complaint",\n'
+        '      "options": ["Option 1", "Option 2", "Option 3"]\n'
+        '    }\n'
         '  ]\n'
         "}"
     )
@@ -374,7 +632,7 @@ def get_ai_adaptive_questions(chief_complaint: str, answers: Dict[str, Any], tim
         payload = {
             "model": model_name,
             "messages": [
-                {"role": "system", "content": "You are a clinical intake question generator. Return valid JSON only with 'questions' array. No markdown, no thinking."},
+                {"role": "system", "content": "You are a clinical intake question generator. Return valid JSON only with 'questions' array. Stay strictly on the reported complaint. No markdown, no thinking."},
                 {"role": "user", "content": prompt}
             ],
             "response_format": {"type": "json_object"},
@@ -389,8 +647,7 @@ def get_ai_adaptive_questions(chief_complaint: str, answers: Dict[str, Any], tim
                 msg = choice.get("message", {})
                 raw = (msg.get("content") or msg.get("reasoning") or "").strip()
                 raw = raw.replace("\ufffd", "-").replace("‘", "'").replace("’", "'").replace("“", '"').replace("”", '"')
-                
-                # Check for questions wrapper or raw array
+
                 m = re.search(r'(\{[\s\S]*\})', raw)
                 if m:
                     parsed = json.loads(m.group(1))
@@ -399,21 +656,40 @@ def get_ai_adaptive_questions(chief_complaint: str, answers: Dict[str, Any], tim
                         valid_qs = []
                         seen_ai_ids = set()
                         answered_keys = {str(k).lower().strip() for k in answers.keys()}
+                        temp_state = {"hpi": answers, "chief_complaints": [cc_clean], "asked_question_ids": list(answered_keys)}
+
                         for i, q in enumerate(q_list[:3]):
                             if isinstance(q, dict) and q.get("question"):
-                                qid = str(q.get("id") or f"ai_q_{i+1}")
+                                qid = str(q.get("question_id") or q.get("id") or f"ai_q_{i+1}")
+                                q_text = str(q["question"]).strip()
+
+                                # Validate question relevance & cross-system boundaries
+                                cand_dict = {
+                                    "id": qid,
+                                    "text": q_text,
+                                    "target_slot": q.get("target_slot", "general"),
+                                    "domain": canonical_domain
+                                }
+                                is_valid, rej_reason = ClinicalQuestionRelevanceValidator.validate_question(
+                                    cand_dict, temp_state, active_complaint=canonical_domain
+                                )
+                                if not is_valid:
+                                    continue
+
                                 if qid.lower() not in answered_keys and qid not in seen_ai_ids:
                                     seen_ai_ids.add(qid)
                                     valid_qs.append({
                                         "id": qid,
-                                        "question": str(q["question"]).strip(),
+                                        "question": q_text,
                                         "options": [str(opt).replace("\ufffd", "-").strip() for opt in q.get("options", []) if str(opt).strip()][:4],
+                                        "clinical_objective": q.get("clinical_objective", ""),
+                                        "target_slot": q.get("target_slot", "general"),
                                         "source": "ai_generated"
                                     })
                         if valid_qs:
                             return valid_qs
             elif resp.status_code == 429:
-                trip_circuit_breaker(180.0, "OpenRouter daily quota limit reached (50/50)")
+                trip_circuit_breaker(180.0, "OpenRouter daily quota limit reached")
                 return None
         except Exception:
             continue
@@ -421,21 +697,19 @@ def get_ai_adaptive_questions(chief_complaint: str, answers: Dict[str, Any], tim
     return None
 
 
-
 def get_adaptive_questions(chief_complaint: str, answers: Dict[str, Any], language: str = "en-IN") -> List[Dict[str, Any]]:
     """
     Evaluates chief complaint and current section answers.
     1. First attempts to query AI API for tailored follow-up questions.
-    2. SAFETY FALLBACK: If the API key is missing, internet drops, or API gets stuck/times out,
-       it seamlessly uses the user's built-in clinical engine so the screen never gets stuck.
+    2. SAFETY FALLBACK: If the API key is missing, internet drops, API times out, or AI generates invalid questions,
+       it seamlessly uses the clinical deterministic engine so questions remain strictly symptom-related.
     """
-    ai_questions = get_ai_adaptive_questions(chief_complaint, answers, timeout=4.5, language=language)
+    ai_questions = get_ai_adaptive_questions(chief_complaint, answers, timeout=4.0, language=language)
     if ai_questions:
         return ai_questions
 
-    # Built-in Engine Fallback
+    # Built-in Engine Fallback (Guaranteed 100% Symptom-Specific)
     return get_deterministic_adaptive_questions(chief_complaint, answers)
-
 
 
 # ==============================================================================

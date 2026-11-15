@@ -455,10 +455,14 @@ async function fetchAndRenderAdaptiveQuestions(sectionId) {
     }
 
     try {
+        const knownAns = {};
+        for (const [k, v] of Object.entries(recordedCaseAnswers)) {
+            if (v && v.raw) knownAns[k] = v.raw;
+        }
         const res = await fetch(apiUrl(`/api/cases/${activeCaseId}/adaptive-questions`), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chief_complaint: cc, answers: {} })
+            body: JSON.stringify({ chief_complaint: cc, answers: knownAns })
         });
 
         if (!res.ok) return;
