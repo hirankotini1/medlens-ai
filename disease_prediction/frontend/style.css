@@ -10368,7 +10368,7 @@ input:focus, select:focus, textarea:focus {
     margin: 0;
 }
 
-/* 4. Emergency Banner */
+/* 4. Emergency Banner (Desktop & Laptop Default: Spacious, Prominent & Elevated) */
 .emergency-alert-banner {
     background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%);
     border: 2px solid #fecdd3;
@@ -10381,6 +10381,114 @@ input:focus, select:focus, textarea:focus {
     gap: 16px;
     margin: 0 0 22px 0;
     box-shadow: 0 4px 14px rgba(225, 29, 72, 0.08);
+}
+
+.emergency-content-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.emergency-icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #e11d48;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(225, 29, 72, 0.35);
+}
+
+.emergency-main-icon {
+    font-size: 26px;
+}
+
+.emergency-text-col {
+    display: flex;
+    flex-direction: column;
+}
+
+.emergency-title {
+    font-size: 0.88rem;
+    font-weight: 900;
+    color: #9f1239;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.em-title-full {
+    display: inline;
+}
+.em-title-short {
+    display: none;
+}
+
+.emergency-desc {
+    font-size: 0.82rem;
+    color: #475569;
+    font-weight: 600;
+    margin-top: 2px;
+}
+
+.emergency-buttons-wrap {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.emergency-btn-primary {
+    background: #e11d48;
+    color: white;
+    padding: 8px 18px;
+    border-radius: 9999px;
+    font-weight: 900;
+    font-size: 0.90rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 14px rgba(225, 29, 72, 0.35);
+    white-space: nowrap;
+    touch-action: manipulation;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.emergency-btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(225, 29, 72, 0.45);
+}
+
+.emergency-btn-secondary {
+    background: #ffffff;
+    color: #e11d48;
+    border: 2px solid #e11d48;
+    padding: 7px 16px;
+    border-radius: 9999px;
+    font-weight: 900;
+    font-size: 0.90rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    touch-action: manipulation;
+    transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.emergency-btn-secondary:hover {
+    background: #fff1f2;
+    transform: translateY(-1px);
+}
+
+.em-btn-label-full {
+    display: inline;
+}
+.em-btn-label-short {
+    display: none;
 }
 
 
@@ -10583,6 +10691,19 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible), select:focus:not(
 }
 
 @media (max-width: 768px) {
+    .emergency-alert-banner {
+        padding: 10px 14px !important;
+        border-radius: 12px !important;
+        margin: 0 0 16px 0 !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        flex-wrap: nowrap !important;
+        gap: 10px !important;
+    }
+    .emergency-desc {
+        display: none !important;
+    }
     .home-role-filter-container {
         padding: 0 6px;
         margin-bottom: 20px;
@@ -10659,22 +10780,74 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible), select:focus:not(
         padding: 20px 16px !important;
     }
     .emergency-alert-banner {
-        padding: 14px 16px !important;
-        flex-direction: column !important;
-        align-items: flex-start !important;
-    }
-    .emergency-alert-banner > div:last-child {
-        width: 100% !important;
-        display: flex !important;
-        flex-direction: column !important;
+        padding: 8px 12px !important;
+        border-radius: 12px !important;
+        margin: 0 0 14px 0 !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        flex-wrap: nowrap !important;
         gap: 8px !important;
+        background: #fff1f2 !important;
+        border: 1.5px solid #fecdd3 !important;
+        box-shadow: 0 2px 8px rgba(225, 29, 72, 0.08) !important;
     }
-    .emergency-alert-banner a {
-        width: 100% !important;
-        justify-content: center !important;
-        font-size: 0.84rem !important;
-        padding: 9px 12px !important;
-        box-sizing: border-box !important;
+    .emergency-content-left {
+        gap: 8px !important;
+        flex-shrink: 1 !important;
+        min-width: 0 !important;
+    }
+    .emergency-icon-box {
+        width: 30px !important;
+        height: 30px !important;
+        border-radius: 8px !important;
+        box-shadow: none !important;
+    }
+    .emergency-main-icon {
+        font-size: 18px !important;
+    }
+    .emergency-title {
+        font-size: 0.78rem !important;
+        line-height: 1.2 !important;
+        white-space: nowrap !important;
+    }
+    .em-title-full {
+        display: none !important;
+    }
+    .em-title-short {
+        display: inline !important;
+        font-weight: 900 !important;
+    }
+    .emergency-desc {
+        display: none !important;
+    }
+    .emergency-buttons-wrap {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 6px !important;
+        align-items: center !important;
+        flex-shrink: 0 !important;
+        width: auto !important;
+    }
+    .emergency-btn-primary, .emergency-btn-secondary {
+        width: auto !important;
+        padding: 6px 10px !important;
+        min-height: 34px !important;
+        font-size: 0.78rem !important;
+        border-radius: 9999px !important;
+        box-shadow: none !important;
+        gap: 4px !important;
+    }
+    .emergency-btn-primary .material-symbols-outlined,
+    .emergency-btn-secondary .material-symbols-outlined {
+        font-size: 15px !important;
+    }
+    .em-btn-label-full {
+        display: none !important;
+    }
+    .em-btn-label-short {
+        display: inline !important;
+        font-weight: 900 !important;
     }
     .analyzer-steps-bar {
         gap: 6px !important;
