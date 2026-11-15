@@ -112,7 +112,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=20260920_v3">
+    <link rel="stylesheet" href="style.css?v=20260920_v4">
 </head>
 <body>
 
@@ -453,42 +453,43 @@
                     </p>
                 </div>
 
-                <!-- Interactive Role Filter Bar for Context-Aware Personalization -->
-                <div class="home-role-filter-container" style="text-align: center; margin: 0 auto 24px auto; max-width: 580px;">
-                    <div class="home-role-filter-bar" style="background: #f1f5f9; padding: 4px; border-radius: 9999px; display: flex; gap: 4px; border: 1.5px solid #e2e8f0; box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);">
-                        <button type="button" class="role-filter-btn active" id="rf-btn-patients" onclick="filterHomeRoleView('patients')">
-                            👤 For Patients
+                                                <!-- Interactive Role Filter Bar for Context-Aware Personalization -->
+                <div class="home-role-filter-container">
+                    <div class="home-role-filter-bar">
+                        <button type="button" class="role-filter-btn active" id="rf-btn-patients" onclick="filterHomeRoleView('patients')" aria-label="View Patient Workflows">
+                            <span class="rf-icon">👤</span> <span class="rf-label-full">For Patients</span><span class="rf-label-short">Patients</span>
                         </button>
-                        <button type="button" class="role-filter-btn" id="rf-btn-doctors" onclick="filterHomeRoleView('doctors')">
-                            🩺 For Doctors
+                        <button type="button" class="role-filter-btn" id="rf-btn-doctors" onclick="filterHomeRoleView('doctors')" aria-label="View Doctor Workflows">
+                            <span class="rf-icon">🩺</span> <span class="rf-label-full">For Doctors</span><span class="rf-label-short">Doctors</span>
                         </button>
-                        <button type="button" class="role-filter-btn" id="rf-btn-staff" onclick="filterHomeRoleView('staff')">
-                            🏥 Hospital Staff
+                        <button type="button" class="role-filter-btn" id="rf-btn-staff" onclick="filterHomeRoleView('staff')" aria-label="View Hospital Staff Workflows">
+                            <span class="rf-icon">🏥</span> <span class="rf-label-full">Hospital Staff</span><span class="rf-label-short">Staff</span>
                         </button>
                     </div>
-                    <div id="home-role-hint" style="font-size: 0.82rem; font-weight: 700; color: #0284c7; margin-top: 8px;">
-                        Showing patient-centered health tools: symptom assessment, report translation, and private records.
+                    <div id="home-role-hint">
+                        Showing patient-centered health tools: symptom assessment, report translation, personal records &amp; appointment booking.
                     </div>
                 </div>
 
-                <div class="task-card-grid">
-                    <!-- Task Card 1: Check Symptoms -->
-                    <div class="task-action-card" style="border-color: #bae6fd; background: linear-gradient(180deg, #f0f9ff 0%, #ffffff 100%);">
+                <div class="task-card-grid" id="main-task-card-grid">
+                    <!-- ==================== 1. PATIENT WORKFLOW CARDS ==================== -->
+                    <!-- Patient Card 1: Check Symptoms -->
+                    <div class="task-action-card role-card-visible" data-role="patients" style="border-color: #bae6fd; background: linear-gradient(180deg, #f0f9ff 0%, #ffffff 100%);">
                         <div>
                             <div class="task-card-header">
                                 <div class="task-card-icon" style="background: linear-gradient(135deg, #0284c7, #2563eb); box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);">
                                     <span class="material-symbols-outlined">clinical_notes</span>
                                 </div>
                                 <div>
-                                    <span class="task-card-badge" style="background: #e0f2fe; color: #0284c7;">EVERYDAY HEALTH</span>
+                                    <span class="task-card-badge" style="background: #e0f2fe; color: #0284c7;">PATIENT INTAKE</span>
                                     <h3 class="task-card-title">Check My Symptoms</h3>
                                 </div>
                             </div>
                             <p class="task-card-desc">
-                                Describe how you are feeling naturally by voice or text. Our assistant asks relevant follow-up questions, scans for emergency red flags, and prepares a structured clinical briefing.
+                                Describe how you are feeling naturally by voice or text. Our assistant asks targeted clinical follow-up questions, scans for emergency red flags, and prepares a structured clinical briefing.
                             </p>
                             <ul class="task-features-list">
-                                <li><span style="color: #0284c7; font-weight: 900;">✓</span> Voice &amp; text in English, Hindi, Telugu &amp; Odia</li>
+                                <li><span style="color: #0284c7; font-weight: 900;">✓</span> Voice &amp; text in 23+ Indian consultation languages</li>
                                 <li><span style="color: #0284c7; font-weight: 900;">✓</span> Instant emergency red-flag alert detection</li>
                                 <li><span style="color: #0284c7; font-weight: 900;">✓</span> Structured summary ready for your doctor</li>
                             </ul>
@@ -498,20 +499,20 @@
                         </button>
                     </div>
 
-                    <!-- Task Card 2: Analyze Report -->
-                    <div class="task-action-card" style="border-color: #a7f3d0; background: linear-gradient(180deg, #ecfdf5 0%, #ffffff 100%);">
+                    <!-- Patient Card 2: Understand Lab Reports -->
+                    <div class="task-action-card role-card-visible" data-role="patients" style="border-color: #a7f3d0; background: linear-gradient(180deg, #ecfdf5 0%, #ffffff 100%);">
                         <div>
                             <div class="task-card-header">
                                 <div class="task-card-icon" style="background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35);">
                                     <span class="material-symbols-outlined">biotech</span>
                                 </div>
                                 <div>
-                                    <span class="task-card-badge" style="background: #dcfce7; color: #059669;">LABORATORY &amp; TESTS</span>
+                                    <span class="task-card-badge" style="background: #dcfce7; color: #059669;">DOCUMENT INTELLIGENCE</span>
                                     <h3 class="task-card-title">Understand Lab Reports</h3>
                                 </div>
                             </div>
                             <p class="task-card-desc">
-                                Confused by medical values? Upload any blood test or lab report (PDF, JPG, PNG). We automatically extract key biomarkers, compare them to healthy reference ranges, and explain findings in plain English.
+                                Confused by medical values? Upload any blood test or lab report (PDF, JPG, PNG). We automatically extract key biomarkers, compare them to healthy reference ranges, and explain findings in plain language.
                             </p>
                             <ul class="task-features-list">
                                 <li><span style="color: #059669; font-weight: 900;">✓</span> Automatic OCR biomarker parameter extraction</li>
@@ -524,25 +525,130 @@
                         </button>
                     </div>
 
-                    <!-- Task Card 3: Screen Disease Risk -->
-                    <div class="task-action-card" style="border-color: #fed7aa; background: linear-gradient(180deg, #fff7ed 0%, #ffffff 100%);">
+                    <!-- Patient Card 3: Patient Portal -->
+                    <div class="task-action-card role-card-visible" data-role="patients" style="border-color: #bfdbfe; background: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%);">
+                        <div>
+                            <div class="task-card-header">
+                                <div class="task-card-icon" style="background: linear-gradient(135deg, #1d4ed8, #2563eb); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);">
+                                    <span class="material-symbols-outlined">person</span>
+                                </div>
+                                <div>
+                                    <span class="task-card-badge" style="background: #dbeafe; color: #1d4ed8;">PERSONAL RECORDS</span>
+                                    <h3 class="task-card-title">My Health Records &amp; Timeline</h3>
+                                </div>
+                            </div>
+                            <p class="task-card-desc">
+                                Securely access your verified medical records, physician-signed prescriptions, lab test reports, and chronological hospital visit timeline using your Patient ID and PIN.
+                            </p>
+                            <ul class="task-features-list">
+                                <li><span style="color: #1d4ed8; font-weight: 900;">✓</span> Verified laboratory reports &amp; diagnostic history</li>
+                                <li><span style="color: #1d4ed8; font-weight: 900;">✓</span> Attending doctor prescriptions &amp; medication lists</li>
+                                <li><span style="color: #1d4ed8; font-weight: 900;">✓</span> DPDP Act 2023 private encrypted access</li>
+                            </ul>
+                        </div>
+                        <button type="button" class="task-cta-btn" onclick="switchView('patient')" style="background: linear-gradient(135deg, #1d4ed8, #2563eb); color: white; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);">
+                            <span>ACCESS HEALTH RECORDS</span> <span class="material-symbols-outlined" style="font-size: 18px;">lock_open</span>
+                        </button>
+                    </div>
+
+                    <!-- Patient Card 4: Book Doctor Appointment -->
+                    <div class="task-action-card role-card-visible" data-role="patients" style="border-color: #ddd6fe; background: linear-gradient(180deg, #faf5ff 0%, #ffffff 100%);">
+                        <div>
+                            <div class="task-card-header">
+                                <div class="task-card-icon" style="background: linear-gradient(135deg, #7c3aed, #8b5cf6); box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);">
+                                    <span class="material-symbols-outlined">calendar_month</span>
+                                </div>
+                                <div>
+                                    <span class="task-card-badge" style="background: #f3e8ff; color: #7c3aed;">OUTPATIENT SERVICES</span>
+                                    <h3 class="task-card-title">Book OPD Appointment</h3>
+                                </div>
+                            </div>
+                            <p class="task-card-desc">
+                                Schedule a consultation with specialist physicians across General Medicine, Cardiology, Pediatrics, Neurology, and more with instant digital appointment token.
+                            </p>
+                            <ul class="task-features-list">
+                                <li><span style="color: #7c3aed; font-weight: 900;">✓</span> Zero-wait outpatient registration with instant slip</li>
+                                <li><span style="color: #7c3aed; font-weight: 900;">✓</span> Department &amp; doctor assignment with time slot</li>
+                                <li><span style="color: #7c3aed; font-weight: 900;">✓</span> Downloadable digital appointment receipt</li>
+                            </ul>
+                        </div>
+                        <button type="button" class="task-cta-btn" onclick="openPatientRegistrationModal()" style="background: linear-gradient(135deg, #7c3aed, #6d28d9); color: white; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);">
+                            <span>BOOK APPOINTMENT SLIP</span> <span class="material-symbols-outlined" style="font-size: 18px;">calendar_month</span>
+                        </button>
+                    </div>
+
+                    <!-- ==================== 2. DOCTOR WORKFLOW CARDS ==================== -->
+                    <!-- Doctor Card 1: Doctor Console -->
+                    <div class="task-action-card" data-role="doctors" style="display: none; border-color: #bbf7d0; background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%);">
+                        <div>
+                            <div class="task-card-header">
+                                <div class="task-card-icon" style="background: linear-gradient(135deg, #059669, #047857); box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35);">
+                                    <span class="material-symbols-outlined">stethoscope</span>
+                                </div>
+                                <div>
+                                    <span class="task-card-badge" style="background: #dcfce7; color: #059669;">PHYSICIAN TRIAGE</span>
+                                    <h3 class="task-card-title">Doctor Clinical Console</h3>
+                                </div>
+                            </div>
+                            <p class="task-card-desc">
+                                Physician workstation to triage patient intakes, review AI-synthesized pre-consultation briefings, analyze chronological EHR timelines, and author verified digital prescriptions.
+                            </p>
+                            <ul class="task-features-list">
+                                <li><span style="color: #059669; font-weight: 900;">✓</span> Prioritized triage inbox with red-flag alerts</li>
+                                <li><span style="color: #059669; font-weight: 900;">✓</span> Clinical intake synthesis &amp; chief complaint breakdown</li>
+                                <li><span style="color: #059669; font-weight: 900;">✓</span> NMC-compliant digital prescription authoring</li>
+                            </ul>
+                        </div>
+                        <button type="button" class="task-cta-btn" onclick="switchView('admin')" style="background: linear-gradient(135deg, #059669, #047857); color: white; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.35);">
+                            <span>OPEN DOCTOR CONSOLE</span> <span class="material-symbols-outlined" style="font-size: 18px;">stethoscope</span>
+                        </button>
+                    </div>
+
+                    <!-- Doctor Card 2: Medical Document Intelligence -->
+                    <div class="task-action-card" data-role="doctors" style="display: none; border-color: #e9d5ff; background: linear-gradient(180deg, #faf5ff 0%, #ffffff 100%);">
+                        <div>
+                            <div class="task-card-header">
+                                <div class="task-card-icon" style="background: linear-gradient(135deg, #7c3aed, #8b5cf6); box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);">
+                                    <span class="material-symbols-outlined">biotech</span>
+                                </div>
+                                <div>
+                                    <span class="task-card-badge" style="background: #f3e8ff; color: #7c3aed;">DIAGNOSTIC OCR &amp; LABS</span>
+                                    <h3 class="task-card-title">Biomarker &amp; Lab Verification</h3>
+                                </div>
+                            </div>
+                            <p class="task-card-desc">
+                                Review extracted laboratory parameters from patient test slips (CBC, LFT, Lipid, Dengue Serology) with reference-range deviation checks and differential flags.
+                            </p>
+                            <ul class="task-features-list">
+                                <li><span style="color: #7c3aed; font-weight: 900;">✓</span> Automated biomarker parameter verification</li>
+                                <li><span style="color: #7c3aed; font-weight: 900;">✓</span> High/Low clinical deviation detection</li>
+                                <li><span style="color: #7c3aed; font-weight: 900;">✓</span> Structured JSON &amp; official PDF clinical report export</li>
+                            </ul>
+                        </div>
+                        <button type="button" class="task-cta-btn" onclick="switchView('analyzer')" style="background: linear-gradient(135deg, #7c3aed, #6d28d9); color: white; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);">
+                            <span>ANALYZE MEDICAL RECORD</span> <span class="material-symbols-outlined" style="font-size: 18px;">biotech</span>
+                        </button>
+                    </div>
+
+                    <!-- Doctor Card 3: Clinical ML Sandbox -->
+                    <div class="task-action-card" data-role="doctors" style="display: none; border-color: #fed7aa; background: linear-gradient(180deg, #fff7ed 0%, #ffffff 100%);">
                         <div>
                             <div class="task-card-header">
                                 <div class="task-card-icon" style="background: linear-gradient(135deg, #ea580c, #f97316); box-shadow: 0 4px 12px rgba(234, 88, 12, 0.35);">
                                     <span class="material-symbols-outlined">query_stats</span>
                                 </div>
                                 <div>
-                                    <span class="task-card-badge" style="background: #ffedd5; color: #ea580c;">AI PREDICTORS</span>
+                                    <span class="task-card-badge" style="background: #ffedd5; color: #ea580c;">DECISION SUPPORT</span>
                                     <h3 class="task-card-title">Screen Disease Risk</h3>
                                 </div>
                             </div>
                             <p class="task-card-desc">
-                                Simulate diagnostic risk predictions for Anemia, Dengue, Liver health, Thyroid disorders, or Malaria using calibrated clinical machine-learning models with confidence bounds.
+                                Simulate diagnostic risk predictions for Anemia, Dengue, Liver Disease, Thyroid Disorders, or Malaria using calibrated clinical machine-learning models with confidence bounds.
                             </p>
                             <ul class="task-features-list">
                                 <li><span style="color: #ea580c; font-weight: 900;">✓</span> 5 validated diagnostic machine-learning models</li>
-                                <li><span style="color: #ea580c; font-weight: 900;">✓</span> Calibrated confidence &amp; uncertainty ranges</li>
-                                <li><span style="color: #ea580c; font-weight: 900;">✓</span> 1-click healthy &amp; elevated sample presets</li>
+                                <li><span style="color: #ea580c; font-weight: 900;">✓</span> Calibrated confidence &amp; uncertainty quantification</li>
+                                <li><span style="color: #ea580c; font-weight: 900;">✓</span> Physician-reviewed decision-support protocols</li>
                             </ul>
                         </div>
                         <button type="button" class="task-cta-btn" onclick="switchView('sandbox')" style="background: linear-gradient(135deg, #ea580c, #c2410c); color: white; box-shadow: 0 4px 14px rgba(234, 88, 12, 0.35);">
@@ -550,39 +656,142 @@
                         </button>
                     </div>
 
-                    <!-- Task Card 4: Portals for Patients, Doctors & Staff -->
-                    <div class="task-action-card" style="border-color: #ddd6fe; background: linear-gradient(180deg, #faf5ff 0%, #ffffff 100%);">
+                    <!-- Doctor Card 4: Symptoms AI Assistant -->
+                    <div class="task-action-card" data-role="doctors" style="display: none; border-color: #fecdd3; background: linear-gradient(180deg, #fff1f2 0%, #ffffff 100%);">
                         <div>
                             <div class="task-card-header">
-                                <div class="task-card-icon" style="background: linear-gradient(135deg, #7c3aed, #8b5cf6); box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);">
-                                    <span class="material-symbols-outlined">hub</span>
+                                <div class="task-card-icon" style="background: linear-gradient(135deg, #e11d48, #be123c); box-shadow: 0 4px 12px rgba(225, 29, 72, 0.35);">
+                                    <span class="material-symbols-outlined">psychology</span>
                                 </div>
                                 <div>
-                                    <span class="task-card-badge" style="background: #f3e8ff; color: #7c3aed;">HOSPITAL GATEWAYS</span>
-                                    <h3 class="task-card-title">Clinical Portals</h3>
+                                    <span class="task-card-badge" style="background: #ffe4e6; color: #be123c;">DIFFERENTIAL ASSISTANT</span>
+                                    <h3 class="task-card-title">Symptoms AI Assistant</h3>
                                 </div>
                             </div>
                             <p class="task-card-desc">
-                                Specialized dashboards for every member of the healthcare ecosystem. View certified records, review clinical triage cases, or manage hospital admissions and live bed inventory.
+                                Interactive clinical differential guidance mapping complex patient symptoms to potential diagnostic considerations, specialty departments, and preliminary precautions.
                             </p>
-                            <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;">
-                                <button type="button" onclick="switchView('patient')" style="background: #ffffff; border: 1.5px solid #cbd5e1; padding: 8px 14px; border-radius: 9px; font-weight: 800; font-size: 0.82rem; color: #0284c7; text-align: left; display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
-                                    <span>👤 Patient Portal</span> <span style="font-size: 0.72rem; color: #64748b;">Records &bull; Reports →</span>
-                                </button>
-                                <button type="button" onclick="switchView('admin')" style="background: #ffffff; border: 1.5px solid #cbd5e1; padding: 8px 14px; border-radius: 9px; font-weight: 800; font-size: 0.82rem; color: #059669; text-align: left; display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
-                                    <span>🩺 Doctor Console</span> <span style="font-size: 0.72rem; color: #64748b;">Triage &bull; Digital Rx →</span>
-                                </button>
-                                <button type="button" onclick="switchView('operations')" style="background: #ffffff; border: 1.5px solid #cbd5e1; padding: 8px 14px; border-radius: 9px; font-weight: 800; font-size: 0.82rem; color: #7c3aed; text-align: left; display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
-                                    <span>🏥 Staff Operations</span> <span style="font-size: 0.72rem; color: #64748b;">Beds &bull; Admissions →</span>
-                                </button>
-                            </div>
+                            <ul class="task-features-list">
+                                <li><span style="color: #e11d48; font-weight: 900;">✓</span> Specialty department recommendation &amp; referral routing</li>
+                                <li><span style="color: #e11d48; font-weight: 900;">✓</span> Evidence-based differential considerations</li>
+                                <li><span style="color: #e11d48; font-weight: 900;">✓</span> Clinical precaution advisories for patient counseling</li>
+                            </ul>
                         </div>
-                        <button type="button" class="task-cta-btn" onclick="openPatientRegistrationModal()" style="background: linear-gradient(135deg, #7c3aed, #6d28d9); color: white; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);">
-                            <span>BOOK APPOINTMENT SLIP</span> <span class="material-symbols-outlined" style="font-size: 18px;">calendar_month</span>
+                        <button type="button" class="task-cta-btn" onclick="switchView('symptoms')" style="background: linear-gradient(135deg, #e11d48, #be123c); color: white; box-shadow: 0 4px 14px rgba(225, 29, 72, 0.35);">
+                            <span>OPEN SYMPTOMS ASSISTANT</span> <span class="material-symbols-outlined" style="font-size: 18px;">psychology</span>
+                        </button>
+                    </div>
+
+                    <!-- ==================== 3. HOSPITAL STAFF WORKFLOW CARDS ==================== -->
+                    <!-- Staff Card 1: Staff Operations Hub -->
+                    <div class="task-action-card" data-role="staff" style="display: none; border-color: #c7d2fe; background: linear-gradient(180deg, #eef2ff 0%, #ffffff 100%);">
+                        <div>
+                            <div class="task-card-header">
+                                <div class="task-card-icon" style="background: linear-gradient(135deg, #4338ca, #3730a3); box-shadow: 0 4px 12px rgba(67, 56, 202, 0.35);">
+                                    <span class="material-symbols-outlined">badge</span>
+                                </div>
+                                <div>
+                                    <span class="task-card-badge" style="background: #e0e7ff; color: #4338ca;">HOSPITAL OPERATIONS</span>
+                                    <h3 class="task-card-title">Clinical Portals &amp; Operations</h3>
+                                </div>
+                            </div>
+                            <p class="task-card-desc">
+                                Specialized dashboards for every member of the healthcare ecosystem. View certified records, review clinical triage cases, manage hospital admissions, and live bed inventory.
+                            </p>
+                            <ul class="task-features-list">
+                                <li><span style="color: #4338ca; font-weight: 900;">✓</span> 4-Role RBAC: Reception, Lab, Ward, Operations</li>
+                                <li><span style="color: #4338ca; font-weight: 900;">✓</span> Real-time patient flow &amp; admission queue</li>
+                                <li><span style="color: #4338ca; font-weight: 900;">✓</span> Diagnostic sample collection &amp; report dispatch</li>
+                            </ul>
+                        </div>
+                        <button type="button" class="task-cta-btn" onclick="switchView('operations')" style="background: linear-gradient(135deg, #4338ca, #3730a3); color: white; box-shadow: 0 4px 14px rgba(67, 56, 202, 0.35);">
+                            <span>OPEN OPERATIONS HUB</span> <span class="material-symbols-outlined" style="font-size: 18px;">badge</span>
+                        </button>
+                    </div>
+
+                    <!-- Staff Card 2: Live Bed Inventory -->
+                    <div class="task-action-card" data-role="staff" style="display: none; border-color: #bae6fd; background: linear-gradient(180deg, #f0f9ff 0%, #ffffff 100%);">
+                        <div>
+                            <div class="task-card-header">
+                                <div class="task-card-icon" style="background: linear-gradient(135deg, #0284c7, #0369a1); box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);">
+                                    <span class="material-symbols-outlined">hotel</span>
+                                </div>
+                                <div>
+                                    <span class="task-card-badge" style="background: #e0f2fe; color: #0284c7;">BED MANAGEMENT</span>
+                                    <h3 class="task-card-title">Live Bed Occupancy &amp; Telemetry</h3>
+                                </div>
+                            </div>
+                            <p class="task-card-desc">
+                                Monitor real-time bed capacity across ICU, General Wards, Emergency, and Semi-Private units with automated occupancy alerts and department transfer logs.
+                            </p>
+                            <ul class="task-features-list">
+                                <li><span style="color: #0284c7; font-weight: 900;">✓</span> Real-time ward &amp; ICU bed allocation tracker</li>
+                                <li><span style="color: #0284c7; font-weight: 900;">✓</span> Department bed quotas &amp; emergency reserve</li>
+                                <li><span style="color: #0284c7; font-weight: 900;">✓</span> Inpatient admission &amp; discharge synchronization</li>
+                            </ul>
+                        </div>
+                        <button type="button" class="task-cta-btn" onclick="switchView('operations')" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: white; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);">
+                            <span>MANAGE BED INVENTORY</span> <span class="material-symbols-outlined" style="font-size: 18px;">hotel</span>
+                        </button>
+                    </div>
+
+                    <!-- Staff Card 3: Outpatient Registration Desk -->
+                    <div class="task-action-card" data-role="staff" style="display: none; border-color: #a7f3d0; background: linear-gradient(180deg, #ecfdf5 0%, #ffffff 100%);">
+                        <div>
+                            <div class="task-card-header">
+                                <div class="task-card-icon" style="background: linear-gradient(135deg, #0f766e, #0d9488); box-shadow: 0 4px 12px rgba(15, 118, 110, 0.35);">
+                                    <span class="material-symbols-outlined">how_to_reg</span>
+                                </div>
+                                <div>
+                                    <span class="task-card-badge" style="background: #ccfbf1; color: #0f766e;">FRONT DESK RECEPTION</span>
+                                    <h3 class="task-card-title">Fast-Track Patient Registration</h3>
+                                </div>
+                            </div>
+                            <p class="task-card-desc">
+                                Register incoming outpatients at the hospital reception, generate computerized consultation tokens with secure PINs, and print appointment passes.
+                            </p>
+                            <ul class="task-features-list">
+                                <li><span style="color: #0f766e; font-weight: 900;">✓</span> Rapid outpatient intake &amp; demographic capture</li>
+                                <li><span style="color: #0f766e; font-weight: 900;">✓</span> Instant patient ID &amp; secure PIN allocation</li>
+                                <li><span style="color: #0f766e; font-weight: 900;">✓</span> Department triage &amp; appointment token generation</li>
+                            </ul>
+                        </div>
+                        <button type="button" class="task-cta-btn" onclick="openPatientRegistrationModal()" style="background: linear-gradient(135deg, #0f766e, #0d9488); color: white; box-shadow: 0 4px 14px rgba(15, 118, 110, 0.35);">
+                            <span>REGISTER NEW PATIENT</span> <span class="material-symbols-outlined" style="font-size: 18px;">how_to_reg</span>
+                        </button>
+                    </div>
+
+                    <!-- Staff Card 4: Inpatient Billing Desk -->
+                    <div class="task-action-card" data-role="staff" style="display: none; border-color: #cbd5e1; background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);">
+                        <div>
+                            <div class="task-card-header">
+                                <div class="task-card-icon" style="background: linear-gradient(135deg, #475569, #334155); box-shadow: 0 4px 12px rgba(71, 85, 105, 0.35);">
+                                    <span class="material-symbols-outlined">receipt_long</span>
+                                </div>
+                                <div>
+                                    <span class="task-card-badge" style="background: #f1f5f9; color: #475569;">FINANCIAL AUDIT</span>
+                                    <h3 class="task-card-title">Billing Desk &amp; Inpatient Invoicing</h3>
+                                </div>
+                            </div>
+                            <p class="task-card-desc">
+                                Audit hospital stay charges, itemized diagnostic labs, ICU consumables, and pharmacy disbursements with instant computer-generated inpatient tax invoices.
+                            </p>
+                            <ul class="task-features-list">
+                                <li><span style="color: #475569; font-weight: 900;">✓</span> Itemized billing breakdown (Room, Lab, Pharmacy)</li>
+                                <li><span style="color: #475569; font-weight: 900;">✓</span> Computer-generated tax invoice generation</li>
+                                <li><span style="color: #475569; font-weight: 900;">✓</span> Real-time net payable calculation &amp; audit trail</li>
+                            </ul>
+                        </div>
+                        <button type="button" class="task-cta-btn" onclick="switchView('operations')" style="background: linear-gradient(135deg, #475569, #334155); color: white; box-shadow: 0 4px 14px rgba(71, 85, 105, 0.35);">
+                            <span>ACCESS BILLING DESK</span> <span class="material-symbols-outlined" style="font-size: 18px;">receipt_long</span>
                         </button>
                     </div>
                 </div>
             </div>
+
+            
+
+            
 
             <!-- 3. HOW IT WORKS IN 3 SIMPLE STEPS -->
             <div style="margin: 40px 0; background: #ffffff; border-radius: 20px; border: 1.5px solid #e2e8f0; padding: 34px 28px; box-shadow: 0 4px 20px rgba(15, 23, 42, 0.03);">
@@ -5173,7 +5382,7 @@
         <button type="button" id="mob-tab-admin" onclick="switchView('admin')" style="display: none;" aria-hidden="true"></button>
     </nav>
 
-    <script src="app.js?v=20260920_v3"></script>
+    <script src="app.js?v=20260920_v4"></script>
     <script src="voice_service.js?v=20260920_v1"></script>
     <script src="case_taking.js?v=20260920_v1"></script>
     <script src="voice_case_taking.js?v=20260920_v1"></script>

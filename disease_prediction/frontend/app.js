@@ -9576,35 +9576,50 @@ function debounce(fn, delayMs = 250) {
     };
 }
 
-// Interactive Dashboard Role Filter
+// Interactive Dashboard Role Filter (Strict Role Isolation & Dynamic Visibility)
 function filterHomeRoleView(role) {
+    if (!role) role = 'patients';
     document.querySelectorAll('.role-filter-btn').forEach(b => b.classList.remove('active'));
     const btn = document.getElementById(`rf-btn-${role}`);
     if (btn) btn.classList.add('active');
 
     const hint = document.getElementById('home-role-hint');
-    const cards = document.querySelectorAll('.task-action-card');
+    const cards = document.querySelectorAll('.task-card-grid .task-action-card');
 
-    if (role === 'patients') {
-        if (hint) hint.textContent = 'Showing patient-centered health tools: symptom assessment, report translation, and personal records.';
-        cards.forEach((c, idx) => {
-            c.style.display = 'flex';
-            c.style.opacity = (idx === 0 || idx === 1) ? '1' : '0.82';
-            c.style.borderColor = (idx === 0 || idx === 1) ? '#0284c7' : '#e2e8f0';
-        });
-    } else if (role === 'doctors') {
-        if (hint) hint.textContent = 'Showing physician decision-support tools: triage console, digital prescription authoring, and predictive ML models.';
-        cards.forEach((c, idx) => {
-            c.style.display = 'flex';
-            c.style.opacity = (idx === 2 || idx === 3) ? '1' : '0.82';
-            c.style.borderColor = (idx === 2 || idx === 3) ? '#059669' : '#e2e8f0';
-        });
-    } else if (role === 'staff') {
-        if (hint) hint.textContent = 'Showing hospital operations: live bed occupancy tracker, inpatient admissions, and billing desk.';
-        cards.forEach((c, idx) => {
-            c.style.display = 'flex';
-            c.style.opacity = (idx === 3) ? '1' : '0.75';
-            c.style.borderColor = (idx === 3) ? '#7c3aed' : '#e2e8f0';
-        });
+    const hints = {
+        'patients': 'Showing patient-centered health tools: symptom assessment, report translation, personal records & appointment booking.',
+        'doctors': 'Showing physician clinical decision-support: clinical triage console, document intelligence, ML sandbox & symptoms assistant.',
+        'staff': 'Showing hospital operations: 4-role staff operations hub, live bed inventory, OPD reception & inpatient billing.'
+    };
+    if (hint && hints[role]) {
+        hint.textContent = hints[role];
     }
+
+    cards.forEach(card => {
+        const cardRole = (card.getAttribute('data-role') || '').trim();
+        if (cardRole === role || cardRole.split(' ').includes(role)) {
+            card.style.display = 'flex';
+            card.classList.remove('role-card-visible');
+            void card.offsetWidth; // trigger reflow for smooth animation
+            card.classList.add('role-card-visible');
+        } else {
+            card.style.display = 'none';
+            card.classList.remove('role-card-visible');
+        }
+    });
+
+    try {
+        sessionStorage.setItem('medlens_active_role_filter', role);
+    } catch (e) {}
 }
+window.filterHomeRoleView = filterHomeRoleView;
+
+// Auto-initialize role filter on load
+window.addEventListener('DOMContentLoaded', () => {
+    try {
+        const savedRole = sessionStorage.getItem('medlens_active_role_filter') || 'patients';
+        filterHomeRoleView(savedRole);
+    } catch (e) {
+        filterHomeRoleView('patients');
+    }
+});
