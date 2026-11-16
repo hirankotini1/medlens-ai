@@ -10897,125 +10897,18 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible), select:focus:not(
     z-index: 0;
 }
 
-/* --- 11.2 Live Clinical Neural Telemetry Ribbon --- */
-.hero-telemetry-ribbon {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1.5px solid rgba(2, 132, 199, 0.22);
-    border-radius: 9999px;
-    padding: 6px 18px;
-    margin-bottom: 22px;
-    box-shadow: 0 4px 18px rgba(2, 132, 199, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.9);
-    position: relative;
-    z-index: 2;
-    overflow: hidden;
-}
-.hero-telemetry-ribbon::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; height: 1.5px;
-    background: linear-gradient(90deg, transparent, #38bdf8, #0284c7, #2563eb, transparent);
-    opacity: 0.8;
-}
-.telemetry-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.76rem;
-    font-weight: 900;
-    letter-spacing: 0.08em;
-    color: #0369a1;
-    text-transform: uppercase;
-}
-.telemetry-beacon {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #0284c7;
-    position: relative;
-    box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.3);
-}
-.telemetry-beacon::after {
-    content: '';
-    position: absolute;
-    top: -4px; left: -4px; right: -4px; bottom: -4px;
-    border-radius: 50%;
-    border: 1.5px solid #0284c7;
-    animation: radarBeaconPulse 2s infinite ease-out;
-}
-@keyframes radarBeaconPulse {
-    0% { transform: scale(0.8); opacity: 1; }
-    100% { transform: scale(2.2); opacity: 0; }
-}
-.telemetry-ekg-wrap {
-    flex: 1;
-    max-width: 320px;
-    height: 24px;
-    margin: 0 16px;
-    position: relative;
-}
-.hero-ekg-svg {
-    width: 100%;
-    height: 100%;
-    display: block;
-}
-.hero-ekg-bg {
-    stroke: rgba(2, 132, 199, 0.18);
-    stroke-width: 2;
-    fill: none;
-    stroke-linecap: round;
-}
-.hero-ekg-pulse {
-    stroke: #0284c7;
-    stroke-width: 2.5;
-    fill: none;
-    stroke-linecap: round;
-    stroke-dasharray: 80 420;
-    stroke-dashoffset: 500;
-    animation: ekgSweep 2.8s linear infinite;
-    filter: drop-shadow(0 0 5px rgba(2, 132, 199, 0.8));
-}
-@keyframes ekgSweep {
-    0% { stroke-dashoffset: 500; }
-    100% { stroke-dashoffset: 0; }
-}
-.telemetry-specs {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.spec-pill {
-    font-size: 0.72rem;
-    font-weight: 800;
-    color: #059669;
-    background: #ecfdf5;
-    border: 1px solid #a7f3d0;
-    padding: 3px 10px;
-    border-radius: 9999px;
-    letter-spacing: 0.03em;
-}
-@media (max-width: 768px) {
-    .hero-telemetry-ribbon {
-        display: none !important;
-    }
-}
-
-/* --- 11.3 Hero Container & Typography --- */
+/* --- 11.2 Hero Container & Typography --- */
 .ml-hero-section {
     position: relative;
     overflow: hidden;
-    background: radial-gradient(1000px 600px at 15% 10%, rgba(2, 132, 199, 0.10) 0%, transparent 70%),
-                radial-gradient(900px 550px at 85% 90%, rgba(37, 99, 235, 0.08) 0%, transparent 65%),
+    background: radial-gradient(1100px 650px at 15% 10%, rgba(2, 132, 199, 0.12) 0%, transparent 70%),
+                radial-gradient(900px 550px at 85% 90%, rgba(79, 70, 229, 0.08) 0%, transparent 65%),
                 linear-gradient(180deg, #f8fbff 0%, #ffffff 100%) !important;
     border: 1.5px solid #cce3fe !important;
-    border-radius: 26px !important;
-    padding: 36px 38px 34px !important;
-    box-shadow: 0 20px 50px -12px rgba(2, 132, 199, 0.16), 0 0 0 1px rgba(255, 255, 255, 0.9) inset !important;
-    margin-bottom: 28px !important;
+    border-radius: 28px !important;
+    padding: 38px 42px 36px !important;
+    box-shadow: 0 20px 50px -12px rgba(2, 132, 199, 0.14), 0 0 0 1px rgba(255, 255, 255, 0.95) inset !important;
+    margin-bottom: 30px !important;
 }
 .ml-hero-section::before {
     content: '';
@@ -11027,7 +10920,6 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible), select:focus:not(
     opacity: 0.85;
     z-index: 0;
 }
-.hero-telemetry-ribbon,
 .ml-hero-grid {
     position: relative;
     z-index: 2;
@@ -12175,19 +12067,6 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible), select:focus:not(
         padding: 20px 16px !important;
         border-radius: 20px !important;
         margin-bottom: 20px !important;
-    }
-    .hero-telemetry-ribbon {
-        padding: 5px 12px !important;
-        margin-bottom: 16px !important;
-    }
-    .telemetry-ekg-wrap {
-        display: none !important;
-    }
-    .telemetry-specs {
-        font-size: 0.72rem !important;
-    }
-    .spec-pill:not(:first-child) {
-        display: none !important;
     }
     .ml-hero-title {
         font-size: clamp(1.8rem, 6.4vw, 2.3rem) !important;
