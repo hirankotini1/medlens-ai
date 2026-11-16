@@ -12425,3 +12425,819 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible), select:focus:not(
 
 
 
+
+/* ==========================================================================
+   MARKET-READY CLINICAL MODULES: TELEHEALTH, RX, OPD QUEUE, HEALTH VITALITY
+   ========================================================================== */
+
+/* 1. VIRTUAL TELEMEDICINE CONSULTATION ROOM */
+.telehealth-dialog {
+    max-width: 1040px !important;
+    width: 96% !important;
+    background: #0f172a !important;
+    color: #f8fafc !important;
+    border-radius: 20px !important;
+    border: 1.5px solid #1e293b !important;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6) !important;
+    overflow: hidden;
+}
+
+.telehealth-top-bar {
+    background: #1e293b;
+    padding: 14px 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #334155;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.telehealth-room-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.telehealth-live-dot {
+    width: 10px;
+    height: 10px;
+    background: #ef4444;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #ef4444;
+    animation: pulseRedDot 1.4s infinite;
+}
+
+@keyframes pulseRedDot {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.3); opacity: 0.6; }
+}
+
+.telehealth-timer-pill {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid #334155;
+    color: #38bdf8;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    font-family: monospace;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.telehealth-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    min-height: 480px;
+    background: #090d16;
+}
+
+@media (max-width: 860px) {
+    .telehealth-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.telehealth-video-column {
+    position: relative;
+    background: #020617;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 16px;
+    border-right: 1px solid #1e293b;
+}
+
+.telehealth-video-frame {
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+    background: radial-gradient(circle at center, #1e293b 0%, #090d16 100%);
+    aspect-ratio: 16 / 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #334155;
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.8);
+}
+
+.telehealth-doc-card {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.telehealth-doc-avatar-ring {
+    position: relative;
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0284c7, #3b82f6);
+    padding: 3px;
+    box-shadow: 0 0 25px rgba(56, 189, 248, 0.35);
+}
+
+.telehealth-doc-img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: #1e293b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 44px;
+    color: #38bdf8;
+}
+
+.telehealth-audio-wave {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    height: 20px;
+    margin-top: 10px;
+}
+
+.telehealth-wave-bar {
+    width: 3px;
+    height: 100%;
+    background: #38bdf8;
+    border-radius: 2px;
+    animation: audioWave 1.2s ease-in-out infinite alternate;
+}
+
+.telehealth-wave-bar:nth-child(2) { animation-delay: 0.2s; height: 70%; }
+.telehealth-wave-bar:nth-child(3) { animation-delay: 0.4s; height: 100%; }
+.telehealth-wave-bar:nth-child(4) { animation-delay: 0.1s; height: 50%; }
+.telehealth-wave-bar:nth-child(5) { animation-delay: 0.3s; height: 80%; }
+
+@keyframes audioWave {
+    0% { transform: scaleY(0.3); opacity: 0.5; }
+    100% { transform: scaleY(1); opacity: 1; }
+}
+
+.telehealth-vitals-overlay {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    padding: 6px 12px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.vital-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.vital-item.hr { color: #f43f5e; }
+.vital-item.spo2 { color: #38bdf8; }
+.vital-item.bp { color: #a855f7; }
+.vital-item.temp { color: #eab308; }
+
+.telehealth-pip-self {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    width: 105px;
+    height: 80px;
+    background: #0f172a;
+    border: 2px solid #38bdf8;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+    overflow: hidden;
+}
+
+.telehealth-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+}
+
+.th-ctrl-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid #334155;
+    background: #1e293b;
+    color: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.th-ctrl-btn:hover {
+    background: #334155;
+    transform: translateY(-2px);
+}
+
+.th-ctrl-btn.active-off {
+    background: #ef4444;
+    border-color: #dc2626;
+    color: white;
+}
+
+.th-ctrl-btn.hangup {
+    background: #dc2626;
+    border-color: #b91c1c;
+    width: 48px;
+    height: 48px;
+    color: white;
+}
+
+.th-ctrl-btn.hangup:hover {
+    background: #b91c1c;
+}
+
+.th-ctrl-action {
+    background: #0284c7;
+    border-color: #0284c7;
+    border-radius: 999px;
+    padding: 0 16px;
+    width: auto;
+    font-size: 0.8rem;
+    font-weight: 700;
+    gap: 6px;
+}
+
+.th-ctrl-action:hover {
+    background: #0369a1;
+}
+
+/* Scribe Column */
+.telehealth-scribe-col {
+    background: #0f172a;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.telehealth-scribe-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid #1e293b;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.telehealth-transcript-box {
+    padding: 14px 18px;
+    overflow-y: auto;
+    max-height: 220px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    border-bottom: 1px solid #1e293b;
+}
+
+.transcript-bubble {
+    padding: 8px 12px;
+    border-radius: 10px;
+}
+
+.transcript-bubble.doc {
+    background: rgba(2, 132, 199, 0.15);
+    border-left: 3px solid #38bdf8;
+    color: #e0f2fe;
+}
+
+.transcript-bubble.pat {
+    background: rgba(100, 116, 139, 0.2);
+    border-left: 3px solid #94a3b8;
+    color: #cbd5e1;
+}
+
+.telehealth-soap-box {
+    padding: 14px 18px;
+    overflow-y: auto;
+    flex: 1;
+    font-size: 0.8rem;
+    background: #090d16;
+}
+
+.soap-field {
+    margin-bottom: 8px;
+}
+
+.soap-label {
+    font-weight: 800;
+    color: #38bdf8;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+}
+
+.soap-text {
+    color: #94a3b8;
+    margin-top: 2px;
+}
+
+/* 2. OFFICIAL NMC-COMPLIANT DIGITAL PRESCRIPTION SLIP */
+.rx-slip-dialog {
+    max-width: 780px !important;
+    width: 96% !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border-radius: 16px !important;
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.3) !important;
+    overflow: hidden;
+}
+
+.rx-slip-paper {
+    background: #ffffff;
+    padding: 28px 32px;
+    border: 1px solid #e2e8f0;
+    position: relative;
+    font-family: inherit;
+}
+
+.rx-watermark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-30deg);
+    font-size: 4.5rem;
+    font-weight: 900;
+    color: rgba(2, 132, 199, 0.03);
+    pointer-events: none;
+    white-space: nowrap;
+    text-transform: uppercase;
+    user-select: none;
+}
+
+.rx-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 2px solid #0284c7;
+    padding-bottom: 14px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.rx-hospital-brand h2 {
+    margin: 0;
+    font-size: 1.28rem;
+    font-weight: 800;
+    color: #0f2744;
+    letter-spacing: -0.01em;
+}
+
+.rx-hospital-brand p {
+    margin: 2px 0 0 0;
+    font-size: 0.74rem;
+    color: #64748b;
+    line-height: 1.35;
+}
+
+.rx-doctor-badge {
+    text-align: right;
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 8px;
+    padding: 8px 12px;
+}
+
+.rx-doctor-name {
+    font-weight: 800;
+    font-size: 0.95rem;
+    color: #0369a1;
+}
+
+.rx-doctor-reg {
+    font-size: 0.72rem;
+    color: #0284c7;
+    font-weight: 600;
+}
+
+.rx-patient-bar {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 10px 14px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 8px;
+    margin-bottom: 16px;
+    font-size: 0.78rem;
+}
+
+.rx-patient-item strong {
+    color: #475569;
+    display: block;
+    font-size: 0.70rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.rx-symbol-heading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: #0284c7;
+    font-family: Georgia, serif;
+    margin: 12px 0 8px 0;
+}
+
+.rx-symbol-heading span {
+    font-size: 0.82rem;
+    font-family: inherit;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.rx-med-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+    font-size: 0.8rem;
+}
+
+.rx-med-table th {
+    background: #f1f5f9;
+    color: #334155;
+    font-weight: 700;
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1.5px solid #cbd5e1;
+    font-size: 0.74rem;
+    text-transform: uppercase;
+}
+
+.rx-med-table td {
+    padding: 10px 10px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+}
+
+.rx-schedule-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.rx-footer-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1.5px dashed #cbd5e1;
+    flex-wrap: wrap;
+    gap: 14px;
+}
+
+.rx-qr-verif {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.rx-qr-code-svg {
+    width: 60px;
+    height: 60px;
+    background: white;
+    padding: 4px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+}
+
+.rx-sign-block {
+    text-align: right;
+}
+
+.rx-digital-seal {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #047857;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.74rem;
+    font-weight: 700;
+}
+
+/* 3. LIVE OPD TOKEN QUEUE & HOSPITAL SIGNAGE BOARD */
+.opd-queue-dialog {
+    max-width: 980px !important;
+    width: 96% !important;
+    background: #090e1a !important;
+    color: #f8fafc !important;
+    border-radius: 20px !important;
+    border: 1.5px solid #1e293b !important;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7) !important;
+    overflow: hidden;
+}
+
+.opd-signage-header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    padding: 16px 24px;
+    border-bottom: 2px solid #0284c7;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.opd-signage-title h2 {
+    margin: 0;
+    font-size: 1.32rem;
+    font-weight: 900;
+    color: #38bdf8;
+    letter-spacing: 0.03em;
+}
+
+.opd-signage-title p {
+    margin: 2px 0 0 0;
+    font-size: 0.74rem;
+    color: #94a3b8;
+}
+
+.opd-ticker-announcement {
+    background: #1e293b;
+    border-bottom: 1px solid #334155;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.84rem;
+    color: #fbbf24;
+    font-weight: 700;
+}
+
+.opd-rooms-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    padding: 22px;
+}
+
+.opd-room-card {
+    background: #131c31;
+    border: 1.5px solid #1e293b;
+    border-radius: 14px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.2s ease;
+}
+
+.opd-room-card:hover {
+    border-color: #38bdf8;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(2, 132, 199, 0.2);
+}
+
+.opd-room-num {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #38bdf8;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.opd-doc-title {
+    font-size: 0.96rem;
+    font-weight: 800;
+    color: #f1f5f9;
+    margin: 2px 0 10px 0;
+}
+
+.opd-serving-box {
+    background: #090e1a;
+    border: 1.5px solid #10b981;
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+    margin-bottom: 12px;
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+}
+
+.opd-serving-label {
+    font-size: 0.68rem;
+    font-weight: 800;
+    color: #10b981;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.opd-serving-token {
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: #ffffff;
+    letter-spacing: 0.02em;
+    font-family: monospace;
+}
+
+.opd-next-list {
+    border-top: 1px dashed #334155;
+    padding-top: 10px;
+    font-size: 0.74rem;
+    color: #94a3b8;
+}
+
+.opd-next-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+/* 4. PATIENT HEALTH VITALITY SCORE & PREVENTIVE RADAR */
+.vitality-container-card {
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 24px 28px;
+    border: 1.5px solid #e2e8f0;
+    margin-bottom: 22px;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+}
+
+.vitality-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.vitality-grid-split {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 24px;
+    align-items: center;
+}
+
+@media (max-width: 768px) {
+    .vitality-grid-split {
+        grid-template-columns: 1fr;
+    }
+}
+
+.vitality-gauge-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 16px;
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    border-radius: 16px;
+    border: 1.5px solid #bbf7d0;
+}
+
+.vitality-radial-svg {
+    width: 140px;
+    height: 140px;
+    transform: rotate(-90deg);
+}
+
+.vitality-subgrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+}
+
+.vitality-metric-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 14px;
+}
+
+.vitality-metric-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+}
+
+.vitality-metric-val {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #0f2744;
+    margin: 2px 0 6px 0;
+}
+
+.vitality-bar-track {
+    width: 100%;
+    height: 6px;
+    background: #e2e8f0;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.vitality-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.6s ease;
+}
+
+.vitality-roadmap-bar {
+    margin-top: 18px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 12px;
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* 5. CALENDAR SYNC & APPOINTMENT SLIP ACTIONS */
+.apt-sync-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1.5px dashed #cbd5e1;
+}
+
+.btn-sync-cal {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1.5px solid;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.btn-gcal {
+    background: #eff6ff;
+    border-color: #93c5fd;
+    color: #1d4ed8;
+}
+.btn-gcal:hover {
+    background: #dbeafe;
+}
+
+.btn-ics {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: #334155;
+}
+.btn-ics:hover {
+    background: #e2e8f0;
+}
+
+.btn-wapp {
+    background: #f0fdf4;
+    border-color: #86efac;
+    color: #15803d;
+}
+.btn-wapp:hover {
+    background: #dcfce7;
+}
+
+.btn-telehealth {
+    background: #fdf2f8;
+    border-color: #fbcfe8;
+    color: #be185d;
+}
+.btn-telehealth:hover {
+    background: #fce7f3;
+}
