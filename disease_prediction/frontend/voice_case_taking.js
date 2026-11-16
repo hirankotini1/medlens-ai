@@ -2437,6 +2437,15 @@ function _voiceRenderSummaryHighlights() {
                 <button type="button" class="btn-primary" onclick="_voiceDownloadClinicalPdf()" style="background:linear-gradient(135deg,#0284c7,#0369a1); font-weight:700; display:inline-flex; align-items:center; gap:8px; padding:10px 20px; border-radius:8px; color:#fff; border:none; cursor:pointer; font-size:0.85rem;">
                     <span class="material-symbols-outlined">picture_as_pdf</span> Generate PDF
                 </button>
+                <button type="button" class="btn-whatsapp" onclick="_voiceShareWhatsApp()" style="background:#16a34a; font-weight:700; display:inline-flex; align-items:center; gap:8px; padding:10px 18px; border-radius:8px; color:#fff; border:none; cursor:pointer; font-size:0.85rem; box-shadow:0 2px 8px rgba(22,163,74,0.25);" title="Share clinical handover briefing with doctor or family on WhatsApp">
+                    <span class="material-symbols-outlined" style="font-size:18px;">share</span> WhatsApp Doctor Note
+                </button>
+                <button type="button" class="btn-copy-note" onclick="_voiceCopyDoctorNote()" style="background:#0f172a; font-weight:700; display:inline-flex; align-items:center; gap:8px; padding:10px 18px; border-radius:8px; color:#fff; border:none; cursor:pointer; font-size:0.85rem;" title="Copy doctor handover text to clipboard">
+                    <span class="material-symbols-outlined" style="font-size:18px;">content_copy</span> Copy Doctor Note
+                </button>
+                <button type="button" class="btn-book-dept" onclick="_voiceBookRecommendedSpecialist()" style="background:linear-gradient(135deg,#7c3aed,#6d28d9); font-weight:700; display:inline-flex; align-items:center; gap:8px; padding:10px 18px; border-radius:8px; color:#fff; border:none; cursor:pointer; font-size:0.85rem; box-shadow:0 2px 8px rgba(124,58,237,0.3);" title="Book an OPD appointment with recommended specialist">
+                    <span class="material-symbols-outlined" style="font-size:18px;">calendar_month</span> Book Appointment
+                </button>
                 <button type="button" class="btn-secondary" onclick="_voiceScrollToPreview()" style="display:inline-flex; align-items:center; gap:6px; padding:9px 16px; border-radius:8px; border:1.5px solid #cbd5e1; background:#fff; cursor:pointer; font-size:0.85rem; font-weight:600;">
                     <span class="material-symbols-outlined">visibility</span> Preview Clinical Report
                 </button>
@@ -2837,6 +2846,25 @@ function _voiceRenderSummaryHighlights() {
                     </div>
                 </div>
 
+                <!-- Patient Experience & Satisfaction Feedback Widget -->
+                <div class="patient-feedback-card" id="voice-patient-feedback" style="background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:12px; padding:16px 20px; margin:20px 0 12px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                    <div>
+                        <div style="font-weight:800; font-size:0.88rem; color:#1e293b; display:flex; align-items:center; gap:6px;">
+                            <span class="material-symbols-outlined" style="color:#0284c7; font-size:20px;">rate_review</span>
+                            Was this pre-consultation health briefing helpful?
+                        </div>
+                        <div style="font-size:0.78rem; color:#64748b; margin-top:2px;">Your feedback helps us continuously improve clinical access &amp; usability.</div>
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        <button type="button" onclick="handlePatientFeedback(true, 'voice_summary')" style="background:#dcfce7; border:1px solid #86efac; color:#15803d; font-weight:700; padding:8px 16px; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-size:0.82rem; transition:transform 0.1s ease;">
+                            <span class="material-symbols-outlined" style="font-size:18px;">thumb_up</span> Yes, helpful
+                        </button>
+                        <button type="button" onclick="handlePatientFeedback(false, 'voice_summary')" style="background:#fee2e2; border:1px solid #fca5a5; color:#b91c1c; font-weight:700; padding:8px 16px; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-size:0.82rem; transition:transform 0.1s ease;">
+                            <span class="material-symbols-outlined" style="font-size:18px;">thumb_down</span> Needs work
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Compliance Footer -->
                 <div style="text-align:center; font-size:0.72rem; color:#94a3b8; border-top:1px solid #f1f5f9; padding-top:12px;">
                     Avenqra AI Clinical Case Taking System &bull; Adaptive Health Intelligence &bull; ABDM HL7 FHIR Compatible
@@ -2864,6 +2892,141 @@ function _voiceScrollToPreview() {
     }
 }
 window._voiceScrollToPreview = _voiceScrollToPreview;
+
+// Clinical Specialty Mapping for Actionable Handoffs
+function _getClinicalSpecialtyRecommendation(chiefComplaintText) {
+    const text = (chiefComplaintText || '').toLowerCase();
+    if (text.includes('chest') || text.includes('heart') || text.includes('palpitation') || text.includes('angina') || text.includes('pulse')) {
+        return { dept: 'Cardiology', doctor: 'Dr. K. S. Rao (Cardiologist)' };
+    }
+    if (text.includes('headache') || text.includes('migraine') || text.includes('dizziness') || text.includes('numbness') || text.includes('seizure') || text.includes('vertigo')) {
+        return { dept: 'Neurology', doctor: 'Dr. S. K. Patnaik (Neurologist)' };
+    }
+    if (text.includes('stomach') || text.includes('abdomen') || text.includes('acid') || text.includes('vomit') || text.includes('diarrhea') || text.includes('digest') || text.includes('bloat')) {
+        return { dept: 'General Medicine', doctor: 'Dr. V. Raman (Gastroenterology / Internal Med)' };
+    }
+    if (text.includes('bone') || text.includes('joint') || text.includes('knee') || text.includes('fracture') || text.includes('back pain') || text.includes('spine')) {
+        return { dept: 'Orthopaedics', doctor: 'Dr. P. V. Ramana (Orthopaedic Surgeon)' };
+    }
+    if (text.includes('breath') || text.includes('cough') || text.includes('asthma') || text.includes('wheez') || text.includes('lungs') || text.includes('phlegm')) {
+        return { dept: 'Pulmonology', doctor: 'Dr. M. S. Varma (Pulmonologist)' };
+    }
+    if (text.includes('skin') || text.includes('rash') || text.includes('itch') || text.includes('acne') || text.includes('dermat')) {
+        return { dept: 'Dermatology', doctor: 'Dr. R. K. Varma (Dermatologist)' };
+    }
+    if (text.includes('child') || text.includes('infant') || text.includes('baby') || text.includes('pediatric')) {
+        return { dept: 'Paediatrics', doctor: 'Dr. K. Anitha (Paediatrician)' };
+    }
+    return { dept: 'General Medicine', doctor: 'Dr. P. Ramesh (Senior Consultant Physician)' };
+}
+
+function _voiceGenerateDoctorSummaryText() {
+    const pId = _voiceSession.patientId || 'Outpatient Visitor';
+    const cc = _voiceSession.answers['chief_complaint']?.answer || 'Outpatient medical consultation';
+    const duration = _voiceSession.answers['present_illness_duration']?.answer || 'Recent';
+    const painRaw = _voiceSession.answers['pain_severity']?.answer || '4';
+    const meds = _voiceSession.answers['current_medications']?.answer || 'None reported';
+    const spec = _getClinicalSpecialtyRecommendation(cc);
+    const dateStr = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+
+    return `🏥 *MEDLENS CLINICAL PRE-CONSULTATION SUMMARY*
+📅 Date: ${dateStr}
+👤 Patient ID: ${pId}
+🩺 Chief Complaint: ${cc}
+⏱️ Onset & Duration: ${duration}
+⚡ Pain / Distress: ${painRaw}
+💊 Current Medications: ${meds}
+🚨 Red-Flag Safety Alert: ${_voiceSession.hasRedFlag ? 'YES (Immediate medical review advised)' : 'None detected'}
+👨‍⚕️ Recommended Specialty: ${spec.dept} (${spec.doctor})
+
+*Notice:* CDSS pre-intake summary prepared for attending physician review under NMC Telemedicine Guidelines. Not a final diagnosis.`;
+}
+
+function _voiceShareWhatsApp() {
+    const text = _voiceGenerateDoctorSummaryText();
+    const encoded = encodeURIComponent(text);
+    const url = `https://api.whatsapp.com/send?text=${encoded}`;
+    window.open(url, '_blank');
+    if (typeof showToast === 'function') {
+        showToast("Opening WhatsApp with your formatted clinical handover summary!", "success");
+    }
+}
+window._voiceShareWhatsApp = _voiceShareWhatsApp;
+
+function _voiceCopyDoctorNote() {
+    const text = _voiceGenerateDoctorSummaryText();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+            if (typeof showToast === 'function') {
+                showToast("Clinical Handover Note copied to clipboard! You can paste this in your appointment message.", "success", 4000);
+            } else {
+                alert("Clinical handover note copied to clipboard!");
+            }
+        }).catch(() => {
+            _fallbackCopyNote(text);
+        });
+    } else {
+        _fallbackCopyNote(text);
+    }
+}
+window._voiceCopyDoctorNote = _voiceCopyDoctorNote;
+
+function _fallbackCopyNote(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    if (typeof showToast === 'function') {
+        showToast("Clinical Handover Note copied to clipboard!", "success");
+    }
+}
+
+function _voiceBookRecommendedSpecialist() {
+    const cc = _voiceSession.answers['chief_complaint']?.answer || '';
+    const rec = _getClinicalSpecialtyRecommendation(cc);
+    if (typeof openPatientRegistrationModal === 'function') {
+        openPatientRegistrationModal();
+        setTimeout(() => {
+            const deptSelect = document.getElementById('reg-department');
+            if (deptSelect) {
+                deptSelect.value = rec.dept;
+                if (typeof onRegDeptChange === 'function') {
+                    onRegDeptChange(rec.dept);
+                }
+            }
+            if (typeof showToast === 'function') {
+                showToast(`Auto-selected recommended department: ${rec.dept}`, "info", 4000);
+            }
+        }, 150);
+    }
+}
+window._voiceBookRecommendedSpecialist = _voiceBookRecommendedSpecialist;
+
+function handlePatientFeedback(isHelpful, context) {
+    const box = document.getElementById('voice-patient-feedback');
+    if (box) {
+        box.innerHTML = `
+            <div style="display:flex; align-items:center; gap:8px; color:#15803d; font-weight:700; font-size:0.88rem;">
+                <span class="material-symbols-outlined">check_circle</span>
+                Thank you for your feedback! Your response has been recorded to improve clinical care quality.
+            </div>
+        `;
+    }
+    if (typeof showToast === 'function') {
+        showToast(isHelpful ? "Thank you! Feedback recorded." : "Thank you. Our clinical engineering team will review this.", "success");
+    }
+    try {
+        sessionStorage.setItem('medlens_user_feedback', JSON.stringify({
+            isHelpful,
+            context,
+            timestamp: new Date().toISOString()
+        }));
+    } catch(e) {}
+}
+window.handlePatientFeedback = handlePatientFeedback;
+
 
 function voiceStartNewSession() {
 

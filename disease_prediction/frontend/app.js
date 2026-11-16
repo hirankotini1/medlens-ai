@@ -9649,3 +9649,383 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 })();
 
+// ==========================================================================
+// MARKET-READY HELP CENTER, 1-CLICK DEMO RUNNER & BIOMARKER HEALTH GUIDE
+// ==========================================================================
+
+function openHelpCenterModal(defaultTab = 'guide') {
+    const modal = document.getElementById('help-center-modal');
+    if (!modal) return;
+    modal.style.display = 'flex';
+    switchHelpTab(defaultTab);
+    if (typeof lockBodyScroll === 'function') lockBodyScroll();
+}
+window.openHelpCenterModal = openHelpCenterModal;
+
+function closeHelpCenterModal() {
+    const modal = document.getElementById('help-center-modal');
+    if (modal) modal.style.display = 'none';
+    if (typeof unlockBodyScroll === 'function') unlockBodyScroll();
+}
+window.closeHelpCenterModal = closeHelpCenterModal;
+
+function switchHelpTab(tabKey) {
+    document.querySelectorAll('.help-tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.help-content-pane').forEach(pane => pane.classList.remove('active'));
+
+    const tabBtn = document.getElementById(`help-tab-${tabKey}`);
+    const tabPane = document.getElementById(`help-pane-${tabKey}`);
+    if (tabBtn) tabBtn.classList.add('active');
+    if (tabPane) tabPane.classList.add('active');
+}
+window.switchHelpTab = switchHelpTab;
+
+function toggleFaqAccordion(headerEl) {
+    const body = headerEl.nextElementSibling;
+    const icon = headerEl.querySelector('.material-symbols-outlined');
+    if (!body) return;
+    const isOpen = body.classList.contains('open');
+    document.querySelectorAll('.faq-accordion-body.open').forEach(el => {
+        el.classList.remove('open');
+        const prevH = el.previousElementSibling;
+        if (prevH) {
+            const i = prevH.querySelector('.material-symbols-outlined');
+            if (i) i.textContent = 'expand_more';
+        }
+    });
+
+    if (!isOpen) {
+        body.classList.add('open');
+        if (icon) icon.textContent = 'expand_less';
+    } else {
+        body.classList.remove('open');
+        if (icon) icon.textContent = 'expand_more';
+    }
+}
+window.toggleFaqAccordion = toggleFaqAccordion;
+
+// 1-Click Interactive Demo Scenario Launcher
+function launchDemoScenario(scenarioKey) {
+    closeHelpCenterModal();
+    if (scenarioKey === 'migraine') {
+        switchView('voice-case-taking');
+        setTimeout(() => {
+            if (typeof _voiceSession !== 'undefined') {
+                _voiceSession.answers = _voiceSession.answers || {};
+                _voiceSession.answers['chief_complaint'] = {
+                    answer: 'I have had a severe throbbing headache on the right side of my head since yesterday, and bright light makes it worse.',
+                    source: 'demo'
+                };
+            }
+            if (typeof showToast === 'function') {
+                showToast("Demo Loaded: Acute Migraine with Photophobia. Adaptive clinical questioning active.", "info", 5000);
+            }
+        }, 300);
+    } else if (scenarioKey === 'acidity') {
+        switchView('voice-case-taking');
+        setTimeout(() => {
+            if (typeof _voiceSession !== 'undefined') {
+                _voiceSession.answers = _voiceSession.answers || {};
+                _voiceSession.answers['chief_complaint'] = {
+                    answer: 'I have severe burning stomach pain after eating meals and feeling bloated for 3 days.',
+                    source: 'demo'
+                };
+            }
+            if (typeof showToast === 'function') {
+                showToast("Demo Loaded: Post-prandial Gastric Discomfort. Focused GI questioning active.", "info", 5000);
+            }
+        }, 300);
+    } else if (scenarioKey === 'anemia_report') {
+        switchView('analyzer');
+        setTimeout(() => {
+            if (typeof loadSampleAnalyzerReport === 'function') {
+                loadSampleAnalyzerReport('anemia');
+            }
+            if (typeof showToast === 'function') {
+                showToast("Demo Loaded: Sample Anemia (CBC Panel) report loaded into Document Intelligence.", "success", 4000);
+            }
+        }, 300);
+    } else if (scenarioKey === 'patient_portal') {
+        const patInput = document.getElementById('hero-pat-id') || document.getElementById('login-patient-id');
+        const pinInput = document.getElementById('hero-pat-pin') || document.getElementById('login-patient-pin');
+        if (patInput) patInput.value = 'PAT-1001';
+        if (pinInput) pinInput.value = '123456';
+        if (typeof handleHeroPatientLogin === 'function') {
+            handleHeroPatientLogin();
+        } else if (typeof handlePatientLoginSubmit === 'function') {
+            handlePatientLoginSubmit();
+        }
+    } else if (scenarioKey === 'staff_operations') {
+        switchView('operations');
+        if (typeof showToast === 'function') {
+            showToast("Welcome to Hospital Staff Operations Hub: Live Bed Tracker & Ward Logistics.", "info", 4000);
+        }
+    } else if (scenarioKey === 'doctor_console') {
+        switchView('admin');
+        if (typeof showToast === 'function') {
+            showToast("Welcome to Doctor Clinical Console: Triage, EHR & Digital Rx workstation.", "info", 4000);
+        }
+    }
+}
+window.launchDemoScenario = launchDemoScenario;
+
+// Patient Biomarker Health Dictionary
+const CLINICAL_BIOMARKER_DICTIONARY = [
+    {
+        key: 'hemoglobin',
+        name: 'Hemoglobin (Hb)',
+        panel: 'Complete Blood Count (CBC)',
+        normalMale: '13.8 – 17.2 g/dL',
+        normalFemale: '12.1 – 15.1 g/dL',
+        meaning: 'Hemoglobin is the iron-rich protein in red blood cells that carries vital oxygen from your lungs to all tissues and organs.',
+        lowCauses: 'Iron-deficiency anemia, vitamin B12 or folate deficiency, chronic disease, active or occult blood loss.',
+        highCauses: 'Dehydration, chronic lung disease (hypoxia), smoking, living at high altitude, bone marrow disorders (polycythemia).',
+        doctorAdvice: 'If low, ask your physician about an Iron profile (Serum Ferritin & TIBC) and dietary sources of heme iron.'
+    },
+    {
+        key: 'platelets',
+        name: 'Platelet Count (PLT)',
+        panel: 'Hematology Panel',
+        normalMale: '150,000 – 450,000 /µL',
+        normalFemale: '150,000 – 450,000 /µL',
+        meaning: 'Platelets are specialized cell fragments essential for blood clotting and stopping bleeding when blood vessels are damaged.',
+        lowCauses: 'Viral infections (Dengue, Malaria), immune thrombocytopenia, enlarged spleen, chemotherapy or bone marrow suppression.',
+        highCauses: 'Reactive thrombocytosis from acute infection, iron deficiency, chronic inflammatory disorders, or essential thrombocythemia.',
+        doctorAdvice: 'If below 100,000 /µL, avoid vigorous activities and notify your physician immediately if you notice unexplained bruising or gum bleeding.'
+    },
+    {
+        key: 'wbc',
+        name: 'Total Leukocyte Count (WBC / TLC)',
+        panel: 'Complete Blood Count (CBC)',
+        normalMale: '4,000 – 11,000 /µL',
+        normalFemale: '4,000 – 11,000 /µL',
+        meaning: 'White blood cells are the frontline defense units of your immune system, actively combating bacterial, viral, and fungal pathogens.',
+        lowCauses: 'Viral infections, bone marrow disorders, severe systemic infections (sepsis), autoimmune diseases, immunosuppressive therapy.',
+        highCauses: 'Active bacterial infection, severe physical stress, tissue damage/burns, inflammatory conditions, leukemia.',
+        doctorAdvice: 'High WBC with fever suggests an active infection. A differential leukocyte count (Neutrophils vs Lymphocytes) helps pinpoint the source.'
+    },
+    {
+        key: 'creatinine',
+        name: 'Serum Creatinine',
+        panel: 'Renal / Kidney Function (KFT)',
+        normalMale: '0.7 – 1.3 mg/dL',
+        normalFemale: '0.5 – 1.1 mg/dL',
+        meaning: 'Creatinine is a standard waste byproduct from muscle metabolism filtered almost entirely out of the blood by healthy kidneys.',
+        lowCauses: 'Low muscle mass, severe malnutrition, advanced liver disease, pregnancy.',
+        highCauses: 'Reduced kidney filtration function (acute kidney injury, chronic kidney disease), severe dehydration, urinary tract obstruction.',
+        doctorAdvice: 'Ask your doctor to calculate your eGFR (estimated Glomerular Filtration Rate) to accurately evaluate kidney health stages.'
+    },
+    {
+        key: 'hba1c',
+        name: 'HbA1c (Glycated Hemoglobin)',
+        panel: 'Diabetic Health Panel',
+        normalMale: 'Normal: <5.7% | Prediabetes: 5.7–6.4% | Diabetes: ≥6.5%',
+        normalFemale: 'Normal: <5.7% | Prediabetes: 5.7–6.4% | Diabetes: ≥6.5%',
+        meaning: 'Measures the average percentage of blood glucose bound to hemoglobin over the past 2 to 3 months (90 days).',
+        lowCauses: 'Rare; may occur with hemolytic anemia, frequent hypoglycemia, or recent blood transfusions.',
+        highCauses: 'Chronic hyperglycemia, pre-diabetes, type 2 diabetes mellitus, increased cardiovascular and microvascular risk.',
+        doctorAdvice: 'Consult an endocrinologist or general physician for dietary glycemic indexing, exercise regimen, and glycemic control medication.'
+    },
+    {
+        key: 'bilirubin',
+        name: 'Serum Bilirubin (Total)',
+        panel: 'Liver Function Test (LFT)',
+        normalMale: '0.2 – 1.2 mg/dL',
+        normalFemale: '0.2 – 1.2 mg/dL',
+        meaning: 'A yellowish substance created during the normal recycling of red blood cells; processed by the liver and excreted in bile.',
+        lowCauses: 'Generally has no clinical significance.',
+        highCauses: 'Hepatitis, liver cirrhosis, gallbladder stone obstructing the bile duct, hemolytic anemia, Gilbert syndrome.',
+        doctorAdvice: 'If accompanied by yellowing of eyes/skin or dark tea-colored urine, seek prompt medical consultation for liver imaging (USG).'
+    },
+    {
+        key: 'sgpt',
+        name: 'SGPT / ALT (Alanine Aminotransferase)',
+        panel: 'Liver Function Test (LFT)',
+        normalMale: '7 – 56 U/L',
+        normalFemale: '7 – 45 U/L',
+        meaning: 'An enzyme found mainly inside liver cells. When liver cells are stressed or injured, ALT leaks into the bloodstream.',
+        lowCauses: 'Normal finding with no clinical significance.',
+        highCauses: 'Non-alcoholic fatty liver disease (NAFLD), alcohol-induced liver injury, viral hepatitis (A, B, C, E), hepatotoxic medications.',
+        doctorAdvice: 'Review all medications and supplements with your doctor and consider abdominal ultrasound and metabolic lipid testing.'
+    },
+    {
+        key: 'tsh',
+        name: 'Thyroid Stimulating Hormone (TSH)',
+        panel: 'Thyroid Function Test (TFT)',
+        normalMale: '0.4 – 4.0 µIU/mL',
+        normalFemale: '0.4 – 4.0 µIU/mL',
+        meaning: 'A master hormone from the pituitary gland that signals the thyroid how much thyroxine (T4) and triiodothyronine (T3) to produce.',
+        lowCauses: 'Hyperthyroidism (overactive thyroid), Graves disease, thyroiditis, excessive thyroid hormone replacement.',
+        highCauses: 'Hypothyroidism (underactive thyroid), Hashimoto thyroiditis, iodine deficiency, recovery from acute illness.',
+        doctorAdvice: 'If elevated with symptoms like weight gain or fatigue, discuss Free T3 and Free T4 confirmation with an endocrinologist.'
+    },
+    {
+        key: 'uric_acid',
+        name: 'Serum Uric Acid',
+        panel: 'Metabolic & Renal Panel',
+        normalMale: '3.4 – 7.0 mg/dL',
+        normalFemale: '2.4 – 6.0 mg/dL',
+        meaning: 'A natural waste product formed during the breakdown of purines found in certain foods, beverages, and cellular metabolism.',
+        lowCauses: 'Low-purine diet, severe liver disease, certain medications.',
+        highCauses: 'Hyperuricemia, acute gouty arthritis (painful big toe/joints), kidney stones, impaired kidney excretion, high purine intake.',
+        doctorAdvice: 'If you have sudden joint pain or swelling, discuss purine-lowering dietary adjustments and hydration with your physician.'
+    },
+    {
+        key: 'ferritin',
+        name: 'Serum Ferritin',
+        panel: 'Iron Storage & Inflammatory Panel',
+        normalMale: '24 – 336 ng/mL',
+        normalFemale: '11 – 307 ng/mL',
+        meaning: 'A blood protein containing iron; the primary indicator of total iron stores stored in your body tissues.',
+        lowCauses: 'Early iron depletion (even before hemoglobin drops), chronic blood loss, poor iron absorption (celiac disease).',
+        highCauses: 'Acute systemic inflammation, chronic liver disease, hemochromatosis (iron overload), chronic kidney disease.',
+        doctorAdvice: 'Low ferritin is the most specific early test for iron deficiency. Consult your doctor regarding oral or intravenous iron therapy.'
+    },
+    {
+        key: 'rbs',
+        name: 'Random Blood Sugar (RBS)',
+        panel: 'Metabolic / Glycemic Panel',
+        normalMale: '70 – 140 mg/dL (Normal non-fasting)',
+        normalFemale: '70 – 140 mg/dL (Normal non-fasting)',
+        meaning: 'Measures the concentration of glucose circulating in the blood regardless of when you last consumed food or drinks.',
+        lowCauses: 'Hypoglycemia (<70 mg/dL), insulin excess, skipping meals while on diabetic medications, strenuous exercise.',
+        highCauses: 'Impaired glucose tolerance, diabetes mellitus, severe acute illness stress, corticosteroid medications.',
+        doctorAdvice: 'Values over 200 mg/dL with symptoms like excessive thirst or frequent urination warrant formal Fasting and Post-Prandial testing.'
+    },
+    {
+        key: 'esr',
+        name: 'Erythrocyte Sedimentation Rate (ESR)',
+        panel: 'Inflammatory Markers',
+        normalMale: '0 – 15 mm/hr',
+        normalFemale: '0 – 20 mm/hr',
+        meaning: 'The rate at which red blood cells settle to the bottom of a test tube; a non-specific gauge of systemic bodily inflammation.',
+        lowCauses: 'Polycythemia, sickle cell disease, high heart failure states, severe leukocytosis.',
+        highCauses: 'Active bacterial/viral infections, autoimmune disorders (Rheumatoid Arthritis, Lupus), chronic kidney disease, tissue injury.',
+        doctorAdvice: 'A high ESR indicates inflammation somewhere in the body. Further specific tests (hs-CRP, autoimmune panel) help localize the cause.'
+    }
+];
+
+let activeBiomarkerKey = null;
+
+function initBiomarkerGuide() {
+    const container = document.getElementById('biomarker-chips-container');
+    if (!container) return;
+    container.innerHTML = CLINICAL_BIOMARKER_DICTIONARY.map(m => `
+        <button type="button" class="biomarker-chip ${activeBiomarkerKey === m.key ? 'active' : ''}" onclick="selectBiomarker('${m.key}')">
+            ${m.name}
+        </button>
+    `).join('');
+}
+window.initBiomarkerGuide = initBiomarkerGuide;
+
+function filterBiomarkerGuide(query) {
+    const q = (query || '').toLowerCase().trim();
+    const container = document.getElementById('biomarker-chips-container');
+    if (!container) return;
+
+    const filtered = CLINICAL_BIOMARKER_DICTIONARY.filter(m => 
+        m.name.toLowerCase().includes(q) ||
+        m.panel.toLowerCase().includes(q) ||
+        m.meaning.toLowerCase().includes(q) ||
+        m.lowCauses.toLowerCase().includes(q) ||
+        m.highCauses.toLowerCase().includes(q)
+    );
+
+    if (filtered.length === 0) {
+        container.innerHTML = `<span style="font-size:0.8rem; color:#94a3b8; padding:4px;">No matching biomarkers found for "${escapeHtml(query)}".</span>`;
+        return;
+    }
+
+    container.innerHTML = filtered.map(m => `
+        <button type="button" class="biomarker-chip ${activeBiomarkerKey === m.key ? 'active' : ''}" onclick="selectBiomarker('${m.key}')">
+            ${m.name}
+        </button>
+    `).join('');
+
+    if (filtered.length === 1) {
+        selectBiomarker(filtered[0].key);
+    }
+}
+window.filterBiomarkerGuide = filterBiomarkerGuide;
+
+function selectBiomarker(markerKey) {
+    activeBiomarkerKey = markerKey;
+    const item = CLINICAL_BIOMARKER_DICTIONARY.find(m => m.key === markerKey);
+    const display = document.getElementById('biomarker-detail-display');
+    if (!item || !display) return;
+
+    document.querySelectorAll('.biomarker-chip').forEach(btn => {
+        if (btn.textContent.trim().startsWith(item.name.split(' ')[0])) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+
+    display.style.display = 'block';
+    display.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; border-bottom:1.5px solid #e2e8f0; padding-bottom:10px;">
+            <div>
+                <h4 style="margin:0; font-size:1.05rem; font-weight:800; color:#0f172a;">${item.name}</h4>
+                <div style="font-size:0.75rem; color:#0284c7; font-weight:700; margin-top:2px;">Panel: ${item.panel}</div>
+            </div>
+            <button type="button" onclick="document.getElementById('biomarker-detail-display').style.display='none'; activeBiomarkerKey=null;" style="background:none; border:none; color:#64748b; font-size:20px; cursor:pointer;" title="Close Details">&times;</button>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px; margin-bottom:14px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:10px 14px;">
+            <div>
+                <div style="font-size:0.72rem; font-weight:800; color:#1e40af; text-transform:uppercase;">Male Healthy Range</div>
+                <div style="font-size:0.95rem; font-weight:800; color:#0f172a; margin-top:2px;">${item.normalMale}</div>
+            </div>
+            <div>
+                <div style="font-size:0.72rem; font-weight:800; color:#1e40af; text-transform:uppercase;">Female Healthy Range</div>
+                <div style="font-size:0.95rem; font-weight:800; color:#0f172a; margin-top:2px;">${item.normalFemale}</div>
+            </div>
+        </div>
+
+        <div style="font-size:0.83rem; color:#334155; line-height:1.55; margin-bottom:12px;">
+            <strong>What It Measures:</strong> ${item.meaning}
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:10px; margin-bottom:12px;">
+            <div style="background:#fff1f2; border:1px solid #fecdd3; border-radius:8px; padding:10px 12px;">
+                <div style="font-size:0.75rem; font-weight:800; color:#9f1239; margin-bottom:3px;">⬇️ If Values Are Low:</div>
+                <div style="font-size:0.8rem; color:#881337; line-height:1.45;">${item.lowCauses}</div>
+            </div>
+            <div style="background:#fefce8; border:1px solid #fef08a; border-radius:8px; padding:10px 12px;">
+                <div style="font-size:0.75rem; font-weight:800; color:#854d0e; margin-bottom:3px;">⬆️ If Values Are High:</div>
+                <div style="font-size:0.8rem; color:#713f12; line-height:1.45;">${item.highCauses}</div>
+            </div>
+        </div>
+
+        <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:10px 12px; font-size:0.8rem; color:#166534; line-height:1.5;">
+            <strong>💡 Question to Ask Your Doctor:</strong> "${item.doctorAdvice}"
+        </div>
+    `;
+    display.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+window.selectBiomarker = selectBiomarker;
+
+function resetBiomarkerGuide() {
+    const input = document.getElementById('biomarker-search-input');
+    if (input) input.value = '';
+    activeBiomarkerKey = null;
+    initBiomarkerGuide();
+    const display = document.getElementById('biomarker-detail-display');
+    if (display) display.style.display = 'none';
+}
+window.resetBiomarkerGuide = resetBiomarkerGuide;
+
+// Auto initialize biomarker guide when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    initBiomarkerGuide();
+});
+
+// Close Help Center modal on ESC key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeHelpCenterModal();
+    }
+});
+
+

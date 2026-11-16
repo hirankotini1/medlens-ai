@@ -112,7 +112,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=20261116_v9">
+    <link rel="stylesheet" href="style.css?v=20261116_v10">
 </head>
 <body>
 
@@ -182,6 +182,11 @@
                     </a>
                 </div>
             </div>
+
+            <button type="button" class="nav-btn nav-help-btn" onclick="openHelpCenterModal()" title="Help Center, Patient Guide &amp; Interactive Demos" style="padding: 6px 14px; font-size: 0.82rem; font-weight: 700; border-radius: 9px; border: 1.5px solid #cbd5e1; background: #ffffff; color: #0284c7; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; transition: all 0.2s ease;">
+                <span class="material-symbols-outlined" style="font-size: 18px; color: #0284c7;">help_center</span>
+                <span>HELP &amp; DEMOS</span>
+            </button>
 
             <button type="button" class="btn-primary" onclick="openPatientRegistrationModal()" style="background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%); padding: 7px 16px; font-size: 0.82rem; font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase; border-radius: 9px; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35); display: inline-flex; align-items: center; gap: 6px; border: none; cursor: pointer; color: white; white-space: nowrap; margin-left: 4px;" title="Register new outpatient and get appointment slip">
                 <span class="material-symbols-outlined" style="font-size: 17px;">calendar_month</span> <span class="doc-btn-text">BOOK APPOINTMENT</span>
@@ -297,6 +302,13 @@
                     <div class="drawer-link-info">
                         <span class="drawer-link-title">Product Architecture</span>
                         <span class="drawer-link-desc">Public overview, modules &amp; clinical boundaries</span>
+                    </div>
+                </a>
+                <a href="javascript:void(0)" class="mobile-drawer-link" onclick="closeMobileNavDrawer(); openHelpCenterModal();">
+                    <span class="drawer-link-icon" style="background:#f0fdf4; color:#16a34a;"><span class="material-symbols-outlined">help_center</span></span>
+                    <div class="drawer-link-info">
+                        <span class="drawer-link-title">Help Center &amp; Live Demos</span>
+                        <span class="drawer-link-desc">Patient walkthrough, 1-click test scenarios &amp; FAQs</span>
                     </div>
                 </a>
             </div>
@@ -425,6 +437,12 @@
                             <button type="button" class="ml-btn-tertiary" onclick="switchView('sandbox')">
                                 <span class="material-symbols-outlined">query_stats</span>
                                 <span>SCREEN DISEASE RISK</span>
+                            </button>
+                        </div>
+                        <div style="margin-top: 12px; margin-bottom: 4px;">
+                            <button type="button" class="hero-quick-tour-pill" onclick="openHelpCenterModal('guide')" title="Interactive 30-Second Platform Tour &amp; Live Demos">
+                                <span class="material-symbols-outlined" style="font-size: 17px; color: #0284c7;">explore</span>
+                                <span>First time here? Take a 30-Second Quick Tour &amp; Try 1-Click Demos &rarr;</span>
                             </button>
                         </div>
                         <div class="ml-stats-strip">
@@ -1978,6 +1996,31 @@
                     </div>
                 </div>
 
+                <!-- Interactive Patient Biomarker Guide & Normal Range Finder -->
+                <div class="biomarker-guide-card" style="margin-top: 18px; background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 18px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="material-symbols-outlined" style="color: #0284c7; font-size: 22px;">menu_book</span>
+                            <h3 style="margin: 0; font-size: 0.98rem; font-weight: 800; color: #1e293b;">Patient Biomarker Guide &amp; Healthy Range Finder</h3>
+                        </div>
+                        <span style="font-size: 0.74rem; background: #e0f2fe; color: #0369a1; padding: 3px 10px; border-radius: 999px; font-weight: 700;">
+                            12 Standard Clinical Markers
+                        </span>
+                    </div>
+                    <p style="font-size: 0.82rem; color: #64748b; margin-top: 0; margin-bottom: 12px; line-height: 1.5;">
+                        Confused by medical abbreviations on your test slip? Click or search any blood parameter to view standard adult reference ranges, clinical meaning, and questions to ask your doctor.
+                    </p>
+                    <div style="margin-bottom: 12px; display: flex; gap: 8px;">
+                        <input type="text" id="biomarker-search-input" class="search-input" placeholder="Search marker (e.g., Hemoglobin, Platelets, Creatinine, TSH)..." oninput="filterBiomarkerGuide(this.value)" style="flex: 1; padding: 8px 14px; font-size: 0.84rem; border: 1.5px solid #cbd5e1; border-radius: 8px;">
+                        <button type="button" class="btn-secondary" onclick="resetBiomarkerGuide()" style="padding: 8px 14px; font-size: 0.82rem; font-weight: 700;">Reset</button>
+                    </div>
+                    <div id="biomarker-chips-container" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;">
+                        <!-- Chips injected dynamically by JS -->
+                    </div>
+                    <div id="biomarker-detail-display" style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 10px; padding: 16px; display: none;">
+                        <!-- Selected biomarker detail view -->
+                    </div>
+                </div>
                 
                 <div id="anl-file-info-box" style="display: none; background: #f8fafc; border: 1px solid var(--card-border); border-radius: var(--radius-sm); padding: 14px 18px; margin-top: 16px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
@@ -3654,6 +3697,402 @@
                 </div>
             </div>
         </section>
+
+    <!-- ==========================================================================
+         MEDLENS MARKET-READY PATIENT & CLINICIAN HELP CENTER & DEMO MODAL
+         ========================================================================== -->
+    <div id="help-center-modal" class="modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(6px); z-index: 99999; align-items: center; justify-content: center; padding: 16px;" onclick="if(event.target === this) closeHelpCenterModal()">
+        <div class="modal-dialog help-center-dialog" style="max-width: 860px; width: 100%; max-height: 90vh; background: #ffffff; border-radius: 16px; box-shadow: 0 25px 60px rgba(0,0,0,0.3); display: flex; flex-direction: column; overflow: hidden; border: 1.5px solid #cbd5e1; margin: auto;">
+            <!-- Modal Header -->
+            <div style="background: linear-gradient(135deg, #0284c7 0%, #1e40af 100%); padding: 18px 24px; color: #ffffff; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 42px; height: 42px; border-radius: 10px; background: rgba(255,255,255,0.18); display: flex; align-items: center; justify-content: center;">
+                        <span class="material-symbols-outlined" style="font-size: 26px;">help_center</span>
+                    </div>
+                    <div>
+                        <h2 style="margin: 0; font-size: 1.25rem; font-weight: 800; letter-spacing: 0.02em;">MedLens Knowledge &amp; Live Demo Center</h2>
+                        <div style="font-size: 0.78rem; opacity: 0.92; margin-top: 2px;">Patient Guides &bull; 1-Click Interactive Demos &bull; Emergency SOS &bull; DPDP Compliance</div>
+                    </div>
+                </div>
+                <button type="button" onclick="closeHelpCenterModal()" style="background: transparent; border: none; color: #ffffff; font-size: 26px; cursor: pointer; line-height: 1; padding: 4px; border-radius: 6px;" aria-label="Close Help Center">&times;</button>
+            </div>
+
+            <!-- Modal Nav Tabs -->
+            <div class="help-nav-tabs" style="display: flex; background: #f8fafc; border-bottom: 1.5px solid #e2e8f0; padding: 0 16px; overflow-x: auto; gap: 4px;">
+                <button type="button" class="help-tab-btn active" id="help-tab-guide" onclick="switchHelpTab('guide')">
+                    <span class="material-symbols-outlined">explore</span> How It Works
+                </button>
+                <button type="button" class="help-tab-btn" id="help-tab-demos" onclick="switchHelpTab('demos')">
+                    <span class="material-symbols-outlined">play_circle</span> 1-Click Demos
+                </button>
+                <button type="button" class="help-tab-btn" id="help-tab-emergency" onclick="switchHelpTab('emergency')">
+                    <span class="material-symbols-outlined">emergency</span> Emergency SOS
+                </button>
+                <button type="button" class="help-tab-btn" id="help-tab-faq" onclick="switchHelpTab('faq')">
+                    <span class="material-symbols-outlined">quiz</span> FAQs
+                </button>
+                <button type="button" class="help-tab-btn" id="help-tab-compliance" onclick="switchHelpTab('compliance')">
+                    <span class="material-symbols-outlined">verified_user</span> Privacy &amp; Standards
+                </button>
+            </div>
+
+            <!-- Modal Body (Scrollable) -->
+            <div class="help-modal-body" style="padding: 22px 24px; overflow-y: auto; max-height: calc(90vh - 145px); background: #ffffff;">
+                
+                <!-- TAB 1: HOW IT WORKS -->
+                <div class="help-content-pane active" id="help-pane-guide">
+                    <div style="margin-bottom: 18px;">
+                        <h3 style="margin: 0 0 6px 0; font-size: 1.1rem; font-weight: 800; color: #0f172a;">The 4-Step MedLens Healthcare Journey</h3>
+                        <p style="margin: 0; font-size: 0.85rem; color: #64748b; line-height: 1.55;">
+                            Designed for patients and families to simplify healthcare navigation with clinical-grade safety, privacy, and speed.
+                        </p>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-bottom: 22px;">
+                        <div style="background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 12px; padding: 16px;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                <span style="background: #16a34a; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800;">1</span>
+                                <h4 style="margin: 0; font-size: 0.95rem; font-weight: 800; color: #166534;">Check Symptoms Naturally</h4>
+                            </div>
+                            <p style="font-size: 0.82rem; color: #334155; margin: 0; line-height: 1.5;">
+                                Speak or type in <strong>English, Hindi, Telugu, or Odia</strong>. The AI asks targeted, clinically relevant follow-ups and instantly flags emergency red flags.
+                            </p>
+                        </div>
+
+                        <div style="background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 12px; padding: 16px;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                <span style="background: #2563eb; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800;">2</span>
+                                <h4 style="margin: 0; font-size: 0.95rem; font-weight: 800; color: #1e40af;">Translate Medical Slips</h4>
+                            </div>
+                            <p style="font-size: 0.82rem; color: #334155; margin: 0; line-height: 1.5;">
+                                Upload any blood test or prescription (PDF/JPG/PNG). Automatic OCR extracts parameters, maps normal vs. abnormal ranges, and explains them in plain English.
+                            </p>
+                        </div>
+
+                        <div style="background: #faf5ff; border: 1.5px solid #e9d5ff; border-radius: 12px; padding: 16px;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                <span style="background: #7c3aed; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800;">3</span>
+                                <h4 style="margin: 0; font-size: 0.95rem; font-weight: 800; color: #6b21a8;">Screen Disease Risks</h4>
+                            </div>
+                            <p style="font-size: 0.82rem; color: #334155; margin: 0; line-height: 1.5;">
+                                Simulate diagnostic risk predictions for Anemia, Dengue, Liver disorders, Thyroid conditions, or Malaria using calibrated machine-learning models.
+                            </p>
+                        </div>
+
+                        <div style="background: #fff7ed; border: 1.5px solid #fed7aa; border-radius: 12px; padding: 16px;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                <span style="background: #ea580c; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800;">4</span>
+                                <h4 style="margin: 0; font-size: 0.95rem; font-weight: 800; color: #9a3412;">Doctor Handoff &amp; OPD Token</h4>
+                            </div>
+                            <p style="font-size: 0.82rem; color: #334155; margin: 0; line-height: 1.5;">
+                                1-Click WhatsApp doctor summary, downloadable PDF briefing, and instant outpatient registration token for zero waiting time at the clinic.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                        <div>
+                            <div style="font-weight: 800; font-size: 0.95rem; color: #0f172a;">Ready to try MedLens right now?</div>
+                            <div style="font-size: 0.82rem; color: #64748b;">Explore our pre-loaded interactive test cases without needing a real medical slip.</div>
+                        </div>
+                        <button type="button" class="btn-primary" onclick="switchHelpTab('demos')" style="padding: 10px 20px; font-weight: 800; font-size: 0.84rem; display: inline-flex; align-items: center; gap: 6px;">
+                            <span>Try 1-Click Demos</span>
+                            <span class="material-symbols-outlined" style="font-size: 18px;">arrow_forward</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- TAB 2: 1-CLICK INTERACTIVE DEMOS -->
+                <div class="help-content-pane" id="help-pane-demos">
+                    <div style="margin-bottom: 16px;">
+                        <h3 style="margin: 0 0 6px 0; font-size: 1.1rem; font-weight: 800; color: #0f172a;">Instant Evaluation Demos</h3>
+                        <p style="margin: 0; font-size: 0.85rem; color: #64748b; line-height: 1.5;">
+                            Click any scenario below to immediately test how MedLens processes real-world clinical situations across patients, doctors, and hospital operations:
+                        </p>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px;">
+                        <!-- Demo 1 -->
+                        <div class="demo-scenario-card">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <span style="font-size: 1.5rem;">🧠</span>
+                                    <span style="font-size: 0.7rem; background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 999px; font-weight: 800;">PATIENT INTAKE</span>
+                                </div>
+                                <h4 style="margin: 0 0 4px 0; font-size: 0.95rem; font-weight: 800; color: #0f172a;">Acute Migraine &amp; Photophobia</h4>
+                                <p style="font-size: 0.78rem; color: #64748b; margin: 0 0 14px 0; line-height: 1.45;">
+                                    Preloads a case with right-sided throbbing headache, bright light sensitivity, and nausea. Tests adaptive neurological follow-ups.
+                                </p>
+                            </div>
+                            <button type="button" class="btn-primary" onclick="launchDemoScenario('migraine')" style="width: 100%; justify-content: center; font-size: 0.8rem; padding: 8px 12px; font-weight: 700;">
+                                Launch Migraine Demo &rarr;
+                            </button>
+                        </div>
+
+                        <!-- Demo 2 -->
+                        <div class="demo-scenario-card">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <span style="font-size: 1.5rem;">🫄</span>
+                                    <span style="font-size: 0.7rem; background: #fef3c7; color: #b45309; padding: 2px 8px; border-radius: 999px; font-weight: 800;">PATIENT INTAKE</span>
+                                </div>
+                                <h4 style="margin: 0 0 4px 0; font-size: 0.95rem; font-weight: 800; color: #0f172a;">Gastric Acidity &amp; Epigastric Pain</h4>
+                                <p style="font-size: 0.78rem; color: #64748b; margin: 0 0 14px 0; line-height: 1.45;">
+                                    Preloads post-meal burning stomach pain for 3 days. Demonstrates how the AI avoids cardiac cross-talk and asks focused GI questions.
+                                </p>
+                            </div>
+                            <button type="button" class="btn-primary" onclick="launchDemoScenario('acidity')" style="width: 100%; justify-content: center; font-size: 0.8rem; padding: 8px 12px; font-weight: 700;">
+                                Launch Acidity Demo &rarr;
+                            </button>
+                        </div>
+
+                        <!-- Demo 3 -->
+                        <div class="demo-scenario-card">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <span style="font-size: 1.5rem;">🩸</span>
+                                    <span style="font-size: 0.7rem; background: #fee2e2; color: #b91c1c; padding: 2px 8px; border-radius: 999px; font-weight: 800;">DOCUMENT OCR</span>
+                                </div>
+                                <h4 style="margin: 0 0 4px 0; font-size: 0.95rem; font-weight: 800; color: #0f172a;">CBC Lab Report (Anemia Slip)</h4>
+                                <p style="font-size: 0.78rem; color: #64748b; margin: 0 0 14px 0; line-height: 1.45;">
+                                    Loads a sample Hemogram with low Hemoglobin and low Ferritin. Demonstrates OCR biomarker extraction and plain English explanations.
+                                </p>
+                            </div>
+                            <button type="button" class="btn-primary" onclick="launchDemoScenario('anemia_report')" style="width: 100%; justify-content: center; font-size: 0.8rem; padding: 8px 12px; font-weight: 700;">
+                                Analyze CBC Slip &rarr;
+                            </button>
+                        </div>
+
+                        <!-- Demo 4 -->
+                        <div class="demo-scenario-card">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <span style="font-size: 1.5rem;">👤</span>
+                                    <span style="font-size: 0.7rem; background: #dcfce7; color: #15803d; padding: 2px 8px; border-radius: 999px; font-weight: 800;">PATIENT PORTAL</span>
+                                </div>
+                                <h4 style="margin: 0 0 4px 0; font-size: 0.95rem; font-weight: 800; color: #0f172a;">Sample Patient Vault (PAT-1001)</h4>
+                                <p style="font-size: 0.78rem; color: #64748b; margin: 0 0 14px 0; line-height: 1.45;">
+                                    Auto-logs into demo patient PAT-1001 to view signed prescriptions, chronological visit timelines, and laboratory test history.
+                                </p>
+                            </div>
+                            <button type="button" class="btn-primary" onclick="launchDemoScenario('patient_portal')" style="width: 100%; justify-content: center; font-size: 0.8rem; padding: 8px 12px; font-weight: 700;">
+                                Open Patient Vault &rarr;
+                            </button>
+                        </div>
+
+                        <!-- Demo 5 -->
+                        <div class="demo-scenario-card">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <span style="font-size: 1.5rem;">🏥</span>
+                                    <span style="font-size: 0.7rem; background: #f3e8ff; color: #7e22ce; padding: 2px 8px; border-radius: 999px; font-weight: 800;">HOSPITAL STAFF</span>
+                                </div>
+                                <h4 style="margin: 0 0 4px 0; font-size: 0.95rem; font-weight: 800; color: #0f172a;">Hospital Staff Operations Hub</h4>
+                                <p style="font-size: 0.78rem; color: #64748b; margin: 0 0 14px 0; line-height: 1.45;">
+                                    Opens the 4-role operations dashboard: live ward bed inventory, ICU capacity, OPD token queue, and inpatient billing invoices.
+                                </p>
+                            </div>
+                            <button type="button" class="btn-primary" onclick="launchDemoScenario('staff_operations')" style="width: 100%; justify-content: center; font-size: 0.8rem; padding: 8px 12px; font-weight: 700;">
+                                Open Operations Hub &rarr;
+                            </button>
+                        </div>
+
+                        <!-- Demo 6 -->
+                        <div class="demo-scenario-card">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <span style="font-size: 1.5rem;">🩺</span>
+                                    <span style="font-size: 0.7rem; background: #e0e7ff; color: #3730a3; padding: 2px 8px; border-radius: 999px; font-weight: 800;">PHYSICIAN WORKSTATION</span>
+                                </div>
+                                <h4 style="margin: 0 0 4px 0; font-size: 0.95rem; font-weight: 800; color: #0f172a;">Doctor Clinical Console</h4>
+                                <p style="font-size: 0.78rem; color: #64748b; margin: 0 0 14px 0; line-height: 1.45;">
+                                    Opens physician triage workstation to review AI pre-consultation briefings, red-flag alerts, and author NMC-compliant e-prescriptions.
+                                </p>
+                            </div>
+                            <button type="button" class="btn-primary" onclick="launchDemoScenario('doctor_console')" style="width: 100%; justify-content: center; font-size: 0.8rem; padding: 8px 12px; font-weight: 700;">
+                                Open Doctor Console &rarr;
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: EMERGENCY SOS -->
+                <div class="help-content-pane" id="help-pane-emergency">
+                    <div style="background: #fef2f2; border: 2px solid #f87171; border-radius: 12px; padding: 18px 20px; margin-bottom: 20px;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                            <span class="material-symbols-outlined" style="color: #dc2626; font-size: 26px;">crisis_alert</span>
+                            <h3 style="margin: 0; font-size: 1.05rem; font-weight: 800; color: #991b1b;">Immediate Medical Danger Warning</h3>
+                        </div>
+                        <p style="font-size: 0.85rem; color: #7f1d1d; margin: 0; line-height: 1.55;">
+                            If you or someone nearby experiences <strong>crushing chest pain, severe shortness of breath, sudden facial drooping or arm weakness, inability to speak, or uncontrollable bleeding</strong>, DO NOT wait for online triage. Call emergency services immediately.
+                        </p>
+                    </div>
+
+                    <h4 style="margin: 0 0 12px 0; font-size: 0.95rem; font-weight: 800; color: #0f172a;">24/7 Verified Healthcare Helplines (India)</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; margin-bottom: 20px;">
+                        <a href="tel:112" class="emergency-sos-card">
+                            <div>
+                                <div style="font-weight: 800; font-size: 0.95rem;">National Emergency</div>
+                                <div style="font-size: 0.78rem; opacity: 0.85;">All-in-one Police, Fire &amp; Medical</div>
+                            </div>
+                            <span style="font-size: 1.15rem; font-weight: 900; background: #e11d48; color: white; padding: 4px 12px; border-radius: 8px;">112</span>
+                        </a>
+
+                        <a href="tel:108" class="emergency-sos-card">
+                            <div>
+                                <div style="font-weight: 800; font-size: 0.95rem;">Medical Ambulance</div>
+                                <div style="font-size: 0.78rem; opacity: 0.85;">Emergency Patient Transport</div>
+                            </div>
+                            <span style="font-size: 1.15rem; font-weight: 900; background: #e11d48; color: white; padding: 4px 12px; border-radius: 8px;">108</span>
+                        </a>
+
+                        <a href="tel:14416" class="emergency-sos-card" style="background: #eff6ff; border-color: #bfdbfe; color: #1e40af;">
+                            <div>
+                                <div style="font-weight: 800; font-size: 0.95rem;">Tele-MANAS</div>
+                                <div style="font-size: 0.78rem; opacity: 0.85;">24/7 Govt. Mental Health Support</div>
+                            </div>
+                            <span style="font-size: 1.05rem; font-weight: 900; background: #2563eb; color: white; padding: 4px 10px; border-radius: 8px;">14416</span>
+                        </a>
+
+                        <a href="tel:1091" class="emergency-sos-card" style="background: #faf5ff; border-color: #e9d5ff; color: #6b21a8;">
+                            <div>
+                                <div style="font-weight: 800; font-size: 0.95rem;">Women Helpline</div>
+                                <div style="font-size: 0.78rem; opacity: 0.85;">Safety &amp; Distress Response</div>
+                            </div>
+                            <span style="font-size: 1.05rem; font-weight: 900; background: #7c3aed; color: white; padding: 4px 10px; border-radius: 8px;">1091</span>
+                        </a>
+
+                        <a href="tel:1800116117" class="emergency-sos-card" style="background: #f0fdf4; border-color: #bbf7d0; color: #166534;">
+                            <div>
+                                <div style="font-weight: 800; font-size: 0.95rem;">Poison Information</div>
+                                <div style="font-size: 0.78rem; opacity: 0.85;">National Poison Centre (AIIMS)</div>
+                            </div>
+                            <span style="font-size: 0.88rem; font-weight: 900; background: #16a34a; color: white; padding: 4px 8px; border-radius: 8px;">1800-116-117</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- TAB 4: FAQS -->
+                <div class="help-content-pane" id="help-pane-faq">
+                    <div style="margin-bottom: 16px;">
+                        <h3 style="margin: 0 0 6px 0; font-size: 1.1rem; font-weight: 800; color: #0f172a;">Frequently Asked Questions</h3>
+                        <p style="margin: 0; font-size: 0.85rem; color: #64748b;">
+                            Clear answers to everyday questions about MedLens clinical intelligence and privacy.
+                        </p>
+                    </div>
+
+                    <div class="faq-accordion-item">
+                        <button type="button" class="faq-accordion-header" onclick="toggleFaqAccordion(this)">
+                            <span>Is my medical information secure and private under Indian law?</span>
+                            <span class="material-symbols-outlined" style="font-size: 20px;">expand_more</span>
+                        </button>
+                        <div class="faq-accordion-body">
+                            Yes. MedLens is architected in full alignment with the <strong>Digital Personal Data Protection (DPDP) Act 2023</strong>. All medical records and test slips are encrypted with AES-256 at rest and TLS 1.3 in transit. Patient dossiers are strictly accessible only via patient-authenticated PIN credentials, with zero commercial monetization or data brokerage.
+                        </div>
+                    </div>
+
+                    <div class="faq-accordion-item">
+                        <button type="button" class="faq-accordion-header" onclick="toggleFaqAccordion(this)">
+                            <span>Does MedLens provide an official medical diagnosis?</span>
+                            <span class="material-symbols-outlined" style="font-size: 20px;">expand_more</span>
+                        </button>
+                        <div class="faq-accordion-body">
+                            No. MedLens functions as a <strong>Class I Clinical Decision Support System (CDSS)</strong> designed for pre-consultation patient intake, triage assessment, and clinical documentation support under the National Medical Commission (NMC) Telemedicine Guidelines. Final diagnostic confirmation, clinical prescriptions, and treatment plans always require review and sign-off by a registered medical practitioner.
+                        </div>
+                    </div>
+
+                    <div class="faq-accordion-item">
+                        <button type="button" class="faq-accordion-header" onclick="toggleFaqAccordion(this)">
+                            <span>How does the AI choose which questions to ask about my symptoms?</span>
+                            <span class="material-symbols-outlined" style="font-size: 20px;">expand_more</span>
+                        </button>
+                        <div class="faq-accordion-body">
+                            Our adaptive clinical conversation engine extracts structured symptom concepts (location, quality, onset, severity, triggers) using clinical ontology frameworks (OPQRST). Every question is prioritized based on your reported complaint and missing diagnostic information, preventing unrelated or generic inquiries.
+                        </div>
+                    </div>
+
+                    <div class="faq-accordion-item">
+                        <button type="button" class="faq-accordion-header" onclick="toggleFaqAccordion(this)">
+                            <span>Which regional Indian languages can I speak or type in?</span>
+                            <span class="material-symbols-outlined" style="font-size: 20px;">expand_more</span>
+                        </button>
+                        <div class="faq-accordion-body">
+                            The platform natively supports full multilingual voice and text conversations in <strong>English, Hindi (हिंदी), Telugu (తెలుగు), and Odia (ଓଡ଼ିଆ)</strong> with phoneme-level speech recognition, automated dialect normalization, and colloquial phrase mapping (e.g., "pet dard", "tala noppi").
+                        </div>
+                    </div>
+
+                    <div class="faq-accordion-item">
+                        <button type="button" class="faq-accordion-header" onclick="toggleFaqAccordion(this)">
+                            <span>How do I share my health summary with my attending doctor?</span>
+                            <span class="material-symbols-outlined" style="font-size: 20px;">expand_more</span>
+                        </button>
+                        <div class="faq-accordion-body">
+                            Upon completing an intake session, you can: 1) Download an official ABDM HL7 FHIR-compliant PDF dossier; 2) Click "WhatsApp Doctor Note" to open a pre-formatted message; or 3) Click "Copy Doctor Note" to paste directly into your consultation chat.
+                        </div>
+                    </div>
+
+                    <div class="faq-accordion-item">
+                        <button type="button" class="faq-accordion-header" onclick="toggleFaqAccordion(this)">
+                            <span>What happens if I enter an emergency symptom like chest pain?</span>
+                            <span class="material-symbols-outlined" style="font-size: 20px;">expand_more</span>
+                        </button>
+                        <div class="faq-accordion-body">
+                            The engine's Safety &amp; Red-Flag Interceptor immediately halts non-critical questions, flags the case as High Acuity Triage (Red), and displays one-touch emergency call buttons for National Emergency (112) and Ambulance (108).
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 5: PRIVACY & COMPLIANCE -->
+                <div class="help-content-pane" id="help-pane-compliance">
+                    <div style="margin-bottom: 16px;">
+                        <h3 style="margin: 0 0 6px 0; font-size: 1.1rem; font-weight: 800; color: #0f172a;">Clinical Governance &amp; Regulatory Standards</h3>
+                        <p style="margin: 0; font-size: 0.85rem; color: #64748b;">
+                            MedLens AI is built following rigorous healthcare data sovereignty, ethical AI, and medical device guidance.
+                        </p>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-bottom: 20px;">
+                        <div style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 16px;">
+                            <div style="font-weight: 800; font-size: 0.95rem; color: #0284c7; margin-bottom: 6px;">
+                                🛡️ DPDP Act 2023 Compliant
+                            </div>
+                            <p style="font-size: 0.8rem; color: #475569; margin: 0; line-height: 1.5;">
+                                Data sovereignty strictly maintained within India. Strict purpose limitation, zero retention of unauthenticated session transcripts, and cryptographic patient access barriers.
+                            </p>
+                        </div>
+
+                        <div style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 16px;">
+                            <div style="font-weight: 800; font-size: 0.95rem; color: #16a34a; margin-bottom: 6px;">
+                                🩺 NMC Telemedicine 2020 Aligned
+                            </div>
+                            <p style="font-size: 0.8rem; color: #475569; margin: 0; line-height: 1.5;">
+                                Built to augment—not replace—Registered Medical Practitioners (RMPs). Preserves physician clinical primacy with pre-consultation briefings and audit-trailed signoffs.
+                            </p>
+                        </div>
+
+                        <div style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 16px;">
+                            <div style="font-weight: 800; font-size: 0.95rem; color: #7c3aed; margin-bottom: 6px;">
+                                ⚡ ABDM HL7 FHIR Interoperability
+                            </div>
+                            <p style="font-size: 0.8rem; color: #475569; margin: 0; line-height: 1.5;">
+                                Case sheets and laboratory extractions format seamlessly into HL7 FHIR standard schemas compatible with the Ayushman Bharat Digital Mission (ABDM) electronic health records.
+                            </p>
+                        </div>
+
+                        <div style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 16px;">
+                            <div style="font-weight: 800; font-size: 0.95rem; color: #ea580c; margin-bottom: 6px;">
+                                🔒 ISO 27001 Security Practice
+                            </div>
+                            <p style="font-size: 0.8rem; color: #475569; margin: 0; line-height: 1.5;">
+                                Automated brute-force lockout safeguards, continuous tokenized session validation, rate limiting on ML inference, and 15/15 automated security audit tests passing.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
 
     
     <div id="patient-modal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(4px); z-index: 200; align-items: center; justify-content: center;">
@@ -5424,7 +5863,13 @@
         <button type="button" id="mob-tab-admin" onclick="switchView('admin')" style="display: none;" aria-hidden="true"></button>
     </nav>
 
-    <script src="app.js?v=20261116_v9"></script>
+    <!-- Floating Quick Help & Demo Trigger Button -->
+    <div id="medlens-floating-help" class="medlens-floating-help" onclick="openHelpCenterModal()" title="Help Center, Patient Guides &amp; 1-Click Live Demos">
+        <span class="material-symbols-outlined">help_center</span>
+        <span class="floating-help-text">Help &amp; Demos</span>
+    </div>
+
+    <script src="app.js?v=20261116_v10"></script>
     <script src="voice_service.js?v=20260920_v1"></script>
     <script src="case_taking.js?v=20260920_v1"></script>
     <script src="voice_case_taking.js?v=20260920_v1"></script>

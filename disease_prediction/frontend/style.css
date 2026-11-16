@@ -12216,5 +12216,212 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible), select:focus:not(
     }
 }
 
+/* ==========================================================================
+   MARKET-READY CLINICAL HELP CENTER, BIOMARKER DICTIONARY & PATIENT TOOLS
+   ========================================================================== */
+.hero-quick-tour-pill {
+    background: #f0f9ff;
+    border: 1.5px dashed #0284c7;
+    color: #0369a1;
+    font-weight: 700;
+    padding: 8px 18px;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 2px 8px rgba(2, 132, 199, 0.08);
+}
+.hero-quick-tour-pill:hover {
+    background: #e0f2fe;
+    border-color: #0284c7;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.16);
+}
+
+.help-center-dialog {
+    animation: modalFadeIn 0.25s ease-out;
+}
+.help-nav-tabs {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+}
+.help-nav-tabs::-webkit-scrollbar {
+    height: 4px;
+}
+.help-nav-tabs::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+.help-tab-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 13px 18px;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: #64748b;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+.help-tab-btn:hover {
+    color: #0284c7;
+    background: rgba(2, 132, 199, 0.04);
+}
+.help-tab-btn.active {
+    color: #0284c7;
+    border-bottom-color: #0284c7;
+    background: rgba(2, 132, 199, 0.06);
+}
+.help-tab-btn .material-symbols-outlined {
+    font-size: 19px;
+}
+
+.help-content-pane {
+    display: none;
+}
+.help-content-pane.active {
+    display: block;
+    animation: modalFadeIn 0.25s ease;
+}
+
+.demo-scenario-card {
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.2s ease;
+}
+.demo-scenario-card:hover {
+    border-color: #0284c7;
+    box-shadow: 0 8px 24px rgba(2, 132, 199, 0.12);
+    transform: translateY(-2px);
+}
+
+.emergency-sos-card {
+    background: #fff1f2;
+    border: 1.5px solid #fecdd3;
+    border-radius: 12px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-decoration: none;
+    color: #9f1239;
+    transition: all 0.2s ease;
+}
+.emergency-sos-card:hover {
+    background: #ffe4e6;
+    border-color: #fb7185;
+    transform: scale(1.01);
+}
+
+.medlens-floating-help {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: linear-gradient(135deg, #0284c7, #1e40af);
+    color: #ffffff;
+    border-radius: 999px;
+    padding: 10px 18px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    font-weight: 800;
+    box-shadow: 0 8px 25px rgba(2, 132, 199, 0.4);
+    cursor: pointer;
+    z-index: 9999;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    border: 1.5px solid rgba(255, 255, 255, 0.25);
+}
+.medlens-floating-help:hover {
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 12px 30px rgba(2, 132, 199, 0.55);
+}
+.medlens-floating-help .material-symbols-outlined {
+    font-size: 20px;
+}
+@media (max-width: 768px) {
+    .medlens-floating-help {
+        bottom: 74px; /* clearance for bottom mobile navigation */
+        right: 16px;
+        padding: 8px 14px;
+        font-size: 0.8rem;
+    }
+}
+
+.biomarker-chip {
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+}
+.biomarker-chip:hover {
+    background: #e2e8f0;
+    border-color: #94a3b8;
+    color: #0f172a;
+}
+.biomarker-chip.active {
+    background: #0284c7 !important;
+    border-color: #0284c7 !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
+}
+
+.faq-accordion-item {
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    background: #ffffff;
+}
+.faq-accordion-header {
+    width: 100%;
+    padding: 14px 18px;
+    text-align: left;
+    background: #f8fafc;
+    border: none;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #1e293b;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+.faq-accordion-header:hover {
+    background: #f1f5f9;
+}
+.faq-accordion-body {
+    padding: 14px 18px;
+    font-size: 0.84rem;
+    color: #475569;
+    line-height: 1.6;
+    border-top: 1px solid #e2e8f0;
+    display: none;
+}
+.faq-accordion-body.open {
+    display: block;
+    animation: modalFadeIn 0.2s ease;
+}
+
+
 
 
