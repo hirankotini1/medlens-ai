@@ -10881,176 +10881,1248 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible), select:focus:not(
     }
 }
 
-/* ==================== 11. PREMIUM CLINICAL GRAPHICS & VISUAL POLISH ==================== */
-/* --- Ambient High-Tech Clinical Lighting & Micro-Grid --- */
+/* ==================== 11. ULTRA JAW-DROPPING CLINICAL VISUAL SYSTEM ==================== */
+
+/* --- 11.1 Dynamic Ambient Aurora Background & Floating Orbs --- */
+.hero-ambient-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.55;
+    animation: auroraFloat 12s infinite ease-in-out alternate;
+}
+.hero-ambient-orb.orb-1 {
+    width: 380px;
+    height: 380px;
+    background: radial-gradient(circle, rgba(2, 132, 199, 0.28) 0%, rgba(56, 189, 248, 0.08) 70%, transparent 100%);
+    top: -80px;
+    left: -60px;
+    animation-duration: 11s;
+}
+.hero-ambient-orb.orb-2 {
+    width: 340px;
+    height: 340px;
+    background: radial-gradient(circle, rgba(37, 99, 235, 0.22) 0%, rgba(124, 58, 237, 0.08) 70%, transparent 100%);
+    bottom: -60px;
+    right: 5%;
+    animation-duration: 14s;
+    animation-delay: -3s;
+}
+.hero-ambient-orb.orb-3 {
+    width: 260px;
+    height: 260px;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.18) 0%, rgba(5, 150, 105, 0.05) 70%, transparent 100%);
+    top: 30%;
+    left: 45%;
+    animation-duration: 16s;
+    animation-delay: -6s;
+}
+@keyframes auroraFloat {
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+    50% {
+        transform: translate(30px, -20px) scale(1.08);
+    }
+    100% {
+        transform: translate(-20px, 25px) scale(0.94);
+    }
+}
+
+/* --- 11.2 Live Clinical Neural Telemetry Ribbon --- */
+.hero-telemetry-ribbon {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1.5px solid rgba(2, 132, 199, 0.22);
+    border-radius: 9999px;
+    padding: 6px 18px;
+    margin-bottom: 22px;
+    box-shadow: 0 4px 18px rgba(2, 132, 199, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.9);
+    position: relative;
+    z-index: 2;
+    overflow: hidden;
+}
+.hero-telemetry-ribbon::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 1.5px;
+    background: linear-gradient(90deg, transparent, #38bdf8, #0284c7, #2563eb, transparent);
+    opacity: 0.8;
+}
+.telemetry-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.76rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    color: #0369a1;
+    text-transform: uppercase;
+}
+.telemetry-beacon {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #0284c7;
+    position: relative;
+    box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.3);
+}
+.telemetry-beacon::after {
+    content: '';
+    position: absolute;
+    top: -4px; left: -4px; right: -4px; bottom: -4px;
+    border-radius: 50%;
+    border: 1.5px solid #0284c7;
+    animation: radarBeaconPulse 2s infinite ease-out;
+}
+@keyframes radarBeaconPulse {
+    0% { transform: scale(0.8); opacity: 1; }
+    100% { transform: scale(2.2); opacity: 0; }
+}
+.telemetry-ekg-wrap {
+    flex: 1;
+    max-width: 320px;
+    height: 24px;
+    margin: 0 16px;
+    position: relative;
+}
+.hero-ekg-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+.hero-ekg-bg {
+    stroke: rgba(2, 132, 199, 0.18);
+    stroke-width: 2;
+    fill: none;
+    stroke-linecap: round;
+}
+.hero-ekg-pulse {
+    stroke: #0284c7;
+    stroke-width: 2.5;
+    fill: none;
+    stroke-linecap: round;
+    stroke-dasharray: 80 420;
+    stroke-dashoffset: 500;
+    animation: ekgSweep 2.8s linear infinite;
+    filter: drop-shadow(0 0 5px rgba(2, 132, 199, 0.8));
+}
+@keyframes ekgSweep {
+    0% { stroke-dashoffset: 500; }
+    100% { stroke-dashoffset: 0; }
+}
+.telemetry-specs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.spec-pill {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #059669;
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    padding: 3px 10px;
+    border-radius: 9999px;
+    letter-spacing: 0.03em;
+}
+@media (max-width: 768px) {
+    .hero-telemetry-ribbon {
+        display: none !important;
+    }
+}
+
+/* --- 11.3 Hero Container & Typography --- */
 .ml-hero-section {
     position: relative;
     overflow: hidden;
-    background: radial-gradient(900px 500px at 10% 15%, rgba(2, 132, 199, 0.08) 0%, transparent 70%),
-                radial-gradient(800px 450px at 90% 85%, rgba(37, 99, 235, 0.06) 0%, transparent 60%),
+    background: radial-gradient(1000px 600px at 15% 10%, rgba(2, 132, 199, 0.10) 0%, transparent 70%),
+                radial-gradient(900px 550px at 85% 90%, rgba(37, 99, 235, 0.08) 0%, transparent 65%),
                 linear-gradient(180deg, #f8fbff 0%, #ffffff 100%) !important;
-    border: 1.5px solid #dbeafe !important;
-    box-shadow: 0 12px 32px -8px rgba(2, 132, 199, 0.10), 0 2px 6px rgba(0, 0, 0, 0.02) !important;
+    border: 1.5px solid #cce3fe !important;
+    border-radius: 26px !important;
+    padding: 36px 38px 34px !important;
+    box-shadow: 0 20px 50px -12px rgba(2, 132, 199, 0.16), 0 0 0 1px rgba(255, 255, 255, 0.9) inset !important;
+    margin-bottom: 28px !important;
 }
 .ml-hero-section::before {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    background-image: radial-gradient(circle at 1.5px 1.5px, rgba(2, 132, 199, 0.09) 1.5px, transparent 0);
+    background-image: radial-gradient(circle at 1.5px 1.5px, rgba(2, 132, 199, 0.08) 1.5px, transparent 0);
     background-size: 28px 28px;
     pointer-events: none;
-    opacity: 0.75;
+    opacity: 0.85;
     z-index: 0;
 }
 .ml-hero-section > * {
     position: relative;
     z-index: 1;
 }
-
-/* --- Status Pulse & Medical Heartbeat Indicator --- */
-@keyframes liveDotPulse {
-    0% {
-        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-        transform: scale(0.96);
-    }
-    60% {
-        box-shadow: 0 0 0 7px rgba(16, 185, 129, 0);
-        transform: scale(1.05);
-    }
-    100% {
-        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
-        transform: scale(0.96);
-    }
+.hero-badge-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
 }
-.live-status-pill span:first-child {
+.ml-tagline {
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+    color: #ffffff !important;
+    padding: 7px 18px !important;
+    border-radius: 9999px !important;
+    box-shadow: 0 4px 16px rgba(2, 132, 199, 0.40) !important;
+    font-weight: 900 !important;
+    font-size: 0.82rem !important;
+    letter-spacing: 0.08em !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 7px !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+.ml-tagline::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%; width: 50%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transform: skewX(-20deg);
+    animation: badgeLightShine 4s infinite ease-in-out;
+}
+@keyframes badgeLightShine {
+    0% { left: -100%; }
+    40%, 100% { left: 160%; }
+}
+.live-status-pill {
+    background: #ecfdf5 !important;
+    border: 1.5px solid #a7f3d0 !important;
+    color: #059669 !important;
+    padding: 6px 14px !important;
+    border-radius: 9999px !important;
+    font-size: 0.78rem !important;
+    font-weight: 850 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 7px !important;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.12) !important;
+}
+.live-dot-beacon {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10b981;
+    display: inline-block;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
     animation: liveDotPulse 2.2s infinite ease-in-out !important;
 }
-
-/* --- Emergency Banner EKG Pulse Graphic --- */
-.emergency-alert-banner {
-    position: relative;
-    overflow: hidden;
-}
-@media (min-width: 769px) {
-    .emergency-alert-banner::before {
-        content: '';
-        position: absolute;
-        right: 210px;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 140px;
-        height: 32px;
-        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 30' fill='none' stroke='%23ef4444' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' opacity='0.22'%3E%3Cpath d='M0 15 h35 l4 -10 l5 20 l5 -14 l3 7 h68'/%3E%3C/svg%3E") no-repeat center;
-        background-size: contain;
-        pointer-events: none;
-    }
+@keyframes liveDotPulse {
+    0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.8); transform: scale(0.95); }
+    60% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); transform: scale(1.08); }
+    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); transform: scale(0.95); }
 }
 
-/* --- Premium Task Cards Polish with Subtle Medical Watermarks --- */
-.task-action-card {
-    position: relative;
-    overflow: hidden;
-    transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.28s ease, border-color 0.28s ease !important;
+.ml-hero-title {
+    font-size: clamp(2.5rem, 5.5vw, 3.8rem) !important;
+    font-weight: 950 !important;
+    background: linear-gradient(135deg, #0b1f3a 0%, #0284c7 40%, #2563eb 75%, #7c3aed 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    line-height: 1.10 !important;
+    letter-spacing: -0.04em !important;
+    margin-bottom: 12px !important;
+    filter: drop-shadow(0 4px 18px rgba(2, 132, 199, 0.18));
 }
-.task-action-card:hover {
-    transform: translateY(-5px) !important;
-    box-shadow: 0 16px 36px -4px rgba(2, 132, 199, 0.16), 0 4px 12px rgba(0, 0, 0, 0.04) !important;
+.ml-hero-subtitle {
+    font-size: clamp(1.15rem, 2.3vw, 1.55rem) !important;
+    font-weight: 850 !important;
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    letter-spacing: -0.01em !important;
+    margin-bottom: 16px !important;
+}
+.ml-hero-desc {
+    font-size: 1.08rem !important;
+    font-weight: 600 !important;
+    color: #334155 !important;
+    line-height: 1.68 !important;
+    margin-bottom: 24px !important;
+    max-width: 620px !important;
+}
+.ml-hero-buttons {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.ml-btn-primary {
+    position: relative !important;
+    overflow: hidden !important;
+    background: linear-gradient(135deg, #0284c7 0%, #2563eb 50%, #1d4ed8 100%) !important;
+    color: #ffffff !important;
+    font-weight: 900 !important;
+    font-size: 0.95rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    padding: 14px 26px !important;
+    border-radius: 14px !important;
+    box-shadow: 0 8px 24px -4px rgba(37, 99, 235, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.25) inset !important;
+    border: none !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+.ml-btn-primary::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%; width: 50%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+    transform: skewX(-20deg);
+    transition: none;
+}
+.ml-btn-primary:hover::after {
+    left: 160%;
+    transition: left 0.75s ease-in-out;
+}
+.ml-btn-primary:hover {
+    transform: translateY(-3px) scale(1.02) !important;
+    box-shadow: 0 14px 32px -4px rgba(37, 99, 235, 0.60), 0 0 0 1px rgba(255, 255, 255, 0.4) inset !important;
+}
+.btn-arrow-icon {
+    font-size: 18px !important;
+    transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+.ml-btn-primary:hover .btn-arrow-icon {
+    transform: translateX(5px) !important;
 }
 
-/* Watermark micro-graphics for specific cards */
-.task-action-card[data-role="patients"]:nth-child(1)::after {
-    content: '';
-    position: absolute;
-    top: 14px; right: 14px;
-    width: 64px; height: 64px;
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%230284c7' viewBox='0 0 24 24' opacity='0.06'%3E%3Cpath d='M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z'/%3E%3C/svg%3E") no-repeat center;
-    background-size: contain;
-    pointer-events: none;
+.ml-btn-outline {
+    position: relative !important;
+    overflow: hidden !important;
+    background: rgba(255, 255, 255, 0.92) !important;
+    backdrop-filter: blur(12px) !important;
+    border: 2px solid #0284c7 !important;
+    color: #0284c7 !important;
+    font-weight: 900 !important;
+    font-size: 0.95rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    padding: 13px 24px !important;
+    border-radius: 14px !important;
+    box-shadow: 0 4px 16px rgba(2, 132, 199, 0.14) !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
 }
-.task-action-card[data-role="patients"]:nth-child(2)::after {
-    content: '';
-    position: absolute;
-    top: 14px; right: 14px;
-    width: 64px; height: 64px;
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23059669' viewBox='0 0 24 24' opacity='0.06'%3E%3Cpath d='M7 2v2h1v5.12L3.14 18.57c-.77.92-.37 2.43.86 2.43h16c1.23 0 1.63-1.51.86-2.43L16 9.12V4h1V2H7zm4 7.63l-4 6.37h10l-4-6.37V4h-2v5.63z'/%3E%3C/svg%3E") no-repeat center;
-    background-size: contain;
-    pointer-events: none;
+.ml-btn-outline:hover {
+    background: #f0f9ff !important;
+    border-color: #0369a1 !important;
+    color: #0369a1 !important;
+    transform: translateY(-3px) scale(1.02) !important;
+    box-shadow: 0 10px 24px rgba(2, 132, 199, 0.24) !important;
 }
-.task-action-card[data-role="patients"]:nth-child(3)::after {
-    content: '';
-    position: absolute;
-    top: 14px; right: 14px;
-    width: 64px; height: 64px;
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%232563eb' viewBox='0 0 24 24' opacity='0.06'%3E%3Cpath d='M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z'/%3E%3C/svg%3E") no-repeat center;
-    background-size: contain;
-    pointer-events: none;
+.ml-btn-tertiary {
+    background: #f8fafc !important;
+    border: 1.5px solid #cbd5e1 !important;
+    color: #0f172a !important;
+    font-weight: 850 !important;
+    font-size: 0.90rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+    padding: 13px 20px !important;
+    border-radius: 14px !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04) !important;
+    transition: all 0.25s ease !important;
 }
-.task-action-card[data-role="patients"]:nth-child(4)::after {
-    content: '';
-    position: absolute;
-    top: 14px; right: 14px;
-    width: 64px; height: 64px;
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%237c3aed' viewBox='0 0 24 24' opacity='0.06'%3E%3Cpath d='M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zm-7 5h5v5h-5z'/%3E%3C/svg%3E") no-repeat center;
-    background-size: contain;
-    pointer-events: none;
+.ml-btn-tertiary:hover {
+    background: #ffffff !important;
+    border-color: #94a3b8 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.08) !important;
 }
 
-/* --- Instant Patient Access Card Glow & Focus Ring --- */
+/* --- 11.4 Hero Stats Badges with Floating Levitation --- */
+.ml-stats-strip {
+    display: flex !important;
+    gap: 12px !important;
+    flex-wrap: wrap !important;
+    padding-top: 20px !important;
+    border-top: 2px solid #e2e8f0 !important;
+    margin-top: 24px !important;
+}
+.ml-stat-item {
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(14px) !important;
+    border-radius: 14px !important;
+    padding: 12px 18px !important;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06) !important;
+    min-width: 124px !important;
+    position: relative !important;
+    overflow: hidden !important;
+    transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+.ml-stat-item::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+}
+.ml-stat-item.stat-cyan {
+    border: 1.5px solid #bae6fd !important;
+}
+.ml-stat-item.stat-cyan::before {
+    background: linear-gradient(90deg, #0284c7, #38bdf8);
+}
+.ml-stat-item.stat-cyan .ml-stat-number {
+    color: #0284c7 !important;
+}
+.ml-stat-item.stat-emerald {
+    border: 1.5px solid #a7f3d0 !important;
+}
+.ml-stat-item.stat-emerald::before {
+    background: linear-gradient(90deg, #059669, #34d399);
+}
+.ml-stat-item.stat-emerald .ml-stat-number {
+    color: #059669 !important;
+}
+.ml-stat-item.stat-purple {
+    border: 1.5px solid #ddd6fe !important;
+}
+.ml-stat-item.stat-purple::before {
+    background: linear-gradient(90deg, #7c3aed, #a855f7);
+}
+.ml-stat-item.stat-purple .ml-stat-number {
+    color: #7c3aed !important;
+}
+.ml-stat-item.stat-amber {
+    border: 1.5px solid #fde68a !important;
+}
+.ml-stat-item.stat-amber::before {
+    background: linear-gradient(90deg, #d97706, #fbbf24);
+}
+.ml-stat-item.stat-amber .ml-stat-number {
+    color: #d97706 !important;
+}
+
+.ml-stat-item:hover {
+    transform: translateY(-4px) scale(1.03) !important;
+    box-shadow: 0 12px 28px -4px rgba(2, 132, 199, 0.18) !important;
+}
+.ml-stat-number {
+    font-size: 1.55rem !important;
+    font-weight: 950 !important;
+    display: block !important;
+    line-height: 1.15 !important;
+}
+.ml-stat-label {
+    font-size: 0.70rem !important;
+    font-weight: 850 !important;
+    color: #475569 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    display: block !important;
+}
+
+/* --- 11.5 Holographic Patient Security Vault Card --- */
 .ml-quick-access-card {
-    position: relative;
-    overflow: hidden;
+    position: relative !important;
+    overflow: hidden !important;
     background: linear-gradient(165deg, #ffffff 0%, #f4f8fe 100%) !important;
     border: 1.5px solid #bae6fd !important;
-    box-shadow: 0 16px 40px -8px rgba(2, 132, 199, 0.15), 0 2px 8px rgba(0,0,0,0.03) !important;
+    border-radius: 24px !important;
+    padding: 28px !important;
+    box-shadow: 0 20px 48px -10px rgba(2, 132, 199, 0.20), 0 0 0 1px rgba(255, 255, 255, 0.9) inset !important;
 }
-.ml-quick-access-card::after {
-    content: '';
+.card-scanner-laser {
     position: absolute;
-    top: -40px; right: -40px;
-    width: 140px; height: 140px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(2, 132, 199, 0.12) 0%, transparent 70%);
+    top: 0; left: 0; width: 60%; height: 2px;
+    background: linear-gradient(90deg, transparent, #38bdf8, #0284c7, transparent);
+    animation: laserScan 4s ease-in-out infinite;
     pointer-events: none;
+    filter: drop-shadow(0 0 6px #38bdf8);
+}
+@keyframes laserScan {
+    0% { transform: translateX(-100%); opacity: 0; }
+    50% { opacity: 1; }
+    100% { transform: translateX(220%); opacity: 0; }
+}
+.quick-access-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+.security-vault-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #0284c7, #2563eb);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 18px rgba(2, 132, 199, 0.40);
+    position: relative;
+}
+.vault-beacon-ring {
+    position: absolute;
+    top: -4px; left: -4px; right: -4px; bottom: -4px;
+    border-radius: 18px;
+    border: 1.5px solid rgba(2, 132, 199, 0.5);
+    animation: beaconExpand 3s infinite ease-out;
+}
+@keyframes beaconExpand {
+    0% { transform: scale(0.9); opacity: 1; }
+    100% { transform: scale(1.3); opacity: 0; }
+}
+.vault-title {
+    font-size: 1.20rem;
+    font-weight: 950;
+    color: #0b1f3a;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+.vault-subtitle {
+    font-size: 0.78rem;
+    color: #0284c7;
+    font-weight: 850;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 2px;
+}
+.vault-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+.vault-label {
+    display: block;
+    font-size: 0.76rem;
+    font-weight: 850;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 5px;
 }
 .patient-lookup-input {
-    transition: border-color 0.22s ease, box-shadow 0.22s ease !important;
+    width: 100% !important;
+    border: 1.5px solid #cbd5e1 !important;
+    border-radius: 12px !important;
+    padding: 13px 16px !important;
+    font-weight: 750 !important;
+    font-size: 0.95rem !important;
+    color: #0b1f3a !important;
+    background: #ffffff !important;
+    transition: all 0.22s ease !important;
 }
 .patient-lookup-input:focus {
     border-color: #0284c7 !important;
-    box-shadow: 0 0 0 3.5px rgba(2, 132, 199, 0.20) !important;
+    box-shadow: 0 0 0 3.5px rgba(2, 132, 199, 0.22), 0 4px 16px rgba(2, 132, 199, 0.12) !important;
     outline: none !important;
 }
-
-/* --- Hero Stats Strip Micro-Interactions --- */
-.ml-stat-item {
-    transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.22s ease !important;
+.vault-submit-btn {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 14px !important;
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+    font-weight: 950 !important;
+    font-size: 0.95rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    border-radius: 14px !important;
+    box-shadow: 0 8px 24px rgba(2, 132, 199, 0.45) !important;
+    border: none !important;
+    cursor: pointer !important;
+    color: white !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
 }
-.ml-stat-item:hover {
-    transform: translateY(-3px) !important;
-    box-shadow: 0 8px 18px rgba(2, 132, 199, 0.14) !important;
-}
-
-/* --- CTA Buttons Smooth Glow --- */
-.task-cta-btn {
-    transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.22s ease, filter 0.22s ease !important;
-}
-.task-cta-btn:hover {
-    transform: translateY(-2px) !important;
-    filter: brightness(1.05) !important;
-}
-.ml-btn-primary:hover {
-    transform: translateY(-2px) !important;
+.vault-submit-btn:hover {
+    transform: translateY(-2px) scale(1.02) !important;
+    box-shadow: 0 12px 30px rgba(2, 132, 199, 0.55) !important;
     filter: brightness(1.06) !important;
 }
-.ml-btn-outline:hover {
-    background: #f0f7ff !important;
-    transform: translateY(-2px) !important;
+.vault-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 4px;
+    padding-top: 10px;
+    border-top: 1px solid #e2e8f0;
+}
+.vault-register-link {
+    font-size: 0.82rem;
+    font-weight: 850;
+    color: #0284c7;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    transition: color 0.2s ease;
+}
+.vault-register-link:hover {
+    color: #0369a1;
+    text-decoration: underline;
+}
+.vault-encryption-badge {
+    font-size: 0.74rem;
+    color: #059669;
+    font-weight: 850;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
 }
 
-/* --- Top Navigation Polish --- */
-.top-navbar {
-    background: rgba(255, 255, 255, 0.95) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
+/* --- 11.6 Emergency Alert Banner with Live Heartbeat Pulse --- */
+.emergency-alert-banner {
+    position: relative !important;
+    overflow: hidden !important;
+    background: linear-gradient(135deg, rgba(255, 241, 242, 0.95) 0%, rgba(255, 228, 230, 0.92) 100%) !important;
+    border: 1.5px solid #fecdd3 !important;
+    border-radius: 18px !important;
+    padding: 14px 22px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 16px !important;
+    margin-bottom: 20px !important;
+    box-shadow: 0 8px 24px -4px rgba(225, 29, 72, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.9) !important;
 }
+.emergency-icon-box {
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 12px !important;
+    background: linear-gradient(135deg, #e11d48, #be123c) !important;
+    color: white !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 4px 14px rgba(225, 29, 72, 0.35) !important;
+    position: relative !important;
+    flex-shrink: 0 !important;
+}
+.emergency-beacon-ring {
+    position: absolute;
+    top: -4px; left: -4px; right: -4px; bottom: -4px;
+    border-radius: 16px;
+    border: 1.5px solid rgba(225, 29, 72, 0.6);
+    animation: beaconExpand 2.2s infinite ease-out;
+}
+.emergency-ekg-tracer {
+    flex: 1;
+    max-width: 200px;
+    height: 28px;
+    margin: 0 14px;
+}
+.emergency-ekg-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+.em-ekg-track {
+    stroke: rgba(239, 68, 68, 0.22);
+    stroke-width: 2;
+    fill: none;
+    stroke-linecap: round;
+}
+.em-ekg-glow {
+    stroke: #ef4444;
+    stroke-width: 2.5;
+    fill: none;
+    stroke-linecap: round;
+    stroke-dasharray: 40 160;
+    stroke-dashoffset: 200;
+    animation: ekgSweep 2.2s linear infinite;
+    filter: drop-shadow(0 0 5px rgba(239, 68, 68, 0.8));
+}
+.emergency-title {
+    font-size: 1.05rem !important;
+    font-weight: 900 !important;
+    color: #9f1239 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.02em !important;
+}
+.emergency-desc {
+    font-size: 0.85rem !important;
+    color: #4c0519 !important;
+    font-weight: 600 !important;
+    line-height: 1.4 !important;
+}
+.emergency-btn-primary {
+    background: linear-gradient(135deg, #e11d48, #be123c) !important;
+    color: white !important;
+    font-weight: 900 !important;
+    font-size: 0.88rem !important;
+    padding: 10px 18px !important;
+    border-radius: 9999px !important;
+    box-shadow: 0 4px 14px rgba(225, 29, 72, 0.40) !important;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    transition: all 0.25s ease !important;
+}
+.emergency-btn-primary:hover {
+    transform: translateY(-2px) scale(1.03) !important;
+    box-shadow: 0 8px 20px rgba(225, 29, 72, 0.55) !important;
+}
+.emergency-btn-secondary {
+    background: #ffffff !important;
+    color: #e11d48 !important;
+    border: 1.5px solid #fecdd3 !important;
+    font-weight: 900 !important;
+    font-size: 0.88rem !important;
+    padding: 9px 18px !important;
+    border-radius: 9999px !important;
+    box-shadow: 0 2px 8px rgba(225, 29, 72, 0.10) !important;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    transition: all 0.25s ease !important;
+}
+.emergency-btn-secondary:hover {
+    background: #fff1f2 !important;
+    transform: translateY(-2px) scale(1.03) !important;
+    box-shadow: 0 6px 16px rgba(225, 29, 72, 0.18) !important;
+}
+
+/* Mobile Emergency Banner (Ultra-Sleek, Compact HUD) */
+@media (max-width: 768px) {
+    .emergency-alert-banner {
+        padding: 8px 12px !important;
+        border-radius: 14px !important;
+        margin: 0 0 14px 0 !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        flex-wrap: nowrap !important;
+        gap: 8px !important;
+        max-height: 56px !important;
+    }
+    .emergency-desc, .emergency-ekg-tracer {
+        display: none !important;
+    }
+    .emergency-content-left {
+        gap: 8px !important;
+        min-width: 0 !important;
+    }
+    .emergency-icon-box {
+        width: 32px !important;
+        height: 32px !important;
+        border-radius: 8px !important;
+    }
+    .emergency-main-icon {
+        font-size: 18px !important;
+    }
+    .em-title-full {
+        display: none !important;
+    }
+    .em-title-short {
+        display: inline !important;
+        font-size: 0.82rem !important;
+        font-weight: 900 !important;
+    }
+    .emergency-buttons-wrap {
+        display: flex !important;
+        gap: 6px !important;
+        flex-shrink: 0 !important;
+    }
+    .emergency-btn-primary, .emergency-btn-secondary {
+        padding: 6px 10px !important;
+        font-size: 0.78rem !important;
+        border-radius: 8px !important;
+    }
+    .em-btn-label-full {
+        display: none !important;
+    }
+    .em-btn-label-short {
+        display: inline !important;
+    }
+}
+
+/* --- 11.7 Task Section & Segmented Role Filter --- */
+.task-section-wrapper {
+    margin: 40px 0 24px 0;
+}
+.task-section-header {
+    text-align: center;
+    max-width: 720px;
+    margin: 0 auto 20px auto;
+}
+.task-section-pill {
+    background: #e0f2fe;
+    color: #0284c7;
+    padding: 6px 18px;
+    border-radius: 9999px;
+    font-weight: 950;
+    font-size: 0.80rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border: 1.5px solid #bae6fd;
+    box-shadow: 0 2px 8px rgba(2, 132, 199, 0.10);
+}
+.task-section-title {
+    font-size: clamp(1.8rem, 3.8vw, 2.5rem);
+    font-weight: 950;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    color: #0b1f3a;
+    margin-top: 12px;
+    margin-bottom: 8px;
+}
+.task-section-desc {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #475569;
+    margin: 0;
+}
+.home-role-filter-container {
+    max-width: 580px;
+    margin: 0 auto 26px auto;
+}
+.home-role-filter-bar {
+    display: flex;
+    background: #f1f5f9;
+    border-radius: 9999px;
+    padding: 6px;
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.06), 0 4px 14px rgba(0, 0, 0, 0.03);
+    gap: 6px;
+    border: 1.5px solid #cbd5e1;
+}
+.role-filter-btn {
+    flex: 1;
+    border: none;
+    background: transparent;
+    border-radius: 9999px;
+    padding: 10px 18px;
+    font-weight: 850;
+    font-size: 0.90rem;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+.role-filter-btn:hover:not(.active) {
+    color: #0b1f3a;
+    background: rgba(255, 255, 255, 0.7);
+}
+.role-filter-btn.active {
+    background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 0 6px 20px rgba(2, 132, 199, 0.40) !important;
+    transform: scale(1.02);
+}
+#home-role-hint {
+    margin-top: 12px;
+    text-align: center;
+    font-size: 0.88rem;
+    font-weight: 750;
+    color: #0284c7;
+    background: #f0f9ff;
+    border: 1.5px solid #bae6fd;
+    padding: 8px 20px;
+    border-radius: 9999px;
+    display: inline-block;
+    box-shadow: 0 2px 10px rgba(2, 132, 199, 0.08);
+}
+
+/* --- 11.8 The 12 Task Action Cards (Showstopper 3D Physics & Luminous Shimmer) --- */
+.task-card-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+    gap: 22px !important;
+    margin: 24px 0 36px 0 !important;
+}
+
+.task-action-card {
+    position: relative !important;
+    overflow: hidden !important;
+    border-radius: 24px !important;
+    padding: 30px 26px 26px !important;
+    background: linear-gradient(180deg, #ffffff 0%, #f9fbfe 100%) !important;
+    border: 1.5px solid #e2e8f0 !important;
+    box-shadow: 0 10px 28px -6px rgba(15, 23, 42, 0.06), 0 2px 6px rgba(0, 0, 0, 0.02) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease, border-color 0.35s ease !important;
+}
+
+/* Glowing Top Accent Light Ribbon */
+.task-action-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--card-ribbon, linear-gradient(90deg, #0284c7, #38bdf8));
+    transition: height 0.25s ease;
+    z-index: 1;
+}
+
+/* High-Gloss Diagonal Shimmer Beam on Hover */
+.task-action-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -160%;
+    width: 80%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+    transform: skewX(-25deg);
+    pointer-events: none;
+    transition: none;
+    z-index: 2;
+}
+.task-action-card:hover::after {
+    left: 200%;
+    transition: left 0.85s ease-in-out;
+}
+
+/* 3D Float & Ambient Glow Lift */
+.task-action-card:hover {
+    transform: translateY(-8px) scale(1.02) !important;
+    border-color: var(--card-border-hover, #0284c7) !important;
+    box-shadow: 0 24px 50px -10px var(--card-glow, rgba(2, 132, 199, 0.28)), 0 4px 16px rgba(0, 0, 0, 0.04) !important;
+}
+.task-action-card:hover::before {
+    height: 6px;
+}
+
+/* Card Header & Icon */
+.task-card-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+.task-card-icon {
+    width: 54px !important;
+    height: 54px !important;
+    border-radius: 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: #ffffff !important;
+    background: var(--icon-bg, linear-gradient(135deg, #0284c7, #2563eb)) !important;
+    box-shadow: 0 8px 20px var(--icon-shadow, rgba(2, 132, 199, 0.35)) !important;
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease !important;
+    flex-shrink: 0 !important;
+}
+.task-action-card:hover .task-card-icon {
+    transform: scale(1.12) rotate(-6deg) !important;
+    box-shadow: 0 12px 26px var(--icon-shadow, rgba(2, 132, 199, 0.45)) !important;
+}
+.task-card-badge {
+    background: var(--badge-bg, #e0f2fe) !important;
+    color: var(--badge-color, #0284c7) !important;
+    font-size: 0.72rem !important;
+    font-weight: 900 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    padding: 3px 10px !important;
+    border-radius: 9999px !important;
+    display: inline-block !important;
+    margin-bottom: 4px !important;
+}
+.task-card-title {
+    font-size: 1.25rem !important;
+    font-weight: 950 !important;
+    color: #0b1f3a !important;
+    letter-spacing: -0.01em !important;
+    margin: 0 !important;
+    transition: color 0.25s ease !important;
+}
+.task-action-card:hover .task-card-title {
+    color: var(--card-title-hover, #0284c7) !important;
+}
+.task-card-desc {
+    font-size: 0.94rem !important;
+    font-weight: 600 !important;
+    color: #475569 !important;
+    line-height: 1.62 !important;
+    margin: 12px 0 16px 0 !important;
+}
+
+/* Custom Glowing Circular Checkmarks */
+.task-features-list {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 16px 0 22px 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+}
+.task-features-list li {
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+    font-size: 0.90rem !important;
+    font-weight: 650 !important;
+    color: #334155 !important;
+    line-height: 1.45 !important;
+}
+.check-badge {
+    width: 20px !important;
+    height: 20px !important;
+    border-radius: 50% !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 12px !important;
+    font-weight: 950 !important;
+    flex-shrink: 0 !important;
+    margin-top: 1px !important;
+    background: var(--check-bg, #e0f2fe) !important;
+    color: var(--check-color, #0284c7) !important;
+}
+
+/* CTA Action Button inside Card */
+.task-cta-btn {
+    width: 100% !important;
+    padding: 13px 20px !important;
+    border-radius: 12px !important;
+    font-weight: 950 !important;
+    font-size: 0.90rem !important;
+    letter-spacing: 0.05em !important;
+    border: none !important;
+    cursor: pointer !important;
+    color: #ffffff !important;
+    background: var(--btn-bg, linear-gradient(135deg, #0284c7, #2563eb)) !important;
+    box-shadow: 0 6px 18px var(--btn-shadow, rgba(2, 132, 199, 0.35)) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+.task-action-card:hover .task-cta-btn {
+    transform: translateY(-2px) !important;
+    filter: brightness(1.08) !important;
+    box-shadow: 0 10px 24px var(--btn-shadow, rgba(2, 132, 199, 0.45)) !important;
+}
+.task-cta-btn .material-symbols-outlined {
+    transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+.task-action-card:hover .task-cta-btn .material-symbols-outlined {
+    transform: translateX(6px) !important;
+}
+
+/* --- 11.9 Specific Card Color Themes --- */
+/* Cyan: Symptoms Intake / Live Bed */
+.card-cyan {
+    --card-ribbon: linear-gradient(90deg, #0284c7, #38bdf8);
+    --card-border-hover: #0284c7;
+    --card-glow: rgba(2, 132, 199, 0.28);
+    --card-title-hover: #0284c7;
+    --icon-bg: linear-gradient(135deg, #0284c7, #2563eb);
+    --icon-shadow: rgba(2, 132, 199, 0.35);
+    --badge-bg: #e0f2fe;
+    --badge-color: #0284c7;
+    --check-bg: #e0f2fe;
+    --check-color: #0284c7;
+    --btn-bg: linear-gradient(135deg, #0284c7, #2563eb);
+    --btn-shadow: rgba(2, 132, 199, 0.35);
+}
+
+/* Emerald: Understand Lab Reports / Doctor Console */
+.card-emerald {
+    --card-ribbon: linear-gradient(90deg, #059669, #34d399);
+    --card-border-hover: #059669;
+    --card-glow: rgba(5, 150, 105, 0.28);
+    --card-title-hover: #059669;
+    --icon-bg: linear-gradient(135deg, #059669, #10b981);
+    --icon-shadow: rgba(5, 150, 105, 0.35);
+    --badge-bg: #dcfce7;
+    --badge-color: #059669;
+    --check-bg: #dcfce7;
+    --check-color: #059669;
+    --btn-bg: linear-gradient(135deg, #059669, #047857);
+    --btn-shadow: rgba(5, 150, 105, 0.35);
+}
+
+/* Cobalt: Health Records & Timeline */
+.card-cobalt {
+    --card-ribbon: linear-gradient(90deg, #1d4ed8, #60a5fa);
+    --card-border-hover: #1d4ed8;
+    --card-glow: rgba(29, 78, 216, 0.28);
+    --card-title-hover: #1d4ed8;
+    --icon-bg: linear-gradient(135deg, #1d4ed8, #2563eb);
+    --icon-shadow: rgba(29, 78, 216, 0.35);
+    --badge-bg: #dbeafe;
+    --badge-color: #1d4ed8;
+    --check-bg: #dbeafe;
+    --check-color: #1d4ed8;
+    --btn-bg: linear-gradient(135deg, #1d4ed8, #2563eb);
+    --btn-shadow: rgba(29, 78, 216, 0.35);
+}
+
+/* Purple: OPD Appointments / Lab Verification */
+.card-purple {
+    --card-ribbon: linear-gradient(90deg, #7c3aed, #c084fc);
+    --card-border-hover: #7c3aed;
+    --card-glow: rgba(124, 58, 237, 0.28);
+    --card-title-hover: #7c3aed;
+    --icon-bg: linear-gradient(135deg, #7c3aed, #8b5cf6);
+    --icon-shadow: rgba(124, 58, 237, 0.35);
+    --badge-bg: #f3e8ff;
+    --badge-color: #7c3aed;
+    --check-bg: #f3e8ff;
+    --check-color: #7c3aed;
+    --btn-bg: linear-gradient(135deg, #7c3aed, #6d28d9);
+    --btn-shadow: rgba(124, 58, 237, 0.35);
+}
+
+/* Orange: Disease Risk Screening */
+.card-orange {
+    --card-ribbon: linear-gradient(90deg, #ea580c, #fb923c);
+    --card-border-hover: #ea580c;
+    --card-glow: rgba(234, 88, 12, 0.28);
+    --card-title-hover: #ea580c;
+    --icon-bg: linear-gradient(135deg, #ea580c, #f97316);
+    --icon-shadow: rgba(234, 88, 12, 0.35);
+    --badge-bg: #ffedd5;
+    --badge-color: #ea580c;
+    --check-bg: #ffedd5;
+    --check-color: #ea580c;
+    --btn-bg: linear-gradient(135deg, #ea580c, #c2410c);
+    --btn-shadow: rgba(234, 88, 12, 0.35);
+}
+
+/* Rose: Symptoms AI Assistant */
+.card-rose {
+    --card-ribbon: linear-gradient(90deg, #e11d48, #fb7185);
+    --card-border-hover: #e11d48;
+    --card-glow: rgba(225, 29, 72, 0.28);
+    --card-title-hover: #e11d48;
+    --icon-bg: linear-gradient(135deg, #e11d48, #be123c);
+    --icon-shadow: rgba(225, 29, 72, 0.35);
+    --badge-bg: #ffe4e6;
+    --badge-color: #be123c;
+    --check-bg: #ffe4e6;
+    --check-color: #be123c;
+    --btn-bg: linear-gradient(135deg, #e11d48, #be123c);
+    --btn-shadow: rgba(225, 29, 72, 0.35);
+}
+
+/* Indigo: Operations Hub */
+.card-indigo {
+    --card-ribbon: linear-gradient(90deg, #4338ca, #818cf8);
+    --card-border-hover: #4338ca;
+    --card-glow: rgba(67, 56, 202, 0.28);
+    --card-title-hover: #4338ca;
+    --icon-bg: linear-gradient(135deg, #4338ca, #3730a3);
+    --icon-shadow: rgba(67, 56, 202, 0.35);
+    --badge-bg: #e0e7ff;
+    --badge-color: #4338ca;
+    --check-bg: #e0e7ff;
+    --check-color: #4338ca;
+    --btn-bg: linear-gradient(135deg, #4338ca, #3730a3);
+    --btn-shadow: rgba(67, 56, 202, 0.35);
+}
+
+/* Teal: Fast-Track Patient Registration */
+.card-teal {
+    --card-ribbon: linear-gradient(90deg, #0f766e, #2dd4bf);
+    --card-border-hover: #0f766e;
+    --card-glow: rgba(15, 118, 110, 0.28);
+    --card-title-hover: #0f766e;
+    --icon-bg: linear-gradient(135deg, #0f766e, #0d9488);
+    --icon-shadow: rgba(15, 118, 110, 0.35);
+    --badge-bg: #ccfbf1;
+    --badge-color: #0f766e;
+    --check-bg: #ccfbf1;
+    --check-color: #0f766e;
+    --btn-bg: linear-gradient(135deg, #0f766e, #0d9488);
+    --btn-shadow: rgba(15, 118, 110, 0.35);
+}
+
+/* Slate: Inpatient Billing Desk */
+.card-slate {
+    --card-ribbon: linear-gradient(90deg, #475569, #94a3b8);
+    --card-border-hover: #475569;
+    --card-glow: rgba(71, 85, 105, 0.28);
+    --card-title-hover: #334155;
+    --icon-bg: linear-gradient(135deg, #475569, #334155);
+    --icon-shadow: rgba(71, 85, 105, 0.35);
+    --badge-bg: #f1f5f9;
+    --badge-color: #475569;
+    --check-bg: #f1f5f9;
+    --check-color: #475569;
+    --btn-bg: linear-gradient(135deg, #475569, #334155);
+    --btn-shadow: rgba(71, 85, 105, 0.35);
+}
+
+/* --- 11.10 Floating Glassmorphic Top Navbar & Mobile Dock --- */
+.top-navbar {
+    background: rgba(255, 255, 255, 0.90) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-bottom: 1.5px solid rgba(203, 219, 245, 0.7) !important;
+    box-shadow: 0 4px 20px rgba(11, 28, 48, 0.04) !important;
+}
+
+@media (max-width: 900px) {
+    .mobile-bottom-nav {
+        background: rgba(255, 255, 255, 0.92) !important;
+        backdrop-filter: blur(24px) !important;
+        -webkit-backdrop-filter: blur(24px) !important;
+        border-top: 1.5px solid rgba(186, 230, 253, 0.8) !important;
+        box-shadow: 0 -8px 30px rgba(2, 132, 199, 0.12) !important;
+    }
+    .mob-hero-circle {
+        background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%) !important;
+        box-shadow: 0 6px 20px rgba(2, 132, 199, 0.50), 0 0 0 4px #ffffff !important;
+        transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    }
+    .mob-nav-btn.active .mob-nav-label {
+        color: #0284c7 !important;
+        font-weight: 900 !important;
+    }
+    .mob-nav-btn.active .material-symbols-outlined {
+        color: #0284c7 !important;
+        filter: drop-shadow(0 2px 6px rgba(2, 132, 199, 0.40)) !important;
+    }
+}
+
+/* --- 11.11 Interactive Action Cards & How-It-Works Polish --- */
+.how-step-card {
+    transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.28s ease, border-color 0.28s ease !important;
+}
+.how-step-card:hover {
+    transform: translateY(-5px) !important;
+    border-color: #bae6fd !important;
+    box-shadow: 0 16px 36px -6px rgba(2, 132, 199, 0.16) !important;
+}
+.how-step-card:hover .how-step-num {
+    transform: scale(1.10) !important;
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.45) !important;
+}
+.how-step-num {
+    transition: transform 0.25s ease, box-shadow 0.25s ease !important;
+}
+
+.ml-action-card {
+    transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.28s ease, border-color 0.28s ease !important;
+}
+.ml-action-card:hover {
+    transform: translateY(-6px) scale(1.01) !important;
+    box-shadow: 0 20px 44px -8px rgba(2, 132, 199, 0.20) !important;
+}
+
+
 
