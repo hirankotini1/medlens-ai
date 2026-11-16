@@ -10883,52 +10883,18 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible), select:focus:not(
 
 /* ==================== 11. ULTRA JAW-DROPPING CLINICAL VISUAL SYSTEM ==================== */
 
-/* --- 11.1 Dynamic Ambient Aurora Background & Floating Orbs --- */
-.hero-ambient-orb {
+/* --- 11.1 Dynamic Ambient Clinical Background --- */
+.ml-hero-section::after {
+    content: '';
     position: absolute;
+    top: -120px;
+    right: -100px;
+    width: 480px;
+    height: 480px;
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.22) 0%, rgba(37, 99, 235, 0.08) 50%, transparent 75%);
     border-radius: 50%;
-    filter: blur(80px);
     pointer-events: none;
     z-index: 0;
-    opacity: 0.55;
-    animation: auroraFloat 12s infinite ease-in-out alternate;
-}
-.hero-ambient-orb.orb-1 {
-    width: 380px;
-    height: 380px;
-    background: radial-gradient(circle, rgba(2, 132, 199, 0.28) 0%, rgba(56, 189, 248, 0.08) 70%, transparent 100%);
-    top: -80px;
-    left: -60px;
-    animation-duration: 11s;
-}
-.hero-ambient-orb.orb-2 {
-    width: 340px;
-    height: 340px;
-    background: radial-gradient(circle, rgba(37, 99, 235, 0.22) 0%, rgba(124, 58, 237, 0.08) 70%, transparent 100%);
-    bottom: -60px;
-    right: 5%;
-    animation-duration: 14s;
-    animation-delay: -3s;
-}
-.hero-ambient-orb.orb-3 {
-    width: 260px;
-    height: 260px;
-    background: radial-gradient(circle, rgba(16, 185, 129, 0.18) 0%, rgba(5, 150, 105, 0.05) 70%, transparent 100%);
-    top: 30%;
-    left: 45%;
-    animation-duration: 16s;
-    animation-delay: -6s;
-}
-@keyframes auroraFloat {
-    0% {
-        transform: translate(0, 0) scale(1);
-    }
-    50% {
-        transform: translate(30px, -20px) scale(1.08);
-    }
-    100% {
-        transform: translate(-20px, 25px) scale(0.94);
-    }
 }
 
 /* --- 11.2 Live Clinical Neural Telemetry Ribbon --- */
@@ -11061,9 +11027,10 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible), select:focus:not(
     opacity: 0.85;
     z-index: 0;
 }
-.ml-hero-section > * {
+.hero-telemetry-ribbon,
+.ml-hero-grid {
     position: relative;
-    z-index: 1;
+    z-index: 2;
 }
 .hero-badge-row {
     display: flex;
@@ -11760,10 +11727,15 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible), select:focus:not(
     background: linear-gradient(180deg, #ffffff 0%, #f9fbfe 100%) !important;
     border: 1.5px solid #e2e8f0 !important;
     box-shadow: 0 10px 28px -6px rgba(15, 23, 42, 0.06), 0 2px 6px rgba(0, 0, 0, 0.02) !important;
-    display: flex !important;
+    display: none !important;
     flex-direction: column !important;
     justify-content: space-between !important;
     transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease, border-color 0.35s ease !important;
+}
+
+.task-action-card.role-card-visible {
+    display: flex !important;
+    animation: roleCardFadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) both !important;
 }
 
 /* Glowing Top Accent Light Ribbon */
@@ -12122,6 +12094,218 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible), select:focus:not(
 .ml-action-card:hover {
     transform: translateY(-6px) scale(1.01) !important;
     box-shadow: 0 20px 44px -8px rgba(2, 132, 199, 0.20) !important;
+}
+
+/* ==================== 11.12 BUTTERY SMOOTH RESPONSIVE OPTIMIZATIONS (TABLET & MOBILE) ==================== */
+@media (max-width: 900px) {
+    .task-card-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 18px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    /* Fluid Container & Viewport Safety */
+    html, body {
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    .ml-main-container {
+        padding: 0 14px !important;
+    }
+
+    /* Ultra-Compact Emergency Banner (<52px) */
+    .emergency-alert-banner {
+        padding: 7px 12px !important;
+        border-radius: 14px !important;
+        margin: 0 0 14px 0 !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        flex-wrap: nowrap !important;
+        gap: 8px !important;
+        max-height: 52px !important;
+        box-shadow: 0 2px 10px rgba(225, 29, 72, 0.10) !important;
+    }
+    .emergency-desc, .emergency-ekg-tracer {
+        display: none !important;
+    }
+    .emergency-content-left {
+        gap: 8px !important;
+        min-width: 0 !important;
+    }
+    .emergency-icon-box {
+        width: 32px !important;
+        height: 32px !important;
+        border-radius: 8px !important;
+        flex-shrink: 0 !important;
+    }
+    .emergency-main-icon {
+        font-size: 18px !important;
+    }
+    .em-title-full {
+        display: none !important;
+    }
+    .em-title-short {
+        display: inline !important;
+        font-size: 0.80rem !important;
+        font-weight: 900 !important;
+        white-space: nowrap !important;
+    }
+    .emergency-buttons-wrap {
+        display: flex !important;
+        gap: 6px !important;
+        flex-shrink: 0 !important;
+    }
+    .emergency-btn-primary, .emergency-btn-secondary {
+        padding: 6px 10px !important;
+        font-size: 0.78rem !important;
+        border-radius: 8px !important;
+        font-weight: 900 !important;
+    }
+    .em-btn-label-full {
+        display: none !important;
+    }
+    .em-btn-label-short {
+        display: inline !important;
+    }
+
+    /* Mobile Hero Layout */
+    .ml-hero-section {
+        padding: 20px 16px !important;
+        border-radius: 20px !important;
+        margin-bottom: 20px !important;
+    }
+    .hero-telemetry-ribbon {
+        padding: 5px 12px !important;
+        margin-bottom: 16px !important;
+    }
+    .telemetry-ekg-wrap {
+        display: none !important;
+    }
+    .telemetry-specs {
+        font-size: 0.72rem !important;
+    }
+    .spec-pill:not(:first-child) {
+        display: none !important;
+    }
+    .ml-hero-title {
+        font-size: clamp(1.8rem, 6.4vw, 2.3rem) !important;
+        line-height: 1.18 !important;
+        margin-bottom: 8px !important;
+    }
+    .ml-hero-subtitle {
+        font-size: 0.96rem !important;
+        margin-bottom: 10px !important;
+    }
+    .ml-hero-desc {
+        font-size: 0.88rem !important;
+        line-height: 1.55 !important;
+        margin-bottom: 18px !important;
+    }
+    .ml-hero-buttons {
+        flex-direction: column !important;
+        width: 100% !important;
+        gap: 10px !important;
+    }
+    .ml-hero-buttons .ml-btn-primary,
+    .ml-hero-buttons .ml-btn-secondary {
+        width: 100% !important;
+        justify-content: center !important;
+        padding: 13px 20px !important;
+        font-size: 0.90rem !important;
+    }
+    .ml-hero-buttons .ml-btn-primary:active,
+    .ml-hero-buttons .ml-btn-secondary:active {
+        transform: scale(0.98) !important;
+    }
+    .ml-quick-access-card {
+        padding: 20px 16px !important;
+        border-radius: 18px !important;
+        margin-top: 16px !important;
+    }
+
+    /* Role Segmented Filter Bar Mobile */
+    .home-role-filter-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 4px !important;
+        margin-bottom: 18px !important;
+    }
+    .home-role-filter-bar {
+        padding: 4px !important;
+        gap: 4px !important;
+    }
+    .role-filter-btn {
+        padding: 8px 10px !important;
+        font-size: 0.82rem !important;
+        gap: 4px !important;
+    }
+    .rf-label-full {
+        display: none !important;
+    }
+    .rf-label-short {
+        display: inline !important;
+        font-weight: 850 !important;
+    }
+    .role-filter-btn:active {
+        transform: scale(0.96) !important;
+    }
+    #home-role-hint {
+        font-size: 0.78rem !important;
+        padding: 6px 14px !important;
+        margin-top: 10px !important;
+        line-height: 1.4 !important;
+    }
+
+    /* 1-Column Buttery Smooth Card Grid */
+    .task-card-grid {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+        margin: 16px 0 28px 0 !important;
+    }
+    .task-action-card {
+        padding: 22px 18px !important;
+        border-radius: 20px !important;
+        transform: none !important;
+    }
+    .task-action-card:hover {
+        transform: none !important;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08) !important;
+    }
+    .task-action-card:active {
+        transform: scale(0.985) !important;
+        transition: transform 0.12s ease !important;
+    }
+    .task-card-icon {
+        width: 48px !important;
+        height: 48px !important;
+        border-radius: 14px !important;
+    }
+    .task-card-title {
+        font-size: 1.15rem !important;
+    }
+    .task-card-desc {
+        font-size: 0.88rem !important;
+        line-height: 1.55 !important;
+    }
+    .task-features-list {
+        margin: 14px 0 18px 0 !important;
+        gap: 8px !important;
+    }
+    .task-features-list li {
+        font-size: 0.82rem !important;
+    }
+    .task-cta-btn {
+        width: 100% !important;
+        min-height: 48px !important;
+        justify-content: center !important;
+        font-size: 0.86rem !important;
+        border-radius: 12px !important;
+    }
+    .task-cta-btn:active {
+        transform: scale(0.97) !important;
+    }
 }
 
 

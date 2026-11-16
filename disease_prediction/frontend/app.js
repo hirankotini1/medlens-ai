@@ -9598,13 +9598,13 @@ function filterHomeRoleView(role) {
     cards.forEach(card => {
         const cardRole = (card.getAttribute('data-role') || '').trim();
         if (cardRole === role || cardRole.split(' ').includes(role)) {
-            card.style.display = 'flex';
             card.classList.remove('role-card-visible');
             void card.offsetWidth; // trigger reflow for smooth animation
             card.classList.add('role-card-visible');
+            card.style.setProperty('display', 'flex', 'important');
         } else {
-            card.style.display = 'none';
             card.classList.remove('role-card-visible');
+            card.style.setProperty('display', 'none', 'important');
         }
     });
 
