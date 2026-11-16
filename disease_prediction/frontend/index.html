@@ -112,7 +112,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=20261116_v7">
+    <link rel="stylesheet" href="style.css?v=20261116_v9">
 </head>
 <body>
 
@@ -348,7 +348,7 @@
                     <svg viewBox="0 0 200 32" class="emergency-ekg-svg" preserveAspectRatio="none" aria-hidden="true">
                         <defs>
                             <filter id="em-ekg-neon-glow" x="-20%" y="-50%" width="140%" height="200%">
-                                <feGaussianBlur stdDeviation="2.5" result="glow"/>
+                                <feGaussianBlur stdDeviation="2" result="glow"/>
                                 <feMerge>
                                     <feMergeNode in="glow"/>
                                     <feMergeNode in="SourceGraphic"/>
@@ -358,11 +358,21 @@
                         <!-- Dim background track -->
                         <path class="em-ekg-track" d="M0,16 L60,16 L65,4 L72,28 L78,8 L84,22 L90,16 L200,16" />
                         <!-- High-intensity animated sweep beam with native SVG animate -->
-                        <path class="em-ekg-glow" d="M0,16 L60,16 L65,4 L72,28 L78,8 L84,22 L90,16 L200,16"
-                              pathLength="260" stroke="#e11d48" stroke-width="3" fill="none" stroke-linecap="round"
-                              stroke-dasharray="55 205" stroke-dashoffset="260" filter="url(#em-ekg-neon-glow)">
-                            <animate attributeName="stroke-dashoffset" from="260" to="-260" dur="1.8s" repeatCount="indefinite" />
+                        <path id="emergency-ekg-pulse-path" class="em-ekg-glow" d="M0,16 L60,16 L65,4 L72,28 L78,8 L84,22 L90,16 L200,16"
+                              pathLength="260" stroke="#e11d48" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"
+                              stroke-dasharray="60 200" filter="url(#em-ekg-neon-glow)">
+                            <animate attributeName="stroke-dashoffset" from="260" to="0" dur="1.8s" repeatCount="indefinite" />
                         </path>
+                        <!-- Luminous glowing tracer pulse head dot riding along the waveform -->
+                        <g class="em-ekg-dot-group">
+                            <animateMotion path="M0,16 L60,16 L65,4 L72,28 L78,8 L84,22 L90,16 L200,16" dur="1.8s" repeatCount="indefinite" />
+                            <!-- Outer neon halo -->
+                            <circle cx="0" cy="0" r="6" fill="#e11d48" opacity="0.6" filter="url(#em-ekg-neon-glow)" />
+                            <!-- Inner bright pulse head -->
+                            <circle cx="0" cy="0" r="3.5" fill="#ff1744" />
+                            <!-- Hot white core center -->
+                            <circle cx="0" cy="0" r="1.5" fill="#ffffff" />
+                        </g>
                     </svg>
                 </div>
                 <div class="emergency-buttons-wrap">
@@ -5414,7 +5424,7 @@
         <button type="button" id="mob-tab-admin" onclick="switchView('admin')" style="display: none;" aria-hidden="true"></button>
     </nav>
 
-    <script src="app.js?v=20260920_v5"></script>
+    <script src="app.js?v=20261116_v9"></script>
     <script src="voice_service.js?v=20260920_v1"></script>
     <script src="case_taking.js?v=20260920_v1"></script>
     <script src="voice_case_taking.js?v=20260920_v1"></script>

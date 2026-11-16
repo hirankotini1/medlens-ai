@@ -9623,3 +9623,29 @@ window.addEventListener('DOMContentLoaded', () => {
         filterHomeRoleView('patients');
     }
 });
+
+// Bulletproof Fail-Safe Clinical EKG Heartbeat Animation Driver
+(function initEmergencyEkgPulse() {
+    function start() {
+        const path = document.getElementById('emergency-ekg-pulse-path');
+        if (!path) return;
+        const total = 260;
+        const duration = 1800; // 1.8s sweep
+        let startTime = null;
+        function step(timestamp) {
+            if (!startTime) startTime = timestamp;
+            const progress = ((timestamp - startTime) % duration) / duration;
+            // Sweep from 260 down to 0
+            const offset = (1 - progress) * total;
+            path.style.setProperty('stroke-dashoffset', offset.toFixed(1) + 'px', 'important');
+            requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', start);
+    } else {
+        start();
+    }
+})();
+
