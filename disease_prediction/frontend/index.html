@@ -112,7 +112,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=20260920_v5">
+    <link rel="stylesheet" href="style.css?v=20261116_v7">
 </head>
 <body>
 
@@ -345,9 +345,24 @@
                     </div>
                 </div>
                 <div class="emergency-ekg-tracer">
-                    <svg viewBox="0 0 200 32" class="emergency-ekg-svg" preserveAspectRatio="none">
+                    <svg viewBox="0 0 200 32" class="emergency-ekg-svg" preserveAspectRatio="none" aria-hidden="true">
+                        <defs>
+                            <filter id="em-ekg-neon-glow" x="-20%" y="-50%" width="140%" height="200%">
+                                <feGaussianBlur stdDeviation="2.5" result="glow"/>
+                                <feMerge>
+                                    <feMergeNode in="glow"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <!-- Dim background track -->
                         <path class="em-ekg-track" d="M0,16 L60,16 L65,4 L72,28 L78,8 L84,22 L90,16 L200,16" />
-                        <path class="em-ekg-glow" d="M0,16 L60,16 L65,4 L72,28 L78,8 L84,22 L90,16 L200,16" />
+                        <!-- High-intensity animated sweep beam with native SVG animate -->
+                        <path class="em-ekg-glow" d="M0,16 L60,16 L65,4 L72,28 L78,8 L84,22 L90,16 L200,16"
+                              pathLength="260" stroke="#e11d48" stroke-width="3" fill="none" stroke-linecap="round"
+                              stroke-dasharray="55 205" stroke-dashoffset="260" filter="url(#em-ekg-neon-glow)">
+                            <animate attributeName="stroke-dashoffset" from="260" to="-260" dur="1.8s" repeatCount="indefinite" />
+                        </path>
                     </svg>
                 </div>
                 <div class="emergency-buttons-wrap">

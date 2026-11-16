@@ -11408,9 +11408,9 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible), select:focus:not(
     stroke-width: 3 !important;
     fill: none !important;
     stroke-linecap: round !important;
-    stroke-dasharray: 60 260 !important;
+    stroke-dasharray: 55 205 !important;
     stroke-dashoffset: 260 !important;
-    animation: ekgSweep 2.2s cubic-bezier(0.25, 1, 0.5, 1) infinite !important;
+    animation: ekgSweep 1.8s linear infinite !important;
     filter: drop-shadow(0 0 6px rgba(225, 29, 72, 0.95)) !important;
 }
 @keyframes ekgSweep {
