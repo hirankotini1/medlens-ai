@@ -11374,12 +11374,17 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible), select:focus:not(
     position: relative !important;
     flex-shrink: 0 !important;
 }
+.emergency-ring-pulse,
 .emergency-beacon-ring {
-    position: absolute;
-    top: -4px; left: -4px; right: -4px; bottom: -4px;
-    border-radius: 16px;
-    border: 1.5px solid rgba(225, 29, 72, 0.6);
-    animation: beaconExpand 2.2s infinite ease-out;
+    position: absolute !important;
+    top: -4px !important;
+    left: -4px !important;
+    right: -4px !important;
+    bottom: -4px !important;
+    border-radius: 16px !important;
+    border: 1.5px solid rgba(225, 29, 72, 0.6) !important;
+    animation: beaconExpand 2.2s infinite ease-out !important;
+    pointer-events: none !important;
 }
 .emergency-ekg-tracer {
     flex: 1;
@@ -11393,20 +11398,38 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible), select:focus:not(
     display: block;
 }
 .em-ekg-track {
-    stroke: rgba(239, 68, 68, 0.22);
-    stroke-width: 2;
-    fill: none;
-    stroke-linecap: round;
+    stroke: rgba(239, 68, 68, 0.22) !important;
+    stroke-width: 2 !important;
+    fill: none !important;
+    stroke-linecap: round !important;
 }
 .em-ekg-glow {
-    stroke: #ef4444;
-    stroke-width: 2.5;
-    fill: none;
-    stroke-linecap: round;
-    stroke-dasharray: 40 160;
-    stroke-dashoffset: 200;
-    animation: ekgSweep 2.2s linear infinite;
-    filter: drop-shadow(0 0 5px rgba(239, 68, 68, 0.8));
+    stroke: #e11d48 !important;
+    stroke-width: 3 !important;
+    fill: none !important;
+    stroke-linecap: round !important;
+    stroke-dasharray: 60 260 !important;
+    stroke-dashoffset: 260 !important;
+    animation: ekgSweep 2.2s cubic-bezier(0.25, 1, 0.5, 1) infinite !important;
+    filter: drop-shadow(0 0 6px rgba(225, 29, 72, 0.95)) !important;
+}
+@keyframes ekgSweep {
+    0% {
+        stroke-dashoffset: 260;
+    }
+    100% {
+        stroke-dashoffset: -260;
+    }
+}
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(0.96);
+        opacity: 0.7;
+    }
 }
 .emergency-title {
     font-size: 1.05rem !important;
