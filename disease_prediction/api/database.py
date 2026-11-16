@@ -5,8 +5,12 @@ import hashlib
 import secrets 
 import shutil 
 import time 
+import re 
+import logging
 from datetime import datetime 
 from typing import Dict ,Any ,List ,Optional ,Tuple 
+
+logger = logging.getLogger(__name__) 
 
 DB_PATH =os .path .abspath (os .path .join (os .path .dirname (__file__ ),'..','pathology.db'))
 BACKUP_DIR =os .path .abspath (os .path .join (os .path .dirname (__file__ ),'..','backups'))
@@ -619,6 +623,9 @@ def normalize_patient_id(pid: str) -> List[str]:
     if not pid:
         return []
     pid_str = str(pid).strip()
+    # Reject malformed strings with SQL injection, punctuation, spaces, or quotes from alias expansion
+    if not re.match(r'^[A-Za-z0-9\-_]+$', pid_str):
+        return [pid_str]
     variants = [pid_str]
     # Extract digits
     digits = ''.join(c for c in pid_str if c.isdigit())
@@ -642,12 +649,13 @@ def authenticate_patient (patient_id :str ,access_pin :str )->Optional [Dict [st
     clean_pin =access_pin .strip ()
     digits = ''.join(c for c in patient_id if c.isdigit())
     pin_int = str(int(digits)) if digits else patient_id
-    expected_pins = [
-        f"PIN-{pin_int}",
-        f"PIN-{digits}",
-        pin_int,
-        clean_pin
-    ]
+    expected_pins = []
+    if digits:
+        expected_pins = [
+            f"PIN-{pin_int}",
+            f"PIN-{digits}",
+            pin_int
+        ]
 
     if row :
         if verify_secret (clean_pin ,row ['access_pin_hash']):
@@ -680,7 +688,7 @@ def authenticate_patient (patient_id :str ,access_pin :str )->Optional [Dict [st
             pat_dict =dict (zip (col_names ,sb_pat ))
             sb_conn .close ()
 
-
+            expected_pin = pat_dict.get('access_pin') or f"PIN-{patient_id}"
             is_valid_pin =(clean_pin .upper ()==expected_pin .upper ())
             if not is_valid_pin :
                 conn2 =get_db_connection ()

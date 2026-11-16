@@ -4,7 +4,7 @@ import time
 
 BASE_URL ="http://127.0.0.1:8000"
 
-def test_16_staff_logins ():
+def _login_16_staff ():
     print ("\n--- TEST 1: ALL 16 DEMO STAFF ACCOUNTS ---")
     roles ={
     "RECEPTIONIST":["REC001","REC002","REC003","REC004"],
@@ -27,6 +27,10 @@ def test_16_staff_logins ():
             tokens [u ]=data ["token"]
             print (f"  [PASS] {u } ({expected_role }) - Token issued for: {data ['user']['name']}")
     return tokens 
+
+def test_16_staff_logins ():
+    tokens = _login_16_staff()
+    assert len(tokens) == 16 
 
 def run_patient_registration_and_search (rec_token ):
     print ("\n--- TEST 2: PATIENT REGISTRATION & SEARCH ---")
@@ -247,7 +251,7 @@ def run_regression_5_protected_features ():
 
 def test_all_staff_operations_e2e ():
     print ("Starting Comprehensive MEDLENS E2E & Regression Suite...")
-    tokens =test_16_staff_logins ()
+    tokens =_login_16_staff ()
     pat =run_patient_registration_and_search (tokens ["REC001"])
     run_bed_admission_and_discharge (tokens ["REC001"],pat )
     run_lab_order_completion (tokens ["LAB001"])

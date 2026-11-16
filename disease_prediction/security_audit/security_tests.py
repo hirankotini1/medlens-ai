@@ -34,6 +34,10 @@ class TestSecurityAudit (unittest .TestCase ):
     def tearDownClass (cls ):
         db .reset_to_clean_seed ()
 
+    def setUp (self ):
+        from disease_prediction .api .main import login_limiter 
+        login_limiter .clear ()
+
 
 
     def test_01_unauthorized_patient_access_rejected (self ):

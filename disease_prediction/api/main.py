@@ -168,6 +168,11 @@ class LoginRateLimiter:
             self._attempts.pop(key, None)
             self._lockouts.pop(key, None)
 
+    def clear(self):
+        with self._lock:
+            self._attempts.clear()
+            self._lockouts.clear()
+
 login_limiter = LoginRateLimiter(max_attempts=5, window_seconds=60.0, lockout_seconds=60.0)
 
 def require_admin (auth :Optional [Dict [str ,Any ]]=Depends (get_auth_context ))->Dict [str ,Any ]:
@@ -264,9 +269,27 @@ async def get_webmanifest():
         return FileResponse(manifest_path, media_type="application/manifest+json")
     return Response(status_code=404)
 
+@app.middleware("http")
+async def security_headers_and_path_defense(request: Request, call_next):
+    # Defense against directory / path traversal attacks
+    req_path = request.url.path
+    if ".." in req_path or "%2e%2e" in req_path.lower():
+        return JSONResponse(status_code=400, content={"detail": "Access denied: Malformed path traversal attempt."})
+    
+    response = await call_next(request)
+    
+    # Enterprise Clinical Grade Security Headers (HIPAA / OWASP / DPDP Act 2023)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "SAMEORIGIN"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(self), geolocation=(), payment=()"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    return response
+
 app .add_middleware (
 CORSMiddleware ,
-allow_origins =["*"],
+allow_origin_regex =r"^https?://(localhost|127\.0\.0\.1|.*\.onrender\.com)(:\d+)?$",
 allow_credentials =True ,
 allow_methods =["*"],
 allow_headers =["*"],
@@ -915,8 +938,18 @@ def analyze_report_with_ml (report_id :str ,auth :Dict [str ,Any ]=Depends (requ
         model_ver ="liver_pipeline.joblib"
 
     elif matched_type =='thyroid':
-        tsh =float (extract_val (raw_data ,'TSH',2.0 ))
-        t4 =float (extract_val (raw_data ,'T4',8.0 ))
+        missing = []
+        if extract_val(raw_data, 'TSH') is None:
+            missing.append('TSH')
+        if extract_val(raw_data, 'T4') is None:
+            missing.append('T4')
+        if missing:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Missing required features for thyroid ML analysis: {', '.join(missing)}"
+            )
+        tsh =float (extract_val (raw_data ,'TSH'))
+        t4 =float (extract_val (raw_data ,'T4'))
         t3 =float (extract_val (raw_data ,'T3',1.2 ))
         tsh_resp =float (extract_val (raw_data ,'TSH_response',0.0 ))
         t3_resin =int (extract_val (raw_data ,'T3_resin_uptake',100 ))

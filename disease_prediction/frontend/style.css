@@ -10880,3 +10880,177 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible), select:focus:not(
         scroll-behavior: auto !important;
     }
 }
+
+/* ==================== 11. PREMIUM CLINICAL GRAPHICS & VISUAL POLISH ==================== */
+/* --- Ambient High-Tech Clinical Lighting & Micro-Grid --- */
+.ml-hero-section {
+    position: relative;
+    overflow: hidden;
+    background: radial-gradient(900px 500px at 10% 15%, rgba(2, 132, 199, 0.08) 0%, transparent 70%),
+                radial-gradient(800px 450px at 90% 85%, rgba(37, 99, 235, 0.06) 0%, transparent 60%),
+                linear-gradient(180deg, #f8fbff 0%, #ffffff 100%) !important;
+    border: 1.5px solid #dbeafe !important;
+    box-shadow: 0 12px 32px -8px rgba(2, 132, 199, 0.10), 0 2px 6px rgba(0, 0, 0, 0.02) !important;
+}
+.ml-hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: radial-gradient(circle at 1.5px 1.5px, rgba(2, 132, 199, 0.09) 1.5px, transparent 0);
+    background-size: 28px 28px;
+    pointer-events: none;
+    opacity: 0.75;
+    z-index: 0;
+}
+.ml-hero-section > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* --- Status Pulse & Medical Heartbeat Indicator --- */
+@keyframes liveDotPulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+        transform: scale(0.96);
+    }
+    60% {
+        box-shadow: 0 0 0 7px rgba(16, 185, 129, 0);
+        transform: scale(1.05);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+        transform: scale(0.96);
+    }
+}
+.live-status-pill span:first-child {
+    animation: liveDotPulse 2.2s infinite ease-in-out !important;
+}
+
+/* --- Emergency Banner EKG Pulse Graphic --- */
+.emergency-alert-banner {
+    position: relative;
+    overflow: hidden;
+}
+@media (min-width: 769px) {
+    .emergency-alert-banner::before {
+        content: '';
+        position: absolute;
+        right: 210px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 140px;
+        height: 32px;
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 30' fill='none' stroke='%23ef4444' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' opacity='0.22'%3E%3Cpath d='M0 15 h35 l4 -10 l5 20 l5 -14 l3 7 h68'/%3E%3C/svg%3E") no-repeat center;
+        background-size: contain;
+        pointer-events: none;
+    }
+}
+
+/* --- Premium Task Cards Polish with Subtle Medical Watermarks --- */
+.task-action-card {
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.28s ease, border-color 0.28s ease !important;
+}
+.task-action-card:hover {
+    transform: translateY(-5px) !important;
+    box-shadow: 0 16px 36px -4px rgba(2, 132, 199, 0.16), 0 4px 12px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Watermark micro-graphics for specific cards */
+.task-action-card[data-role="patients"]:nth-child(1)::after {
+    content: '';
+    position: absolute;
+    top: 14px; right: 14px;
+    width: 64px; height: 64px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%230284c7' viewBox='0 0 24 24' opacity='0.06'%3E%3Cpath d='M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z'/%3E%3C/svg%3E") no-repeat center;
+    background-size: contain;
+    pointer-events: none;
+}
+.task-action-card[data-role="patients"]:nth-child(2)::after {
+    content: '';
+    position: absolute;
+    top: 14px; right: 14px;
+    width: 64px; height: 64px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23059669' viewBox='0 0 24 24' opacity='0.06'%3E%3Cpath d='M7 2v2h1v5.12L3.14 18.57c-.77.92-.37 2.43.86 2.43h16c1.23 0 1.63-1.51.86-2.43L16 9.12V4h1V2H7zm4 7.63l-4 6.37h10l-4-6.37V4h-2v5.63z'/%3E%3C/svg%3E") no-repeat center;
+    background-size: contain;
+    pointer-events: none;
+}
+.task-action-card[data-role="patients"]:nth-child(3)::after {
+    content: '';
+    position: absolute;
+    top: 14px; right: 14px;
+    width: 64px; height: 64px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%232563eb' viewBox='0 0 24 24' opacity='0.06'%3E%3Cpath d='M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z'/%3E%3C/svg%3E") no-repeat center;
+    background-size: contain;
+    pointer-events: none;
+}
+.task-action-card[data-role="patients"]:nth-child(4)::after {
+    content: '';
+    position: absolute;
+    top: 14px; right: 14px;
+    width: 64px; height: 64px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%237c3aed' viewBox='0 0 24 24' opacity='0.06'%3E%3Cpath d='M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zm-7 5h5v5h-5z'/%3E%3C/svg%3E") no-repeat center;
+    background-size: contain;
+    pointer-events: none;
+}
+
+/* --- Instant Patient Access Card Glow & Focus Ring --- */
+.ml-quick-access-card {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(165deg, #ffffff 0%, #f4f8fe 100%) !important;
+    border: 1.5px solid #bae6fd !important;
+    box-shadow: 0 16px 40px -8px rgba(2, 132, 199, 0.15), 0 2px 8px rgba(0,0,0,0.03) !important;
+}
+.ml-quick-access-card::after {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(2, 132, 199, 0.12) 0%, transparent 70%);
+    pointer-events: none;
+}
+.patient-lookup-input {
+    transition: border-color 0.22s ease, box-shadow 0.22s ease !important;
+}
+.patient-lookup-input:focus {
+    border-color: #0284c7 !important;
+    box-shadow: 0 0 0 3.5px rgba(2, 132, 199, 0.20) !important;
+    outline: none !important;
+}
+
+/* --- Hero Stats Strip Micro-Interactions --- */
+.ml-stat-item {
+    transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.22s ease !important;
+}
+.ml-stat-item:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 8px 18px rgba(2, 132, 199, 0.14) !important;
+}
+
+/* --- CTA Buttons Smooth Glow --- */
+.task-cta-btn {
+    transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.22s ease, filter 0.22s ease !important;
+}
+.task-cta-btn:hover {
+    transform: translateY(-2px) !important;
+    filter: brightness(1.05) !important;
+}
+.ml-btn-primary:hover {
+    transform: translateY(-2px) !important;
+    filter: brightness(1.06) !important;
+}
+.ml-btn-outline:hover {
+    background: #f0f7ff !important;
+    transform: translateY(-2px) !important;
+}
+
+/* --- Top Navigation Polish --- */
+.top-navbar {
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+}
+
