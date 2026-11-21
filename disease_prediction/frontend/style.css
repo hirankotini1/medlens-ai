@@ -13241,3 +13241,449 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible), select:focus:not(
 .btn-telehealth:hover {
     background: #fce7f3;
 }
+
+
+/* ==========================================================================
+   ENHANCED CLINICAL SERVICES HUB, LIVE OPD QUEUE, TELEHEALTH & DIGITAL RX
+   ========================================================================== */
+
+/* 1. Integrated Hero Clinical Services Deck */
+.clinical-services-bar {
+    background: rgba(255, 255, 255, 0.95);
+    border: 1.5px solid rgba(2, 132, 199, 0.2);
+    border-radius: 16px;
+    padding: 14px 18px;
+    margin: 16px 0 16px 0;
+    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+    backdrop-filter: blur(8px);
+}
+
+.cs-bar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.cs-bar-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #0284c7;
+    background: rgba(2, 132, 199, 0.08);
+    padding: 3px 10px;
+    border-radius: 999px;
+}
+
+.cs-bar-badge .material-symbols-outlined {
+    font-size: 15px;
+}
+
+.cs-bar-subtitle {
+    font-size: 0.78rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.cs-bar-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+@media (max-width: 900px) {
+    .cs-bar-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.cs-tile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.cs-tile:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px -4px rgba(15, 23, 42, 0.1);
+}
+
+.cs-tile-telehealth {
+    border-color: rgba(225, 29, 72, 0.25);
+    background: linear-gradient(135deg, rgba(255, 241, 242, 0.8) 0%, #ffffff 100%);
+}
+.cs-tile-telehealth:hover {
+    border-color: #e11d48;
+    box-shadow: 0 8px 20px -4px rgba(225, 29, 72, 0.18);
+}
+
+.cs-tile-opd {
+    border-color: rgba(16, 185, 129, 0.25);
+    background: linear-gradient(135deg, rgba(236, 253, 245, 0.8) 0%, #ffffff 100%);
+}
+.cs-tile-opd:hover {
+    border-color: #10b981;
+    box-shadow: 0 8px 20px -4px rgba(16, 185, 129, 0.18);
+}
+
+.cs-tile-rx {
+    border-color: rgba(2, 132, 199, 0.25);
+    background: linear-gradient(135deg, rgba(240, 249, 255, 0.8) 0%, #ffffff 100%);
+}
+.cs-tile-rx:hover {
+    border-color: #0284c7;
+    box-shadow: 0 8px 20px -4px rgba(2, 132, 199, 0.18);
+}
+
+.cs-tile-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.cs-tile-telehealth .cs-tile-icon {
+    background: #ffe4e6;
+    color: #e11d48;
+}
+
+.cs-tile-opd .cs-tile-icon {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.cs-tile-rx .cs-tile-icon {
+    background: #e0f2fe;
+    color: #0284c7;
+}
+
+.cs-tile-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.cs-tile-title {
+    font-size: 0.86rem;
+    font-weight: 800;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cs-tile-desc {
+    font-size: 0.73rem;
+    color: #64748b;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cs-tile-arrow {
+    font-size: 16px;
+    color: #94a3b8;
+    transition: transform 0.2s ease, color 0.2s ease;
+    flex-shrink: 0;
+}
+
+.cs-tile:hover .cs-tile-arrow {
+    transform: translateX(3px);
+    color: #0f172a;
+}
+
+.cs-live-indicator {
+    font-size: 0.62rem;
+    font-weight: 800;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: #ffe4e6;
+    color: #e11d48;
+    letter-spacing: 0.05em;
+    display: inline-flex;
+    align-items: center;
+}
+
+.cs-badge-green {
+    font-size: 0.62rem;
+    font-weight: 800;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: #dcfce7;
+    color: #15803d;
+    letter-spacing: 0.05em;
+    display: inline-flex;
+    align-items: center;
+}
+
+.cs-badge-blue {
+    font-size: 0.62rem;
+    font-weight: 800;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: #e0f2fe;
+    color: #0369a1;
+    letter-spacing: 0.05em;
+    display: inline-flex;
+    align-items: center;
+}
+
+/* 2. Telehealth Camera PIP & Interactive Chat Styles */
+.telehealth-pip-self {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    width: 120px;
+    height: 90px;
+    background: #0f172a;
+    border: 2px solid #38bdf8;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+    overflow: hidden;
+    z-index: 10;
+}
+
+.th-pip-cam-badge {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    font-size: 0.58rem;
+    font-weight: 800;
+    background: rgba(16, 185, 129, 0.85);
+    color: white;
+    padding: 1px 5px;
+    border-radius: 4px;
+    letter-spacing: 0.04em;
+}
+
+.th-chat-input-row {
+    display: flex;
+    gap: 8px;
+    padding: 10px 14px;
+    background: #1e293b;
+    border-top: 1px solid #334155;
+    border-radius: 0 0 12px 12px;
+}
+
+.th-chat-input-row input {
+    flex: 1;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: #f8fafc;
+    font-size: 0.80rem;
+}
+
+.th-chat-input-row input:focus {
+    outline: none;
+    border-color: #38bdf8;
+}
+
+.th-chat-input-row button {
+    background: #0284c7;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    padding: 6px 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.th-chat-input-row button:hover {
+    background: #0369a1;
+}
+
+/* 3. OPD Queue Live Calling & Controls */
+.opd-call-btn {
+    background: linear-gradient(135deg, #10b981, #059669);
+    border: none;
+    color: #ffffff;
+    font-size: 0.74rem;
+    font-weight: 800;
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 8px;
+    width: 100%;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.opd-call-btn:hover {
+    background: linear-gradient(135deg, #059669, #047857);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+}
+
+.opd-pulse-active {
+    animation: opdPulse 1s ease-in-out infinite;
+}
+
+@keyframes opdPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+    50% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+}
+
+.opd-quick-issue-bar {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 12px 18px;
+    margin: 14px 0 6px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* 4. Digital Rx Interactive Presets & Styling */
+.rx-presets-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    padding: 8px 16px;
+    background: #f1f5f9;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.rx-preset-chip {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.rx-preset-chip:hover {
+    background: #e0f2fe;
+    border-color: #0284c7;
+    color: #0369a1;
+}
+
+.rx-preset-chip.active {
+    background: #0284c7;
+    border-color: #0284c7;
+    color: #ffffff;
+}
+
+/* 5. Cross-Portal Cards in Patient Portal & Doctor Console */
+.portal-services-deck {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 16px 20px;
+    margin-bottom: 22px;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+}
+
+.ps-deck-title {
+    font-size: 0.80rem;
+    font-weight: 800;
+    color: #0284c7;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ps-deck-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+@media (max-width: 860px) {
+    .ps-deck-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.ps-card {
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1.5px solid #e2e8f0;
+    background: #f8fafc;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.ps-card:hover {
+    border-color: #0284c7;
+    background: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(2, 132, 199, 0.08);
+}
+
+/* 6. CRITICAL PRINT FIX FOR PRESCRIPTION SLIP */
+@media print {
+    body * {
+        visibility: hidden !important;
+    }
+    #prescription-modal, #prescription-modal * {
+        visibility: visible !important;
+    }
+    #prescription-printable-slip, #prescription-printable-slip * {
+        visibility: visible !important;
+    }
+    #prescription-printable-slip {
+        position: fixed !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 24px !important;
+        background: #ffffff !important;
+        color: #0f172a !important;
+        box-shadow: none !important;
+        border: none !important;
+        z-index: 9999999 !important;
+    }
+    .rx-watermark {
+        opacity: 0.06 !important;
+    }
+}

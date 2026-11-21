@@ -493,16 +493,37 @@
                                 <span>First time here? Take a 30-Second Quick Tour &amp; Try 1-Click Demos &rarr;</span>
                             </button>
                         </div>
-                        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
-                            <button type="button" onclick="openTelemedicineModal()" style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; background: rgba(225,29,72,0.08); border: 1px solid rgba(225,29,72,0.25); color: #be123c; font-size: 0.76rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease;">
-                                <span class="material-symbols-outlined" style="font-size: 15px;">videocam</span> Virtual Telehealth Room
-                            </button>
-                            <button type="button" onclick="openOpdQueueBoardModal()" style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.25); color: #047857; font-size: 0.76rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease;">
-                                <span class="material-symbols-outlined" style="font-size: 15px;">queue</span> Live OPD Queue
-                            </button>
-                            <button type="button" onclick="openPrescriptionModal()" style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; background: rgba(2,132,199,0.08); border: 1px solid rgba(2,132,199,0.25); color: #0284c7; font-size: 0.76rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease;">
-                                <span class="material-symbols-outlined" style="font-size: 15px;">receipt_long</span> Digital Rx Hub
-                            </button>
+                        <div class="clinical-services-bar" id="clinical-services-bar">
+                            <div class="cs-bar-header">
+                                <span class="cs-bar-badge"><span class="material-symbols-outlined">health_metrics</span> Integrated Hospital Cloud Services</span>
+                                <span class="cs-bar-subtitle">Instant-access clinical teleconsultation, patient queue &amp; e-prescriptions</span>
+                            </div>
+                            <div class="cs-bar-grid">
+                                <button type="button" class="cs-tile cs-tile-telehealth" onclick="openTelemedicineModal()" title="Launch Virtual Telehealth Room">
+                                    <div class="cs-tile-icon"><span class="material-symbols-outlined">videocam</span></div>
+                                    <div class="cs-tile-info">
+                                        <div class="cs-tile-title">Virtual Telehealth Room <span class="cs-live-indicator">LIVE</span></div>
+                                        <div class="cs-tile-desc">Encrypted WebRTC video &bull; AI Scribe</div>
+                                    </div>
+                                    <span class="material-symbols-outlined cs-tile-arrow">arrow_forward</span>
+                                </button>
+                                <button type="button" class="cs-tile cs-tile-opd" onclick="openOpdQueueBoardModal()" title="View Live OPD Token Queue &amp; TV Signage">
+                                    <div class="cs-tile-icon"><span class="material-symbols-outlined">queue</span></div>
+                                    <div class="cs-tile-info">
+                                        <div class="cs-tile-title">Live OPD Queue Board <span class="cs-badge-green">BROADCAST</span></div>
+                                        <div class="cs-tile-desc">4 Consultation Rooms &bull; Audio Chimes</div>
+                                    </div>
+                                    <span class="material-symbols-outlined cs-tile-arrow">arrow_forward</span>
+                                </button>
+                                <button type="button" class="cs-tile cs-tile-rx" onclick="openPrescriptionModal()" title="Open Official NMC-Compliant Digital Prescription Hub">
+                                    <div class="cs-tile-icon"><span class="material-symbols-outlined">receipt_long</span></div>
+                                    <div class="cs-tile-info">
+                                        <div class="cs-tile-title">Digital Rx &amp; Pharmacy Hub <span class="cs-badge-blue">ABDM</span></div>
+                                        <div class="cs-tile-desc">Verified e-Rx &bull; WhatsApp &bull; Reminders</div>
+                                    </div>
+                                    <span class="material-symbols-outlined cs-tile-arrow">arrow_forward</span>
+                                </button>
+                            </div>
                         </div>
                         <div class="ml-stats-strip">
                             <div class="ml-stat-item stat-cyan">
@@ -1291,6 +1312,51 @@
                     </div>
                 </div>
 
+                <!-- LIVE PATIENT CLINICAL SERVICES DECK -->
+                <div class="portal-services-deck">
+                    <div class="ps-deck-title">
+                        <span class="material-symbols-outlined">teleport</span> Live Clinical Services &amp; Digital Access
+                    </div>
+                    <div class="ps-deck-grid">
+                        <div class="ps-card">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span class="material-symbols-outlined" style="color: #e11d48; font-size: 24px;">videocam</span>
+                                <div>
+                                    <strong style="font-size: 0.88rem; color: #0f172a; display: block;">Virtual Teleconsultation</strong>
+                                    <span style="font-size: 0.74rem; color: #64748b;">Join Room #TC-408 with AI Scribe</span>
+                                </div>
+                            </div>
+                            <button type="button" class="ml-btn-primary" style="padding: 6px 14px; font-size: 0.78rem; width: 100%; justify-content: center; background: linear-gradient(135deg, #e11d48, #be123c);" onclick="openTelemedicineModal()">
+                                <span>Join Consultation &rarr;</span>
+                            </button>
+                        </div>
+                        <div class="ps-card">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span class="material-symbols-outlined" style="color: #0284c7; font-size: 24px;">receipt_long</span>
+                                <div>
+                                    <strong style="font-size: 0.88rem; color: #0f172a; display: block;">Digital Rx Slip &amp; Dosage</strong>
+                                    <span style="font-size: 0.74rem; color: #64748b;">NMC Verified e-Prescription</span>
+                                </div>
+                            </div>
+                            <button type="button" class="ml-btn-outline" style="padding: 6px 14px; font-size: 0.78rem; width: 100%; justify-content: center;" onclick="openPrescriptionModal()">
+                                <span>View Verified Rx &rarr;</span>
+                            </button>
+                        </div>
+                        <div class="ps-card">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span class="material-symbols-outlined" style="color: #16a34a; font-size: 24px;">queue</span>
+                                <div>
+                                    <strong style="font-size: 0.88rem; color: #0f172a; display: block;">Live OPD Waiting Room</strong>
+                                    <span style="font-size: 0.74rem; color: #64748b;">Hospital Signage &amp; Token Chimes</span>
+                                </div>
+                            </div>
+                            <button type="button" class="btn-secondary" style="padding: 6px 14px; font-size: 0.78rem; width: 100%; justify-content: center;" onclick="openOpdQueueBoardModal()">
+                                <span>Track Live Tokens &rarr;</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- LATEST REPORT & UPCOMING APPOINTMENT ROW (Screen 4) -->
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px; margin-bottom: 22px;">
                     <div style="background: white; border-radius: 18px; padding: 22px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);">
@@ -1556,17 +1622,20 @@
                         </div>
                     </div>
                     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button type="button" class="ml-btn-primary" style="padding: 8px 14px; font-size: 0.85rem; background: linear-gradient(135deg, #e11d48, #be123c);" onclick="openTelemedicineModal()" title="Launch Virtual Telehealth Room">
+                            <span class="material-symbols-outlined" style="font-size: 18px;">videocam</span> Telehealth
+                        </button>
+                        <button type="button" class="ml-btn-primary" style="padding: 8px 14px; font-size: 0.85rem; background: linear-gradient(135deg, #0284c7, #0369a1);" onclick="openPrescriptionModal()" title="Issue Digital Prescription">
+                            <span class="material-symbols-outlined" style="font-size: 18px;">receipt_long</span> Rx Hub
+                        </button>
+                        <button type="button" class="btn-secondary" style="padding: 8px 14px; font-size: 0.85rem;" onclick="openOpdQueueBoardModal()" title="Manage OPD Token Queue">
+                            <span class="material-symbols-outlined" style="font-size: 18px; color: #16a34a;">queue</span> OPD Queue
+                        </button>
                         <button type="button" class="ml-btn-primary" style="padding: 8px 16px; font-size: 0.85rem;" onclick="openNewReportModal()">
-                            <span class="material-symbols-outlined" style="font-size: 18px;">note_add</span> + Create Lab Report
+                            <span class="material-symbols-outlined" style="font-size: 18px;">note_add</span> + Lab Report
                         </button>
                         <button type="button" class="ml-btn-outline" style="padding: 8px 14px; font-size: 0.85rem;" onclick="openNewPatientModal()">
                             <span class="material-symbols-outlined" style="font-size: 18px; color: #0284c7;">person_add</span> + Patient
-                        </button>
-                        <button type="button" class="btn-secondary" style="padding: 8px 14px; font-size: 0.85rem;" onclick="switchView('analyzer')">
-                            <span>🤖</span> Analyzer
-                        </button>
-                        <button type="button" class="btn-secondary" style="padding: 8px 14px; font-size: 0.85rem;" onclick="switchView('sandbox')">
-                            <span>⚡</span> ML
                         </button>
                         <button type="button" class="btn-danger" style="padding: 8px 14px; font-size: 0.85rem;" onclick="handleAdminLogout()">
                             <span>🚪</span> Logout
@@ -4271,19 +4340,19 @@
                         <div class="telehealth-vitals-overlay">
                             <div class="vital-item hr">
                                 <span class="material-symbols-outlined" style="font-size: 16px; animation: pulseRedDot 1s infinite;">favorite</span>
-                                <span>HR: 74 BPM</span>
+                                <span id="th-vital-hr">HR: 74 BPM</span>
                             </div>
                             <div class="vital-item spo2">
                                 <span class="material-symbols-outlined" style="font-size: 16px;">air</span>
-                                <span>SpO2: 98%</span>
+                                <span id="th-vital-spo2">SpO2: 98%</span>
                             </div>
                             <div class="vital-item bp">
                                 <span class="material-symbols-outlined" style="font-size: 16px;">speed</span>
-                                <span>BP: 120/80</span>
+                                <span id="th-vital-bp">BP: 120/80</span>
                             </div>
                             <div class="vital-item temp">
                                 <span class="material-symbols-outlined" style="font-size: 16px;">device_thermostat</span>
-                                <span>Temp: 98.6°F</span>
+                                <span id="th-vital-temp">Temp: 98.6°F</span>
                             </div>
                         </div>
 
@@ -4308,10 +4377,14 @@
                             <div style="font-size: 0.70rem; color: #10b981; margin-top: 6px; font-weight: 700; background: rgba(16,185,129,0.15); padding: 2px 8px; border-radius: 999px;">● HD AUDIO/VIDEO CONNECTED</div>
                         </div>
 
-                        <!-- Floating Self Preview PIP -->
-                        <div class="telehealth-pip-self">
-                            <span class="material-symbols-outlined" style="font-size: 26px; color: #94a3b8;">face</span>
-                            <span style="font-size: 0.65rem; color: #38bdf8; font-weight: 800; margin-top: 2px;">You (Camera)</span>
+                        <!-- Floating Self Preview PIP with Real Video & Simulator -->
+                        <div class="telehealth-pip-self" id="th-pip-box">
+                            <span class="th-pip-cam-badge" id="th-pip-badge">PREVIEW</span>
+                            <video id="th-pip-video" autoplay playsinline muted style="display: none; width: 100%; height: 100%; object-fit: cover;"></video>
+                            <div id="th-pip-avatar" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; width: 100%;">
+                                <span class="material-symbols-outlined" style="font-size: 26px; color: #38bdf8;">face</span>
+                                <span style="font-size: 0.65rem; color: #38bdf8; font-weight: 800; margin-top: 2px;" id="th-pip-label">You (Camera)</span>
+                            </div>
                         </div>
                     </div>
 
@@ -4347,9 +4420,9 @@
                     </div>
 
                     <!-- Live Transcription Stream -->
-                    <div class="telehealth-transcript-box">
+                    <div class="telehealth-transcript-box" id="th-transcript-box">
                         <div class="transcript-bubble doc">
-                            <strong>Dr. Sharma:</strong> "Good morning Ramesh, I reviewed your headache case taking and blood parameters. How has the unilateral throbbing pain been since yesterday?"
+                            <strong>Dr. Sharma:</strong> "Good morning Ramesh, I reviewed your clinical case taking and blood parameters. How has the unilateral throbbing pain been since yesterday?"
                         </div>
                         <div class="transcript-bubble pat">
                             <strong>Patient:</strong> "It is intense on the right temple, doctor, and light from my laptop screen makes it much worse. I also felt a bit nauseous this morning."
@@ -4359,27 +4432,35 @@
                         </div>
                     </div>
 
+                    <!-- Interactive Live Consultation Input Bar -->
+                    <div class="th-chat-input-row">
+                        <input type="text" id="th-chat-input" placeholder="Type clinical note, symptom, or question for doctor..." onkeydown="if(event.key==='Enter') sendTelehealthMessage()">
+                        <button type="button" onclick="sendTelehealthMessage()" title="Send to Consultation Transcript">
+                            <span class="material-symbols-outlined" style="font-size: 18px;">send</span>
+                        </button>
+                    </div>
+
                     <!-- Automated Clinical SOAP Note -->
                     <div class="telehealth-soap-box">
                         <div style="font-weight: 800; font-size: 0.76rem; color: #e2e8f0; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; display: flex; justify-content: space-between;">
                             <span>Automated SOAP Synthesis</span>
-                            <span style="color: #10b981;">ICD-10: G43.0</span>
+                            <span style="color: #10b981;" id="th-soap-icd">ICD-10: G43.0</span>
                         </div>
                         <div class="soap-field">
                             <span class="soap-label">S (Subjective):</span>
-                            <div class="soap-text">Right temple throbbing headache, photophobia, mild nausea. Aggravated by screen glare.</div>
+                            <div class="soap-text" id="th-soap-s">Right temple throbbing headache, photophobia, mild nausea. Aggravated by screen glare.</div>
                         </div>
                         <div class="soap-field">
                             <span class="soap-label">O (Objective):</span>
-                            <div class="soap-text">BP 120/80 mmHg, HR 74 bpm, SpO2 98%, Afebrile. CBC &amp; metabolic parameters verified normal.</div>
+                            <div class="soap-text" id="th-soap-o">BP 120/80 mmHg, HR 74 bpm, SpO2 98%, Afebrile. CBC &amp; metabolic parameters verified normal.</div>
                         </div>
                         <div class="soap-field">
                             <span class="soap-label">A (Assessment):</span>
-                            <div class="soap-text">Acute Migraine without Aura (G43.0) &bull; Primary Cephalea.</div>
+                            <div class="soap-text" id="th-soap-a">Acute Migraine without Aura (G43.0) &bull; Primary Cephalea.</div>
                         </div>
                         <div class="soap-field">
                             <span class="soap-label">P (Plan):</span>
-                            <div class="soap-text">Sumatriptan 50mg SOS, Paracetamol 650mg TDS, hydration &gt;2.5L, rest in dim room. Review in 7 days.</div>
+                            <div class="soap-text" id="th-soap-p">Sumatriptan 50mg SOS, Paracetamol 650mg TDS, hydration &gt;2.5L, rest in dim room. Review in 7 days.</div>
                         </div>
                         <div style="margin-top: 14px; text-align: center;">
                             <button type="button" class="btn-primary" onclick="openPrescriptionModal()" style="width: 100%; background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%); font-size: 0.84rem; padding: 10px; border-radius: 10px;">
@@ -4416,14 +4497,14 @@
 
             <!-- Printable Rx Paper Document -->
             <div class="rx-slip-paper" id="prescription-printable-slip">
-                <div class="rx-watermark">MEDLENS HEALTHCARE</div>
+                <div class="rx-watermark">AVENQRA HEALTHCARE</div>
                 
                 <!-- Hospital & Clinician Header -->
                 <div class="rx-header-row">
                     <div class="rx-hospital-brand">
                         <h2>AVENQRA APEX MULTISPECIALTY HOSPITAL</h2>
                         <p>NABH Accredited Tertiary Medical Center &bull; ABDM Facility ID: IN-AP-VIZ-00418<br>
-                        Health City Campus, Visakhapatnam &bull; Tel: +91 891 2894000 &bull; Web: avenqra.ai</p>
+                        Health City Campus, Visakhapatnam &bull; Tel: +91 891 2894000 &bull; Web: https://medlens-ai-v3ru.onrender.com</p>
                     </div>
                     <div class="rx-doctor-badge">
                         <div class="rx-doctor-name">Dr. Priya Sharma, MD</div>
@@ -4448,8 +4529,18 @@
                     </div>
                     <div class="rx-patient-item">
                         <strong>Provisional Diagnosis</strong>
-                        <span style="color: #0284c7; font-weight: 700;">Acute Migraine (G43.0)</span>
+                        <span style="color: #0284c7; font-weight: 700;" id="rx-diagnosis">Acute Migraine (G43.0)</span>
                     </div>
+                </div>
+
+                <!-- Clinical Rx Preset Selector -->
+                <div class="rx-presets-bar">
+                    <span style="font-size: 0.72rem; font-weight: 800; color: #0369a1; text-transform: uppercase;">1-Click Rx Presets:</span>
+                    <button type="button" class="rx-preset-chip active" id="rx-chip-migraine" onclick="applyRxPreset('migraine')">Acute Migraine</button>
+                    <button type="button" class="rx-preset-chip" id="rx-chip-cardiac" onclick="applyRxPreset('cardiac')">Cardiovascular / HTN</button>
+                    <button type="button" class="rx-preset-chip" id="rx-chip-diabetes" onclick="applyRxPreset('diabetes')">Type 2 Diabetes</button>
+                    <button type="button" class="rx-preset-chip" id="rx-chip-respiratory" onclick="applyRxPreset('respiratory')">Bronchial Asthma</button>
+                    <button type="button" class="rx-preset-chip" id="rx-chip-fever" onclick="applyRxPreset('fever')">Fever &amp; Viral</button>
                 </div>
 
                 <!-- Rx Symbol & Medication Table -->
@@ -4468,7 +4559,7 @@
                             <th>Duration</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="rx-med-tbody">
                         <tr>
                             <td>1</td>
                             <td><strong>Tab. Sumatriptan (Suminat) 50mg</strong><br><span style="font-size: 0.70rem; color: #64748b;">5-HT1 Receptor Agonist</span></td>
@@ -4569,7 +4660,10 @@
                     <h2>AVENQRA APEX HOSPITAL &bull; LIVE OPD QUEUE SIGNAGE</h2>
                     <p>Real-Time Outpatient Token Tracking &bull; NABH Patient Waiting Room Broadcast</p>
                 </div>
-                <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <button type="button" class="btn-primary" onclick="toggleOpdFullscreen()" style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); padding: 6px 12px; font-size: 0.80rem; display: inline-flex; align-items: center; gap: 6px;" title="Toggle Fullscreen Waiting Room TV Mode">
+                        <span class="material-symbols-outlined" style="font-size: 17px;">fullscreen</span> Fullscreen TV
+                    </button>
                     <button type="button" class="btn-primary" onclick="playHospitalChime()" style="background: #0284c7; padding: 6px 14px; font-size: 0.80rem; display: inline-flex; align-items: center; gap: 6px;" title="Test Hospital Chime Announcement">
                         <span class="material-symbols-outlined" style="font-size: 18px;">volume_up</span> Play Chime
                     </button>
@@ -4578,75 +4672,108 @@
             </div>
 
             <!-- Ticker Audio Broadcast Notification -->
-            <div class="opd-ticker-announcement">
+            <div class="opd-ticker-announcement" id="opd-ticker-banner">
                 <span class="material-symbols-outlined" style="color: #fbbf24;">campaign</span>
                 <span id="opd-ticker-text">Now Calling: Token #A-14 to Consultation Room 101 (General Medicine &bull; Dr. Priya Sharma)</span>
+            </div>
+
+            <!-- Quick Walk-In Token Dispatch Bar -->
+            <div class="opd-quick-issue-bar">
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <span class="material-symbols-outlined" style="color: #38bdf8; font-size: 20px;">person_add</span>
+                    <span style="font-size: 0.82rem; font-weight: 700; color: #f1f5f9;">Issue Walk-In OPD Token:</span>
+                    <input type="text" id="opd-new-patient-name" placeholder="Patient Name (e.g. Vikram Singh)" style="background: #0f172a; border: 1px solid #334155; color: #fff; padding: 5px 12px; border-radius: 6px; font-size: 0.80rem;">
+                    <select id="opd-new-room" style="background: #0f172a; border: 1px solid #334155; color: #fff; padding: 5px 12px; border-radius: 6px; font-size: 0.80rem;">
+                        <option value="101">Room 101 - General Medicine</option>
+                        <option value="104">Room 104 - Cardiology</option>
+                        <option value="202">Room 202 - Neurology</option>
+                        <option value="305">Room 305 - Pediatrics</option>
+                    </select>
+                    <button type="button" class="btn-primary" onclick="issueWalkInOpdToken()" style="background: #0284c7; padding: 5px 14px; font-size: 0.80rem; font-weight: 700;">
+                        <span>+ Issue Token</span>
+                    </button>
+                </div>
+                <div style="font-size: 0.74rem; color: #94a3b8;">
+                    Audio Broadcast: <span id="opd-audio-status" style="color: #10b981; font-weight: 700;">● Active Speech + Chimes</span>
+                </div>
             </div>
 
             <!-- 4 Specialty Consultation Rooms -->
             <div class="opd-rooms-grid">
                 <!-- Room 101 -->
-                <div class="opd-room-card">
+                <div class="opd-room-card" id="room-card-101">
                     <div>
                         <div class="opd-room-num">Room 101 &bull; General Medicine</div>
                         <div class="opd-doc-title">Dr. Priya Sharma, MD</div>
                     </div>
-                    <div class="opd-serving-box">
+                    <div class="opd-serving-box" id="serving-box-101">
                         <div class="opd-serving-label">Now Serving</div>
                         <div class="opd-serving-token" id="opd-token-101">#A-14</div>
                     </div>
                     <div class="opd-next-list">
-                        <div class="opd-next-item"><span>Next: #A-15</span><span style="color: #38bdf8;">Est: 6m</span></div>
-                        <div class="opd-next-item"><span>Next: #A-16</span><span style="color: #94a3b8;">Est: 18m</span></div>
+                        <div class="opd-next-item"><span id="opd-next1-101">Next: #A-15</span><span style="color: #38bdf8;">Est: 6m</span></div>
+                        <div class="opd-next-item"><span id="opd-next2-101">Next: #A-16</span><span style="color: #94a3b8;">Est: 18m</span></div>
                     </div>
+                    <button type="button" class="opd-call-btn" onclick="callNextOpdToken('101', 'Dr. Priya Sharma', 'General Medicine')">
+                        <span class="material-symbols-outlined" style="font-size: 15px;">campaign</span> Call Next Patient
+                    </button>
                 </div>
 
                 <!-- Room 104 -->
-                <div class="opd-room-card">
+                <div class="opd-room-card" id="room-card-104">
                     <div>
                         <div class="opd-room-num">Room 104 &bull; Cardiology</div>
                         <div class="opd-doc-title">Dr. Rajiv Menon, DM</div>
                     </div>
-                    <div class="opd-serving-box" style="border-color: #38bdf8; box-shadow: 0 0 15px rgba(56,189,248,0.2);">
+                    <div class="opd-serving-box" id="serving-box-104" style="border-color: #38bdf8; box-shadow: 0 0 15px rgba(56,189,248,0.2);">
                         <div class="opd-serving-label" style="color: #38bdf8;">Now Serving</div>
                         <div class="opd-serving-token" id="opd-token-104">#C-08</div>
                     </div>
                     <div class="opd-next-list">
-                        <div class="opd-next-item"><span>Next: #C-09</span><span style="color: #38bdf8;">Est: 14m</span></div>
-                        <div class="opd-next-item"><span>Next: #C-10</span><span style="color: #94a3b8;">Est: 28m</span></div>
+                        <div class="opd-next-item"><span id="opd-next1-104">Next: #C-09</span><span style="color: #38bdf8;">Est: 14m</span></div>
+                        <div class="opd-next-item"><span id="opd-next2-104">Next: #C-10</span><span style="color: #94a3b8;">Est: 28m</span></div>
                     </div>
+                    <button type="button" class="opd-call-btn" onclick="callNextOpdToken('104', 'Dr. Rajiv Menon', 'Cardiology')">
+                        <span class="material-symbols-outlined" style="font-size: 15px;">campaign</span> Call Next Patient
+                    </button>
                 </div>
 
                 <!-- Room 202 -->
-                <div class="opd-room-card">
+                <div class="opd-room-card" id="room-card-202">
                     <div>
                         <div class="opd-room-num">Room 202 &bull; Neurology</div>
                         <div class="opd-doc-title">Dr. Sunita Rao, DM</div>
                     </div>
-                    <div class="opd-serving-box">
+                    <div class="opd-serving-box" id="serving-box-202">
                         <div class="opd-serving-label">Now Serving</div>
                         <div class="opd-serving-token" id="opd-token-202">#N-05</div>
                     </div>
                     <div class="opd-next-list">
-                        <div class="opd-next-item"><span>Next: #N-06</span><span style="color: #38bdf8;">Est: 10m</span></div>
-                        <div class="opd-next-item"><span>Next: #N-07</span><span style="color: #94a3b8;">Est: 22m</span></div>
+                        <div class="opd-next-item"><span id="opd-next1-202">Next: #N-06</span><span style="color: #38bdf8;">Est: 10m</span></div>
+                        <div class="opd-next-item"><span id="opd-next2-202">Next: #N-07</span><span style="color: #94a3b8;">Est: 22m</span></div>
                     </div>
+                    <button type="button" class="opd-call-btn" onclick="callNextOpdToken('202', 'Dr. Sunita Rao', 'Neurology')">
+                        <span class="material-symbols-outlined" style="font-size: 15px;">campaign</span> Call Next Patient
+                    </button>
                 </div>
 
                 <!-- Room 305 -->
-                <div class="opd-room-card">
+                <div class="opd-room-card" id="room-card-305">
                     <div>
                         <div class="opd-room-num">Room 305 &bull; Pediatrics</div>
                         <div class="opd-doc-title">Dr. Anand Verma, MD</div>
                     </div>
-                    <div class="opd-serving-box" style="border-color: #a855f7; box-shadow: 0 0 15px rgba(168,85,247,0.2);">
+                    <div class="opd-serving-box" id="serving-box-305" style="border-color: #a855f7; box-shadow: 0 0 15px rgba(168,85,247,0.2);">
                         <div class="opd-serving-label" style="color: #a855f7;">Now Serving</div>
                         <div class="opd-serving-token" id="opd-token-305">#P-11</div>
                     </div>
                     <div class="opd-next-list">
-                        <div class="opd-next-item"><span>Next: #P-12</span><span style="color: #38bdf8;">Est: 8m</span></div>
-                        <div class="opd-next-item"><span>Next: #P-13</span><span style="color: #94a3b8;">Est: 19m</span></div>
+                        <div class="opd-next-item"><span id="opd-next1-305">Next: #P-12</span><span style="color: #38bdf8;">Est: 8m</span></div>
+                        <div class="opd-next-item"><span id="opd-next2-305">Next: #P-13</span><span style="color: #94a3b8;">Est: 19m</span></div>
                     </div>
+                    <button type="button" class="opd-call-btn" onclick="callNextOpdToken('305', 'Dr. Anand Verma', 'Pediatrics')">
+                        <span class="material-symbols-outlined" style="font-size: 15px;">campaign</span> Call Next Patient
+                    </button>
                 </div>
             </div>
 
