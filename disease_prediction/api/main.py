@@ -63,6 +63,16 @@ except ImportError :
         from api .sms_gateway import router as sms_gateway_router
         from api .sms_gateway import normalize_phone ,build_sms_text
         from api .voice_router import router as voice_router
+try:
+    from disease_prediction.api.saas_router import router as saas_router
+    from disease_prediction.api.saas_service import UsageService, AuditService
+except ImportError:
+    try:
+        from api.saas_router import router as saas_router
+        from api.saas_service import UsageService, AuditService
+    except ImportError:
+        from saas_router import router as saas_router
+        from saas_service import UsageService, AuditService
 
 
 
@@ -120,8 +130,9 @@ def get_auth_context (authorization :Optional [str ]=Header (None ))->Optional [
     return verify_and_decode_token (token )
 
 ALLOWED_STAFF_ROLES = {
-    'admin', 'administrator', 'lab_staff', 'lab technician', 'doctor', 
-    'operations_manager', 'operations manager', 'ward_manager', 'receptionist', 'staff'
+    'owner', 'admin', 'administrator', 'superadmin', 'lab_staff', 'lab technician',
+    'lab_technician', 'doctor', 'operations_manager', 'operations manager',
+    'ward_manager', 'receptionist', 'staff'
 }
 
 class LoginRateLimiter:
@@ -295,6 +306,7 @@ allow_methods =["*"],
 allow_headers =["*"],
 )
 
+app .include_router (saas_router )
 app .include_router (operations_router )
 app .include_router (case_taking_router )
 app .include_router (sms_gateway_router )
@@ -565,7 +577,8 @@ def patient_login (req :PatientLoginRequest ,request :Request ):
 
 @app .get ("/api/patients",tags =["Pathology Management"])
 def list_patients (auth :Dict [str ,Any ]=Depends (require_admin )):
-    return db .get_all_patients ()
+    tenant_id = None if auth.get('role') == 'superadmin' else auth.get('tenant_id', 'tenant_medlens_apex')
+    return db .get_all_patients (tenant_id=tenant_id)
 
 @app .get ("/api/patients/public",tags =["Pathology Management"])
 def list_public_patients ():
@@ -574,11 +587,16 @@ def list_public_patients ():
 
 @app .get ("/api/patients/{patient_id}",tags =["Pathology Management"])
 def get_patient (patient_id :str ,auth :Dict [str ,Any ]=Depends (require_authenticated_user )):
-    if auth .get ("role")!="admin"and auth .get ("patient_id")!=patient_id :
+    role = str(auth.get('role', '')).strip().lower()
+    if role not in ALLOWED_STAFF_ROLES and auth.get("patient_id") != patient_id:
         raise HTTPException (status_code =status .HTTP_403_FORBIDDEN ,detail ="Access denied: You can only access your own patient profile.")
     p =db .get_patient_by_id (patient_id )
     if not p :
         raise HTTPException (status_code =404 ,detail ="Patient not found.")
+    # Tenant boundary enforcement: Cross-tenant patient profile access is prohibited
+    caller_tenant = auth.get('tenant_id', 'tenant_medlens_apex')
+    if role != 'superadmin' and p.get('tenant_id') and p.get('tenant_id') != caller_tenant:
+        raise HTTPException (status_code =status .HTTP_403_FORBIDDEN ,detail ="Access denied: Cross-hospital patient profile access is strictly prohibited.")
     return p 
 
 @app .post ("/api/patients",tags =["Pathology Management"])
@@ -638,10 +656,12 @@ def list_reports (patient_id :Optional [str ]=None ,auth :Optional [Dict [str ,A
         raise HTTPException (status_code =status .HTTP_401_UNAUTHORIZED ,detail ="Authentication token required to access laboratory reports.")
 
     role = str(auth.get('role', '')).strip().lower()
+    caller_tenant = auth.get('tenant_id', 'tenant_medlens_apex')
+    tenant_scope = None if role == 'superadmin' else caller_tenant
     if role in ALLOWED_STAFF_ROLES or auth.get('sub') == 'admin':
         if patient_id:
             return db.get_reports_by_patient(patient_id)
-        return db.get_all_reports()
+        return db.get_all_reports(tenant_id=tenant_scope)
 
     # Patient auth check
     auth_patient_id = auth.get('patient_id')
@@ -671,6 +691,9 @@ def get_report (report_id :str ,auth :Optional [Dict [str ,Any ]]=Depends (get_a
         raise HTTPException (status_code =404 ,detail ="Report not found")
 
     role = str(auth.get('role', '')).strip().lower()
+    caller_tenant = auth.get('tenant_id', 'tenant_medlens_apex')
+    if role != 'superadmin' and report.get('tenant_id') and report.get('tenant_id') != caller_tenant:
+        raise HTTPException (status_code =status .HTTP_403_FORBIDDEN ,detail ="Access denied: Cross-hospital medical report access is strictly prohibited.")
     if role not in ALLOWED_STAFF_ROLES and auth.get('sub') != 'admin':
         if report.get('patient_id') != auth.get('patient_id'):
             raise HTTPException (status_code =status .HTTP_403_FORBIDDEN ,detail ="Access denied: Unauthorized report access.")

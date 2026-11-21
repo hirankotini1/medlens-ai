@@ -775,10 +775,13 @@ def generate_next_patient_id(conn=None) -> Tuple[str, str]:
         conn.close()
     return patient_id, pin
 
-def get_all_patients ()->List [Dict [str ,Any ]]:
+def get_all_patients (tenant_id: Optional[str] = None)->List [Dict [str ,Any ]]:
     conn =get_db_connection ()
     cursor =conn .cursor ()
-    cursor .execute ("SELECT id, patient_id, name, age, gender, contact, email, created_at FROM patients ORDER BY created_at DESC, id DESC")
+    if tenant_id:
+        cursor .execute ("SELECT id, patient_id, name, age, gender, contact, email, created_at, tenant_id FROM patients WHERE tenant_id = ? ORDER BY created_at DESC, id DESC", (tenant_id,))
+    else:
+        cursor .execute ("SELECT id, patient_id, name, age, gender, contact, email, created_at, tenant_id FROM patients ORDER BY created_at DESC, id DESC")
     rows =[dict (row )for row in cursor .fetchall ()]
     conn .close ()
     return rows 
@@ -801,7 +804,7 @@ def get_patient_by_id (patient_id :str )->Optional [Dict [str ,Any ]]:
     cursor =conn .cursor ()
     candidate_ids = normalize_patient_id(patient_id)
     placeholders = ','.join(['?'] * len(candidate_ids))
-    cursor.execute(f"SELECT id, patient_id, name, age, gender, contact, email, created_at FROM patients WHERE patient_id IN ({placeholders}) LIMIT 1", candidate_ids)
+    cursor.execute(f"SELECT id, patient_id, name, age, gender, contact, email, created_at, tenant_id FROM patients WHERE patient_id IN ({placeholders}) LIMIT 1", candidate_ids)
     row =cursor .fetchone ()
     conn .close ()
     return dict (row )if row else None 
@@ -934,18 +937,30 @@ def get_public_patients ()->List [Dict [str ,Any ]]:
     rows .sort (key =lambda x :str (x .get ('created_at')or ''),reverse =True )
     return rows 
 
-def get_all_reports ()->List [Dict [str ,Any ]]:
+def get_all_reports (tenant_id: Optional[str] = None)->List [Dict [str ,Any ]]:
     conn =get_db_connection ()
     cursor =conn .cursor ()
-    cursor .execute ("""
-    SELECT r.*, 
-           COALESCE(p.name, 'Patient ' || r.patient_id) as patient_name, 
-           COALESCE(p.gender, 'Unspecified') as patient_gender, 
-           COALESCE(p.age, '--') as patient_age
-    FROM lab_reports r
-    LEFT JOIN patients p ON TRIM(LOWER(r.patient_id)) = TRIM(LOWER(p.patient_id))
-    ORDER BY r.id DESC
-    """)
+    if tenant_id:
+        cursor .execute ("""
+        SELECT r.*, 
+               COALESCE(p.name, 'Patient ' || r.patient_id) as patient_name, 
+               COALESCE(p.gender, 'Unspecified') as patient_gender, 
+               COALESCE(p.age, '--') as patient_age
+        FROM lab_reports r
+        LEFT JOIN patients p ON TRIM(LOWER(r.patient_id)) = TRIM(LOWER(p.patient_id))
+        WHERE r.tenant_id = ?
+        ORDER BY r.id DESC
+        """, (tenant_id,))
+    else:
+        cursor .execute ("""
+        SELECT r.*, 
+               COALESCE(p.name, 'Patient ' || r.patient_id) as patient_name, 
+               COALESCE(p.gender, 'Unspecified') as patient_gender, 
+               COALESCE(p.age, '--') as patient_age
+        FROM lab_reports r
+        LEFT JOIN patients p ON TRIM(LOWER(r.patient_id)) = TRIM(LOWER(p.patient_id))
+        ORDER BY r.id DESC
+        """)
     rows =[]
     for r in cursor .fetchall ():
         item =dict (r )
