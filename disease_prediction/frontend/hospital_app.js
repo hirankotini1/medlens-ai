@@ -228,6 +228,9 @@ function handleStaffLogout() {
     renderHospitalApp();
     showToast('Signed out of Hospital Workstation.');
 }
+window.switchRole = switchRole;
+window.handleStaffLogin = handleStaffLogin;
+window.handleStaffLogout = handleStaffLogout;
 
 // --------------------------------------------------------------------------
 // 3. UI RENDERING & WORKSPACE TAB MANAGEMENT
@@ -237,10 +240,15 @@ function renderHospitalApp() {
     const authDashboard = document.getElementById('hospital-auth-dashboard');
     const roleBadge = document.getElementById('staff-nav-role-badge');
     const staffNameEl = document.getElementById('staff-nav-name');
+    const shiftBadge = document.getElementById('staff-nav-shift-indicator');
+    const logoutBtn = document.getElementById('staff-nav-logout-btn');
 
     if (isStaffAuthenticated) {
         if (unauthContainer) unauthContainer.style.display = 'none';
         if (authDashboard) authDashboard.style.display = 'block';
+
+        if (shiftBadge) shiftBadge.style.display = 'flex';
+        if (logoutBtn) logoutBtn.style.display = 'inline-flex';
 
         if (roleBadge) {
             roleBadge.style.display = 'inline-flex';
@@ -257,7 +265,7 @@ function renderHospitalApp() {
         // Update greeting in dashboard
         const headerTitle = document.getElementById('staff-workspace-title');
         if (headerTitle) {
-            headerTitle.innerHTML = `${currentStaff.roleBadge} Workstation &bull; <span style="font-weight:400; color:#64748b; font-size:1rem;">${currentStaff.hospital}</span>`;
+            headerTitle.innerHTML = `${currentStaff.roleBadge} Workstation &bull; <span style="font-weight:400; color:#64748b; font-size:0.95rem;">${currentStaff.hospital}</span>`;
         }
 
         // Show appropriate role section
@@ -281,6 +289,8 @@ function renderHospitalApp() {
         if (authDashboard) authDashboard.style.display = 'none';
         if (roleBadge) roleBadge.style.display = 'none';
         if (staffNameEl) staffNameEl.style.display = 'none';
+        if (shiftBadge) shiftBadge.style.display = 'none';
+        if (logoutBtn) logoutBtn.style.display = 'none';
     }
 }
 

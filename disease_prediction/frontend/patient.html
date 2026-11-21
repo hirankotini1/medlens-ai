@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
     <meta name="theme-color" content="#0284c7">
-    <title>MedLens Patient Portal | Personal Digital Health Sanctuary</title>
+    <title>MedLens Patient Sanctuary | Personal Digital Health Portal</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="stylesheet" href="/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,13 +28,13 @@
             min-height: 100vh;
         }
         .patient-header {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.96);
             backdrop-filter: blur(12px);
             border-bottom: 1px solid #e2e8f0;
             position: sticky;
             top: 0;
             z-index: 100;
-            padding: 0.75rem 1.5rem;
+            padding: 0.65rem 1.5rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -42,39 +42,42 @@
         .patient-brand {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             text-decoration: none;
             color: inherit;
         }
         .patient-logo-icon {
-            width: 42px;
-            height: 42px;
+            width: 38px;
+            height: 38px;
             background: linear-gradient(135deg, #0284c7 0%, #06b6d4 100%);
-            border-radius: 12px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #ffffff;
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             font-weight: 900;
             box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
         }
         .nav-links {
             display: flex;
-            gap: 0.5rem;
+            gap: 0.4rem;
             align-items: center;
         }
         .nav-btn {
             background: transparent;
             border: none;
-            padding: 8px 16px;
+            padding: 6px 12px;
             border-radius: 8px;
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: #475569;
             cursor: pointer;
             transition: all 0.2s ease;
             text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
         .nav-btn:hover {
             background: #f1f5f9;
@@ -83,91 +86,100 @@
         .container {
             max-width: 1240px;
             margin: 0 auto;
-            padding: 1.5rem 1rem 6rem 1rem;
+            padding: 1rem 1rem 5rem 1rem;
         }
         .emergency-banner {
             background: linear-gradient(90deg, #fff1f2 0%, #ffe4e6 100%);
             border: 1px solid #fecdd3;
-            border-radius: 14px;
-            padding: 0.75rem 1.25rem;
-            margin-bottom: 1.5rem;
+            border-radius: 12px;
+            padding: 0.6rem 1.15rem;
+            margin-bottom: 1rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
             flex-wrap: wrap;
-            gap: 1rem;
-            box-shadow: 0 2px 6px rgba(225, 29, 72, 0.05);
+            gap: 0.75rem;
+            box-shadow: 0 2px 6px rgba(225, 29, 72, 0.04);
         }
         .emergency-ekg-canvas {
             width: 220px;
-            height: 36px;
+            height: 32px;
             display: block;
+        }
+        .patient-auth-grid {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 1.25rem;
+            align-items: stretch;
+            margin-top: 0.5rem;
+        }
+        .hero-banner-compact {
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            border-radius: 16px;
+            padding: 2rem;
+            color: #ffffff;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(2, 132, 199, 0.18);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
         .card {
             background: #ffffff;
             border: 1px solid #e2e8f0;
-            border-radius: 16px;
-            padding: 1.75rem;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-            margin-bottom: 1.5rem;
-        }
-        .hero-banner {
-            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
-            border-radius: 20px;
-            padding: 2.5rem 2rem;
-            color: #ffffff;
-            margin-bottom: 2rem;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(2, 132, 199, 0.2);
+            border-radius: 14px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+            margin-bottom: 1.25rem;
         }
         .vitals-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-top: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 0.85rem;
+            margin-top: 0.75rem;
         }
         .vital-box {
             background: #f8fafc;
             border: 1px solid #e2e8f0;
-            border-radius: 14px;
-            padding: 1.25rem;
+            border-radius: 12px;
+            padding: 1rem;
             text-align: center;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            transition: all 0.2s ease;
         }
         .vital-box:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.04);
             border-color: #cbd5e1;
         }
         .vital-num {
-            font-size: 1.85rem;
+            font-size: 1.7rem;
             font-weight: 800;
             color: #0f172a;
-            margin: 4px 0;
+            margin: 2px 0;
         }
         .nav-pill-bar {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             overflow-x: auto;
-            padding-bottom: 8px;
-            margin-bottom: 1.5rem;
+            padding-bottom: 6px;
+            margin-bottom: 1.25rem;
             border-bottom: 1px solid #e2e8f0;
         }
         .nav-pill-btn {
             background: #f1f5f9;
             color: #475569;
             border: none;
-            padding: 10px 20px;
-            border-radius: 30px;
+            padding: 8px 16px;
+            border-radius: 20px;
             font-weight: 700;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             cursor: pointer;
             white-space: nowrap;
             transition: all 0.2s ease;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
         }
         .nav-pill-btn:hover {
             background: #e2e8f0;
@@ -176,29 +188,29 @@
             background: #0284c7;
             color: #ffffff;
             border: none;
-            padding: 12px 24px;
-            border-radius: 10px;
+            padding: 10px 20px;
+            border-radius: 8px;
             font-weight: 700;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             transition: all 0.2s ease;
             text-decoration: none;
         }
         .btn-primary:hover {
             background: #0369a1;
-            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
         }
         .btn-secondary {
             background: #f1f5f9;
             color: #334155;
             border: 1px solid #cbd5e1;
-            padding: 12px 20px;
-            border-radius: 10px;
+            padding: 10px 16px;
+            border-radius: 8px;
             font-weight: 600;
-            font-size: 0.95rem;
+            font-size: 0.88rem;
             cursor: pointer;
             transition: all 0.2s ease;
         }
@@ -219,9 +231,9 @@
             justify-content: center;
             padding: 1rem;
         }
-        @media (max-width: 768px) {
-            .hero-banner {
-                padding: 1.75rem 1.25rem;
+        @media (max-width: 900px) {
+            .patient-auth-grid {
+                grid-template-columns: 1fr;
             }
             .nav-links {
                 display: none;
@@ -236,8 +248,8 @@
         <a href="/patient" class="patient-brand">
             <div class="patient-logo-icon">🌿</div>
             <div>
-                <div style="font-weight: 800; font-size: 1.15rem; color: #0284c7; letter-spacing: -0.02em;">MedLens Health</div>
-                <div style="font-size: 0.72rem; color: #64748b; font-weight: 600; text-transform: uppercase;">Patient Care Sanctuary</div>
+                <div style="font-weight: 800; font-size: 1.1rem; color: #0284c7; letter-spacing: -0.02em;">MedLens Health</div>
+                <div style="font-size: 0.7rem; color: #64748b; font-weight: 600; text-transform: uppercase;">Patient Care Sanctuary</div>
             </div>
         </a>
 
@@ -251,8 +263,8 @@
             <button onclick="switchTab('dpdp')" class="nav-btn">🛡️ DPDP Privacy</button>
         </div>
 
-        <div style="display: flex; align-items: center; gap: 0.75rem;">
-            <div id="nav-user-badge" style="display: none; align-items: center; background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; font-size: 0.85rem; font-weight: 700; padding: 6px 14px; border-radius: 9999px;">
+        <div style="display: flex; align-items: center; gap: 0.65rem;">
+            <div id="nav-user-badge" style="display: none; align-items: center; background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; font-size: 0.82rem; font-weight: 700; padding: 5px 12px; border-radius: 9999px;">
                 <!-- Populated by JS -->
             </div>
             <button id="nav-logout-btn" onclick="handlePatientLogout()" style="display: none;" class="btn-secondary">Sign Out</button>
@@ -263,129 +275,139 @@
 
         <!-- 60FPS GPU CARDIAC MONITOR BANNER -->
         <div class="emergency-banner">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="width: 38px; height: 38px; background: #e11d48; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 1.25rem;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 32px; height: 32px; background: #e11d48; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 1.1rem; font-weight: 900;">
                     *
                 </div>
                 <div>
-                    <div style="font-weight: 800; font-size: 0.95rem; color: #9f1239;">24/7 IMMEDIATE MEDICAL EMERGENCY ASSISTANCE</div>
-                    <div style="font-size: 0.8rem; color: #be123c;">Severe chest pain, breathlessness, or collapse? Dial immediately:</div>
+                    <div style="font-weight: 800; font-size: 0.88rem; color: #9f1239;">24/7 IMMEDIATE MEDICAL EMERGENCY ASSISTANCE</div>
+                    <div style="font-size: 0.76rem; color: #be123c;">Severe chest pain, breathlessness, or sudden weakness? Dial immediately:</div>
                 </div>
             </div>
 
             <canvas id="emergency-ekg-canvas" class="emergency-ekg-canvas"></canvas>
 
-            <div style="display: flex; gap: 8px;">
-                <a href="tel:112" style="background: #e11d48; color: #ffffff; text-decoration: none; padding: 6px 14px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px;">
-                    📞 National: 112
+            <div style="display: flex; gap: 6px;">
+                <a href="tel:112" style="background: #e11d48; color: #ffffff; text-decoration: none; padding: 5px 12px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 4px;">
+                    📞 112
                 </a>
-                <a href="tel:108" style="background: #ffffff; color: #e11d48; border: 1px solid #fecdd3; text-decoration: none; padding: 6px 14px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px;">
-                    🚑 Ambulance: 108
+                <a href="tel:108" style="background: #ffffff; color: #e11d48; border: 1px solid #fecdd3; text-decoration: none; padding: 5px 12px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 4px;">
+                    🚑 108
                 </a>
             </div>
         </div>
 
-        <!-- UNAUTHENTICATED STATE: WELCOME & SECURE AUTHENTICATION -->
+        <!-- UNAUTHENTICATED STATE: 2-COLUMN VIEWPORT OPTIMIZED AUTHENTICATION -->
         <div id="patient-unauth-container">
-            <div class="hero-banner">
-                <div style="max-width: 650px;">
-                    <div style="display: inline-block; background: rgba(255, 255, 255, 0.2); padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; text-transform: uppercase;">
-                        ✨ 100% Dedicated to Patient Care
+            <div class="patient-auth-grid">
+                <!-- LEFT COLUMN: COMPACT HERO -->
+                <div class="hero-banner-compact">
+                    <div>
+                        <div style="display: inline-block; background: rgba(255, 255, 255, 0.2); padding: 4px 10px; border-radius: 14px; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.75rem; text-transform: uppercase;">
+                            ✨ 100% Dedicated to Patient Care
+                        </div>
+                        <h1 style="font-size: 1.85rem; font-weight: 900; line-height: 1.25; margin: 0 0 0.75rem 0;">
+                            Your Personal Digital Health Sanctuary
+                        </h1>
+                        <p style="font-size: 0.95rem; opacity: 0.92; line-height: 1.5; margin: 0 0 1.25rem 0;">
+                            AI clinical symptom intake in 23+ languages, instant OCR blood report analysis, doctor prescriptions, and outpatient appointments.
+                        </p>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.5rem; font-size: 0.88rem; opacity: 0.95;">
+                            <div>✓ <strong>Zero Staff Mixing:</strong> Strictly restricted to your private records</div>
+                            <div>✓ <strong>DPDP Act 2023 Compliant:</strong> 1-click encrypted health dossier export</div>
+                            <div>✓ <strong>PIN-Verified Linking:</strong> Secure multi-hospital synchronization</div>
+                        </div>
                     </div>
-                    <h1 style="font-size: 2.2rem; font-weight: 900; line-height: 1.2; margin: 0 0 1rem 0;">
-                        Your Personal Digital Health Sanctuary
-                    </h1>
-                    <p style="font-size: 1.05rem; opacity: 0.92; line-height: 1.5; margin: 0 0 1.5rem 0;">
-                        Access AI clinical symptom assessments, automatic medical report interpretations, doctor prescriptions, and outpatient appointments — with zero exposure to hospital staff clutter.
-                    </p>
-                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                        <button onclick="switchAuthMode('demo');" style="background: #ffffff; color: #0284c7; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 800; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.1);">
-                            ⚡ Instant 1-Click Patient Demo
+
+                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                        <button onclick="switchAuthMode('demo');" style="background: #ffffff; color: #0284c7; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 800; font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                            ⚡ Instant 1-Click Demo
                         </button>
-                        <button onclick="switchAuthMode('login');" style="background: rgba(255, 255, 255, 0.15); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.4); padding: 12px 22px; border-radius: 10px; font-weight: 700; font-size: 0.95rem; cursor: pointer;">
+                        <button onclick="switchAuthMode('login');" style="background: rgba(255, 255, 255, 0.15); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.4); padding: 10px 16px; border-radius: 8px; font-weight: 700; font-size: 0.9rem; cursor: pointer;">
                             Sign In / Register
                         </button>
                     </div>
                 </div>
-            </div>
 
-            <!-- AUTHENTICATION CARD -->
-            <div class="card" style="max-width: 480px; margin: 0 auto;">
-                <div style="display: flex; background: #f1f5f9; border-radius: 10px; padding: 4px; margin-bottom: 1.5rem;">
-                    <button id="tab-btn-login" onclick="switchAuthMode('login')" class="active-auth-tab" style="flex: 1; border: none; padding: 10px; border-radius: 8px; font-weight: 700; font-size: 0.9rem; cursor: pointer; background: #ffffff; color: #0284c7; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
-                        Patient Login
-                    </button>
-                    <button id="tab-btn-register" onclick="switchAuthMode('register')" style="flex: 1; border: none; padding: 10px; border-radius: 8px; font-weight: 700; font-size: 0.9rem; cursor: pointer; background: transparent; color: #64748b;">
-                        New Account
-                    </button>
-                    <button id="tab-btn-demo" onclick="switchAuthMode('demo')" style="flex: 1; border: none; padding: 10px; border-radius: 8px; font-weight: 700; font-size: 0.9rem; cursor: pointer; background: transparent; color: #64748b;">
-                        1-Click Demo
-                    </button>
-                </div>
-
-                <!-- LOGIN FORM -->
-                <div id="auth-login-view">
-                    <form onsubmit="handlePatientLogin(event)">
-                        <div style="margin-bottom: 1rem;">
-                            <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 4px;">Registered Email or Mobile</label>
-                            <input id="login-email" type="text" placeholder="e.g. aarav.patel@health.medlens.io" value="aarav.patel@health.medlens.io" required style="width: 100%; box-sizing: border-box; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem;">
-                        </div>
-                        <div style="margin-bottom: 1.25rem;">
-                            <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 4px;">Password / Security PIN</label>
-                            <input id="login-password" type="password" placeholder="••••••••" value="demo1234" required style="width: 100%; box-sizing: border-box; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem;">
-                        </div>
-                        <button type="submit" class="btn-primary" style="width: 100%; justify-content: center;">
-                            Access Patient Sanctuary →
+                <!-- RIGHT COLUMN: COMPACT AUTH CARD (ABOVE THE FOLD) -->
+                <div class="card" style="margin-bottom: 0;">
+                    <div style="display: flex; background: #f1f5f9; border-radius: 8px; padding: 3px; margin-bottom: 1.25rem;">
+                        <button id="tab-btn-login" onclick="switchAuthMode('login')" class="active-auth-tab" style="flex: 1; border: none; padding: 8px; border-radius: 6px; font-weight: 700; font-size: 0.85rem; cursor: pointer; background: #ffffff; color: #0284c7; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
+                            Patient Login
                         </button>
-                    </form>
-                </div>
-
-                <!-- REGISTER FORM -->
-                <div id="auth-register-view" style="display: none;">
-                    <form onsubmit="handlePatientRegister(event)">
-                        <div style="margin-bottom: 0.85rem;">
-                            <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 4px;">Full Name</label>
-                            <input id="reg-fullname" type="text" placeholder="e.g. Ramesh Kumar" required style="width: 100%; box-sizing: border-box; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem;">
-                        </div>
-                        <div style="margin-bottom: 0.85rem;">
-                            <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 4px;">Email Address</label>
-                            <input id="reg-email" type="email" placeholder="ramesh@gmail.com" required style="width: 100%; box-sizing: border-box; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem;">
-                        </div>
-                        <div style="margin-bottom: 0.85rem;">
-                            <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 4px;">Mobile Number</label>
-                            <input id="reg-phone" type="tel" placeholder="+91 98765 43210" style="width: 100%; box-sizing: border-box; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem;">
-                        </div>
-                        <div style="margin-bottom: 1.25rem;">
-                            <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 4px;">Create Password</label>
-                            <input id="reg-password" type="password" placeholder="At least 6 characters" required style="width: 100%; box-sizing: border-box; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem;">
-                        </div>
-                        <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; background: #059669;">
-                            Create My Health Account
+                        <button id="tab-btn-register" onclick="switchAuthMode('register')" style="flex: 1; border: none; padding: 8px; border-radius: 6px; font-weight: 700; font-size: 0.85rem; cursor: pointer; background: transparent; color: #64748b;">
+                            Register
                         </button>
-                    </form>
-                </div>
+                        <button id="tab-btn-demo" onclick="switchAuthMode('demo')" style="flex: 1; border: none; padding: 8px; border-radius: 6px; font-weight: 700; font-size: 0.85rem; cursor: pointer; background: transparent; color: #64748b;">
+                            1-Click Demo
+                        </button>
+                    </div>
 
-                <!-- 1-CLICK DEMO VIEW -->
-                <div id="auth-demo-view" style="display: none;">
-                    <p style="font-size: 0.88rem; color: #64748b; margin-top: 0; line-height: 1.45;">
-                        Click either verified patient profile below to test the personal dashboard instantly without typing:
-                    </p>
-                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                        <button onclick="quickLoginDemo('aarav')" style="display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid #bae6fd; background: #f0f9ff; border-radius: 10px; cursor: pointer; text-align: left; transition: all 0.2s ease;">
-                            <div style="width: 40px; height: 40px; border-radius: 50%; background: #0284c7; color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 800;">AP</div>
-                            <div>
-                                <div style="font-weight: 800; color: #0369a1; font-size: 0.95rem;">Aarav Patel (30M, UHID: PAT-89211)</div>
-                                <div style="font-size: 0.8rem; color: #64748b;">Apex Multispeciality Hospital &bull; 2 Active Prescriptions</div>
+                    <!-- LOGIN FORM -->
+                    <div id="auth-login-view">
+                        <form onsubmit="handlePatientLogin(event)">
+                            <div style="margin-bottom: 0.85rem;">
+                                <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 4px;">Registered Email or Mobile</label>
+                                <input id="login-email" type="text" placeholder="e.g. aarav.patel@health.medlens.io" value="aarav.patel@health.medlens.io" required style="width: 100%; box-sizing: border-box; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.9rem;">
                             </div>
-                        </button>
-
-                        <button onclick="quickLoginDemo('priya')" style="display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid #fbcfe8; background: #fdf2f8; border-radius: 10px; cursor: pointer; text-align: left; transition: all 0.2s ease;">
-                            <div style="width: 40px; height: 40px; border-radius: 50%; background: #db2777; color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 800;">PS</div>
-                            <div>
-                                <div style="font-weight: 800; color: #be185d; font-size: 0.95rem;">Priya Sharma (36F, UHID: PAT-77402)</div>
-                                <div style="font-size: 0.8rem; color: #64748b;">Apex Multispeciality Hospital &bull; Routine Checkup & Labs</div>
+                            <div style="margin-bottom: 1.15rem;">
+                                <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 4px;">Password / Security PIN</label>
+                                <input id="login-password" type="password" placeholder="••••••••" value="demo1234" required style="width: 100%; box-sizing: border-box; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.9rem;">
                             </div>
-                        </button>
+                            <button type="submit" class="btn-primary" style="width: 100%; justify-content: center;">
+                                Access Health Sanctuary →
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- REGISTER FORM -->
+                    <div id="auth-register-view" style="display: none;">
+                        <form onsubmit="handlePatientRegister(event)">
+                            <div style="margin-bottom: 0.75rem;">
+                                <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 3px;">Full Name</label>
+                                <input id="reg-fullname" type="text" placeholder="e.g. Ramesh Kumar" required style="width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.88rem;">
+                            </div>
+                            <div style="margin-bottom: 0.75rem;">
+                                <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 3px;">Email Address</label>
+                                <input id="reg-email" type="email" placeholder="ramesh@gmail.com" required style="width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.88rem;">
+                            </div>
+                            <div style="margin-bottom: 0.75rem;">
+                                <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 3px;">Mobile Number</label>
+                                <input id="reg-phone" type="tel" placeholder="+91 98765 43210" style="width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.88rem;">
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 3px;">Create Password</label>
+                                <input id="reg-password" type="password" placeholder="At least 6 characters" required style="width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.88rem;">
+                            </div>
+                            <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; background: #059669;">
+                                Create My Health Account
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- 1-CLICK DEMO VIEW -->
+                    <div id="auth-demo-view" style="display: none;">
+                        <p style="font-size: 0.82rem; color: #64748b; margin-top: 0; line-height: 1.4;">
+                            Select a verified patient profile for instant test access:
+                        </p>
+                        <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+                            <button onclick="quickLoginDemo('aarav')" style="display: flex; align-items: center; gap: 10px; padding: 10px; border: 1.5px solid #bae6fd; background: #f0f9ff; border-radius: 8px; cursor: pointer; text-align: left; transition: all 0.2s ease;">
+                                <div style="width: 36px; height: 36px; border-radius: 50%; background: #0284c7; color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem;">AP</div>
+                                <div>
+                                    <div style="font-weight: 800; color: #0369a1; font-size: 0.88rem;">Aarav Patel (30M)</div>
+                                    <div style="font-size: 0.75rem; color: #64748b;">Apex Multispeciality &bull; Active Rx</div>
+                                </div>
+                            </button>
+
+                            <button onclick="quickLoginDemo('priya')" style="display: flex; align-items: center; gap: 10px; padding: 10px; border: 1.5px solid #fbcfe8; background: #fdf2f8; border-radius: 8px; cursor: pointer; text-align: left; transition: all 0.2s ease;">
+                                <div style="width: 36px; height: 36px; border-radius: 50%; background: #db2777; color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem;">PS</div>
+                                <div>
+                                    <div style="font-weight: 800; color: #be185d; font-size: 0.88rem;">Priya Sharma (36F)</div>
+                                    <div style="font-size: 0.75rem; color: #64748b;">Apex Multispeciality &bull; Diagnostic Labs</div>
+                                </div>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -395,12 +417,12 @@
         <div id="patient-auth-dashboard" style="display: none;">
 
             <!-- PROFILE SUMMARY STRIP -->
-            <div class="card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; padding: 1.25rem 1.75rem;">
+            <div class="card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; padding: 1rem 1.5rem;">
                 <div>
-                    <h2 id="patient-greeting-title" style="margin: 0; font-size: 1.45rem; color: #0f172a; font-weight: 800;">
+                    <h2 id="patient-greeting-title" style="margin: 0; font-size: 1.35rem; color: #0f172a; font-weight: 800;">
                         <!-- JS Greeting -->
                     </h2>
-                    <div style="font-size: 0.85rem; color: #64748b; margin-top: 4px; display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <div style="font-size: 0.82rem; color: #64748b; margin-top: 3px; display: flex; gap: 0.85rem; flex-wrap: wrap;">
                         <span>UHID: <strong id="patient-profile-id" style="color: #0284c7;">PAT-89211</strong></span>
                         <span>Email: <strong id="patient-profile-email" style="color: #334155;">aarav.patel@health.medlens.io</strong></span>
                         <span>Phone: <strong id="patient-profile-phone" style="color: #334155;">+91 98765 43210</strong></span>
@@ -408,10 +430,10 @@
                 </div>
 
                 <div style="display: flex; gap: 0.5rem;">
-                    <button onclick="openLinkHospitalModal()" class="btn-secondary" style="font-size: 0.85rem; padding: 8px 14px;">
+                    <button onclick="openLinkHospitalModal()" class="btn-secondary" style="font-size: 0.82rem; padding: 6px 12px;">
                         🔗 Link Hospital (PIN)
                     </button>
-                    <button onclick="exportPatientDPDP()" class="btn-primary" style="font-size: 0.85rem; padding: 8px 14px; background: #059669;">
+                    <button onclick="exportPatientDPDP()" class="btn-primary" style="font-size: 0.82rem; padding: 6px 12px; background: #059669;">
                         🛡️ Export Health Dossier (DPDP)
                     </button>
                 </div>
@@ -444,54 +466,54 @@
 
             <!-- TAB 1: VITALS -->
             <div id="tab-pane-vitals" class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 1rem; margin-bottom: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.75rem; margin-bottom: 0.75rem;">
                     <div>
-                        <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: #0f172a;">Real-Time Health Vitals</h3>
-                        <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: #64748b;">Synchronized from clinical visits and verified connected monitors.</p>
+                        <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #0f172a;">Real-Time Health Vitals</h3>
+                        <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: #64748b;">Synchronized from clinical visits and connected health devices.</p>
                     </div>
-                    <span style="font-size: 0.75rem; background: #ecfdf5; color: #059669; font-weight: 700; padding: 4px 10px; border-radius: 6px;">ALL VITALS IN HEALTHY RANGE</span>
+                    <span style="font-size: 0.72rem; background: #ecfdf5; color: #059669; font-weight: 700; padding: 3px 8px; border-radius: 4px;">ALL VITALS IN HEALTHY RANGE</span>
                 </div>
 
                 <div class="vitals-grid">
                     <div class="vital-box">
-                        <div style="font-size: 0.8rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Blood Pressure</div>
+                        <div style="font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Blood Pressure</div>
                         <div id="vital-bp-val" class="vital-num" style="color: #0284c7;">118/76</div>
-                        <div style="font-size: 0.75rem; color: #10b981; font-weight: 700;">Optimal (mmHg)</div>
+                        <div style="font-size: 0.72rem; color: #10b981; font-weight: 700;">Optimal (mmHg)</div>
                     </div>
                     <div class="vital-box">
-                        <div style="font-size: 0.8rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Heart Rate</div>
+                        <div style="font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Heart Rate</div>
                         <div id="vital-hr-val" class="vital-num" style="color: #059669;">72</div>
-                        <div style="font-size: 0.75rem; color: #10b981; font-weight: 700;">Resting BPM (Sinus)</div>
+                        <div style="font-size: 0.72rem; color: #10b981; font-weight: 700;">Resting BPM (Sinus)</div>
                     </div>
                     <div class="vital-box">
-                        <div style="font-size: 0.8rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Oxygen Saturation</div>
+                        <div style="font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Oxygen Saturation</div>
                         <div id="vital-spo2-val" class="vital-num" style="color: #7c3aed;">98%</div>
-                        <div style="font-size: 0.75rem; color: #10b981; font-weight: 700;">SpO2 Normal</div>
+                        <div style="font-size: 0.72rem; color: #10b981; font-weight: 700;">SpO2 Normal</div>
                     </div>
                     <div class="vital-box">
-                        <div style="font-size: 0.8rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Fasting Blood Sugar</div>
+                        <div style="font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Fasting Blood Sugar</div>
                         <div id="vital-gluc-val" class="vital-num" style="color: #ea580c;">94</div>
-                        <div style="font-size: 0.75rem; color: #10b981; font-weight: 700;">mg/dL (Normoglycemic)</div>
+                        <div style="font-size: 0.72rem; color: #10b981; font-weight: 700;">mg/dL (Normoglycemic)</div>
                     </div>
                 </div>
             </div>
 
             <!-- TAB 2: AI CLINICAL INTAKE -->
             <div id="tab-pane-intake" class="card" style="display: none;">
-                <div style="border-bottom: 1px solid #f1f5f9; padding-bottom: 1rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                <div style="border-bottom: 1px solid #f1f5f9; padding-bottom: 0.75rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
                     <div>
-                        <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: #0f172a;">AI-Assisted Clinical Intake</h3>
-                        <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: #64748b;">Describe symptoms naturally by voice or text. MedLens prepares a structured briefing for your doctor.</p>
+                        <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #0f172a;">AI-Assisted Clinical Intake</h3>
+                        <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: #64748b;">Describe symptoms naturally by voice or text. MedLens prepares a structured briefing for your doctor.</p>
                     </div>
-                    <button id="voice-input-btn" onclick="toggleVoiceInput()" class="btn-secondary" style="background: #f0fdf4; border-color: #bbf7d0; color: #15803d; font-size: 0.85rem;">
+                    <button id="voice-input-btn" onclick="toggleVoiceInput()" class="btn-secondary" style="background: #f0fdf4; border-color: #bbf7d0; color: #15803d; font-size: 0.82rem; padding: 6px 12px;">
                         🎙️ Voice Intake (23+ Indian Languages)
                     </button>
                 </div>
 
                 <!-- CHAT CONTAINER -->
-                <div id="intake-chat-history" style="height: 320px; overflow-y: auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem;">
-                    <div style="display: flex; justify-content: flex-start; margin-bottom: 1rem;">
-                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; color: #334155; padding: 0.85rem 1.15rem; border-radius: 18px 18px 18px 4px; max-width: 80%; font-size: 0.95rem; line-height: 1.45;">
+                <div id="intake-chat-history" style="height: 280px; overflow-y: auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1rem; margin-bottom: 0.75rem;">
+                    <div style="display: flex; justify-content: flex-start; margin-bottom: 0.75rem;">
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; color: #334155; padding: 0.75rem 1rem; border-radius: 14px 14px 14px 4px; max-width: 80%; font-size: 0.9rem; line-height: 1.45;">
                             Hello, <strong>Aarav</strong>. I am your MedLens Clinical AI assistant. What main symptom or health concern is bothering you today?
                         </div>
                     </div>
@@ -499,51 +521,41 @@
 
                 <!-- INPUT BAR -->
                 <div style="display: flex; gap: 0.5rem;">
-                    <input id="intake-input" type="text" placeholder="Type symptoms e.g. headache, fever, cough since yesterday..." onkeypress="if(event.key==='Enter') sendPatientMessage()" style="flex: 1; padding: 12px 16px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 0.95rem;">
+                    <input id="intake-input" type="text" placeholder="Type symptoms e.g. headache, fever, cough since yesterday..." onkeypress="if(event.key==='Enter') sendPatientMessage()" style="flex: 1; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.9rem;">
                     <button onclick="sendPatientMessage()" class="btn-primary">Send</button>
                     <button onclick="generatePatientSummary()" class="btn-secondary" style="background: #e0f2fe; border-color: #bae6fd; color: #0369a1; font-weight: 700;">
                         📋 Generate Briefing
                     </button>
                 </div>
 
-                <div id="patient-summary-output" style="margin-top: 1.25rem; display: none;"></div>
+                <div id="patient-summary-output" style="margin-top: 1rem; display: none;"></div>
             </div>
 
             <!-- TAB 3: MEDICAL REPORTS VAULT -->
             <div id="tab-pane-reports" class="card" style="display: none;">
-                <div style="border-bottom: 1px solid #f1f5f9; padding-bottom: 1rem; margin-bottom: 1.25rem;">
-                    <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: #0f172a;">Personal Medical Reports Vault</h3>
-                    <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: #64748b;">Upload blood tests, pathology slips, or scans. MedLens automatically extracts biomarkers and explains values in plain terms.</p>
+                <div style="border-bottom: 1px solid #f1f5f9; padding-bottom: 0.75rem; margin-bottom: 1rem;">
+                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #0f172a;">Personal Medical Reports Vault</h3>
+                    <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: #64748b;">Upload blood tests, pathology slips, or scans. MedLens automatically extracts biomarkers and explains values in plain terms.</p>
                 </div>
 
-                <div ondragover="event.preventDefault()" ondrop="handleReportDrop(event)" style="border: 2px dashed #0284c7; background: #f0f9ff; border-radius: 14px; padding: 2rem; text-align: center; margin-bottom: 1.5rem; cursor: pointer;" onclick="handleReportUpload()">
-                    <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📄</div>
-                    <div style="font-weight: 800; color: #0369a1; font-size: 1.05rem;">Click or Drag & Drop Lab Reports Here</div>
-                    <div style="font-size: 0.85rem; color: #64748b; margin-top: 4px;">Supports PDF, JPG, PNG &bull; Auto-analyzes CBC, Lipid, Liver Function, Thyroid & Blood Sugar</div>
+                <div ondragover="event.preventDefault()" ondrop="handleReportDrop(event)" style="border: 2px dashed #0284c7; background: #f0f9ff; border-radius: 12px; padding: 1.5rem; text-align: center; margin-bottom: 1rem; cursor: pointer;" onclick="handleReportUpload()">
+                    <div style="font-size: 2rem; margin-bottom: 0.25rem;">📄</div>
+                    <div style="font-weight: 800; color: #0369a1; font-size: 0.95rem;">Click or Drag & Drop Lab Reports Here</div>
+                    <div style="font-size: 0.8rem; color: #64748b; margin-top: 2px;">Supports PDF, JPG, PNG &bull; Auto-analyzes CBC, Lipid, Liver Function & Thyroid</div>
                 </div>
 
-                <div id="report-upload-status" style="margin-bottom: 1.5rem; display: none;"></div>
+                <div id="report-upload-status" style="margin-bottom: 1rem; display: none;"></div>
 
-                <h4 style="font-size: 1rem; color: #0f172a; margin: 1.5rem 0 0.75rem 0;">Previous Diagnostic Reports</h4>
-                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9;">
+                <h4 style="font-size: 0.95rem; color: #0f172a; margin: 1rem 0 0.5rem 0;">Previous Diagnostic Reports</h4>
+                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.85rem 1rem; border-bottom: 1px solid #f1f5f9;">
                         <div>
-                            <div style="font-weight: 700; color: #0f172a;">Complete Blood Count (CBC) &bull; Apex Labs</div>
-                            <div style="font-size: 0.8rem; color: #64748b;">Uploaded: 15 Oct 2026 &bull; Verified by Dr. Anita Roy, MD</div>
+                            <div style="font-weight: 700; color: #0f172a; font-size: 0.9rem;">Complete Blood Count (CBC) &bull; Apex Labs</div>
+                            <div style="font-size: 0.75rem; color: #64748b;">Uploaded: 15 Oct 2026 &bull; Verified by Dr. Anita Roy, MD</div>
                         </div>
-                        <div style="display: flex; gap: 8px;">
-                            <span style="background: #ecfdf5; color: #059669; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 6px;">VERIFIED NORMAL</span>
-                            <button onclick="showToast('Downloading verified report PDF...')" class="btn-secondary" style="padding: 4px 10px; font-size: 0.8rem;">Download PDF</button>
-                        </div>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem;">
-                        <div>
-                            <div style="font-weight: 700; color: #0f172a;">Comprehensive Metabolic Panel (CMP) &bull; Apex Labs</div>
-                            <div style="font-size: 0.8rem; color: #64748b;">Uploaded: 02 Sep 2026 &bull; Verified by Dr. Anita Roy, MD</div>
-                        </div>
-                        <div style="display: flex; gap: 8px;">
-                            <span style="background: #ecfdf5; color: #059669; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 6px;">VERIFIED NORMAL</span>
-                            <button onclick="showToast('Downloading verified report PDF...')" class="btn-secondary" style="padding: 4px 10px; font-size: 0.8rem;">Download PDF</button>
+                        <div style="display: flex; gap: 6px;">
+                            <span style="background: #ecfdf5; color: #059669; font-size: 0.72rem; font-weight: 700; padding: 3px 8px; border-radius: 4px;">VERIFIED NORMAL</span>
+                            <button onclick="showToast('Downloading verified report PDF...')" class="btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;">Download PDF</button>
                         </div>
                     </div>
                 </div>
@@ -551,89 +563,77 @@
 
             <!-- TAB 4: PRESCRIPTIONS -->
             <div id="tab-pane-rx" class="card" style="display: none;">
-                <div style="border-bottom: 1px solid #f1f5f9; padding-bottom: 1rem; margin-bottom: 1.25rem;">
-                    <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: #0f172a;">Active Doctor Prescriptions & Care Plans</h3>
-                    <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: #64748b;">Verified digital e-prescriptions authored by licensed physicians with NMC registration.</p>
+                <div style="border-bottom: 1px solid #f1f5f9; padding-bottom: 0.75rem; margin-bottom: 1rem;">
+                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #0f172a;">Active Doctor Prescriptions & Care Plans</h3>
+                    <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: #64748b;">Verified digital e-prescriptions authored by licensed physicians with NMC registration.</p>
                 </div>
 
-                <div style="background: #ffffff; border: 1px solid #e0e7ff; border-radius: 14px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 4px 12px rgba(99,102,241,0.06);">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #e0e7ff; padding-bottom: 1rem; margin-bottom: 1rem;">
+                <div style="background: #ffffff; border: 1px solid #e0e7ff; border-radius: 12px; padding: 1.25rem; margin-bottom: 0.75rem; box-shadow: 0 4px 10px rgba(99,102,241,0.05);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #e0e7ff; padding-bottom: 0.75rem; margin-bottom: 0.75rem;">
                         <div>
-                            <span style="font-size: 0.75rem; background: #e0e7ff; color: #4338ca; font-weight: 800; padding: 4px 10px; border-radius: 6px;">PRESCRIPTION #RX-2026-881</span>
-                            <h4 style="margin: 6px 0 2px 0; font-size: 1.15rem; color: #1e1b4b;">Apex Multispeciality Hospital &bull; OPD Medicine</h4>
-                            <div style="font-size: 0.85rem; color: #64748b;">Prescribed by: <strong>Dr. Anita Roy, MD (Gen Med)</strong> &bull; NMC Reg: <strong>#MCI-48921-A</strong></div>
+                            <span style="font-size: 0.72rem; background: #e0e7ff; color: #4338ca; font-weight: 800; padding: 3px 8px; border-radius: 4px;">PRESCRIPTION #RX-2026-881</span>
+                            <h4 style="margin: 4px 0 2px 0; font-size: 1.05rem; color: #1e1b4b;">Apex Multispeciality Hospital &bull; OPD Medicine</h4>
+                            <div style="font-size: 0.8rem; color: #64748b;">Prescribed by: <strong>Dr. Anita Roy, MD (Gen Med)</strong> &bull; NMC Reg: <strong>#MCI-48921-A</strong></div>
                         </div>
-                        <button onclick="window.print()" class="btn-secondary" style="padding: 6px 14px; font-size: 0.85rem;">🖨️ Print Rx Slip</button>
+                        <button onclick="window.print()" class="btn-secondary" style="padding: 4px 10px; font-size: 0.8rem;">🖨️ Print Slip</button>
                     </div>
 
-                    <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
                         <thead>
                             <tr style="color: #64748b; border-bottom: 1px solid #e2e8f0; text-align: left;">
-                                <th style="padding: 8px;">Medicine & Dosage</th>
-                                <th style="padding: 8px;">Instructions & Frequency</th>
-                                <th style="padding: 8px;">Duration</th>
+                                <th style="padding: 6px;">Medicine & Dosage</th>
+                                <th style="padding: 6px;">Instructions & Frequency</th>
+                                <th style="padding: 6px;">Duration</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr style="border-bottom: 1px solid #f1f5f9;">
-                                <td style="padding: 8px; font-weight: 700; color: #0f172a;">Tab. Paracetamol 650mg</td>
-                                <td style="padding: 8px; color: #334155;">1 tablet twice daily after meals (1-0-1)</td>
-                                <td style="padding: 8px; color: #0284c7; font-weight: 600;">3 Days</td>
-                            </tr>
-                            <tr style="border-bottom: 1px solid #f1f5f9;">
-                                <td style="padding: 8px; font-weight: 700; color: #0f172a;">Tab. Pantoprazole 40mg</td>
-                                <td style="padding: 8px; color: #334155;">1 tablet once daily before breakfast (1-0-0)</td>
-                                <td style="padding: 8px; color: #0284c7; font-weight: 600;">5 Days</td>
+                                <td style="padding: 6px; font-weight: 700; color: #0f172a;">Tab. Paracetamol 650mg</td>
+                                <td style="padding: 6px; color: #334155;">1 tablet twice daily after meals (1-0-1)</td>
+                                <td style="padding: 6px; color: #0284c7; font-weight: 600;">3 Days</td>
                             </tr>
                         </tbody>
                     </table>
-
-                    <div style="margin-top: 1rem; padding: 0.85rem; background: #f8fafc; border-radius: 8px; font-size: 0.85rem; color: #475569;">
-                        <strong>Physician Clinical Notes:</strong> Stay adequately hydrated (2.5L water daily). If fever persists beyond 72 hours or neck stiffness develops, report back immediately to Outpatient Room #104.
-                    </div>
                 </div>
             </div>
 
             <!-- TAB 5: APPOINTMENTS -->
             <div id="tab-pane-appts" class="card" style="display: none;">
-                <div style="border-bottom: 1px solid #f1f5f9; padding-bottom: 1rem; margin-bottom: 1.25rem;">
-                    <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: #0f172a;">Book Outpatient (OPD) Appointment</h3>
-                    <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: #64748b;">Schedule zero-wait consultation tokens with specialist doctors across linked medical centers.</p>
+                <div style="border-bottom: 1px solid #f1f5f9; padding-bottom: 0.75rem; margin-bottom: 1rem;">
+                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #0f172a;">Book Outpatient (OPD) Appointment</h3>
+                    <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: #64748b;">Schedule zero-wait consultation tokens with specialist doctors across linked medical centers.</p>
                 </div>
 
-                <form onsubmit="handleBookAppointment(event)" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                <form onsubmit="handleBookAppointment(event)" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.85rem; margin-bottom: 1rem;">
                     <div>
-                        <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 4px;">Department</label>
-                        <select id="appt-dept" style="width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem;">
+                        <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 3px;">Department</label>
+                        <select id="appt-dept" style="width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.88rem;">
                             <option value="General Medicine">General Medicine</option>
                             <option value="Cardiology">Cardiology</option>
                             <option value="Neurology">Neurology</option>
                             <option value="Pediatrics">Pediatrics</option>
-                            <option value="Orthopedics">Orthopedics</option>
                         </select>
                     </div>
 
                     <div>
-                        <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 4px;">Specialist Physician</label>
-                        <select id="appt-doc" style="width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem;">
+                        <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 3px;">Specialist Physician</label>
+                        <select id="appt-doc" style="width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.88rem;">
                             <option value="Dr. Anita Roy, MD">Dr. Anita Roy, MD (Senior Physician)</option>
                             <option value="Dr. Vikram Sen, DM">Dr. Vikram Sen, DM (Cardiologist)</option>
-                            <option value="Dr. Neha Kapoor, MD">Dr. Neha Kapoor, MD (Neurologist)</option>
                         </select>
                     </div>
 
                     <div>
-                        <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 4px;">Preferred Date</label>
-                        <input id="appt-date" type="date" value="2026-11-22" style="width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem;">
+                        <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 3px;">Preferred Date</label>
+                        <input id="appt-date" type="date" value="2026-11-22" style="width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.88rem;">
                     </div>
 
                     <div>
-                        <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 4px;">Time Slot</label>
-                        <select id="appt-time" style="width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem;">
+                        <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 3px;">Time Slot</label>
+                        <select id="appt-time" style="width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.88rem;">
                             <option value="10:30 AM">10:30 AM (Morning Slot)</option>
                             <option value="11:45 AM">11:45 AM (Morning Slot)</option>
                             <option value="03:15 PM">03:15 PM (Evening Slot)</option>
-                            <option value="05:00 PM">05:00 PM (Evening Slot)</option>
                         </select>
                     </div>
 
@@ -649,12 +649,12 @@
 
             <!-- TAB 6: CONNECTED HOSPITALS -->
             <div id="tab-pane-hospitals" class="card" style="display: none;">
-                <div style="border-bottom: 1px solid #f1f5f9; padding-bottom: 1rem; margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                <div style="border-bottom: 1px solid #f1f5f9; padding-bottom: 0.75rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
                     <div>
-                        <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: #0f172a;">Connected Healthcare Providers</h3>
-                        <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: #64748b;">Hospitals, diagnostic clinics, and nursing homes linked with your verified patient profile.</p>
+                        <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #0f172a;">Connected Healthcare Providers</h3>
+                        <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: #64748b;">Hospitals, diagnostic clinics, and nursing homes linked with your verified patient profile.</p>
                     </div>
-                    <button onclick="openLinkHospitalModal()" class="btn-primary" style="font-size: 0.85rem; padding: 8px 16px;">
+                    <button onclick="openLinkHospitalModal()" class="btn-primary" style="font-size: 0.8rem; padding: 6px 12px;">
                         + Link New Hospital with PIN
                     </button>
                 </div>
@@ -666,38 +666,34 @@
 
             <!-- TAB 7: DPDP PRIVACY VAULT -->
             <div id="tab-pane-dpdp" class="card" style="display: none;">
-                <div style="border-bottom: 1px solid #f1f5f9; padding-bottom: 1rem; margin-bottom: 1.25rem;">
-                    <div style="display: inline-block; background: #ecfdf5; color: #059669; font-weight: 800; font-size: 0.75rem; padding: 3px 10px; border-radius: 4px; margin-bottom: 6px;">
+                <div style="border-bottom: 1px solid #f1f5f9; padding-bottom: 0.75rem; margin-bottom: 1rem;">
+                    <div style="display: inline-block; background: #ecfdf5; color: #059669; font-weight: 800; font-size: 0.72rem; padding: 2px 8px; border-radius: 4px; margin-bottom: 4px;">
                         GOVERNMENT OF INDIA &bull; DPDP ACT 2023 COMPLIANT
                     </div>
-                    <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: #0f172a;">Personal Health Data Rights & Encryption Vault</h3>
-                    <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: #64748b;">You hold complete sovereignty over your medical records. No third party or hospital staff can access your records without your authenticated consent.</p>
+                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #0f172a;">Personal Health Data Rights & Encryption Vault</h3>
+                    <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: #64748b;">You hold complete sovereignty over your medical records. No third party or hospital staff can access your records without your authenticated consent.</p>
                 </div>
 
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
-                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem;">
-                        <h4 style="margin: 0 0 0.5rem 0; color: #0f172a; font-size: 1rem;">1. Right to Data Portability</h4>
-                        <p style="font-size: 0.85rem; color: #64748b; line-height: 1.45; margin: 0 0 1rem 0;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0.85rem; margin-bottom: 1rem;">
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1rem;">
+                        <h4 style="margin: 0 0 0.4rem 0; color: #0f172a; font-size: 0.95rem;">1. Right to Data Portability</h4>
+                        <p style="font-size: 0.8rem; color: #64748b; line-height: 1.45; margin: 0 0 0.75rem 0;">
                             Download a full machine-readable JSON dossier containing all your clinical vitals, lab reports, and doctor prescriptions.
                         </p>
-                        <button onclick="exportPatientDPDP()" class="btn-primary" style="font-size: 0.85rem; padding: 8px 14px; background: #059669;">
+                        <button onclick="exportPatientDPDP()" class="btn-primary" style="font-size: 0.8rem; padding: 6px 12px; background: #059669;">
                             📥 Download Encrypted Dossier (.json)
                         </button>
                     </div>
 
-                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem;">
-                        <h4 style="margin: 0 0 0.5rem 0; color: #0f172a; font-size: 1rem;">2. Right to Consent Revocation</h4>
-                        <p style="font-size: 0.85rem; color: #64748b; line-height: 1.45; margin: 0 0 1rem 0;">
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1rem;">
+                        <h4 style="margin: 0 0 0.4rem 0; color: #0f172a; font-size: 0.95rem;">2. Right to Consent Revocation</h4>
+                        <p style="font-size: 0.8rem; color: #64748b; line-height: 1.45; margin: 0 0 0.75rem 0;">
                             Instantly revoke diagnostic sharing consent with any connected healthcare provider or hospital.
                         </p>
-                        <button onclick="showToast('Active sharing consent reviewed. All permissions up-to-date.')" class="btn-secondary" style="font-size: 0.85rem; padding: 8px 14px;">
+                        <button onclick="showToast('Active sharing consent reviewed. All permissions up-to-date.')" class="btn-secondary" style="font-size: 0.8rem; padding: 6px 12px;">
                             Manage Consents
                         </button>
                     </div>
-                </div>
-
-                <div style="padding: 1rem; background: #f1f5f9; border-radius: 10px; font-size: 0.85rem; color: #475569;">
-                    🔒 <strong>Cryptographic Isolation Guarantee:</strong> Medical data in the MedLens Health Sanctuary is secured with 256-bit AES encryption at rest and TLS 1.3 in transit. Hospital staff can only view pre-consultation briefings when explicitly authorized by you.
                 </div>
             </div>
 
@@ -707,27 +703,27 @@
 
     <!-- LINK HOSPITAL MODAL -->
     <div id="link-hospital-modal" class="modal-overlay" style="display: none;">
-        <div style="background: #ffffff; border-radius: 16px; padding: 2rem; max-width: 440px; width: 100%; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
-            <h3 style="margin: 0 0 0.5rem 0; font-size: 1.25rem; color: #0f172a;">Link Hospital Records</h3>
-            <p style="font-size: 0.85rem; color: #64748b; margin: 0 0 1.25rem 0;">
+        <div style="background: #ffffff; border-radius: 14px; padding: 1.75rem; max-width: 420px; width: 100%; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
+            <h3 style="margin: 0 0 0.5rem 0; font-size: 1.2rem; color: #0f172a;">Link Hospital Records</h3>
+            <p style="font-size: 0.82rem; color: #64748b; margin: 0 0 1rem 0;">
                 To prevent unauthorized records linking, enter the Patient ID and verification PIN issued on your hospital receipt.
             </p>
 
             <form onsubmit="submitLinkHospital(event)">
-                <div style="margin-bottom: 1rem;">
-                    <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 4px;">Hospital / Clinic Name</label>
-                    <input id="link-hosp-name" type="text" placeholder="e.g. Apex Multispeciality Hospital" value="Apex Multispeciality Hospital" required style="width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem;">
+                <div style="margin-bottom: 0.85rem;">
+                    <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 3px;">Hospital / Clinic Name</label>
+                    <input id="link-hosp-name" type="text" placeholder="e.g. Apex Multispeciality Hospital" value="Apex Multispeciality Hospital" required style="width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;">
                 </div>
-                <div style="margin-bottom: 1rem;">
-                    <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 4px;">Hospital UHID / Patient ID</label>
-                    <input id="link-hosp-uhid" type="text" placeholder="e.g. APX-2026-9921" required style="width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem;">
+                <div style="margin-bottom: 0.85rem;">
+                    <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 3px;">Hospital UHID / Patient ID</label>
+                    <input id="link-hosp-uhid" type="text" placeholder="e.g. APX-2026-9921" required style="width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;">
                 </div>
-                <div style="margin-bottom: 1.5rem;">
-                    <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 4px;">4-Digit Security PIN or OTP</label>
-                    <input id="link-hosp-pin" type="password" maxlength="6" placeholder="e.g. 4892" required style="width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem;">
+                <div style="margin-bottom: 1.25rem;">
+                    <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 3px;">4-Digit Security PIN or OTP</label>
+                    <input id="link-hosp-pin" type="password" maxlength="6" placeholder="e.g. 4892" required style="width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;">
                 </div>
 
-                <div style="display: flex; gap: 0.75rem;">
+                <div style="display: flex; gap: 0.65rem;">
                     <button type="submit" class="btn-primary" style="flex: 1; justify-content: center;">
                         Verify & Link Hospital
                     </button>
@@ -764,19 +760,19 @@
     </nav>
 
     <!-- FOOTER WITH SEPARATE PORTAL LINK -->
-    <footer style="background: #ffffff; border-top: 1px solid #e2e8f0; padding: 2rem 1.5rem; text-align: center; font-size: 0.85rem; color: #64748b; margin-top: 4rem;">
+    <footer style="background: #ffffff; border-top: 1px solid #e2e8f0; padding: 1.5rem 1rem; text-align: center; font-size: 0.82rem; color: #64748b; margin-top: 3rem;">
         <div style="max-width: 600px; margin: 0 auto;">
-            <p style="margin: 0 0 0.5rem 0;">
+            <p style="margin: 0 0 0.4rem 0;">
                 <strong>MedLens Health Patient Sanctuary</strong> &bull; Compliant with Indian DPDP Act 2023 & NHA ABDM Guidelines.
             </p>
-            <p style="margin: 0 0 1rem 0; font-size: 0.8rem; color: #94a3b8;">
+            <p style="margin: 0 0 0.75rem 0; font-size: 0.78rem; color: #94a3b8;">
                 Are you a doctor, nurse, or hospital staff member?
                 <a href="/hospital" style="color: #0284c7; font-weight: 700; text-decoration: underline;">
                     Access the Dedicated Hospital Staff Workstation →
                 </a>
             </p>
-            <div style="color: #94a3b8; font-size: 0.75rem;">
-                © 2026 MedLens AI / Avenqra Technologies Inc. All medical records remain patient-sovereign.
+            <div style="color: #94a3b8; font-size: 0.72rem;">
+                © 2026 MedLens AI / Avenqra Technologies Inc.
             </div>
         </div>
     </footer>
@@ -785,4 +781,3 @@
     <script src="/patient_app.js"></script>
 </body>
 </html>
-
