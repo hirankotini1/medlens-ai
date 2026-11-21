@@ -132,11 +132,11 @@
             <a href="javascript:void(0)" onclick="switchView('home')" class="nav-btn active" id="tab-home" title="SaaS Showcase & Overview">
                 <span class="material-symbols-outlined">home</span> HOME
             </a>
-            <a href="javascript:void(0)" onclick="switchView('patient-portal')" class="nav-btn" id="tab-patient-portal" title="Dedicated Patient Experience (Zero Staff Mixing)">
-                <span class="material-symbols-outlined">person</span> PATIENT PORTAL
+            <a href="/patient" class="nav-btn" id="tab-patient-portal" title="Dedicated Patient Sanctuary Website">
+                <span class="material-symbols-outlined">person</span> PATIENT WEBSITE
             </a>
-            <a href="javascript:void(0)" onclick="switchView('hospital-portal')" class="nav-btn" id="tab-hospital-portal" title="Combined Doctor & Staff Portal (Role-Based Access)">
-                <span class="material-symbols-outlined">local_hospital</span> HOSPITAL PORTAL
+            <a href="/hospital" class="nav-btn" id="tab-hospital-portal" title="Enterprise Hospital Staff Workstation">
+                <span class="material-symbols-outlined">local_hospital</span> HOSPITAL WEBSITE
             </a>
 
             <!-- Clinical Tools Dropdown -->
@@ -454,10 +454,10 @@
                                     <li><span class="gateway-check">✓</span> <span>Zero exposure to hospital admin or staff systems</span></li>
                                 </ul>
                             </div>
-                            <button type="button" class="gateway-btn" onclick="switchView('patient-portal')">
-                                <span>ACCESS PATIENT PORTAL</span>
-                                <span class="material-symbols-outlined">arrow_forward</span>
-                            </button>
+                            <a href="/patient" class="gateway-btn" style="text-decoration: none; display: flex; justify-content: space-between; align-items: center;">
+                                <span>OPEN PATIENT WEBSITE (patient.html)</span>
+                                <span class="material-symbols-outlined">open_in_new</span>
+                            </a>
                         </div>
 
                         <!-- PORTAL B GATEWAY -->
@@ -482,10 +482,10 @@
                                     <li><span class="gateway-check">✓</span> <span>Hospital admin settings, staff invites &amp; usage billing</span></li>
                                 </ul>
                             </div>
-                            <button type="button" class="gateway-btn" onclick="switchView('hospital-portal')">
-                                <span>ACCESS HOSPITAL PORTAL</span>
-                                <span class="material-symbols-outlined">arrow_forward</span>
-                            </button>
+                            <a href="/hospital" class="gateway-btn" style="text-decoration: none; display: flex; justify-content: space-between; align-items: center;">
+                                <span>OPEN HOSPITAL WORKSTATION (hospital.html)</span>
+                                <span class="material-symbols-outlined">open_in_new</span>
+                            </a>
                         </div>
                     </div>
 

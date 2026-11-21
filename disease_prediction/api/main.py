@@ -2364,5 +2364,17 @@ if os .path .exists (FRONTEND_DIR ):
         from fastapi.responses import FileResponse
         return FileResponse(os.path.join(FRONTEND_DIR, "product.html"))
 
+    @app.get("/patient", include_in_schema=False)
+    @app.get("/patient/", include_in_schema=False)
+    def serve_patient_portal_page():
+        from fastapi.responses import FileResponse
+        return FileResponse(os.path.join(FRONTEND_DIR, "patient.html"))
+
+    @app.get("/hospital", include_in_schema=False)
+    @app.get("/hospital/", include_in_schema=False)
+    def serve_hospital_portal_page():
+        from fastapi.responses import FileResponse
+        return FileResponse(os.path.join(FRONTEND_DIR, "hospital.html"))
+
     app .mount ("/",StaticFiles (directory =FRONTEND_DIR ,html =True ),name ="frontend")
 

@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>MedLens Clinical | Enterprise Hospital Workstation & EHR</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --slate-900: #0f172a;
+            --slate-800: #1e293b;
+            --slate-700: #334155;
+            --primary: #0284c7;
+            --success: #059669;
+            --warning: #d97706;
+            --danger: #dc2626;
+        }
+        body {
+            font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f1f5f9;
+            color: #0f172a;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+        .hospital-header {
+            background: #0f172a;
+            color: #ffffff;
+            border-bottom: 1px solid #334155;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .hospital-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: #ffffff;
+        }
+        .hospital-logo-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 1.4rem;
+            font-weight: 900;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+        .container {
+            max-width: 1320px;
+            margin: 0 auto;
+            padding: 1.5rem 1rem 6rem 1rem;
+        }
+        .emergency-banner {
+            background: linear-gradient(90deg, #fff1f2 0%, #ffe4e6 100%);
+            border: 1px solid #fecdd3;
+            border-radius: 14px;
+            padding: 0.75rem 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .emergency-ekg-canvas {
+            width: 220px;
+            height: 36px;
+            display: block;
+        }
+        .card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+            margin-bottom: 1.5rem;
+        }
+        .role-switcher-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+        .role-switcher-btn {
+            background: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .role-switcher-btn:hover {
+            border-color: #cbd5e1;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        .active-role-btn {
+            border-color: #0284c7 !important;
+            background: #f0f9ff !important;
+        }
+        .btn-primary {
+            background: #0284c7;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+        }
+        .btn-primary:hover {
+            background: #0369a1;
+        }
+        .btn-secondary {
+            background: #f8fafc;
+            color: #334155;
+            border: 1px solid #cbd5e1;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+        }
+        .data-table th {
+            text-align: left;
+            padding: 10px 12px;
+            background: #f8fafc;
+            color: #64748b;
+            font-weight: 700;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .data-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #334155;
+        }
+        .bed-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+        .bed-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- TOP HOSPITAL NAVIGATION BAR -->
+    <header class="hospital-header">
+        <a href="/hospital" class="hospital-brand">
+            <div class="hospital-logo-icon">🏥</div>
+            <div>
+                <div style="font-weight: 800; font-size: 1.15rem; letter-spacing: -0.02em;">MedLens Clinical ERP</div>
+                <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 600; text-transform: uppercase;">Enterprise Healthcare Workstation</div>
+            </div>
+        </a>
+
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; background: #1e293b; padding: 6px 12px; border-radius: 8px; border: 1px solid #334155;">
+                <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></span>
+                <span>Live Hospital Shift: <strong>On Duty</strong></span>
+            </div>
+
+            <div id="staff-nav-role-badge" style="font-size: 0.8rem; font-weight: 700; padding: 4px 10px; border-radius: 6px;">
+                <!-- Populated by JS -->
+            </div>
+
+            <div id="staff-nav-name" style="font-size: 0.88rem; font-weight: 700; color: #e2e8f0;">
+                <!-- Populated by JS -->
+            </div>
+
+            <a href="/" class="btn-secondary" style="padding: 6px 12px; font-size: 0.8rem; background: #1e293b; color: #e2e8f0; border-color: #334155; text-decoration: none;">
+                🌐 Master Home
+            </a>
+            <button onclick="handleStaffLogout()" class="btn-secondary" style="padding: 6px 12px; font-size: 0.8rem; background: #334155; color: #ffffff; border: none;">
+                Logout
+            </button>
+        </div>
+    </header>
+
+    <main class="container">
+
+        <!-- 60FPS GPU CARDIAC MONITOR BANNER -->
+        <div class="emergency-banner">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 38px; height: 38px; background: #dc2626; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 1.25rem;">
+                    *
+                </div>
+                <div>
+                    <div style="font-weight: 800; font-size: 0.95rem; color: #991b1b;">CLINICAL TRAUMA & EMERGENCY MONITOR</div>
+                    <div style="font-size: 0.8rem; color: #b91c1c;">Direct Triage Hotline & Rapid Response Team:</div>
+                </div>
+            </div>
+
+            <canvas id="emergency-ekg-canvas" class="emergency-ekg-canvas"></canvas>
+
+            <div style="display: flex; gap: 8px;">
+                <span style="background: #dc2626; color: #ffffff; padding: 6px 14px; border-radius: 8px; font-weight: 700; font-size: 0.85rem;">
+                    Code Blue: EXT-222
+                </span>
+                <span style="background: #ffffff; color: #dc2626; border: 1px solid #fecaca; padding: 6px 14px; border-radius: 8px; font-weight: 700; font-size: 0.85rem;">
+                    ICU Direct: EXT-104
+                </span>
+            </div>
+        </div>
+
+        <!-- AUTHENTICATED HOSPITAL WORKSTATION -->
+        <div id="hospital-auth-dashboard">
+
+            <!-- ROLE SELECTION BAR -->
+            <div style="margin-bottom: 1.5rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                    <h3 id="staff-workspace-title" style="margin: 0; font-size: 1.25rem; font-weight: 800; color: #0f172a;">
+                        <!-- JS Workspace title -->
+                    </h3>
+                    <span style="font-size: 0.8rem; color: #64748b;">Instant 1-Click Role Switcher (RBAC Inspection):</span>
+                </div>
+
+                <div class="role-switcher-grid">
+                    <button onclick="switchRole('doctor')" data-role="doctor" class="role-switcher-btn active-role-btn">
+                        <span style="font-size: 1.25rem;">👨‍⚕️</span>
+                        <strong style="font-size: 0.95rem; color: #0284c7;">Doctor Workstation</strong>
+                        <span style="font-size: 0.75rem; color: #64748b;">Triage, e-Rx, AI Briefings</span>
+                    </button>
+
+                    <button onclick="switchRole('receptionist')" data-role="receptionist" class="role-switcher-btn">
+                        <span style="font-size: 1.25rem;">📋</span>
+                        <strong style="font-size: 0.95rem; color: #059669;">OPD Reception Desk</strong>
+                        <span style="font-size: 0.75rem; color: #64748b;">Tokens, Check-in, Queue</span>
+                    </button>
+
+                    <button onclick="switchRole('lab_staff')" data-role="lab_staff" class="role-switcher-btn">
+                        <span style="font-size: 1.25rem;">🔬</span>
+                        <strong style="font-size: 0.95rem; color: #d97706;">Pathology & Lab</strong>
+                        <span style="font-size: 0.75rem; color: #64748b;">Specimens, OCR, Tests</span>
+                    </button>
+
+                    <button onclick="switchRole('ward_manager')" data-role="ward_manager" class="role-switcher-btn">
+                        <span style="font-size: 1.25rem;">🛏️</span>
+                        <strong style="font-size: 0.95rem; color: #7c3aed;">Ward & Bed Manager</strong>
+                        <span style="font-size: 0.75rem; color: #64748b;">ICU & General Occupancy</span>
+                    </button>
+
+                    <button onclick="switchRole('operations_manager')" data-role="operations_manager" class="role-switcher-btn">
+                        <span style="font-size: 1.25rem;">📊</span>
+                        <strong style="font-size: 0.95rem; color: #4f46e5;">Operations Analytics</strong>
+                        <span style="font-size: 0.75rem; color: #64748b;">Turnaround Time & TAT</span>
+                    </button>
+
+                    <button onclick="switchRole('owner')" data-role="owner" class="role-switcher-btn">
+                        <span style="font-size: 1.25rem;">🏛️</span>
+                        <strong style="font-size: 0.95rem; color: #dc2626;">Hospital Admin / Owner</strong>
+                        <span style="font-size: 0.75rem; color: #64748b;">Roster, Subscriptions, Audit</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- WORKSPACE 1: DOCTOR WORKSTATION -->
+            <div id="workspace-doctor" class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 1rem; margin-bottom: 1.25rem;">
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: #0284c7;">Physician Consultation & Triage Station</h3>
+                        <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: #64748b;">Dr. Anita Roy, MD (Gen Med) &bull; Attending Room #104 &bull; NMC: #MCI-48921-A</p>
+                    </div>
+                    <span style="background: #e0f2fe; color: #0369a1; font-weight: 700; font-size: 0.8rem; padding: 4px 10px; border-radius: 6px;">4 PATIENTS WAITING IN TRIAGE</span>
+                </div>
+
+                <!-- TRIAGE INBOX -->
+                <h4 style="font-size: 1rem; color: #0f172a; margin: 0 0 0.75rem 0;">Prioritized Inpatient & OPD Triage Queue</h4>
+                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; margin-bottom: 1.5rem;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Token / UHID</th>
+                                <th>Patient Name</th>
+                                <th>Chief Complaint</th>
+                                <th>AI Pre-Consult Briefing</th>
+                                <th>Triage Severity</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="background: #fff5f5;">
+                                <td style="font-weight: 800; color: #dc2626;">#OPD-21 &bull; APX-8812</td>
+                                <td style="font-weight: 700;">Rajendra Rao (58M)</td>
+                                <td>Crushing retrosternal chest pain (1 hr)</td>
+                                <td><span style="color: #991b1b; font-weight: 600;">⚠️ ST-Elevation alert detected</span></td>
+                                <td><span style="background: #fee2e2; color: #dc2626; font-weight: 800; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem;">RED - IMMEDIATE</span></td>
+                                <td><button onclick="showToast('Transferring patient directly to Emergency Resus Room!');" class="btn-primary" style="background: #dc2626; padding: 4px 10px; font-size: 0.8rem;">Stat Triage →</button></td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: 800; color: #0284c7;">#OPD-22 &bull; APX-9921</td>
+                                <td style="font-weight: 700;">Aarav Patel (30M)</td>
+                                <td>Bilateral throbbing headache, fever 100.4 F</td>
+                                <td><span>Duration: 36 hrs, no neck rigidity</span></td>
+                                <td><span style="background: #fef3c7; color: #d97706; font-weight: 800; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem;">YELLOW - URGENT</span></td>
+                                <td><button onclick="showToast('Loading pre-consultation EHR summary for Aarav Patel');" class="btn-primary" style="padding: 4px 10px; font-size: 0.8rem;">Review EHR →</button></td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: 800; color: #059669;">#OPD-23 &bull; APX-7740</td>
+                                <td style="font-weight: 700;">Priya Sharma (36F)</td>
+                                <td>Routine blood report review (CBC & CMP)</td>
+                                <td><span>Normal hematocrit, mild leukocyte shift</span></td>
+                                <td><span style="background: #ecfdf5; color: #059669; font-weight: 800; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem;">GREEN - ROUTINE</span></td>
+                                <td><button onclick="showToast('Loaded diagnostic report panel');" class="btn-secondary" style="padding: 4px 10px; font-size: 0.8rem;">Consult →</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- NMC DIGITAL PRESCRIPTION PAD -->
+                <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h4 style="margin: 0; font-size: 1.05rem; color: #0f172a; font-weight: 800;">
+                            ✍️ Author Verified Digital Prescription (NMC Compliant)
+                        </h4>
+                        <span style="font-size: 0.75rem; color: #64748b;">NMC Digital Signature Enabled</span>
+                    </div>
+
+                    <form onsubmit="handleDoctorPrescriptionSign(event)">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+                            <div>
+                                <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 4px;">Select Patient</label>
+                                <select id="rx-patient-select" style="width: 100%; box-sizing: border-box; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;">
+                                    <option value="Aarav Patel (APX-2026-9921)">Aarav Patel (30M, APX-2026-9921)</option>
+                                    <option value="Priya Sharma (APX-2026-7740)">Priya Sharma (36F, APX-2026-7740)</option>
+                                    <option value="Rajendra Rao (APX-2026-8812)">Rajendra Rao (58M, APX-2026-8812)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 4px;">Prescribed Medication</label>
+                                <input id="rx-drug-1" type="text" value="Tab. Paracetamol 650mg" style="width: 100%; box-sizing: border-box; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;">
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 4px;">Dosage & Frequency</label>
+                                <input id="rx-dose-1" type="text" value="1-0-1 after food (3 days)" style="width: 100%; box-sizing: border-box; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;">
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 4px;">Clinical Advice / Follow-up</label>
+                            <input id="rx-notes" type="text" value="Bed rest, maintain hydration (2.5L water/day). Review if fever exceeds 72 hrs." style="width: 100%; box-sizing: border-box; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;">
+                        </div>
+
+                        <button type="submit" class="btn-primary" style="background: #15803d;">
+                            🔒 Apply NMC Digital Signature & Dispatch to Patient
+                        </button>
+                    </form>
+
+                    <div id="rx-signed-stamp-card" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- WORKSPACE 2: OPD RECEPTION DESK -->
+            <div id="workspace-receptionist" class="card" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 1rem; margin-bottom: 1.25rem;">
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: #059669;">OPD Patient Registration & Token Dispatch</h3>
+                        <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: #64748b;">Rajesh Kumar &bull; Outpatient Reception Desk &bull; Desk ID: DESK-A1</p>
+                    </div>
+                    <span style="background: #ecfdf5; color: #059669; font-weight: 700; font-size: 0.8rem; padding: 4px 10px; border-radius: 6px;">TODAY'S OPD TOKENS: 25 ISSUED</span>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem;">
+                    <!-- NEW PATIENT REGISTRATION FORM -->
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem;">
+                        <h4 style="margin: 0 0 1rem 0; font-size: 1rem; color: #0f172a;">Register Walk-In Patient</h4>
+                        <form onsubmit="handleReceptionTokenSubmit(event)">
+                            <div style="margin-bottom: 0.75rem;">
+                                <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 2px;">Patient Full Name</label>
+                                <input id="opd-reg-name" type="text" placeholder="e.g. Meera Devi" required style="width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;">
+                            </div>
+                            <div style="margin-bottom: 0.75rem;">
+                                <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 2px;">Mobile Number</label>
+                                <input id="opd-reg-phone" type="tel" placeholder="+91 98765 11111" required style="width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;">
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 2px;">Consulting Department</label>
+                                <select id="opd-reg-dept" style="width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;">
+                                    <option value="General Medicine">General Medicine (Dr. Anita Roy)</option>
+                                    <option value="Cardiology">Cardiology (Dr. Vikram Sen)</option>
+                                    <option value="Pediatrics">Pediatrics (Dr. Sneha Rao)</option>
+                                    <option value="Orthopedics">Orthopedics (Dr. Sandeep Nair)</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; background: #059669;">
+                                🎟️ Print & Issue OPD Token
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- CURRENT OPD QUEUE -->
+                    <div>
+                        <h4 style="margin: 0 0 0.75rem 0; font-size: 1rem; color: #0f172a;">Live OPD Waitlist Queue</h4>
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Token</th>
+                                        <th>Patient</th>
+                                        <th>Phone</th>
+                                        <th>Department</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="opd-queue-tbody">
+                                    <tr>
+                                        <td style="font-weight: 800; color: #0284c7;">#OPD-24</td>
+                                        <td style="font-weight: 700;">Aarav Patel</td>
+                                        <td>+91 98765 43210</td>
+                                        <td>General Medicine</td>
+                                        <td><span style="background: #fef3c7; color: #d97706; font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 4px;">WAITING</span></td>
+                                        <td><button onclick="this.closest('tr').remove(); showToast('Patient called into Doctor consultation room');" class="btn-secondary" style="padding: 4px 10px; font-size: 0.8rem;">Call In →</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: 800; color: #0284c7;">#OPD-23</td>
+                                        <td style="font-weight: 700;">Priya Sharma</td>
+                                        <td>+91 91234 56789</td>
+                                        <td>General Medicine</td>
+                                        <td><span style="background: #ecfdf5; color: #059669; font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 4px;">IN CONSULT</span></td>
+                                        <td><span style="color: #64748b; font-size: 0.8rem;">Room #104</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WORKSPACE 3: PATHOLOGY & LAB -->
+            <div id="workspace-lab_staff" class="card" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 1rem; margin-bottom: 1.25rem;">
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: #d97706;">Pathology & Diagnostic Laboratory Workstation</h3>
+                        <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: #64748b;">Vikram Seth &bull; Senior Pathology Technologist &bull; Lab Workstation: PATH-9921</p>
+                    </div>
+                    <span style="background: #fef3c7; color: #d97706; font-weight: 700; font-size: 0.8rem; padding: 4px 10px; border-radius: 6px;">3 SAMPLES IN ANALYZER</span>
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Patient / UHID</th>
+                            <th>Requested Test</th>
+                            <th>Biomarker Highlights</th>
+                            <th>OCR Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="font-weight: 800; color: #0284c7;">LAB-9921-A</td>
+                            <td style="font-weight: 700;">Aarav Patel (APX-9921)</td>
+                            <td>Complete Blood Count (CBC)</td>
+                            <td>Hb: 14.2 g/dL &bull; WBC: 11,200 &bull; Plt: 245K</td>
+                            <td><span style="background: #ecfdf5; color: #059669; font-weight: 700; font-size: 0.75rem; padding: 2px 8px; border-radius: 4px;">EXTRACTED 99.4%</span></td>
+                            <td><button onclick="showToast('Lab report signed and dispatched to attending physician.');" class="btn-primary" style="background: #059669; padding: 4px 10px; font-size: 0.8rem;">Approve & Sign</button></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 800; color: #0284c7;">LAB-9922-B</td>
+                            <td style="font-weight: 700;">Sunita Ghosh (APX-4421)</td>
+                            <td>Liver Function Test (LFT)</td>
+                            <td>Bilirubin: 2.1 mg/dL (Elevated) &bull; SGPT: 78 U/L</td>
+                            <td><span style="background: #fef3c7; color: #d97706; font-weight: 700; font-size: 0.75rem; padding: 2px 8px; border-radius: 4px;">ABNORMAL FLAG</span></td>
+                            <td><button onclick="showToast('Marked priority for Pathologist review');" class="btn-primary" style="background: #d97706; padding: 4px 10px; font-size: 0.8rem;">Review Flag →</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- WORKSPACE 4: WARD & BED MANAGER -->
+            <div id="workspace-ward_manager" class="card" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 1rem; margin-bottom: 1.25rem;">
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: #7c3aed;">Inpatient Ward & Bed Occupancy Grid</h3>
+                        <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: #64748b;">Sister Mary Varghese &bull; Head Nurse Supervisor &bull; Wards: ICU, General A/B, Emergency</p>
+                    </div>
+                    <span style="background: #f3e8ff; color: #7c3aed; font-weight: 800; font-size: 0.8rem; padding: 4px 10px; border-radius: 6px;">TOTAL BEDS: 44 &bull; OCCUPANCY: 84%</span>
+                </div>
+
+                <!-- INTENSIVE CARE UNIT (ICU) -->
+                <h4 style="font-size: 0.95rem; color: #0f172a; margin: 1rem 0 0.5rem 0;">Intensive Care Unit (ICU 1 - 8)</h4>
+                <div class="bed-grid">
+                    <div id="bed-ICU-01" class="bed-card" style="background: #fef2f2; border-color: #fecaca;">
+                        <div style="font-weight: 800; color: #991b1b;">ICU-01</div>
+                        <div style="font-size: 0.75rem; color: #dc2626; font-weight: 700;">OCCUPIED</div>
+                        <button onclick="toggleBedState('ICU-01', 'occupied')" style="margin-top: 6px; border: none; background: #dc2626; color: #fff; font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Discharge</button>
+                    </div>
+                    <div id="bed-ICU-02" class="bed-card" style="background: #fef2f2; border-color: #fecaca;">
+                        <div style="font-weight: 800; color: #991b1b;">ICU-02</div>
+                        <div style="font-size: 0.75rem; color: #dc2626; font-weight: 700;">OCCUPIED</div>
+                        <button onclick="toggleBedState('ICU-02', 'occupied')" style="margin-top: 6px; border: none; background: #dc2626; color: #fff; font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Discharge</button>
+                    </div>
+                    <div id="bed-ICU-03" class="bed-card" style="background: #ecfdf5; border-color: #a7f3d0;">
+                        <div style="font-weight: 800; color: #065f46;">ICU-03</div>
+                        <div style="font-size: 0.75rem; color: #059669; font-weight: 700;">AVAILABLE</div>
+                        <button onclick="toggleBedState('ICU-03', 'available')" style="margin-top: 6px; border: none; background: #059669; color: #fff; font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Admit</button>
+                    </div>
+                    <div id="bed-ICU-04" class="bed-card" style="background: #fef2f2; border-color: #fecaca;">
+                        <div style="font-weight: 800; color: #991b1b;">ICU-04</div>
+                        <div style="font-size: 0.75rem; color: #dc2626; font-weight: 700;">OCCUPIED</div>
+                        <button onclick="toggleBedState('ICU-04', 'occupied')" style="margin-top: 6px; border: none; background: #dc2626; color: #fff; font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Discharge</button>
+                    </div>
+                </div>
+
+                <!-- GENERAL WARD A -->
+                <h4 style="font-size: 0.95rem; color: #0f172a; margin: 1.5rem 0 0.5rem 0;">General Inpatient Ward A (GEN 1 - 8)</h4>
+                <div class="bed-grid">
+                    <div id="bed-GEN-A1" class="bed-card" style="background: #fef2f2; border-color: #fecaca;">
+                        <div style="font-weight: 800; color: #991b1b;">GEN-A1</div>
+                        <div style="font-size: 0.75rem; color: #dc2626; font-weight: 700;">OCCUPIED</div>
+                        <button onclick="toggleBedState('GEN-A1', 'occupied')" style="margin-top: 6px; border: none; background: #dc2626; color: #fff; font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Discharge</button>
+                    </div>
+                    <div id="bed-GEN-A2" class="bed-card" style="background: #ecfdf5; border-color: #a7f3d0;">
+                        <div style="font-weight: 800; color: #065f46;">GEN-A2</div>
+                        <div style="font-size: 0.75rem; color: #059669; font-weight: 700;">AVAILABLE</div>
+                        <button onclick="toggleBedState('GEN-A2', 'available')" style="margin-top: 6px; border: none; background: #059669; color: #fff; font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Admit</button>
+                    </div>
+                    <div id="bed-GEN-A3" class="bed-card" style="background: #ecfdf5; border-color: #a7f3d0;">
+                        <div style="font-weight: 800; color: #065f46;">GEN-A3</div>
+                        <div style="font-size: 0.75rem; color: #059669; font-weight: 700;">AVAILABLE</div>
+                        <button onclick="toggleBedState('GEN-A3', 'available')" style="margin-top: 6px; border: none; background: #059669; color: #fff; font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Admit</button>
+                    </div>
+                    <div id="bed-GEN-A4" class="bed-card" style="background: #fef2f2; border-color: #fecaca;">
+                        <div style="font-weight: 800; color: #991b1b;">GEN-A4</div>
+                        <div style="font-size: 0.75rem; color: #dc2626; font-weight: 700;">OCCUPIED</div>
+                        <button onclick="toggleBedState('GEN-A4', 'occupied')" style="margin-top: 6px; border: none; background: #dc2626; color: #fff; font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Discharge</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WORKSPACE 5: OPERATIONS MANAGER -->
+            <div id="workspace-operations_manager" class="card" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 1rem; margin-bottom: 1.25rem;">
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: #4f46e5;">Clinical Operations & Turnaround Analytics</h3>
+                        <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: #64748b;">Alok Verma &bull; Operations Director &bull; Real-time KPI Dashboards</p>
+                    </div>
+                    <span style="background: #eef2ff; color: #4338ca; font-weight: 700; font-size: 0.8rem; padding: 4px 10px; border-radius: 6px;">FACILITY EFFICIENCY: 94.2%</span>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem; text-align: center;">
+                        <div style="font-size: 0.8rem; font-weight: 700; color: #64748b;">AVERAGE OPD WAIT TIME</div>
+                        <div style="font-size: 1.85rem; font-weight: 800; color: #0284c7; margin: 4px 0;">12.4 min</div>
+                        <div style="font-size: 0.75rem; color: #10b981; font-weight: 700;">↓ 18% vs Last Month</div>
+                    </div>
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem; text-align: center;">
+                        <div style="font-size: 0.8rem; font-weight: 700; color: #64748b;">LAB TURNAROUND TIME (TAT)</div>
+                        <div style="font-size: 1.85rem; font-weight: 800; color: #059669; margin: 4px 0;">34.8 min</div>
+                        <div style="font-size: 0.75rem; color: #10b981; font-weight: 700;">Automated OCR Sync</div>
+                    </div>
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem; text-align: center;">
+                        <div style="font-size: 0.8rem; font-weight: 700; color: #64748b;">BED TURNOVER RATE</div>
+                        <div style="font-size: 1.85rem; font-weight: 800; color: #7c3aed; margin: 4px 0;">3.8 days</div>
+                        <div style="font-size: 0.75rem; color: #7c3aed; font-weight: 700;">Inpatient Average</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WORKSPACE 6: HOSPITAL OWNER / ADMINISTRATOR -->
+            <div id="workspace-owner" class="card" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 1rem; margin-bottom: 1.25rem;">
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: #dc2626;">Hospital Administration & SaaS Enterprise Console</h3>
+                        <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: #64748b;">Dr. S. K. Mukherjee &bull; Medical Director &bull; Apex Multispeciality Hospital</p>
+                    </div>
+                    <span style="background: #fef2f2; color: #dc2626; font-weight: 800; font-size: 0.8rem; padding: 4px 10px; border-radius: 6px;">PROFESSIONAL TIER (ACTIVE)</span>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <!-- STAFF INVITATION GENERATOR -->
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem;">
+                        <h4 style="margin: 0 0 0.5rem 0; font-size: 1rem; color: #0f172a;">Invite Clinician or Staff Member</h4>
+                        <p style="font-size: 0.8rem; color: #64748b; margin: 0 0 1rem 0;">Generates a cryptographically signed, 7-day single-use onboarding token for staff registration.</p>
+
+                        <div style="margin-bottom: 0.75rem;">
+                            <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 2px;">Assigned Role</label>
+                            <select id="invite-role-select" style="width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;">
+                                <option value="doctor">Doctor / Attending Physician</option>
+                                <option value="receptionist">OPD Receptionist</option>
+                                <option value="lab_staff">Lab Technician</option>
+                                <option value="ward_manager">Ward Manager</option>
+                                <option value="operations_manager">Operations Manager</option>
+                            </select>
+                        </div>
+
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 2px;">Staff Professional Email</label>
+                            <input id="invite-email" type="email" placeholder="e.g. dr.verma@apex.medlens.io" value="dr.verma@apex.medlens.io" style="width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;">
+                        </div>
+
+                        <button onclick="generateStaffInviteToken()" class="btn-primary" style="background: #0284c7; width: 100%; justify-content: center;">
+                            🎟️ Generate 7-Day Single-Use Token
+                        </button>
+
+                        <div id="staff-invite-token-output" style="display: none;"></div>
+                    </div>
+
+                    <!-- SAAS USAGE & PLAN METERS -->
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem;">
+                        <h4 style="margin: 0 0 0.5rem 0; font-size: 1rem; color: #0f172a;">Hospital Subscription & Quota Meters</h4>
+                        <p style="font-size: 0.8rem; color: #64748b; margin: 0 0 1rem 0;">Live metered billing consumption for Apex Multispeciality Hospital:</p>
+
+                        <div style="margin-bottom: 0.85rem;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 4px;">
+                                <span>AI Clinical Queries</span>
+                                <strong>4,120 / 25,000 (16.4%)</strong>
+                            </div>
+                            <div style="height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
+                                <div style="height: 100%; width: 16.4%; background: #0284c7;"></div>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 0.85rem;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 4px;">
+                                <span>OCR Lab Report Extractions</span>
+                                <strong>840 / 3,000 (28.0%)</strong>
+                            </div>
+                            <div style="height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
+                                <div style="height: 100%; width: 28%; background: #059669;"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 4px;">
+                                <span>Active Staff Seats</span>
+                                <strong>18 / 50 (36.0%)</strong>
+                            </div>
+                            <div style="height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
+                                <div style="height: 100%; width: 36%; background: #7c3aed;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- FLOATING MOBILE BOTTOM NAVIGATION BAR -->
+    <nav class="mobile-bottom-nav">
+        <a href="javascript:void(0)" onclick="switchRole('doctor')" class="mob-nav-item active">
+            <span class="mob-nav-icon">👨‍⚕️</span>
+            <span>Doctor</span>
+        </a>
+        <a href="javascript:void(0)" onclick="switchRole('receptionist')" class="mob-nav-item">
+            <span class="mob-nav-icon">📋</span>
+            <span>OPD</span>
+        </a>
+        <a href="javascript:void(0)" onclick="switchRole('lab_staff')" class="mob-nav-item">
+            <span class="mob-nav-icon">🔬</span>
+            <span>Lab</span>
+        </a>
+        <a href="javascript:void(0)" onclick="switchRole('ward_manager')" class="mob-nav-item">
+            <span class="mob-nav-icon">🛏️</span>
+            <span>Wards</span>
+        </a>
+        <a href="javascript:void(0)" onclick="switchRole('owner')" class="mob-nav-item">
+            <span class="mob-nav-icon">🏛️</span>
+            <span>Admin</span>
+        </a>
+    </nav>
+
+    <!-- FOOTER WITH SEPARATE PORTAL LINK -->
+    <footer style="background: #ffffff; border-top: 1px solid #e2e8f0; padding: 2rem 1.5rem; text-align: center; font-size: 0.85rem; color: #64748b; margin-top: 4rem;">
+        <div style="max-width: 600px; margin: 0 auto;">
+            <p style="margin: 0 0 0.5rem 0;">
+                <strong>MedLens Clinical ERP</strong> &bull; Enterprise Hospital Workstation & Clinical Operations.
+            </p>
+            <p style="margin: 0 0 1rem 0; font-size: 0.8rem; color: #94a3b8;">
+                Are you a patient looking for symptom assessment or your personal medical records?
+                <a href="/patient" style="color: #0284c7; font-weight: 700; text-decoration: underline;">
+                    Access the Dedicated Patient Health Portal →
+                </a>
+            </p>
+            <div style="color: #94a3b8; font-size: 0.75rem;">
+                © 2026 MedLens AI / Avenqra Technologies Inc. NABH & NHA NDHM Compliant.
+            </div>
+        </div>
+    </footer>
+
+    <!-- DEDICATED HOSPITAL SCRIPT -->
+    <script src="/hospital_app.js"></script>
+</body>
+</html>
+
